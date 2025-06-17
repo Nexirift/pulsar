@@ -80,21 +80,21 @@ export class DeliverProcessorService {
 				if (i == null) return;
 
 				if (i.isNotResponding) {
-					this.federatedInstanceService.update(i.id, {
+					await this.federatedInstanceService.update(i.id, {
 						isNotResponding: false,
 						notRespondingSince: null,
 					});
 				}
 
 				if (this.meta.enableChartsForFederatedInstances) {
-					this.instanceChart.requestSent(i.host, true);
+					await this.instanceChart.requestSent(i.host, true);
 				}
 			});
 
 			return 'Success';
 		} catch (res) {
-			this.apRequestChart.deliverFail();
-			this.federationChart.deliverd(host, false);
+			await this.apRequestChart.deliverFail();
+			await this.federationChart.deliverd(host, false);
 
 			// Update instance stats
 			this.federatedInstanceService.fetchOrRegister(host).then(i => {

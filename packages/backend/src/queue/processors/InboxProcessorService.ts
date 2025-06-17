@@ -275,10 +275,10 @@ export class InboxProcessorService implements OnApplicationShutdown {
 			});
 
 			if (this.meta.enableChartsForFederatedInstances) {
-				this.instanceChart.requestReceived(i.host);
+				await this.instanceChart.requestReceived(i.host);
 			}
 
-			this.fetchInstanceMetadataService.fetchInstanceMetadata(i);
+			await this.fetchInstanceMetadataService.fetchInstanceMetadataLazy(i);
 		});
 
 		// アクティビティを処理

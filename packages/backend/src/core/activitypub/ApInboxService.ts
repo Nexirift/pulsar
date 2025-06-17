@@ -153,11 +153,10 @@ export class ApInboxService {
 		// ついでにリモートユーザーの情報が古かったら更新しておく
 		if (actor.uri) {
 			if (actor.lastFetchedAt == null || this.timeService.now - actor.lastFetchedAt.getTime() > 1000 * 60 * 60 * 24) {
-				setImmediate(() => {
+				{
 					// 同一ユーザーの情報を再度処理するので、使用済みのresolverを再利用してはいけない
-					this.apPersonService.updatePerson(actor.uri)
-						.catch(err => this.logger.error(`Failed to update person: ${renderInlineError(err)}`));
-				});
+					await this.apPersonService.updatePersonLazy(actor);
+				}
 			}
 		}
 		return result;
@@ -441,25 +440,15 @@ export class ApInboxService {
 				this.instanceChart.requestReceived(i.host).then();
 			}
 
-			this.fetchInstanceMetadataService.fetchInstanceMetadata(i).then();
+			await this.fetchInstanceMetadataService.fetchInstanceMetadataLazy(i);
 		});
 
 		// Process it!
-		return await this.performOneActivity(actor, activity, resolver)
-			.finally(() => {
-				// Update user (adapted from performActivity)
-				if (actor.lastFetchedAt == null || this.timeService.now - actor.lastFetchedAt.getTime() > 1000 * 60 * 60 * 24) {
-					setImmediate(() => {
-						// Don't re-use the resolver, or it may throw recursion errors.
-						// Instead, create a new resolver with an appropriately-reduced recursion limit.
-						const subResolver = this.apResolverService.createResolver({
-							recursionLimit: resolver.getRecursionLimit() - resolver.getHistory().length,
-						});
-						this.apPersonService.updatePerson(actor.uri, subResolver)
-							.catch(err => this.logger.error(`Failed to update person: ${renderInlineError(err)}`));
-					});
-				}
-			});
+		try {
+			return await this.performOneActivity(actor, activity, resolver);
+		} finally {
+			await this.apPersonService.updatePersonLazy(actor);
+		}
 	}
 
 	@bindThis

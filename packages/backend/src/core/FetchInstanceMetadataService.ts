@@ -17,6 +17,7 @@ import { bindThis } from '@/decorators.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
+import { QueueService } from '@/core/QueueService.js';
 import type { CheerioAPI } from 'cheerio/slim';
 
 type NodeInfo = {
@@ -50,6 +51,7 @@ export class FetchInstanceMetadataService {
 		private redisClient: Redis.Redis,
 
 		private readonly timeService: TimeService,
+		private readonly queueService: QueueService,
 	) {
 		this.logger = this.loggerService.getLogger('metadata', 'cyan');
 	}
@@ -73,8 +75,21 @@ export class FetchInstanceMetadataService {
 		return this.redisClient.del(`fetchInstanceMetadata:mutex:v2:${host}`);
 	}
 
+	/**
+	 * Schedules a deferred update on the background task worker.
+	 * Duplicate updates are automatically skipped.
+	 */
+	@bindThis
+	public async fetchInstanceMetadataLazy(instance: MiInstance): Promise<void> {
+		if (!instance.isBlocked) {
+			await this.queueService.createUpdateInstanceJob(instance.host);
+		}
+	}
+
 	@bindThis
 	public async fetchInstanceMetadata(instance: MiInstance, force = false): Promise<void> {
+		if (instance.isBlocked) return;
+
 		const host = instance.host;
 
 		// finallyでunlockされてしまうのでtry内でロックチェックをしない

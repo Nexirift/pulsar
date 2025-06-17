@@ -21,6 +21,7 @@ import type { SystemWebhookPayload } from '@/core/SystemWebhookService.js';
 import type { MiNote } from '@/models/Note.js';
 import { type UserWebhookPayload } from './UserWebhookService.js';
 import type {
+	BackgroundTaskJobData,
 	DbJobData,
 	DeliverJobData,
 	RelationshipJobData,
@@ -39,6 +40,7 @@ import type {
 	SystemWebhookDeliverQueue,
 	UserWebhookDeliverQueue,
 	ScheduleNotePostQueue,
+	BackgroundTaskQueue,
 } from './QueueModule.js';
 import type httpSignature from '@peertube/http-signature';
 import type * as Bull from 'bullmq';
@@ -54,6 +56,7 @@ export const QUEUE_TYPES = [
 	'userWebhookDeliver',
 	'systemWebhookDeliver',
 	'scheduleNotePost',
+	'backgroundTask',
 ] as const;
 
 @Injectable()
@@ -72,6 +75,7 @@ export class QueueService implements OnModuleInit {
 		@Inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
 		@Inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
 		@Inject('queue:scheduleNotePost') public ScheduleNotePostQueue: ScheduleNotePostQueue,
+		@Inject('queue:backgroundTask') public readonly backgroundTaskQueue: BackgroundTaskQueue,
 
 		private readonly timeService: TimeService,
 	) {}
@@ -838,6 +842,78 @@ export class QueueService implements OnModuleInit {
 			},
 		});
 	}
+
+	@bindThis
+	public async createUpdateUserJob(userId: string) {
+		return await this.createBackgroundTask(
+			'update-user',
+			{
+				type: 'update-user',
+				userId,
+			},
+			{
+				id: `update-user:${userId}`,
+				// ttl: 1000 * 60 * 60 * 24,
+			},
+		);
+	}
+
+	@bindThis
+	public async createUpdateFeaturedJob(userId: string) {
+		return await this.createBackgroundTask(
+			'update-featured',
+			{
+				type: 'update-featured',
+				userId,
+			},
+			{
+				id: `update-featured:${userId}`,
+				// ttl: 1000 * 60 * 60 * 24,
+			},
+		);
+	}
+
+	@bindThis
+	public async createUpdateInstanceJob(host: string) {
+		return await this.createBackgroundTask(
+			'update-instance',
+			{
+				type: 'update-instance',
+				host,
+			},
+			{
+				id: `update-instance:${host}`,
+				// ttl: 1000 * 60 * 60 * 24,
+			},
+		);
+	}
+
+	private async createBackgroundTask(name: string, data: BackgroundTaskJobData, duplication: { id: string, ttl?: number }) {
+		return await this.backgroundTaskQueue.add(
+			name,
+			data,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+
+				// https://docs.bullmq.io/guide/retrying-failing-jobs#custom-back-off-strategies
+				attempts: this.config.backgroundJobMaxAttempts ?? 8,
+				backoff: {
+					// Resolves to QueueProcessorService::HttpRelatedBackoff()
+					type: 'custom',
+				},
+
+				// https://docs.bullmq.io/guide/jobs/deduplication
+				deduplication: duplication,
+			},
+		);
+	};
 
 	/**
 	 * @see UserWebhookDeliverJobData

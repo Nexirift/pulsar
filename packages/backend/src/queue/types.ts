@@ -168,3 +168,23 @@ export type ThinUser = {
 export type ScheduleNotePostJobData = {
 	scheduleNoteId: MiNote['id'];
 };
+
+export type BackgroundTaskJobData =
+	UpdateUserBackgroundTask |
+	UpdateFeaturedBackgroundTask |
+	UpdateInstanceBackgroundTask;
+
+export type UpdateUserBackgroundTask = {
+	type: 'update-user';
+	userId: string;
+};
+
+export type UpdateFeaturedBackgroundTask = {
+	type: 'update-featured';
+	userId: string;
+};
+
+export type UpdateInstanceBackgroundTask = {
+	type: 'update-instance';
+	host: string;
+};

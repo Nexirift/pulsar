@@ -579,7 +579,7 @@ export class ApPersonService implements OnModuleInit {
 				if (this.meta.enableChartsForFederatedInstances) {
 					this.instanceChart.newUser(i.host);
 				}
-				this.fetchInstanceMetadataService.fetchInstanceMetadata(i);
+				this.fetchInstanceMetadataService.fetchInstanceMetadataLazy(i);
 			});
 		}
 
@@ -604,14 +604,24 @@ export class ApPersonService implements OnModuleInit {
 		}
 		//#endregion
 
-		await this.updateFeatured(user.id, resolver).catch(err => {
-			// Permanent error implies hidden or inaccessible, which is a normal thing.
-			if (isRetryableError(err)) {
-				this.logger.error(`Error updating featured notes: ${renderInlineError(err)}`);
-			}
-		});
+		await this.updateFeaturedLazy(user);
 
 		return user;
+	}
+
+	/**
+	 * Schedules a deferred update on the background task worker.
+	 * Duplicate updates are automatically skipped.
+	 */
+	@bindThis
+	public async updatePersonLazy(uriOrUser: string | MiUser): Promise<void> {
+		const user = typeof(uriOrUser) === 'string'
+			?	await this.fetchPerson(uriOrUser)
+			: uriOrUser;
+
+		if (user && user.host != null) {
+			await this.queueService.createUpdateUserJob(user.id);
+		}
 	}
 
 	/**
@@ -817,12 +827,7 @@ export class ApPersonService implements OnModuleInit {
 			await this.cacheService.refreshFollowRelationsFor(exist.id);
 		}
 
-		await this.updateFeatured(exist.id, resolver).catch(err => {
-			// Permanent error implies hidden or inaccessible, which is a normal thing.
-			if (isRetryableError(err)) {
-				this.logger.error(`Error updating featured notes: ${renderInlineError(err)}`);
-			}
-		});
+		await this.updateFeaturedLazy(exist);
 
 		const updated = { ...exist, ...updates };
 
@@ -902,9 +907,24 @@ export class ApPersonService implements OnModuleInit {
 		return fields;
 	}
 
+	/**
+	 * Schedules a deferred update on the background task worker.
+	 * Duplicate updates are automatically skipped.
+	 */
 	@bindThis
-	public async updateFeatured(userId: MiUser['id'], resolver?: Resolver): Promise<void> {
-		const user = await this.usersRepository.findOneByOrFail({ id: userId, isDeleted: false });
+	public async updateFeaturedLazy(userOrId: MiUser | MiUser['id']): Promise<void> {
+		const userId = typeof(userOrId) === 'object' ? userOrId.id : userOrId;
+		const user = typeof(userOrId) === 'object' ? userOrId : await this.usersRepository.findOneByOrFail({ id: userId, isDeleted: false });
+
+		if (isRemoteUser(user) && user.featured) {
+			await this.queueService.createUpdateFeaturedJob(userId);
+		}
+	}
+
+	@bindThis
+	public async updateFeatured(userOrId: MiUser | MiUser['id'], resolver?: Resolver): Promise<void> {
+		const userId = typeof(userOrId) === 'object' ? userOrId.id : userOrId;
+		const user = typeof(userOrId) === 'object' ? userOrId : await this.usersRepository.findOneByOrFail({ id: userId, isDeleted: false });
 		if (!isRemoteUser(user)) return;
 		if (!user.featured) return;
 
