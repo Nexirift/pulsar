@@ -853,7 +853,6 @@ export class QueueService implements OnModuleInit {
 			},
 			{
 				id: `update-user:${userId}`,
-				// ttl: 1000 * 60 * 60 * 24,
 			},
 		);
 	}
@@ -868,7 +867,6 @@ export class QueueService implements OnModuleInit {
 			},
 			{
 				id: `update-featured:${userId}`,
-				// ttl: 1000 * 60 * 60 * 24,
 			},
 		);
 	}
@@ -883,12 +881,93 @@ export class QueueService implements OnModuleInit {
 			},
 			{
 				id: `update-instance:${host}`,
-				// ttl: 1000 * 60 * 60 * 24,
 			},
 		);
 	}
 
-	private async createBackgroundTask(name: string, data: BackgroundTaskJobData, duplication: { id: string, ttl?: number }) {
+	@bindThis
+	public async createPostDeliverJob(host: string, result: 'success' | 'temp-fail' | 'perm-fail') {
+		return await this.createBackgroundTask(
+			'post-deliver',
+			{
+				type: 'post-deliver',
+				host,
+				result,
+			},
+		);
+	}
+
+	@bindThis
+	public async createPostInboxJob(host: string) {
+		return await this.createBackgroundTask(
+			'post-inbox',
+			{
+				type: 'post-inbox',
+				host,
+			},
+		);
+	}
+
+	@bindThis
+	public async createPostNoteJob(noteId: string, silent: boolean, type: 'create' | 'edit') {
+		return await this.createBackgroundTask(
+			'post-note',
+			{
+				type: 'post-note',
+				noteId,
+				silent,
+				edit: type === 'edit',
+			},
+			{
+				id: `post-note:${noteId}:${type}`,
+			},
+		);
+	}
+
+	@bindThis
+	public async createCheckHibernationJob(userId: string) {
+		return await this.createBackgroundTask(
+			'check-hibernation',
+			{
+				type: 'check-hibernation',
+				userId,
+			},
+			{
+				id: `check-hibernation:${userId}`,
+				ttl: 1000 * 60 * 60 * 24, // This is a very heavy task, so only run once per day per user
+			},
+		);
+	}
+
+	@bindThis
+	public async createUpdateUserTagsJob(userId: string) {
+		return await this.createBackgroundTask(
+			'update-user-tags',
+			{
+				type: 'update-user-tags',
+				userId,
+			},
+			{
+				id: `update-user-tags:${userId}`,
+			},
+		);
+	}
+
+	@bindThis
+	public async createUpdateNoteTagsJob(noteId: string) {
+		return await this.createBackgroundTask(
+			'update-note-tags',
+			{
+				type: 'update-note-tags',
+				noteId,
+			},
+			{
+				id: `update-note-tags:${noteId}`,
+			},
+		);
+	}
+
+	private async createBackgroundTask(name: string, data: BackgroundTaskJobData, duplication?: { id: string, ttl?: number }) {
 		return await this.backgroundTaskQueue.add(
 			name,
 			data,

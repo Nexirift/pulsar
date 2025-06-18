@@ -458,10 +458,10 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 		const note = await this.insertNote(user, data, tags, emojis, mentionedUsers);
 
-		setImmediate('post created', { signal: this.#shutdownController.signal }).then(
-			() => this.postNoteCreated(note, user, data, silent, tags!, mentionedUsers!),
-			() => { /* aborted, ignore this */ },
-		);
+		// Update the Latest Note index / following feed
+		this.latestNoteService.handleCreatedNoteBG(note);
+
+		await this.queueService.createPostNoteJob(note.id, silent, 'create');
 
 		return note;
 	}
@@ -577,7 +577,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async postNoteCreated(note: MiNote, user: MiUser & {
+	public async postNoteCreated(note: MiNote, user: MiUser & {
 		id: MiUser['id'];
 		username: MiUser['username'];
 		host: MiUser['host'];
@@ -606,7 +606,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		// ハッシュタグ更新
 		if (data.visibility === 'public' || data.visibility === 'home') {
 			if (!user.isBot || this.meta.enableBotTrending) {
-				this.hashtagService.updateHashtags(user, tags);
+				await this.queueService.createUpdateNoteTagsJob(note.id);
 			}
 		}
 
@@ -806,9 +806,6 @@ export class NoteCreateService implements OnApplicationShutdown {
 				}
 			});
 		}
-
-		// Update the Latest Note index / following feed
-		this.latestNoteService.handleCreatedNoteBG(note);
 
 		// Register to search database
 		if (!user.noindex) this.index(note);
@@ -1100,8 +1097,8 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 		// Instance cannot quote
 		if (user.host) {
-			const instance = await this.federatedInstanceService.fetch(user.host);
-			if (instance?.rejectQuotes) {
+			const instance = await this.federatedInstanceService.fetchOrRegister(user.host);
+			if (instance.rejectQuotes) {
 				(data as Option).renote = null;
 				(data.processErrors ??= []).push('quoteUnavailable');
 			}

@@ -30,10 +30,10 @@ import { DI } from '@/di-symbols.js';
 import { SkApInboxLog } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import { ApLogService, calculateDurationSince } from '@/core/ApLogService.js';
-import { UpdateInstanceQueue } from '@/core/UpdateInstanceQueue.js';
 import { TimeService } from '@/global/TimeService.js';
 import { isRetryableError } from '@/misc/is-retryable-error.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
+import { QueueService } from '@/core/QueueService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type { InboxJobData } from '../types.js';
 
@@ -66,8 +66,8 @@ export class InboxProcessorService implements OnApplicationShutdown {
 		private federationChart: FederationChart,
 		private queueLoggerService: QueueLoggerService,
 		private readonly apLogService: ApLogService,
-		private readonly updateInstanceQueue: UpdateInstanceQueue,
 		private readonly timeService: TimeService,
+		private readonly queueService: QueueService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('inbox');
 	}
@@ -258,28 +258,8 @@ export class InboxProcessorService implements OnApplicationShutdown {
 			log.authUserId = authUser.user.id;
 		}
 
-		this.apRequestChart.inbox();
-		this.federationChart.inbox(authUser.user.host);
-
 		// Update instance stats
-		process.nextTick(async () => {
-			const i = await (this.meta.enableStatsForFederatedInstances
-				? this.federatedInstanceService.fetchOrRegister(authUser.user.host)
-				: this.federatedInstanceService.fetch(authUser.user.host));
-
-			if (i == null) return;
-
-			this.updateInstanceQueue.enqueue(i.id, {
-				latestRequestReceivedAt: this.timeService.date,
-				shouldUnsuspend: i.suspensionState === 'autoSuspendedForNotResponding',
-			});
-
-			if (this.meta.enableChartsForFederatedInstances) {
-				await this.instanceChart.requestReceived(i.host);
-			}
-
-			await this.fetchInstanceMetadataService.fetchInstanceMetadataLazy(i);
-		});
+		await this.queueService.createPostInboxJob(authUser.user.host);
 
 		// アクティビティを処理
 		try {

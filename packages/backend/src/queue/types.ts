@@ -172,7 +172,13 @@ export type ScheduleNotePostJobData = {
 export type BackgroundTaskJobData =
 	UpdateUserBackgroundTask |
 	UpdateFeaturedBackgroundTask |
-	UpdateInstanceBackgroundTask;
+	UpdateUserTagsBackgroundTask |
+	UpdateNoteTagsBackgroundTask |
+	UpdateInstanceBackgroundTask |
+	PostDeliverBackgroundTask |
+	PostInboxBackgroundTask |
+	PostNoteBackgroundTask |
+	CheckHibernationBackgroundTask;
 
 export type UpdateUserBackgroundTask = {
 	type: 'update-user';
@@ -184,7 +190,40 @@ export type UpdateFeaturedBackgroundTask = {
 	userId: string;
 };
 
+export type UpdateUserTagsBackgroundTask = {
+	type: 'update-user-tags';
+	userId: string;
+};
+
+export type UpdateNoteTagsBackgroundTask = {
+	type: 'update-note-tags';
+	noteId: string;
+};
+
 export type UpdateInstanceBackgroundTask = {
 	type: 'update-instance';
 	host: string;
+};
+
+export type PostDeliverBackgroundTask = {
+	type: 'post-deliver';
+	host: string;
+	result: 'success' | 'temp-fail' | 'perm-fail';
+};
+
+export type PostInboxBackgroundTask = {
+	type: 'post-inbox';
+	host: string;
+};
+
+export type PostNoteBackgroundTask = {
+	type: 'post-note';
+	noteId: string;
+	silent: boolean;
+	edit: boolean;
+};
+
+export type CheckHibernationBackgroundTask = {
+	type: 'check-hibernation';
+	userId: string;
 };

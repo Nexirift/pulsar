@@ -33,10 +33,6 @@ import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { fromTuple } from '@/misc/from-tuple.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
-import InstanceChart from '@/core/chart/charts/instance.js';
-import FederationChart from '@/core/chart/charts/federation.js';
-import { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataService.js';
-import { UpdateInstanceQueue } from '@/core/UpdateInstanceQueue.js';
 import { CacheService } from '@/core/CacheService.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import { TimeService } from '@/global/TimeService.js';
@@ -97,10 +93,6 @@ export class ApInboxService {
 		private queueService: QueueService,
 		private globalEventService: GlobalEventService,
 		private readonly federatedInstanceService: FederatedInstanceService,
-		private readonly fetchInstanceMetadataService: FetchInstanceMetadataService,
-		private readonly instanceChart: InstanceChart,
-		private readonly federationChart: FederationChart,
-		private readonly updateInstanceQueue: UpdateInstanceQueue,
 		private readonly cacheService: CacheService,
 		private readonly noteVisibilityService: NoteVisibilityService,
 		private readonly timeService: TimeService,
@@ -423,25 +415,7 @@ export class ApInboxService {
 		}
 
 		// Update stats (adapted from InboxProcessorService)
-		this.federationChart.inbox(actor.host).then();
-		process.nextTick(async () => {
-			const i = await (this.meta.enableStatsForFederatedInstances
-				? this.federatedInstanceService.fetchOrRegister(actor.host)
-				: this.federatedInstanceService.fetch(actor.host));
-
-			if (i == null) return;
-
-			this.updateInstanceQueue.enqueue(i.id, {
-				latestRequestReceivedAt: this.timeService.date,
-				shouldUnsuspend: i.suspensionState === 'autoSuspendedForNotResponding',
-			});
-
-			if (this.meta.enableChartsForFederatedInstances) {
-				this.instanceChart.requestReceived(i.host).then();
-			}
-
-			await this.fetchInstanceMetadataService.fetchInstanceMetadataLazy(i);
-		});
+		await this.queueService.createPostInboxJob(actor.host);
 
 		// Process it!
 		try {

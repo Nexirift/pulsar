@@ -340,6 +340,7 @@ export class ReactionService implements OnModuleInit {
 				.execute();
 		}
 
+		// TODO update caches
 		this.usersRepository.update({ id: user.id }, { updatedAt: this.timeService.date });
 
 		this.globalEventService.publishNoteStream(note.id, 'unreacted', {

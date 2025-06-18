@@ -588,10 +588,10 @@ export class NoteEditService implements OnApplicationShutdown {
 			// Re-fetch note to get the default values of null / unset fields.
 			const edited = await this.notesRepository.findOneByOrFail({ id: note.id });
 
-			setImmediate('post edited', { signal: this.#shutdownController.signal }).then(
-				() => this.postNoteEdited(edited, oldnote, user, data, silent, tags!, mentionedUsers!),
-				() => { /* aborted, ignore this */ },
-			);
+			// Update the Latest Note index / following feed
+			this.latestNoteService.handleUpdatedNoteBG(edited, oldnote);
+
+			await this.queueService.createPostNoteJob(note.id, silent, 'edit');
 
 			return edited;
 		} else {
@@ -600,7 +600,7 @@ export class NoteEditService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async postNoteEdited(note: MiNote, oldNote: MiNote, user: MiUser & {
+	public async postNoteEdited(note: MiNote, user: MiUser & {
 		id: MiUser['id'];
 		username: MiUser['username'];
 		host: MiUser['host'];
@@ -753,9 +753,6 @@ export class NoteEditService implements OnApplicationShutdown {
 				}
 			});
 		}
-
-		// Update the Latest Note index / following feed
-		this.latestNoteService.handleUpdatedNoteBG(oldNote, note);
 
 		// Register to search database
 		if (!user.noindex) this.index(note);

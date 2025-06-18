@@ -585,9 +585,6 @@ export class ApPersonService implements OnModuleInit {
 
 		this.usersChart.update(user, true);
 
-		// ハッシュタグ更新
-		this.hashtagService.updateUsertags(user, tags);
-
 		//#region アバターとヘッダー画像をフェッチ
 		try {
 			const updates = await this.resolveAvatarAndBanner(user, person.icon, person.image, person.backgroundUrl);
@@ -603,6 +600,9 @@ export class ApPersonService implements OnModuleInit {
 			}
 		}
 		//#endregion
+
+		// ハッシュタグ更新
+		await this.queueService.createUpdateUserTagsJob(user.id);
 
 		await this.updateFeaturedLazy(user);
 
@@ -811,9 +811,6 @@ export class ApPersonService implements OnModuleInit {
 
 		this.globalEventService.publishInternalEvent('remoteUserUpdated', { id: exist.id });
 
-		// ハッシュタグ更新
-		this.hashtagService.updateUsertags(exist, tags);
-
 		// 該当ユーザーが既にフォロワーになっていた場合はFollowingもアップデートする
 		if (exist.inbox !== person.inbox || exist.sharedInbox !== (person.sharedInbox ?? person.endpoints?.sharedInbox)) {
 			await this.followingsRepository.update(
@@ -826,6 +823,9 @@ export class ApPersonService implements OnModuleInit {
 
 			await this.cacheService.refreshFollowRelationsFor(exist.id);
 		}
+
+		// ハッシュタグ更新
+		await this.queueService.createUpdateUserTagsJob(exist.id);
 
 		await this.updateFeaturedLazy(exist);
 
@@ -967,7 +967,7 @@ export class ApPersonService implements OnModuleInit {
 			let td = 0;
 			for (const note of featuredNotes.filter(x => x != null)) {
 				td -= 1000;
-				transactionalEntityManager.insert(MiUserNotePining, {
+				await transactionalEntityManager.insert(MiUserNotePining, {
 					id: this.idService.gen(this.timeService.now + td),
 					userId: user.id,
 					noteId: note.id,
