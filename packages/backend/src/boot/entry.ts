@@ -63,14 +63,32 @@ async function main() {
 		});
 	}
 
+	process.on('uncaughtException', (err) => {
+		// Workaround for https://github.com/node-fetch/node-fetch/issues/954
+		if (String(err).match(/^TypeError: .+ is an? url with embedded credentials.$/)) {
+			console.debug('Suppressed node-fetch issue#954, but the current job may fail.');
+			return;
+		}
+
+		// Workaround for https://github.com/node-fetch/node-fetch/issues/1845
+		if (String(err) === 'TypeError: Cannot read properties of undefined (reading \'body\')') {
+			console.debug('Suppressed node-fetch issue#1845, but the current job may fail.');
+			return;
+		}
+
+		// Throw all other errors to avoid inconsistent state.
+		// (per NodeJS docs, it's unsafe to suppress arbitrary errors in an uncaughtException handler.)
+		throw err;
+	});
+
 	// Display detail of uncaught exception
-	process.on('uncaughtExceptionMonitor', ((err, origin) => {
+	process.on('uncaughtExceptionMonitor', (err, origin) => {
 		try {
 			logger.error(`Uncaught exception (${origin}):`, err);
 		} catch {
 			console.error(`Uncaught exception (${origin}):`, err);
 		}
-	}));
+	});
 
 	// Dying away...
 	process.on('disconnect', () => {
