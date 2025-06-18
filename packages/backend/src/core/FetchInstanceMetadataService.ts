@@ -132,18 +132,21 @@ export class FetchInstanceMetadataService {
 			} as Record<string, any>;
 
 			if (info) {
-				updates.softwareName = typeof info.software?.name === 'string' ? info.software.name.toLowerCase() : '?';
-				updates.softwareVersion = info.software?.version;
-				updates.openRegistrations = info.openRegistrations;
-				updates.maintainerName = info.metadata ? info.metadata.maintainer ? (info.metadata.maintainer.name ?? null) : null : null;
-				updates.maintainerEmail = info.metadata ? info.metadata.maintainer ? (info.metadata.maintainer.email ?? null) : null : null;
+				const softwareName = typeof info.software?.name === 'string' ? info.software.name.toLowerCase() : '?';
+				if (softwareName !== instance.softwareName) updates.softwareName = updates.softwareVersion = info.software?.version;
+				if (info.openRegistrations !== instance.openRegistrations) updates.openRegistrations = info.openRegistrations;
+				const maintainerName = info.metadata ? info.metadata.maintainer ? (info.metadata.maintainer.name ?? null) : null : null;
+				if (maintainerName !== instance.maintainerName) updates.maintainerName = maintainerName;
+				const maintainerEmail = info.metadata ? info.metadata.maintainer ? (info.metadata.maintainer.email ?? null) : null : null;
+				if (maintainerEmail !== instance.maintainerEmail) updates.maintainerEmail = maintainerEmail;
 			}
 
-			if (name) updates.name = name;
-			if (description) updates.description = description;
-			if (icon ?? favicon) updates.iconUrl = (icon && !icon.includes('data:image/png;base64')) ? icon : favicon;
-			if (favicon) updates.faviconUrl = favicon;
-			if (themeColor) updates.themeColor = themeColor;
+			if (name !== instance.name) updates.name = name;
+			if (description !== instance.description) updates.description = description;
+			const iconUrl = (icon && !icon.includes('data:image/png;base64')) ? icon : favicon;
+			if (iconUrl !== instance.iconUrl) updates.iconUrl = iconUrl;
+			if (favicon !== instance.faviconUrl) updates.faviconUrl = favicon;
+			if (themeColor !== instance.themeColor) updates.themeColor = themeColor;
 
 			await this.federatedInstanceService.update(instance.id, updates);
 
