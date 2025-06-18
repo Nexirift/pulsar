@@ -1003,6 +1003,7 @@ export class QueueService implements OnModuleInit {
 			case 'userWebhookDeliver': return this.userWebhookDeliverQueue;
 			case 'systemWebhookDeliver': return this.systemWebhookDeliverQueue;
 			case 'scheduleNotePost': return this.ScheduleNotePostQueue;
+			case 'backgroundTask': return this.backgroundTaskQueue;
 			default: throw new Error(`Unrecognized queue type: ${type}`);
 		}
 	}

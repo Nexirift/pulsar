@@ -61,6 +61,7 @@ export class SponsorsService {
 		}
 
 		try {
+			// TODO use HTTP service
 			const backers = await fetch(`${this.meta.donationUrl}/members/users.json`).then((response) => response.json() as Promise<Sponsor[]>);
 
 			// Merge both together into one array and make sure it only has Active subscriptions
@@ -76,6 +77,7 @@ export class SponsorsService {
 	@bindThis
 	private async fetchSharkeySponsors(): Promise<Sponsor[]> {
 		try {
+			// TODO use HTTP service
 			const backers = await fetch('https://opencollective.com/sharkey/tiers/backer/all.json').then((response) => response.json() as Promise<Sponsor[]>);
 			const sponsorsOC = await fetch('https://opencollective.com/sharkey/tiers/sponsor/all.json').then((response) => response.json() as Promise<Sponsor[]>);
 
