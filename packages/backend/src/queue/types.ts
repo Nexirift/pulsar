@@ -178,7 +178,8 @@ export type BackgroundTaskJobData =
 	PostDeliverBackgroundTask |
 	PostInboxBackgroundTask |
 	PostNoteBackgroundTask |
-	CheckHibernationBackgroundTask;
+	CheckHibernationBackgroundTask |
+	DeleteFileBackgroundTask;
 
 export type UpdateUserBackgroundTask = {
 	type: 'update-user';
@@ -226,4 +227,11 @@ export type PostNoteBackgroundTask = {
 export type CheckHibernationBackgroundTask = {
 	type: 'check-hibernation';
 	userId: string;
+};
+
+export type DeleteFileBackgroundTask = {
+	type: 'delete-file';
+	fileId: string;
+	isExpired?: boolean;
+	deleterId?: string;
 };

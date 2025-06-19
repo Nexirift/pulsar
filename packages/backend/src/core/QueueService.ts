@@ -44,6 +44,7 @@ import type {
 } from './QueueModule.js';
 import type httpSignature from '@peertube/http-signature';
 import type * as Bull from 'bullmq';
+import type { MiUser } from '@/models/User.js';
 
 export const QUEUE_TYPES = [
 	'system',
@@ -963,6 +964,22 @@ export class QueueService implements OnModuleInit {
 			},
 			{
 				id: `update-note-tags:${noteId}`,
+			},
+		);
+	}
+
+	@bindThis
+	public async createDeleteFileJob(fileId: string, isExpired?: boolean, deleterId?: string) {
+		return await this.createBackgroundTask(
+			'delete-file',
+			{
+				type: 'delete-file',
+				fileId,
+				isExpired,
+				deleterId,
+			},
+			{
+				id: `delete-file:${fileId}`,
 			},
 		);
 	}

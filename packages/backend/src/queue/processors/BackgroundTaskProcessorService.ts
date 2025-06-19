@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import * as Bull from 'bullmq';
-import { BackgroundTaskJobData, CheckHibernationBackgroundTask, PostDeliverBackgroundTask, PostInboxBackgroundTask, PostNoteBackgroundTask, UpdateFeaturedBackgroundTask, UpdateInstanceBackgroundTask, UpdateUserTagsBackgroundTask, UpdateUserBackgroundTask, UpdateNoteTagsBackgroundTask } from '@/queue/types.js';
+import { BackgroundTaskJobData, CheckHibernationBackgroundTask, PostDeliverBackgroundTask, PostInboxBackgroundTask, PostNoteBackgroundTask, UpdateFeaturedBackgroundTask, UpdateInstanceBackgroundTask, UpdateUserTagsBackgroundTask, UpdateUserBackgroundTask, UpdateNoteTagsBackgroundTask, DeleteFileBackgroundTask } from '@/queue/types.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
 import { QueueLoggerService } from '@/queue/QueueLoggerService.js';
 import Logger from '@/logger.js';
@@ -19,9 +19,11 @@ import ApRequestChart from '@/core/chart/charts/ap-request.js';
 import FederationChart from '@/core/chart/charts/federation.js';
 import { UpdateInstanceQueue } from '@/core/UpdateInstanceQueue.js';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
-import type { NotesRepository } from '@/models/_.js';
+import type { DriveFilesRepository, NotesRepository } from '@/models/_.js';
+import { MiUser } from '@/models/_.js';
 import { NoteEditService } from '@/core/NoteEditService.js';
 import { HashtagService } from '@/core/HashtagService.js';
+import { DriveService } from '@/core/DriveService.js';
 
 @Injectable()
 export class BackgroundTaskProcessorService {
@@ -34,6 +36,9 @@ export class BackgroundTaskProcessorService {
 		@Inject(DI.notesRepository)
 		private readonly notesRepository: NotesRepository,
 
+		@Inject(DI.driveFilesRepository)
+		private readonly driveFilesRepository: DriveFilesRepository,
+
 		private readonly apPersonService: ApPersonService,
 		private readonly cacheService: CacheService,
 		private readonly federatedInstanceService: FederatedInstanceService,
@@ -45,6 +50,7 @@ export class BackgroundTaskProcessorService {
 		private readonly noteCreateService: NoteCreateService,
 		private readonly noteEditService: NoteEditService,
 		private readonly hashtagService: HashtagService,
+		private readonly driveService: DriveService,
 
 		queueLoggerService: QueueLoggerService,
 	) {
@@ -68,9 +74,11 @@ export class BackgroundTaskProcessorService {
 			return await this.processPostInbox(job.data);
 		} else if (job.data.type === 'post-note') {
 			return await this.processPostNote(job.data);
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		} else if (job.data.type === 'check-hibernation') {
 			return await this.processCheckHibernation(job.data);
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		} else if (job.data.type === 'delete-file') {
+			return await this.processDeleteFile(job.data);
 		} else {
 			this.logger.warn(`Can't process unknown job type "${job.data}"; this is likely a bug. Full job data:`, job.data);
 			throw new Error(`Unknown job type ${job.data}, see system logs for details`);
@@ -234,6 +242,22 @@ export class BackgroundTaskProcessorService {
 		if (followers.length < 1) return `Skipping check-hibernation task: user ${task.userId} has no non-hibernated followers`;
 
 		await this.noteCreateService.checkHibernation(followers);
+		return 'ok';
+	}
+
+	private async processDeleteFile(task: DeleteFileBackgroundTask): Promise<string> {
+		const file = await this.driveFilesRepository.findOneBy({ id: task.fileId });
+		if (!file) return `Skipping delete-file task: file ${task.fileId} has been deleted`;
+
+		let deleter: MiUser | undefined = undefined;
+		if (task.deleterId) {
+			deleter = await this.cacheService.findOptionalUserById(task.deleterId);
+			if (!deleter) {
+				this.logger.warn(`[delete-file] Deleting user ${task.deleterId} has been deleted; proceeding with null deleter`);
+			}
+		}
+
+		await this.driveService.deleteFileSync(file, task.isExpired, deleter);
 		return 'ok';
 	}
 }
