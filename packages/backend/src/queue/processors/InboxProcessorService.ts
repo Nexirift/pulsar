@@ -34,6 +34,7 @@ import { TimeService } from '@/global/TimeService.js';
 import { isRetryableError } from '@/misc/is-retryable-error.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { QueueService } from '@/core/QueueService.js';
+import { trackPromise } from '@/misc/promise-tracker.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type { InboxJobData } from '../types.js';
 
@@ -103,8 +104,8 @@ export class InboxProcessorService implements OnApplicationShutdown {
 			log.duration = calculateDurationSince(startTime);
 
 			// Save or finalize asynchronously
-			this.apLogService.saveInboxLog(log)
-				.catch(err => this.logger.error('Failed to record AP activity:', err));
+			trackPromise(this.apLogService.saveInboxLog(log)
+				.catch(err => this.logger.error('Failed to record AP activity:', err)));
 		}
 	}
 

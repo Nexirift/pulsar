@@ -277,7 +277,7 @@ export class ApNoteService implements OnModuleInit {
 
 					return x;
 				})
-				.catch(async err => {
+				.catch(err => {
 					this.logger.warn(`error ${renderInlineError(err)} fetching inReplyTo ${note.inReplyTo} for note ${entryUri}`);
 					throw new IdentifiableError('1ebf0a96-2769-4973-a6c2-3dcbad409dff', `failed to create note ${entryUri}: could not fetch inReplyTo ${note.inReplyTo}`, true, err);
 				})
@@ -456,7 +456,7 @@ export class ApNoteService implements OnModuleInit {
 
 					return x;
 				})
-				.catch(async err => {
+				.catch(err => {
 					this.logger.warn(`error ${renderInlineError(err)} fetching inReplyTo ${note.inReplyTo} for note ${entryUri}`);
 					throw new IdentifiableError('1ebf0a96-2769-4973-a6c2-3dcbad409dff', `failed to update note ${entryUri}: could not fetch inReplyTo ${note.inReplyTo}`, true, err);
 				})

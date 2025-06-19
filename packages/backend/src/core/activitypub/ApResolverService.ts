@@ -23,6 +23,7 @@ import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { toArray } from '@/misc/prelude/array.js';
 import { isPureRenote } from '@/misc/is-renote.js';
 import { CacheService } from '@/core/CacheService.js';
+import { trackPromise } from '@/misc/promise-tracker.js';
 import { AnyCollection, getApId, getNullableApId, IObjectWithId, isCollection, isCollectionOrOrderedCollection, isCollectionPage, isOrderedCollection, isOrderedCollectionPage } from './type.js';
 import { ApDbResolverService } from './ApDbResolverService.js';
 import { ApRendererService } from './ApRendererService.js';
@@ -269,8 +270,8 @@ export class Resolver {
 			log.duration = calculateDurationSince(startTime);
 
 			// Save or finalize asynchronously
-			this.apLogService.saveFetchLog(log)
-				.catch(err => this.logger.error('Failed to record AP object fetch:', err));
+			trackPromise(this.apLogService.saveFetchLog(log)
+				.catch(err => this.logger.error('Failed to record AP object fetch:', err)));
 		}
 	}
 

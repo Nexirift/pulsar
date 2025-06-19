@@ -39,6 +39,7 @@ import { trackPromise } from '@/misc/promise-tracker.js';
 import { QueueService } from '@/core/QueueService.js';
 import { ApiLoggerService } from '../../ApiLoggerService.js';
 import { ApiError } from '../../error.js';
+import { trackPromise } from '@/misc/promise-tracker.js';
 
 export const meta = {
 	tags: ['account'],
@@ -643,7 +644,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			// 鍵垢を解除したとき、溜まっていたフォローリクエストがあるならすべて承認
 			if (user.isLocked && ps.isLocked === false) {
-				await this.userFollowingService.acceptAllFollowRequests(user);
+				trackPromise(this.userFollowingService.acceptAllFollowRequests(user));
 			}
 
 			// フォロワーにUpdateを配信

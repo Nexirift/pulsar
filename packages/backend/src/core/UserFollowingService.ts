@@ -31,6 +31,7 @@ import type { ThinUser } from '@/queue/types.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { InternalEventService } from '@/global/InternalEventService.js';
 import type Logger from '../logger.js';
+import { trackPromise } from '@/misc/promise-tracker.js';
 
 type Local = MiLocalUser | {
 	id: MiLocalUser['id'];
@@ -102,7 +103,7 @@ export class UserFollowingService implements OnModuleInit {
 	@bindThis
 	public async deliverAccept(follower: MiRemoteUser, followee: MiPartialLocalUser, requestId?: string) {
 		const content = this.apRendererService.addContext(this.apRendererService.renderAccept(this.apRendererService.renderFollow(follower, followee, requestId), followee));
-		this.queueService.deliver(followee, content, follower.inbox, false);
+		await this.queueService.deliver(followee, content, follower.inbox, false);
 	}
 
 	@bindThis
@@ -152,7 +153,7 @@ export class UserFollowingService implements OnModuleInit {
 			// すでにフォロー関係が存在している場合
 			if (this.userEntityService.isRemoteUser(follower) && this.userEntityService.isLocalUser(followee)) {
 				// リモート → ローカル: acceptを送り返しておしまい
-				this.deliverAccept(follower, followee, requestId);
+				trackPromise(this.deliverAccept(follower, followee, requestId));
 				return;
 			}
 			if (this.userEntityService.isLocalUser(follower)) {
@@ -206,7 +207,7 @@ export class UserFollowingService implements OnModuleInit {
 		await this.insertFollowingDoc(followee, follower, silent, withReplies);
 
 		if (this.userEntityService.isRemoteUser(follower) && this.userEntityService.isLocalUser(followee)) {
-			this.deliverAccept(follower, followee, requestId);
+			trackPromise(this.deliverAccept(follower, followee, requestId));
 		}
 	}
 
@@ -581,7 +582,7 @@ export class UserFollowingService implements OnModuleInit {
 		await this.insertFollowingDoc(followee, follower, false, request.withReplies);
 
 		if (this.userEntityService.isRemoteUser(follower) && this.userEntityService.isLocalUser(followee)) {
-			this.deliverAccept(follower, followee as MiPartialLocalUser, request.requestId ?? undefined);
+			trackPromise(this.deliverAccept(follower, followee as MiPartialLocalUser, request.requestId ?? undefined));
 		}
 
 		this.userEntityService.pack(followee.id, followee, {
@@ -595,14 +596,13 @@ export class UserFollowingService implements OnModuleInit {
 			id: MiUser['id']; host: MiUser['host']; uri: MiUser['host']; inbox: MiUser['inbox']; sharedInbox: MiUser['sharedInbox'];
 		},
 	): Promise<void> {
-		const requests = await this.followRequestsRepository.findBy({
+		const requests = await this.followRequestsRepository.find({ where: {
 			followeeId: user.id,
-		});
+		}, relations: {
+			follower: true,
+		} });
 
-		for (const request of requests) {
-			const follower = await this.usersRepository.findOneByOrFail({ id: request.followerId });
-			this.acceptFollowRequest(user, follower);
-		}
+		await Promise.all(requests.map(request => this.acceptFollowRequest(user, request.follower as MiUser)));
 	}
 
 	/**
@@ -611,7 +611,7 @@ export class UserFollowingService implements OnModuleInit {
 	@bindThis
 	public async rejectFollowRequest(user: Local, follower: Both): Promise<void> {
 		if (this.userEntityService.isRemoteUser(follower)) {
-			this.deliverReject(user, follower);
+			trackPromise(this.deliverReject(user, follower));
 		}
 
 		await this.removeFollowRequest(user, follower);
@@ -627,7 +627,7 @@ export class UserFollowingService implements OnModuleInit {
 	@bindThis
 	public async rejectFollow(user: Local, follower: Both): Promise<void> {
 		if (this.userEntityService.isRemoteUser(follower)) {
-			this.deliverReject(user, follower);
+			trackPromise(this.deliverReject(user, follower));
 		}
 
 		await this.removeFollow(user, follower);
@@ -696,7 +696,7 @@ export class UserFollowingService implements OnModuleInit {
 		});
 
 		const content = this.apRendererService.addContext(this.apRendererService.renderReject(this.apRendererService.renderFollow(follower, followee, request?.requestId ?? undefined), followee));
-		this.queueService.deliver(followee, content, follower.inbox, false);
+		await this.queueService.deliver(followee, content, follower.inbox, false);
 	}
 
 	/**
@@ -720,7 +720,7 @@ export class UserFollowingService implements OnModuleInit {
 
 	@bindThis
 	public async isFollowing(followerId: MiUser['id'], followeeId: MiUser['id']) {
-		return this.cacheService.isFollowing(followerId, followeeId);
+		return await this.cacheService.isFollowing(followerId, followeeId);
 	}
 
 	@bindThis
