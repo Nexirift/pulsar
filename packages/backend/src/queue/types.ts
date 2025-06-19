@@ -183,7 +183,8 @@ export type BackgroundTaskJobData =
 	DeleteFileBackgroundTask |
 	UpdateLatestNoteBackgroundTask |
 	PostSuspendBackgroundTask |
-	PostUnsuspendBackgroundTask;
+	PostUnsuspendBackgroundTask |
+	DeleteApLogsBackgroundTask;
 
 export type UpdateUserBackgroundTask = {
 	type: 'update-user';
@@ -253,4 +254,10 @@ export type PostSuspendBackgroundTask = {
 export type PostUnsuspendBackgroundTask = {
 	type: 'post-unsuspend';
 	userId: string;
+};
+
+export type DeleteApLogsBackgroundTask = {
+	type: 'delete-ap-logs';
+	dataType: 'inbox' | 'object';
+	data: string | string[];
 };

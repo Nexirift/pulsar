@@ -332,8 +332,7 @@ export class DeleteAccountProcessorService {
 				// Delete note AP logs
 				const noteUris = notes.map(n => n.uri).filter(u => !!u) as string[];
 				if (noteUris.length > 0) {
-					await this.apLogService.deleteObjectLogs(noteUris)
-						.catch(err => this.logger.error(err, `Failed to delete AP logs for notes of user '${user.uri ?? user.id}'`));
+					await this.apLogService.deleteObjectLogsDeferred(noteUris);
 				}
 			}
 
@@ -371,12 +370,10 @@ export class DeleteAccountProcessorService {
 
 		{ // Delete actor logs
 			if (user.uri) {
-				await this.apLogService.deleteObjectLogs(user.uri)
-					.catch(err => this.logger.error(err, `Failed to delete AP logs for user '${user.uri}'`));
+				await this.apLogService.deleteObjectLogsDeferred(user.uri);
 			}
 
-			await this.apLogService.deleteInboxLogs(user.id)
-				.catch(err => this.logger.error(err, `Failed to delete AP logs for user '${user.uri}'`));
+			await this.apLogService.deleteInboxLogsDeferred(user.id);
 
 			this.logger.info('All AP logs deleted');
 		}

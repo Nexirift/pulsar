@@ -161,7 +161,7 @@ export class NoteDeleteService {
 		// Update the Latest Note index / following feed
 		this.latestNoteService.handleDeletedNoteDeferred(note);
 		for (const cascadingNote of cascadingNotes) {
-			this.latestNoteService.handleDeletedNote(cascadingNote);
+			this.latestNoteService.handleDeletedNoteDeferred(cascadingNote);
 		}
 
 		if (deleter && (note.userId !== deleter.id)) {
@@ -178,8 +178,7 @@ export class NoteDeleteService {
 			.map(n => n.uri)
 			.filter((u): u is string => u != null);
 		if (deletedUris.length > 0) {
-			trackPromise(this.apLogService.deleteObjectLogs(deletedUris)
-				.catch(err => this.logger.error(err, `Failed to delete AP logs for note '${note.uri}'`)));
+			await this.apLogService.deleteObjectLogsDeferred(deletedUris);
 		}
 	}
 

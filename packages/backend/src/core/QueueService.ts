@@ -930,6 +930,11 @@ export class QueueService implements OnModuleInit {
 		return await this.createBackgroundTask({ type: 'post-unsuspend', userId }, userId);
 	}
 
+	@bindThis
+	public async createDeleteApLogsJob(dataType: 'inbox' | 'object', data: string | string[]) {
+		return await this.createBackgroundTask({ type: 'delete-ap-logs', dataType, data });
+	}
+
 	private async createBackgroundTask<T extends BackgroundTaskJobData>(data: T, duplication?: string | { id: string, ttl?: number }) {
 		return await this.backgroundTaskQueue.add(
 			data.type,

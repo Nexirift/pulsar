@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import * as Bull from 'bullmq';
-import { BackgroundTaskJobData, CheckHibernationBackgroundTask, PostDeliverBackgroundTask, PostInboxBackgroundTask, PostNoteBackgroundTask, UpdateFeaturedBackgroundTask, UpdateInstanceBackgroundTask, UpdateUserTagsBackgroundTask, UpdateUserBackgroundTask, UpdateNoteTagsBackgroundTask, DeleteFileBackgroundTask, UpdateLatestNoteBackgroundTask, PostSuspendBackgroundTask, PostUnsuspendBackgroundTask } from '@/queue/types.js';
+import { BackgroundTaskJobData, CheckHibernationBackgroundTask, PostDeliverBackgroundTask, PostInboxBackgroundTask, PostNoteBackgroundTask, UpdateFeaturedBackgroundTask, UpdateInstanceBackgroundTask, UpdateUserTagsBackgroundTask, UpdateUserBackgroundTask, UpdateNoteTagsBackgroundTask, DeleteFileBackgroundTask, UpdateLatestNoteBackgroundTask, PostSuspendBackgroundTask, PostUnsuspendBackgroundTask, DeleteApLogsBackgroundTask } from '@/queue/types.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
 import { QueueLoggerService } from '@/queue/QueueLoggerService.js';
 import Logger from '@/logger.js';
@@ -27,6 +27,7 @@ import { DriveService } from '@/core/DriveService.js';
 import { LatestNoteService } from '@/core/LatestNoteService.js';
 import { trackTask } from '@/misc/promise-tracker.js';
 import { UserSuspendService } from '@/core/UserSuspendService.js';
+import { ApLogService } from '@/core/ApLogService.js';
 
 @Injectable()
 export class BackgroundTaskProcessorService {
@@ -59,6 +60,7 @@ export class BackgroundTaskProcessorService {
 		private readonly driveService: DriveService,
 		private readonly latestNoteService: LatestNoteService,
 		private readonly userSuspendService: UserSuspendService,
+		private readonly apLogService: ApLogService,
 
 		queueLoggerService: QueueLoggerService,
 	) {
@@ -90,9 +92,11 @@ export class BackgroundTaskProcessorService {
 			return await this.processUpdateLatestNote(job.data);
 		} else if (job.data.type === 'post-suspend') {
 			return await this.processPostSuspend(job.data);
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		} else if (job.data.type === 'post-unsuspend') {
 			return await this.processPostUnsuspend(job.data);
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		} else if (job.data.type === 'delete-ap-logs') {
+			return await this.processDeleteApLogs(job.data);
 		} else {
 			this.logger.warn(`Can't process unknown job type "${job.data}"; this is likely a bug. Full job data:`, job.data);
 			throw new Error(`Unknown job type ${job.data}, see system logs for details`);
@@ -199,14 +203,14 @@ export class BackgroundTaskProcessorService {
 
 		// Update charts
 		if (this.meta.enableChartsForFederatedInstances) {
-			await this.instanceChart.requestSent(task.host, success);
+			this.instanceChart.requestSent(task.host, success);
 		}
 		if (success) {
-			await this.apRequestChart.deliverSucc();
+			this.apRequestChart.deliverSucc();
 		} else {
-			await this.apRequestChart.deliverFail();
+			this.apRequestChart.deliverFail();
 		}
-		await this.federationChart.deliverd(task.host, success);
+		this.federationChart.deliverd(task.host, success);
 
 		return 'ok';
 	}
@@ -215,7 +219,6 @@ export class BackgroundTaskProcessorService {
 		const instance = await this.federatedInstanceService.fetchOrRegister(task.host);
 		if (instance.isBlocked) return `Skipping post-inbox task: instance ${task.host} is blocked`;
 
-		// TODO move chart stuff out of background?
 		// Update charts
 		if (this.meta.enableChartsForFederatedInstances) {
 			this.instanceChart.requestReceived(task.host);
@@ -318,6 +321,20 @@ export class BackgroundTaskProcessorService {
 		await trackTask(async () => {
 			await this.userSuspendService.postUnsuspend(user);
 		});
+
+		return 'ok';
+	}
+
+	private async processDeleteApLogs(task: DeleteApLogsBackgroundTask): Promise<string> {
+		if (task.dataType === 'object') {
+			await this.apLogService.deleteObjectLogs(task.data);
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		} else if (task.dataType === 'inbox') {
+			await this.apLogService.deleteInboxLogs(task.data);
+		} else {
+			this.logger.warn(`Can't process unknown data type "${task.dataType}"; this is likely a bug. Full task data:`, task);
+			throw new Error(`Unknown task type ${task.dataType}, see system logs for details`);
+		}
 
 		return 'ok';
 	}
