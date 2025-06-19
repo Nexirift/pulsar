@@ -633,7 +633,7 @@ export class NoteEditService implements OnApplicationShutdown {
 			}
 		}
 
-		await this.usersRepository.update({ id: user.id }, { updatedAt: this.timeService.date });
+		await this.queueService.createMarkUserUpdatedJob(user.id);
 
 		// ハッシュタグ更新
 		await this.pushToTl(note, user);

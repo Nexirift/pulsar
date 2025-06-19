@@ -935,6 +935,11 @@ export class QueueService implements OnModuleInit {
 		return await this.createBackgroundTask({ type: 'delete-ap-logs', dataType, data });
 	}
 
+	@bindThis
+	public async createMarkUserUpdatedJob(userId: string) {
+		return await this.createBackgroundTask({ type: 'mark-user-updated', userId }, userId);
+	}
+
 	private async createBackgroundTask<T extends BackgroundTaskJobData>(data: T, duplication?: string | { id: string, ttl?: number }) {
 		return await this.backgroundTaskQueue.add(
 			data.type,

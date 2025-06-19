@@ -33,6 +33,7 @@ import { PER_NOTE_REACTION_USER_PAIR_CACHE_MAX } from '@/const.js';
 import { CacheService } from '@/core/CacheService.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import { TimeService } from '@/global/TimeService.js';
+import { QueueService } from '@/core/QueueService.js';
 import type { DataSource } from 'typeorm';
 
 const FALLBACK = '\u2764';
@@ -110,6 +111,7 @@ export class ReactionService implements OnModuleInit {
 		private readonly cacheService: CacheService,
 		private readonly noteVisibilityService: NoteVisibilityService,
 		private readonly timeService: TimeService,
+		private readonly queueService: QueueService,
 	) {
 	}
 
@@ -224,7 +226,7 @@ export class ReactionService implements OnModuleInit {
 				.execute();
 		}
 
-		this.usersRepository.update({ id: user.id }, { updatedAt: this.timeService.date });
+		await this.queueService.createMarkUserUpdatedJob(user.id);
 
 		// 30%の確率、セルフではない、3日以内に投稿されたノートの場合ハイライト用ランキング更新
 		if (
@@ -340,8 +342,7 @@ export class ReactionService implements OnModuleInit {
 				.execute();
 		}
 
-		// TODO update caches
-		this.usersRepository.update({ id: user.id }, { updatedAt: this.timeService.date });
+		await this.queueService.createMarkUserUpdatedJob(user.id);
 
 		this.globalEventService.publishNoteStream(note.id, 'unreacted', {
 			reaction: this.decodeReaction(exist.reaction).reaction,

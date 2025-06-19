@@ -28,12 +28,10 @@ import { ApLogService } from '@/core/ApLogService.js';
 import type Logger from '@/logger.js';
 import { TimeService } from '@/global/TimeService.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
-import { LoggerService } from '@/core/LoggerService.js';
+import { QueueService } from '@/core/QueueService.js';
 
 @Injectable()
 export class NoteDeleteService {
-	private readonly logger: Logger;
-
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
@@ -63,11 +61,8 @@ export class NoteDeleteService {
 		private latestNoteService: LatestNoteService,
 		private readonly apLogService: ApLogService,
 		private readonly timeService: TimeService,
-
-		loggerService: LoggerService,
-	) {
-		this.logger = loggerService.getLogger('note-delete-service');
-	}
+		private readonly queueService: QueueService,
+	) {}
 
 	/**
 	 * 投稿を削除します。
@@ -131,7 +126,7 @@ export class NoteDeleteService {
 				// Decrement notes count (user)
 				this.decNotesCountOfUser(user);
 			} else {
-				this.usersRepository.update({ id: user.id }, { updatedAt: this.timeService.date });
+				await this.queueService.createMarkUserUpdatedJob(user.id);
 			}
 
 			if (this.meta.enableStatsForFederatedInstances) {

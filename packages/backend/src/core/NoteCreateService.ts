@@ -611,7 +611,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			// Increment notes count (user)
 			await this.incNotesCountOfUser(user);
 		} else {
-			await this.usersRepository.update({ id: user.id }, { updatedAt: this.timeService.date });
+			await this.queueService.createMarkUserUpdatedJob(user.id);
 		}
 
 		await this.pushToTl(note, user);
