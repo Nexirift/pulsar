@@ -22,13 +22,13 @@ import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerServ
 import { bindThis } from '@/decorators.js';
 import { SearchService } from '@/core/SearchService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { isQuote, isRenote } from '@/misc/is-renote.js';
+import { isPureRenote } from '@/misc/is-renote.js';
 import { LatestNoteService } from '@/core/LatestNoteService.js';
 import { ApLogService } from '@/core/ApLogService.js';
-import type Logger from '@/logger.js';
 import { TimeService } from '@/global/TimeService.js';
-import { trackPromise } from '@/misc/promise-tracker.js';
+import { trackTask } from '@/misc/promise-tracker.js';
 import { QueueService } from '@/core/QueueService.js';
+import { CacheService } from '@/core/CacheService.js';
 
 @Injectable()
 export class NoteDeleteService {
@@ -62,6 +62,7 @@ export class NoteDeleteService {
 		private readonly apLogService: ApLogService,
 		private readonly timeService: TimeService,
 		private readonly queueService: QueueService,
+		private readonly cacheService: CacheService,
 	) {}
 
 	/**
@@ -70,41 +71,36 @@ export class NoteDeleteService {
 	 * @param note 投稿
 	 */
 	async delete(user: { id: MiUser['id']; uri: MiUser['uri']; host: MiUser['host']; isBot: MiUser['isBot']; }, note: MiNote, quiet = false, deleter?: MiUser) {
+		// This kicks off lots of things that can run in parallel, but we should still wait for completion to ensure consistent state and to avoid task flood when calling in a loop.
+		const promises: Promise<unknown>[] = [];
+
 		const deletedAt = this.timeService.date;
 		const cascadingNotes = await this.findCascadingNotes(note);
 
 		if (note.replyId) {
-			await this.notesRepository.decrement({ id: note.replyId }, 'repliesCount', 1);
+			promises.push(this.notesRepository.decrement({ id: note.replyId }, 'repliesCount', 1));
 		}
 
-		if (note.renoteId && note.text == null && !note.hasPoll && (note.fileIds == null || note.fileIds.length === 0)) {
-			await this.notesRepository.findOneBy({ id: note.renoteId }).then(async (renote) => {
-				if (!renote) return;
-				if (renote.userId !== user.id) await this.notesRepository.decrement({ id: renote.id }, 'renoteCount', 1);
-			});
+		if (isPureRenote(note)) {
+			promises.push(this.notesRepository.decrement({ id: note.renoteId }, 'renoteCount', 1));
 		}
 
 		if (!quiet) {
-			this.globalEventService.publishNoteStream(note.id, 'deleted', {
+			promises.push(this.globalEventService.publishNoteStream(note.id, 'deleted', {
 				deletedAt: deletedAt,
-			});
+			}));
 
 			//#region ローカルの投稿なら削除アクティビティを配送
 			if (isLocalUser(user) && !note.localOnly) {
-				let renote: MiNote | null = null;
-
-				// if deleted note is renote
-				if (isRenote(note) && !isQuote(note)) {
-					renote = await this.notesRepository.findOneBy({
-						id: note.renoteId,
-					});
-				}
+				const renote = isPureRenote(note)
+					? await this.notesRepository.findOneBy({ id: note.renoteId })
+					: null;
 
 				const content = this.apRendererService.addContext(renote
 					? this.apRendererService.renderUndo(this.apRendererService.renderAnnounce(renote.uri ?? `${this.config.url}/notes/${renote.id}`, note), user)
 					: this.apRendererService.renderDelete(this.apRendererService.renderTombstone(`${this.config.url}/notes/${note.id}`), user));
 
-				trackPromise(this.deliverToConcerned(user, note, content));
+				promises.push(this.deliverToConcerned(user, note, content));
 			}
 
 			// also deliver delete activity to cascaded notes
@@ -113,7 +109,7 @@ export class NoteDeleteService {
 				if (!cascadingNote.user) continue;
 				if (!isLocalUser(cascadingNote.user)) continue;
 				const content = this.apRendererService.addContext(this.apRendererService.renderDelete(this.apRendererService.renderTombstone(`${this.config.url}/notes/${cascadingNote.id}`), cascadingNote.user));
-				trackPromise(this.deliverToConcerned(cascadingNote.user, cascadingNote, content));
+				promises.push(this.deliverToConcerned(cascadingNote.user, cascadingNote, content));
 			}
 			//#endregion
 
@@ -122,59 +118,63 @@ export class NoteDeleteService {
 				this.perUserNotesChart.update(user, note, false);
 			}
 
-			if (!isRenote(note) || isQuote(note)) {
+			if (!isPureRenote(note)) {
 				// Decrement notes count (user)
-				this.decNotesCountOfUser(user);
+				promises.push(this.decNotesCountOfUser(user));
 			} else {
-				await this.queueService.createMarkUserUpdatedJob(user.id);
+				promises.push(this.queueService.createMarkUserUpdatedJob(user.id));
 			}
 
 			if (this.meta.enableStatsForFederatedInstances) {
 				if (isRemoteUser(user)) {
-					this.federatedInstanceService.fetchOrRegister(user.host).then(async i => {
-						if (note.renoteId && note.text || !note.renoteId) {
-							this.instancesRepository.decrement({ id: i.id }, 'notesCount', 1);
-						}
-						if (this.meta.enableChartsForFederatedInstances) {
-							this.instanceChart.updateNote(i.host, note, false);
-						}
-					});
+					if (!isPureRenote(note)) {
+						const i = await this.federatedInstanceService.fetchOrRegister(user.host);
+						promises.push(this.instancesRepository.decrement({ id: i.id }, 'notesCount', 1));
+					}
+					if (this.meta.enableChartsForFederatedInstances) {
+						this.instanceChart.updateNote(user.host, note, false);
+					}
 				}
 			}
 		}
 
 		for (const cascadingNote of cascadingNotes) {
-			this.searchService.unindexNote(cascadingNote);
+			promises.push(this.searchService.unindexNote(cascadingNote));
 		}
-		this.searchService.unindexNote(note);
+		promises.push(this.searchService.unindexNote(note));
 
+		// Don't put this in the promise array, since it needs to happen before the next section
 		await this.notesRepository.delete({
 			id: note.id,
 			userId: user.id,
 		});
 
-		// Update the Latest Note index / following feed
-		this.latestNoteService.handleDeletedNoteDeferred(note);
+		// Update the Latest Note index / following feed *after* note is deleted
+		promises.push(this.latestNoteService.handleDeletedNoteDeferred(note));
 		for (const cascadingNote of cascadingNotes) {
-			this.latestNoteService.handleDeletedNoteDeferred(cascadingNote);
+			promises.push(this.latestNoteService.handleDeletedNoteDeferred(cascadingNote));
 		}
 
 		if (deleter && (note.userId !== deleter.id)) {
-			const user = await this.usersRepository.findOneByOrFail({ id: note.userId });
-			this.moderationLogService.log(deleter, 'deleteNote', {
+			const user = await this.cacheService.findUserById(note.userId);
+			promises.push(this.moderationLogService.log(deleter, 'deleteNote', {
 				noteId: note.id,
 				noteUserId: note.userId,
 				noteUserUsername: user.username,
 				noteUserHost: user.host,
-			});
+			}));
 		}
 
 		const deletedUris = [note, ...cascadingNotes]
 			.map(n => n.uri)
 			.filter((u): u is string => u != null);
 		if (deletedUris.length > 0) {
-			await this.apLogService.deleteObjectLogsDeferred(deletedUris);
+			promises.push(this.apLogService.deleteObjectLogsDeferred(deletedUris));
 		}
+
+		await trackTask(async () => {
+			await Promise.allSettled(promises);
+		});
 	}
 
 	@bindThis
