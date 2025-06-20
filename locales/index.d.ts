@@ -13403,6 +13403,10 @@ export interface Locale extends ILocale {
      * Custom font size
      */
     "customFontSize": string;
+    /**
+     * Hide ads
+     */
+    "hideAds": string;
 }
 declare const locales: {
     [lang: string]: Locale;

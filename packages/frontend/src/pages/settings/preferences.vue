@@ -913,10 +913,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</MkFolder>
 						</SearchMarker>
 
-						<SearchMarker :keywords="['ad', 'show']">
-							<MkPreferenceContainer k="forceShowAds">
-								<MkSwitch v-model="forceShowAds">
-									<template #label><SearchLabel>{{ i18n.ts.forceShowAds }}</SearchLabel></template>
+						<SearchMarker v-if="$i.policies.canHideAds" :keywords="['ad', 'hide']">
+							<MkPreferenceContainer k="hideAds">
+								<MkSwitch v-model="hideAds">
+									<template #label><SearchLabel>{{ i18n.ts.hideAds }}</SearchLabel></template>
 								</MkSwitch>
 							</MkPreferenceContainer>
 						</SearchMarker>
@@ -1096,6 +1096,7 @@ const trustedDomains = prefer.model(
 	(domainsList) => domainsList.join('\n'),
 	(domainsString) => domainsString.split('\n').map( d => d.trim() ).filter( x => x.length > 0),
 );
+const hideAds = prefer.model('hideAds');
 
 watch([
 	hemisphere,
