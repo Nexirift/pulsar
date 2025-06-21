@@ -154,7 +154,7 @@ const $apInboxLogsRepository: Provider = {
 };
 
 const $skSharedAccessToken: Provider = {
-	provide: DI.sharedAccessToken,
+	provide: DI.sharedAccessTokensRepository,
 	useFactory: (db: DataSource) => db.getRepository(SkSharedAccessToken).extend(miRepository as MiRepository<SkSharedAccessToken>),
 	inject: [DI.db],
 };

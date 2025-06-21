@@ -65,7 +65,7 @@ export const paramDef = {} as const;
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.sharedAccessToken)
+		@Inject(DI.sharedAccessTokensRepository)
 		private readonly sharedAccessTokensRepository: SharedAccessTokensRepository,
 
 		private readonly userEntityService: UserEntityService,

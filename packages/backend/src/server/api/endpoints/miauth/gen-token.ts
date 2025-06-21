@@ -71,7 +71,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.accessTokensRepository)
 		private accessTokensRepository: AccessTokensRepository,
 
-		@Inject(DI.sharedAccessToken)
+		@Inject(DI.sharedAccessTokensRepository)
 		private readonly sharedAccessTokensRepository: SharedAccessTokensRepository,
 
 		@Inject(DI.usersRepository)
