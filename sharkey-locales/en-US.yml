@@ -679,8 +679,8 @@ customFontSize: "Custom font size"
 
 hideAds: "Hide ads"
 
-permissionsDescription: "Apps using this token will only have access to the functions listed below."
-
+permissionsDescription: "Apps using this token will have no API access except for the functions listed below."
+adminPermissionsDescription: "Apps using this token will have no administrative access except for the functions enabled below."
 sharedAccount: "Shared account"
 sharedAccess: "Shared access"
 sharedAccessDescription: "Any accounts listed here will be granted access to the token and may use it to access this account."

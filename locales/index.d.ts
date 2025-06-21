@@ -13455,14 +13455,18 @@ export interface Locale extends ILocale {
      * Custom font size
      */
     "customFontSize": string;
-    /**
-     * Hide ads
-     */
-    "hideAds": string;
-    /**
-     * Apps using this token will only have access to the functions listed below.
-     */
+	  /**
+	   * Hide ads
+	   */
+  	"hideAds": string;
+	  /**
+	   * Apps using this token will have no API access except for the functions listed below.
+	   */
     "permissionsDescription": string;
+    /**
+     * Apps using this token will have no administrative access except for the functions enabled below.
+     */
+    "adminPermissionsDescription": string;
     /**
      * Shared account
      */

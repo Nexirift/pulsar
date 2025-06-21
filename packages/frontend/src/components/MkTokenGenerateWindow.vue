@@ -39,11 +39,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div class="_gaps_s">
 					<MkSwitch v-for="kind in Object.keys(permissionSwitches)" :key="kind" v-model="permissionSwitches[kind]">{{ i18n.ts._permissions[kind] }}</MkSwitch>
 				</div>
-				<div v-if="iAmAdmin" :class="$style.adminPermissions">
-					<div :class="$style.adminPermissionsHeader"><b>{{ i18n.ts.adminPermission }}</b></div>
-					<div class="_gaps_s">
-						<MkSwitch v-for="kind in Object.keys(permissionSwitchesForAdmin)" :key="kind" v-model="permissionSwitchesForAdmin[kind]">{{ i18n.ts._permissions[kind] }}</MkSwitch>
-					</div>
+			</MkFolder>
+
+			<MkFolder v-if="iAmAdmin">
+				<template #label>{{ i18n.ts.adminPermission }}</template>
+				<template #caption>{{ i18n.ts.adminPermissionsDescription }}</template>
+
+				<div class="_buttons">
+					<MkButton inline @click="disableAllAdmin">{{ i18n.ts.disableAll }}</MkButton>
+					<MkButton inline @click="enableAllAdmin">{{ i18n.ts.enableAll }}</MkButton>
+				</div>
+
+				<div :class="$style.adminPermissions" class="_gaps_s">
+					<MkSwitch v-for="kind in Object.keys(permissionSwitchesForAdmin)" :key="kind" v-model="permissionSwitchesForAdmin[kind]">{{ i18n.ts._permissions[kind] }}</MkSwitch>
 				</div>
 			</MkFolder>
 
@@ -138,6 +146,9 @@ function disableAll(): void {
 	for (const p in permissionSwitches.value) {
 		permissionSwitches.value[p] = false;
 	}
+}
+
+function disableAllAdmin(): void {
 	if (iAmAdmin) {
 		for (const p in permissionSwitchesForAdmin.value) {
 			permissionSwitchesForAdmin.value[p] = false;
@@ -149,6 +160,9 @@ function enableAll(): void {
 	for (const p in permissionSwitches.value) {
 		permissionSwitches.value[p] = true;
 	}
+}
+
+function enableAllAdmin(): void {
 	if (iAmAdmin) {
 		for (const p in permissionSwitchesForAdmin.value) {
 			permissionSwitchesForAdmin.value[p] = true;
