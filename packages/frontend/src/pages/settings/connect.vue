@@ -84,11 +84,12 @@ const pagination = {
 function generateToken() {
 	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkTokenGenerateWindow.vue')), {}, {
 		done: async result => {
-			const { name, permissions } = result;
+			const { name, permissions, grantees } = result;
 			const { token } = await misskeyApi('miauth/gen-token', {
 				session: null,
 				name: name,
 				permission: permissions,
+				grantees: grantees,
 			});
 
 			os.alert({

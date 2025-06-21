@@ -460,6 +460,9 @@ import type {
 	IRegistryScopesWithDomainResponse,
 	IRegistrySetRequest,
 	IRevokeTokenRequest,
+	ISharedAccessListResponse,
+	ISharedAccessLoginRequest,
+	ISharedAccessLoginResponse,
 	ISigninHistoryRequest,
 	ISigninHistoryResponse,
 	IUnpinRequest,
@@ -980,6 +983,8 @@ export type Endpoints = {
 	'i/registry/scopes-with-domain': { req: EmptyRequest; res: IRegistryScopesWithDomainResponse };
 	'i/registry/set': { req: IRegistrySetRequest; res: EmptyResponse };
 	'i/revoke-token': { req: IRevokeTokenRequest; res: EmptyResponse };
+	'i/shared-access/list': { req: EmptyRequest; res: ISharedAccessListResponse };
+	'i/shared-access/login': { req: ISharedAccessLoginRequest; res: ISharedAccessLoginResponse };
 	'i/signin-history': { req: ISigninHistoryRequest; res: ISigninHistoryResponse };
 	'i/unpin': { req: IUnpinRequest; res: IUnpinResponse };
 	'i/update': { req: IUpdateRequest; res: IUpdateResponse };

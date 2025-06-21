@@ -98,6 +98,7 @@ import { SkApInboxLog } from '@/models/SkApInboxLog.js';
 import { SkApFetchLog } from '@/models/SkApFetchLog.js';
 import { SkApContext } from '@/models/SkApContext.js';
 import { SkLatestNote } from '@/models/LatestNote.js';
+import { SkSharedAccessToken } from '@/models/SkSharedAccessToken.js';
 
 export interface MiRepository<T extends ObjectLiteral> {
 	createTableColumnNames(this: Repository<T> & MiRepository<T>): string[];
@@ -168,6 +169,7 @@ export {
 	SkApContext,
 	SkApFetchLog,
 	SkApInboxLog,
+	SkSharedAccessToken,
 	MiAbuseUserReport,
 	MiAbuseReportNotificationRecipient,
 	MiAccessToken,
@@ -327,4 +329,5 @@ export type ChatApprovalsRepository = Repository<MiChatApproval> & MiRepository<
 export type BubbleGameRecordsRepository = Repository<MiBubbleGameRecord> & MiRepository<MiBubbleGameRecord>;
 export type ReversiGamesRepository = Repository<MiReversiGame> & MiRepository<MiReversiGame>;
 export type NoteEditRepository = Repository<NoteEdit> & MiRepository<NoteEdit>;
-export type NoteScheduleRepository = Repository<MiNoteSchedule>;
+export type NoteScheduleRepository = Repository<MiNoteSchedule> & MiRepository<MiNoteSchedule>;
+export type SharedAccessTokensRepository = Repository<SkSharedAccessToken> & MiRepository<SkSharedAccessToken>;

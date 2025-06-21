@@ -678,3 +678,17 @@ clearCachedFilesOptions:
 customFontSize: "Custom font size"
 
 hideAds: "Hide ads"
+
+permissionsDescription: "Apps using this token will only have access to the functions listed below."
+
+sharedAccount: "Shared account"
+sharedAccess: "Shared access"
+sharedAccessDescription: "Any accounts listed here will be granted access to the token and may use it to access this account."
+addGrantee: "Share access"
+removeGrantee: "Remove access"
+loginWithSharedAccess: "Login with shared access"
+loginWithSharedAccessDescription: "Login with granted access to a shared account"
+noSharedAccess: "You have not been granted shared access to any accounts"
+expand: "Expand"
+collapse: "Collapse"
+permissions: "Permissions"

@@ -6,8 +6,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <MkModalWindow
 	ref="dialog"
-	:width="400"
-	:height="450"
+	:width="500"
+	:height="600"
 	:withOkButton="true"
 	:okButtonDisabled="false"
 	:canClose="false"
@@ -27,20 +27,39 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #label>{{ i18n.ts.name }}</template>
 				</MkInput>
 			</div>
-			<div><b>{{ i18n.ts.permission }}</b></div>
-			<div class="_buttons">
-				<MkButton inline @click="disableAll">{{ i18n.ts.disableAll }}</MkButton>
-				<MkButton inline @click="enableAll">{{ i18n.ts.enableAll }}</MkButton>
-			</div>
-			<div class="_gaps_s">
-				<MkSwitch v-for="kind in Object.keys(permissionSwitches)" :key="kind" v-model="permissionSwitches[kind]">{{ i18n.ts._permissions[kind] }}</MkSwitch>
-			</div>
-			<div v-if="iAmAdmin" :class="$style.adminPermissions">
-				<div :class="$style.adminPermissionsHeader"><b>{{ i18n.ts.adminPermission }}</b></div>
-				<div class="_gaps_s">
-					<MkSwitch v-for="kind in Object.keys(permissionSwitchesForAdmin)" :key="kind" v-model="permissionSwitchesForAdmin[kind]">{{ i18n.ts._permissions[kind] }}</MkSwitch>
+
+			<MkFolder>
+				<template #label>{{ i18n.ts.permission }}</template>
+				<template #caption>{{ i18n.ts.permissionsDescription }}</template>
+
+				<div class="_buttons">
+					<MkButton inline @click="disableAll">{{ i18n.ts.disableAll }}</MkButton>
+					<MkButton inline @click="enableAll">{{ i18n.ts.enableAll }}</MkButton>
 				</div>
-			</div>
+				<div class="_gaps_s">
+					<MkSwitch v-for="kind in Object.keys(permissionSwitches)" :key="kind" v-model="permissionSwitches[kind]">{{ i18n.ts._permissions[kind] }}</MkSwitch>
+				</div>
+				<div v-if="iAmAdmin" :class="$style.adminPermissions">
+					<div :class="$style.adminPermissionsHeader"><b>{{ i18n.ts.adminPermission }}</b></div>
+					<div class="_gaps_s">
+						<MkSwitch v-for="kind in Object.keys(permissionSwitchesForAdmin)" :key="kind" v-model="permissionSwitchesForAdmin[kind]">{{ i18n.ts._permissions[kind] }}</MkSwitch>
+					</div>
+				</div>
+			</MkFolder>
+
+			<MkFolder>
+				<template #label>{{ i18n.ts.sharedAccess }}</template>
+				<template #caption>{{ i18n.ts.sharedAccessDescription }}</template>
+
+				<MkButton primary @click="addGrantee">
+					<i class="ti ti-plus"></i> {{ i18n.ts.addGrantee }}
+				</MkButton>
+
+				<div v-for="(grantee, i) of grantees" :key="grantee.id" :class="$style.grantee">
+					<MkUserCardMini :user="grantee" :withChart="false"/>
+					<button v-tooltip="i18n.ts.removeGrantee" class="_textButton" @click="() => removeGrantee(i)"><i class="ti ti-x"></i></button>
+				</div>
+			</MkFolder>
 		</div>
 	</div>
 </MkModalWindow>
@@ -56,6 +75,10 @@ import MkInfo from './MkInfo.vue';
 import MkModalWindow from '@/components/MkModalWindow.vue';
 import { i18n } from '@/i18n.js';
 import { iAmAdmin } from '@/i.js';
+import MkFolder from '@/components/MkFolder.vue';
+import MkUserCardMini from '@/components/MkUserCardMini.vue';
+import * as os from '@/os';
+import { instance } from '@/instance';
 
 const props = withDefaults(defineProps<{
 	title?: string | null;
@@ -71,7 +94,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
 	(ev: 'closed'): void;
-	(ev: 'done', result: { name: string | null, permissions: string[] }): void;
+	(ev: 'done', result: { name: string | null, permissions: string[], grantees: string[] }): void;
 }>();
 
 const defaultPermissions = Misskey.permissions.filter(p => !p.startsWith('read:admin') && !p.startsWith('write:admin'));
@@ -81,6 +104,7 @@ const dialog = useTemplateRef('dialog');
 const name = ref(props.initialName);
 const permissionSwitches = ref({} as Record<(typeof Misskey.permissions)[number], boolean>);
 const permissionSwitchesForAdmin = ref({} as Record<(typeof Misskey.permissions)[number], boolean>);
+const grantees = ref<Misskey.entities.User[]>([]);
 
 if (props.initialPermissions) {
 	for (const kind of props.initialPermissions) {
@@ -105,6 +129,7 @@ function ok(): void {
 			...Object.keys(permissionSwitches.value).filter(p => permissionSwitches.value[p]),
 			...(iAmAdmin ? Object.keys(permissionSwitchesForAdmin.value).filter(p => permissionSwitchesForAdmin.value[p]) : []),
 		],
+		grantees: grantees.value.map(g => g.id),
 	});
 	dialog.value?.close();
 }
@@ -130,6 +155,18 @@ function enableAll(): void {
 		}
 	}
 }
+
+async function addGrantee(): Promise<void> {
+	const user = await os.selectUser({
+		includeSelf: true,
+		localOnly: instance.noteSearchableScope === 'local',
+	});
+	grantees.value.push(user);
+}
+
+function removeGrantee(index: number) {
+	grantees.value.splice(index, 1);
+}
 </script>
 
 <style module lang="scss">
@@ -146,5 +183,11 @@ function enableAll(): void {
 	width: fit-content;
 	color: var(--MI_THEME-error);
 	background: var(--MI_THEME-panel);
+}
+
+.grantee {
+	display: flex;
+	flex-direction: row;
+	gap: var(--MI-marginHalf);
 }
 </style>

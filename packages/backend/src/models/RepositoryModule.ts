@@ -88,6 +88,7 @@ import {
 	SkApContext,
 	SkApFetchLog,
 	SkApInboxLog,
+	SkSharedAccessToken,
 } from './_.js';
 import type { Provider } from '@nestjs/common';
 import type { DataSource } from 'typeorm';
@@ -149,6 +150,12 @@ const $apFetchLogsRepository: Provider = {
 const $apInboxLogsRepository: Provider = {
 	provide: DI.apInboxLogsRepository,
 	useFactory: (db: DataSource) => db.getRepository(SkApInboxLog).extend(miRepository as MiRepository<SkApInboxLog>),
+	inject: [DI.db],
+};
+
+const $skSharedAccessToken: Provider = {
+	provide: DI.sharedAccessToken,
+	useFactory: (db: DataSource) => db.getRepository(SkSharedAccessToken).extend(miRepository as MiRepository<SkSharedAccessToken>),
 	inject: [DI.db],
 };
 
@@ -585,6 +592,7 @@ const $noteScheduleRepository: Provider = {
 		$apContextRepository,
 		$apFetchLogsRepository,
 		$apInboxLogsRepository,
+		$skSharedAccessToken,
 		$noteFavoritesRepository,
 		$noteThreadMutingsRepository,
 		$noteReactionsRepository,
@@ -667,6 +675,7 @@ const $noteScheduleRepository: Provider = {
 		$apContextRepository,
 		$apFetchLogsRepository,
 		$apInboxLogsRepository,
+		$skSharedAccessToken,
 		$noteFavoritesRepository,
 		$noteThreadMutingsRepository,
 		$noteReactionsRepository,

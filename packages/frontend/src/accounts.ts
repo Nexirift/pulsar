@@ -16,6 +16,7 @@ import { prefer } from '@/preferences.js';
 import { store } from '@/store.js';
 import { $i } from '@/i.js';
 import { signout } from '@/signout.js';
+import * as os from '@/os';
 
 type AccountWithToken = Misskey.entities.MeDetailed & { token: string };
 
@@ -299,6 +300,15 @@ export async function openAccountMenu(opts: {
 						}
 					});
 				},
+			}, {
+				text: i18n.ts.sharedAccess,
+				action: () => {
+					getAccountWithSharedAccessDialog().then((res) => {
+						if (res != null) {
+							os.success();
+						}
+					});
+				},
 			}],
 		}, {
 			type: 'link',
@@ -321,6 +331,24 @@ export async function openAccountMenu(opts: {
 
 	popupMenu(menuItems, ev.currentTarget ?? ev.target, {
 		align: 'left',
+	});
+}
+
+export function getAccountWithSharedAccessDialog(): Promise<{ id: string, token: string } | null> {
+	return new Promise((resolve) => {
+		const { dispose } = popup(defineAsyncComponent(() => import('@/components/SkSigninSharedAccessDialog.vue')), {}, {
+			done: async (res: { id: string, i: string }) => {
+				const user = await fetchAccount(res.i, res.id, true);
+				await addAccount(host, user, res.i);
+				resolve({ id: res.id, token: res.i });
+			},
+			cancelled: () => {
+				resolve(null);
+			},
+			closed: () => {
+				dispose();
+			},
+		});
 	});
 }
 
