@@ -4,11 +4,10 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { DataSource, In } from 'typeorm';
-import { SkSharedAccessToken } from '@/models/SkSharedAccessToken.js';
+import { In } from 'typeorm';
 import { ApiError } from '@/server/api/error.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AccessTokensRepository, SharedAccessTokensRepository, UsersRepository } from '@/models/_.js';
+import type { AccessTokensRepository, UsersRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
@@ -71,14 +70,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.accessTokensRepository)
 		private accessTokensRepository: AccessTokensRepository,
 
-		@Inject(DI.sharedAccessTokensRepository)
-		private readonly sharedAccessTokensRepository: SharedAccessTokensRepository,
-
 		@Inject(DI.usersRepository)
 		private readonly usersRepository: UsersRepository,
-
-		@Inject(DI.db)
-		private readonly db: DataSource,
 
 		private idService: IdService,
 		private notificationService: NotificationService,
@@ -97,27 +90,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const now = new Date();
 			const accessTokenId = this.idService.gen(now.getTime());
 
-			await this.db.transaction(async tem => {
-				// Insert access token doc
-				await this.accessTokensRepository.insert({
-					id: accessTokenId,
-					lastUsedAt: now,
-					session: ps.session,
-					userId: me.id,
-					token: accessToken,
-					hash: accessToken,
-					name: ps.name,
-					description: ps.description,
-					iconUrl: ps.iconUrl,
-					permission: ps.permission,
-					rank: ps.rank,
-				});
-
-				// Insert shared access grants
-				if (ps.grantees && ps.grantees.length > 0) {
-					const grants = ps.grantees.map(granteeId => new SkSharedAccessToken({ accessTokenId, granteeId }));
-					await this.sharedAccessTokensRepository.insert(grants);
-				}
+			// Insert access token doc
+			await this.accessTokensRepository.insert({
+				id: accessTokenId,
+				lastUsedAt: now,
+				session: ps.session,
+				userId: me.id,
+				token: accessToken,
+				hash: accessToken,
+				name: ps.name,
+				description: ps.description,
+				iconUrl: ps.iconUrl,
+				permission: ps.permission,
+				rank: ps.rank,
+				granteeIds: ps.grantees,
 			});
 
 			// TODO notify of access granted

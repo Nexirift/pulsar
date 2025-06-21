@@ -97,4 +97,18 @@ export class MiAccessToken {
 		comment: 'Limits the user\' rank (user, moderator, or admin) when using this token. If null (default), then uses the user\'s actual rank.',
 	})
 	public rank: AccessTokenRank | null;
+
+	@Index('IDX_access_token_granteeIds', { synchronize: false })
+	@Column({
+		...id(),
+		array: true, default: '{}',
+		comment: 'IDs of other users who are permitted to access and use this token.',
+	})
+	public granteeIds: string[];
+
+	public constructor(props?: Partial<MiAccessToken>) {
+		if (props) {
+			Object.assign(this, props);
+		}
+	}
 }

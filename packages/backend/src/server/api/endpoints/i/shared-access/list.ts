@@ -6,11 +6,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
-import type { SharedAccessTokensRepository } from '@/models/_.js';
+import type { AccessTokensRepository } from '@/models/_.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { Packed } from '@/misc/json-schema.js';
-
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 export const meta = {
 	requireCredential: true,
@@ -65,25 +62,25 @@ export const paramDef = {} as const;
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.sharedAccessTokensRepository)
-		private readonly sharedAccessTokensRepository: SharedAccessTokensRepository,
+		@Inject(DI.accessTokensRepository)
+		private readonly accessTokensRepository: AccessTokensRepository,
 
 		private readonly userEntityService: UserEntityService,
 	) {
 		super(meta, paramDef, async (ps, me, token) => {
-			const tokens = await this.sharedAccessTokensRepository.find({
-				where: { granteeId: me.id },
-				relations: { accessToken: true },
-			});
+			const tokens = await this.accessTokensRepository
+				.createQueryBuilder('token')
+				.where(':meIdAsList <@ token.granteeIds')
+				.getMany();
 
-			const users = tokens.map(token => token.accessToken!.userId);
-			const packedUsers: Packed<'UserLite'>[] = await this.userEntityService.packMany(users, me, { token });
-			const packedUserMap = new Map<string, Packed<'UserLite'>>(packedUsers.map(u => [u.id, u]));
+			const userIds = tokens.map(token => token.userId);
+			const packedUsers = await this.userEntityService.packMany(userIds, me, { token });
+			const packedUserMap = new Map(packedUsers.map(u => [u.id, u]));
 
 			return tokens.map(token => ({
-				id: token.accessTokenId,
-				permissions: token.accessToken!.permission,
-				user: packedUserMap.get(token.accessToken!.userId) as Packed<'UserLite'>,
+				id: token.id,
+				permissions: token.permission,
+				user: packedUserMap.get(token.userId),
 			}));
 		});
 	}

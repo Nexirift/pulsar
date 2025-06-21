@@ -92,7 +92,6 @@ import { SkLatestNote } from '@/models/LatestNote.js';
 import { SkApContext } from '@/models/SkApContext.js';
 import { SkApFetchLog } from '@/models/SkApFetchLog.js';
 import { SkApInboxLog } from '@/models/SkApInboxLog.js';
-import { SkSharedAccessToken } from '@/models/SkSharedAccessToken.js';
 
 pg.types.setTypeParser(20, Number);
 
@@ -214,7 +213,6 @@ export const entities = [
 	SkApContext,
 	SkApFetchLog,
 	SkApInboxLog,
-	SkSharedAccessToken,
 	MiAnnouncement,
 	MiAnnouncementRead,
 	MiMeta,

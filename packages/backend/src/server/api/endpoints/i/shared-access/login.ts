@@ -6,7 +6,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
-import type { SharedAccessTokensRepository } from '@/models/_.js';
+import type { AccessTokensRepository } from '@/models/_.js';
 import { ApiError } from '@/server/api/error.js';
 
 export const meta = {
@@ -47,7 +47,7 @@ export const meta = {
 export const paramDef = {
 	type: 'object',
 	properties: {
-		grantId: { type: 'string' },
+		tokenId: { type: 'string' },
 	},
 	required: ['grantId'],
 } as const;
@@ -55,25 +55,25 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
-		@Inject(DI.sharedAccessTokensRepository)
-		private readonly sharedAccessTokensRepository: SharedAccessTokensRepository,
+		@Inject(DI.accessTokensRepository)
+		private readonly accessTokensRepository: AccessTokensRepository,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const token = await this.sharedAccessTokensRepository.findOne({
-				where: { accessTokenId: ps.grantId, granteeId: me.id },
-				relations: { accessToken: true },
-			});
+			const token = await this.accessTokensRepository.findOneBy({ id: ps.tokenId });
 
 			if (!token) {
 				throw new ApiError(meta.errors.noSuchAccess);
 			}
 
-			return {
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				token: token.accessToken!.token,
+			if (!token.granteeIds.includes(me.id)) {
+				throw new ApiError(meta.errors.noSuchAccess);
+			}
 
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				userId: token.accessToken!.userId,
+			// TODO notify of login
+
+			return {
+				token: token.token,
+				userId: token.userId,
 			};
 		});
 	}

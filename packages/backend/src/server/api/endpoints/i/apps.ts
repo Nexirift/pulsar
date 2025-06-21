@@ -5,10 +5,11 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AccessTokensRepository, SharedAccessTokensRepository } from '@/models/_.js';
+import type { AccessTokensRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { CacheService } from '@/core/CacheService.js';
 
 export const meta = {
 	requireCredential: true,
@@ -85,10 +86,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.accessTokensRepository)
 		private accessTokensRepository: AccessTokensRepository,
 
-		@Inject(DI.sharedAccessTokensRepository)
-		private readonly sharedAccessTokenRepository: SharedAccessTokensRepository,
-
 		private readonly userEntityService: UserEntityService,
+		private readonly cacheService: CacheService,
 		private idService: IdService,
 	) {
 		super(meta, paramDef, async (ps, me, at) => {
@@ -106,25 +105,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const tokens = await query.getMany();
 
-			return await Promise.all(tokens.map(async token => {
-				// TODO inline this table into a column w/ GIN index
-				const sharedTokens = await this.sharedAccessTokenRepository.find({
-					where: { accessTokenId: token.id },
-					relations: { grantee: true },
-				});
+			const users = await this.cacheService.getUsers(tokens.flatMap(token => token.granteeIds));
+			const packedUsers = await this.userEntityService.packMany(Array.from(users.values()), me, { token: at });
+			const packedUserMap = new Map(packedUsers.map(u => [u.id, u]));
 
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				const grantees = await this.userEntityService.packMany(sharedTokens.map(t => t.grantee!), me, { token: at });
-
-				return {
-					id: token.id,
-					name: token.name ?? token.app?.name,
-					createdAt: this.idService.parse(token.id).date.toISOString(),
-					lastUsedAt: token.lastUsedAt?.toISOString(),
-					permission: token.app ? token.app.permission : token.permission,
-					rank: token.rank,
-					grantees,
-				};
+			return tokens.map(token => ({
+				id: token.id,
+				name: token.name ?? token.app?.name,
+				createdAt: this.idService.parse(token.id).date.toISOString(),
+				lastUsedAt: token.lastUsedAt?.toISOString(),
+				permission: token.app ? token.app.permission : token.permission,
+				rank: token.rank,
+				grantees: token.granteeIds
+					.map(id => packedUserMap.get(id))
+					.filter(user => user != null),
 			}));
 		});
 	}

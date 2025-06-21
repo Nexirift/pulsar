@@ -58,6 +58,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					});
 				}
 			}
+
+			// TODO notify of access revoked
 		});
 	}
 }

@@ -96,6 +96,5 @@ export const DI = {
 	bubbleGameRecordsRepository: Symbol('bubbleGameRecordsRepository'),
 	reversiGamesRepository: Symbol('reversiGamesRepository'),
 	noteScheduleRepository: Symbol('noteScheduleRepository'),
-	sharedAccessTokensRepository: Symbol('sharedAccessTokensRepository'),
 	//#endregion
 };
