@@ -28,6 +28,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkInput>
 			</div>
 
+			<MkFolder v-if="$i?.isAdmin || $i?.isModerator">
+				<template #label>{{ i18n.ts.overrideRank }}</template>
+				<template #caption>{{ i18n.ts.overrideRankDescription }}</template>
+
+				<MkSelect v-if="$i?.isAdmin" v-model="rank">
+					<option value="admin">{{ i18n.ts._ranks.admin }}</option>
+					<option value="mod">{{ i18n.ts._ranks.mod }}</option>
+					<option value="user">{{ i18n.ts._ranks.user }}</option>
+				</MkSelect>
+
+				<MkSelect v-else v-model="rank">
+					<option value="mod">{{ i18n.ts._ranks.mod }}</option>
+					<option value="user">{{ i18n.ts._ranks.user }}</option>
+				</MkSelect>
+			</MkFolder>
+
 			<MkFolder>
 				<template #label>{{ i18n.ts.permission }}</template>
 				<template #caption>{{ i18n.ts.permissionsDescription }}</template>
@@ -82,9 +98,10 @@ import MkButton from './MkButton.vue';
 import MkInfo from './MkInfo.vue';
 import MkModalWindow from '@/components/MkModalWindow.vue';
 import { i18n } from '@/i18n.js';
-import { iAmAdmin } from '@/i.js';
+import { $i, iAmAdmin } from '@/i.js';
 import MkFolder from '@/components/MkFolder.vue';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
+import MkSelect from '@/components/MkSelect.vue';
 import * as os from '@/os';
 import { instance } from '@/instance';
 
@@ -102,7 +119,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
 	(ev: 'closed'): void;
-	(ev: 'done', result: { name: string | null, permissions: string[], grantees: string[] }): void;
+	(ev: 'done', result: { name: string | null, permissions: string[], grantees: string[], rank: string }): void;
 }>();
 
 const defaultPermissions = Misskey.permissions.filter(p => !p.startsWith('read:admin') && !p.startsWith('write:admin'));
@@ -113,6 +130,12 @@ const name = ref(props.initialName);
 const permissionSwitches = ref({} as Record<(typeof Misskey.permissions)[number], boolean>);
 const permissionSwitchesForAdmin = ref({} as Record<(typeof Misskey.permissions)[number], boolean>);
 const grantees = ref<Misskey.entities.User[]>([]);
+const rank = ref<'admin' | 'mod' | 'user'>(
+	$i?.isAdmin
+		? 'admin'
+		: $i?.isModerator
+			? 'mod'
+			: 'user');
 
 if (props.initialPermissions) {
 	for (const kind of props.initialPermissions) {
@@ -138,6 +161,7 @@ function ok(): void {
 			...(iAmAdmin ? Object.keys(permissionSwitchesForAdmin.value).filter(p => permissionSwitchesForAdmin.value[p]) : []),
 		],
 		grantees: grantees.value.map(g => g.id),
+		rank: rank.value,
 	});
 	dialog.value?.close();
 }

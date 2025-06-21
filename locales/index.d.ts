@@ -13511,6 +13511,28 @@ export interface Locale extends ILocale {
      * Permissions
      */
     "permissions": string;
+    /**
+     * Override rank
+     */
+    "overrideRank": string;
+    /**
+     * Overrides the user rank (admin, moderator, or user) for apps using this token.
+     */
+    "overrideRankDescription": string;
+    "_ranks": {
+        /**
+         * Admin
+         */
+        "admin": string;
+        /**
+         * Moderator
+         */
+        "mod": string;
+        /**
+         * User
+         */
+        "user": string;
+    };
 }
 declare const locales: {
     [lang: string]: Locale;

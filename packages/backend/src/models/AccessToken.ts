@@ -8,6 +8,9 @@ import { id } from './util/id.js';
 import { MiUser } from './User.js';
 import { MiApp } from './App.js';
 
+export const accessTokenRanks = ['user', 'mod', 'admin'] as const;
+export type AccessTokenRank = typeof accessTokenRanks[number];
+
 @Entity('access_token')
 export class MiAccessToken {
 	@PrimaryColumn(id())
@@ -87,4 +90,11 @@ export class MiAccessToken {
 		default: false,
 	})
 	public fetched: boolean;
+
+	@Column('enum', {
+		enum: accessTokenRanks,
+		nullable: true,
+		comment: 'Limits the user\' rank (user, moderator, or admin) when using this token. If null (default), then uses the user\'s actual rank.',
+	})
+	public rank: AccessTokenRank | null;
 }

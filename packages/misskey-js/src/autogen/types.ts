@@ -26379,6 +26379,8 @@ export type operations = {
           iconUrl?: string | null;
           permission: string[];
           grantees?: string[];
+          /** @enum {string|null} */
+          rank?: 'admin' | 'mod' | 'user';
         };
       };
     };

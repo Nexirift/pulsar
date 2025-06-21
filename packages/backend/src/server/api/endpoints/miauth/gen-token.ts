@@ -60,6 +60,7 @@ export const paramDef = {
 		grantees: { type: 'array', uniqueItems: true, items: {
 			type: 'string',
 		} },
+		rank: { type: 'string', enum: ['admin', 'mod', 'user'], nullable: true },
 	},
 	required: ['session', 'permission'],
 } as const;
@@ -109,6 +110,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					description: ps.description,
 					iconUrl: ps.iconUrl,
 					permission: ps.permission,
+					rank: ps.rank,
 				});
 
 				// Insert shared access grants

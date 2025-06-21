@@ -109,11 +109,12 @@ export async function authorizePlugin(plugin: Plugin) {
 			initialPermissions: plugin.permissions,
 		}, {
 			done: async result => {
-				const { name, permissions } = result;
+				const { name, permissions, rank } = result;
 				const { token } = await misskeyApi('miauth/gen-token', {
 					session: null,
 					name: name,
 					permission: permissions,
+					rank: rank,
 				});
 				res(token);
 			},
