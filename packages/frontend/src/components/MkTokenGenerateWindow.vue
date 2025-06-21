@@ -110,11 +110,13 @@ const props = withDefaults(defineProps<{
 	information?: string | null;
 	initialName?: string | null;
 	initialPermissions?: (typeof Misskey.permissions)[number][] | null;
+	enableSharedAccess?: boolean;
 }>(), {
 	title: null,
 	information: null,
 	initialName: null,
 	initialPermissions: null,
+	enableSharedAccess: true,
 });
 
 const emit = defineEmits<{
