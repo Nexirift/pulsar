@@ -22670,7 +22670,7 @@ export type operations = {
       /** @description OK (with results) */
       200: {
         content: {
-          'application/json': {
+          'application/json': ({
               /** Format: misskey:id */
               id: string;
               name?: string;
@@ -22679,7 +22679,10 @@ export type operations = {
               /** Format: date-time */
               lastUsedAt?: string;
               permission: string[];
-            }[];
+              grantees: components['schemas']['UserLite'][];
+              /** @enum {string|null} */
+              rank: 'admin' | 'mod' | 'user';
+            })[];
         };
       };
       /** @description Client error */

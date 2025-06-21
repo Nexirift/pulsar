@@ -32,13 +32,30 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<template #key>{{ i18n.ts.lastUsedDate }}</template>
 								<template #value><MkTime :time="token.lastUsedAt" :mode="'detail'"/></template>
 							</MkKeyValue>
+							<MkKeyValue v-if="token.rank" oneline>
+								<template #key>{{ i18n.ts.rank }}</template>
+								<template #value>{{ i18n.ts._ranks[token.rank] ?? token.rank }}</template>
+							</MkKeyValue>
 						</div>
-						<MkFolder>
+						<MkFolder v-if="standardPerms(token.permissions).length > 0">
 							<template #label>{{ i18n.ts.permission }}</template>
-							<template #suffix>{{ Object.keys(token.permission).length === 0 ? i18n.ts.none : Object.keys(token.permission).length }}</template>
+							<template #suffix>{{ standardPerms(token.permissions).length }}</template>
 							<ul>
-								<li v-for="p in token.permission" :key="p">{{ i18n.ts._permissions[p] }}</li>
+								<li v-for="p of standardPerms(token.permissions)" :key="p">{{ i18n.ts._permissions[p] }}</li>
 							</ul>
+						</MkFolder>
+						<MkFolder v-if="adminPerms(token.permissions).length > 0">
+							<template #label>{{ i18n.ts.adminPermission }}</template>
+							<template #suffix>{{ adminPerms(token.permissions).length }}</template>
+							<ul>
+								<li v-for="p of adminPerms(token.permissions)" :key="p">{{ i18n.ts._permissions[p] }}</li>
+							</ul>
+						</MkFolder>
+						<MkFolder v-if="token.grantees.length > 0">
+							<template #label>{{ i18n.ts.sharedAccess }}</template>
+							<template #suffix>{{ token.grantees.length }}</template>
+
+							<MkUserCardMini v-for="grantee of token.grantees" :key="grantee.id" :user="grantee" :withChart="false"/>
 						</MkFolder>
 					</div>
 				</MkFolder>
@@ -50,7 +67,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { ref, computed } from 'vue';
-import * as Misskey from 'misskey-js';
 import FormPagination from '@/components/MkPagination.vue';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
@@ -58,6 +74,7 @@ import { definePage } from '@/page.js';
 import MkKeyValue from '@/components/MkKeyValue.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkFolder from '@/components/MkFolder.vue';
+import MkUserCardMini from '@/components/MkUserCardMini.vue';
 
 const list = ref<InstanceType<typeof FormPagination>>();
 
@@ -74,6 +91,18 @@ function revoke(token) {
 	misskeyApi('i/revoke-token', { tokenId: token.id }).then(() => {
 		list.value?.reload();
 	});
+}
+
+function isAdmin(perm: string): boolean {
+	return perm.startsWith('read:admin') || perm.startsWith('write:admin');
+}
+
+function standardPerms(perms: string[]): string[] {
+	return perms.filter(perm => !isAdmin(perm));
+}
+
+function adminPerms(perms: string[]): string[] {
+	return perms.filter(perm => isAdmin(perm));
 }
 
 const headerActions = computed(() => []);

@@ -13512,13 +13512,17 @@ export interface Locale extends ILocale {
      */
     "permissions": string;
     /**
-     * Override rank
+     * Limit rank
      */
     "overrideRank": string;
     /**
-     * Overrides the user rank (admin, moderator, or user) for apps using this token.
+     * Limits the user rank (admin, moderator, or user) for apps using this token.
      */
     "overrideRankDescription": string;
+    /**
+     * Rank
+     */
+    "rank": string;
     "_ranks": {
         /**
          * Admin
