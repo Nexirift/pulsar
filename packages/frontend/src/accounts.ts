@@ -312,7 +312,7 @@ export async function openAccountMenu(opts: {
 					});
 				},
 			}, {
-				text: i18n.ts.sharedAccess,
+				text: i18n.ts.sharedAccount,
 				action: () => {
 					getAccountWithSharedAccessDialog().then((res) => {
 						if (res != null) {
