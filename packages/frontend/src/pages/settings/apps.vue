@@ -80,14 +80,19 @@ import MkUserCardMini from '@/components/MkUserCardMini.vue';
 
 const list = ref<InstanceType<typeof FormPagination>>();
 
-const pagination = {
-	endpoint: 'i/apps' as const,
+const props = withDefaults(defineProps<{
+	limit?: number,
+}>(), {
 	limit: 100,
-	noPaging: true,
+});
+
+const pagination = computed(() => ({
+	endpoint: 'i/apps' as const,
+	limit: props.limit,
 	params: {
 		sort: '+lastUsedAt',
 	},
-};
+}));
 
 async function revoke(token: Misskey.entities.IAppsResponse[number]) {
 	const { canceled } = await os.confirm({
