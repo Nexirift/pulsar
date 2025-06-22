@@ -40,7 +40,18 @@ export async function getAccounts(): Promise<{
 }
 
 async function addAccount(host: string, user: Misskey.entities.User, token: AccountWithToken['token']) {
-	if (!prefer.s.accounts.some(x => x[0] === host && x[1].id === user.id)) {
+	// Check for duplicate accounts
+	if (prefer.s.accounts.some(x => x[0] === host && x[1].id === user.id)) {
+		if (store.s.accountTokens[host + '/' + user.id] !== token) {
+			// Replace account if the token changed
+			await removeAccount(host, user.id);
+		} else {
+			console.debug(`Not adding account ${host}/${user.id}: already logged in with same token.`);
+			return;
+		}
+	}
+
+	{
 		store.set('accountTokens', { ...store.s.accountTokens, [host + '/' + user.id]: token });
 		store.set('accountInfos', { ...store.s.accountInfos, [host + '/' + user.id]: user });
 		prefer.commit('accounts', [...prefer.s.accounts, [host, { id: user.id, username: user.username }]]);
