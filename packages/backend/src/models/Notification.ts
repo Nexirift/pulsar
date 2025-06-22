@@ -152,6 +152,22 @@ export type MiNotification = {
 	id: string;
 	createdAt: string;
 	noteId: MiNote['id'];
+} | {
+	type: 'sharedAccessGranted';
+	id: string;
+	createdAt: string;
+	notifierId: MiUser['id'];
+	tokenId: MiAccessToken['id'];
+} | {
+	type: 'sharedAccessRevoked';
+	id: string;
+	createdAt: string;
+	notifierId: MiUser['id'];
+} | {
+	type: 'sharedAccessLogin';
+	id: string;
+	createdAt: string;
+	notifierId: MiUser['id'];
 };
 
 export type MiGroupedNotification = MiNotification | {

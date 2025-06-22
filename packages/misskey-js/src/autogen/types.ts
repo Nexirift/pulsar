@@ -5022,6 +5022,42 @@ export type components = {
       /** Format: id */
       userId: string;
       note: components['schemas']['Note'];
+    } | ({
+      /** Format: id */
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** @enum {string} */
+      type: 'sharedAccessGranted';
+      user: components['schemas']['UserLite'];
+      /** Format: id */
+      userId: string;
+      token: ({
+        id: string;
+        permission: string[];
+        /** @enum {string|null} */
+        rank: 'admin' | 'mod' | 'user';
+      }) | null;
+    }) | {
+      /** Format: id */
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** @enum {string} */
+      type: 'sharedAccessRevoked';
+      user: components['schemas']['UserLite'];
+      /** Format: id */
+      userId: string;
+    } | {
+      /** Format: id */
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** @enum {string} */
+      type: 'sharedAccessLogin';
+      user: components['schemas']['UserLite'];
+      /** Format: id */
+      userId: string;
     } | {
       /** Format: id */
       id: string;

@@ -467,6 +467,88 @@ export const packedNotificationSchema = {
 			type: {
 				type: 'string',
 				optional: false, nullable: false,
+				enum: ['sharedAccessGranted'],
+			},
+			user: {
+				type: 'object',
+				ref: 'UserLite',
+				optional: false, nullable: false,
+			},
+			userId: {
+				type: 'string',
+				optional: false, nullable: false,
+				format: 'id',
+			},
+			token: {
+				type: 'object',
+				optional: false, nullable: true,
+				properties: {
+					id: {
+						type: 'string',
+						optional: false, nullable: false,
+					},
+					permission: {
+						type: 'array',
+						optional: false, nullable: false,
+						items: {
+							type: 'string',
+						},
+					},
+					rank: {
+						type: 'string',
+						enum: ['admin', 'mod', 'user'],
+						optional: false, nullable: true,
+					},
+				},
+			},
+		},
+	}, {
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
+				enum: ['sharedAccessRevoked'],
+			},
+			user: {
+				type: 'object',
+				ref: 'UserLite',
+				optional: false, nullable: false,
+			},
+			userId: {
+				type: 'string',
+				optional: false, nullable: false,
+				format: 'id',
+			},
+		},
+	}, {
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
+				enum: ['sharedAccessLogin'],
+			},
+			user: {
+				type: 'object',
+				ref: 'UserLite',
+				optional: false, nullable: false,
+			},
+			userId: {
+				type: 'string',
+				optional: false, nullable: false,
+				format: 'id',
+			},
+		},
+	}, {
+		type: 'object',
+		properties: {
+			...baseSchema.properties,
+			type: {
+				type: 'string',
+				optional: false, nullable: false,
 				enum: ['reaction:grouped'],
 			},
 			note: {

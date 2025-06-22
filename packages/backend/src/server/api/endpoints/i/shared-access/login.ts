@@ -8,6 +8,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import type { AccessTokensRepository } from '@/models/_.js';
 import { ApiError } from '@/server/api/error.js';
+import { NotificationService } from '@/core/NotificationService.js';
 
 export const meta = {
 	requireCredential: true,
@@ -57,6 +58,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	constructor(
 		@Inject(DI.accessTokensRepository)
 		private readonly accessTokensRepository: AccessTokensRepository,
+
+		private readonly notificationService: NotificationService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const token = await this.accessTokensRepository.findOneBy({ id: ps.grantId });
@@ -69,7 +72,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchAccess);
 			}
 
-			// TODO notify of login
+			this.notificationService.createNotification(token.userId, 'sharedAccessLogin', {}, me.id);
 
 			return {
 				token: token.token,
