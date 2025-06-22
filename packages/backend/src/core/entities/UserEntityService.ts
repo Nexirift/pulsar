@@ -889,11 +889,6 @@ export class UserEntityService implements OnModuleInit {
 			permissions = permissions.filter(perm => !perm.startsWith('read:admin') && !perm.startsWith('write:admin'));
 		}
 
-		// TODO support for moderator perms
-		// if (!isModerator) {
-		//
-		// }
-
 		return permissions;
 	}
 }
