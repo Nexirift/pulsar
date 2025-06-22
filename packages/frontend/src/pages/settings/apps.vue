@@ -37,6 +37,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<template #value>{{ i18n.ts._ranks[token.rank] ?? token.rank }}</template>
 							</MkKeyValue>
 						</div>
+						<MkFolder v-if="token.grantees.length > 0" :defaultOpen="onlySharedAccess">
+							<template #label>{{ i18n.ts.sharedAccess }}</template>
+							<template #suffix>{{ token.grantees.length }}</template>
+
+							<MkUserCardMini v-for="grantee of token.grantees" :key="grantee.id" :user="grantee" :withChart="false"/>
+						</MkFolder>
 						<MkFolder v-if="standardPerms(token.permission).length > 0">
 							<template #label>{{ i18n.ts.permission }}</template>
 							<template #suffix>{{ standardPerms(token.permission).length }}</template>
@@ -50,12 +56,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<ul>
 								<li v-for="p of adminPerms(token.permission)" :key="p">{{ i18n.ts._permissions[p] }}</li>
 							</ul>
-						</MkFolder>
-						<MkFolder v-if="token.grantees.length > 0">
-							<template #label>{{ i18n.ts.sharedAccess }}</template>
-							<template #suffix>{{ token.grantees.length }}</template>
-
-							<MkUserCardMini v-for="grantee of token.grantees" :key="grantee.id" :user="grantee" :withChart="false"/>
 						</MkFolder>
 					</div>
 				</MkFolder>
