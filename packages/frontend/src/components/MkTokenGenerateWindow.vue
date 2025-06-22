@@ -106,8 +106,7 @@ import { $i, iAmAdmin } from '@/i.js';
 import MkFolder from '@/components/MkFolder.vue';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
 import MkSelect from '@/components/MkSelect.vue';
-import * as os from '@/os';
-import { instance } from '@/instance';
+import * as os from '@/os.js';
 
 const props = withDefaults(defineProps<{
 	title?: string | null;
@@ -204,8 +203,7 @@ function enableAllAdmin(): void {
 
 async function addGrantee(): Promise<void> {
 	const user = await os.selectUser({
-		includeSelf: true,
-		localOnly: instance.noteSearchableScope === 'local',
+		localOnly: true,
 	});
 	grantees.value.push(user);
 }

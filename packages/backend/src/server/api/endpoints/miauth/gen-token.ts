@@ -4,14 +4,14 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import { In } from 'typeorm';
 import { ApiError } from '@/server/api/error.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AccessTokensRepository, UsersRepository } from '@/models/_.js';
+import type { AccessTokensRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { DI } from '@/di-symbols.js';
+import { CacheService } from '@/core/CacheService.js';
 
 export const meta = {
 	tags: ['auth'],
@@ -36,6 +36,11 @@ export const meta = {
 			message: 'No such user.',
 			code: 'NO_SUCH_USER',
 			id: 'a89abd3d-f0bc-4cce-beb1-2f446f4f1e6a',
+		},
+		mustBeLocal: {
+			message: 'Grantee must be local',
+			code: 'MUST_BE_LOCAL',
+			id: '403c73e5-6f03-41b4-9394-ac128947f7ae',
 		},
 	},
 
@@ -70,17 +75,23 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		@Inject(DI.accessTokensRepository)
 		private accessTokensRepository: AccessTokensRepository,
 
-		@Inject(DI.usersRepository)
-		private readonly usersRepository: UsersRepository,
-
 		private idService: IdService,
 		private notificationService: NotificationService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			// Validate grantees
 			if (ps.grantees && ps.grantees.length > 0) {
-				const existingCount = await this.usersRepository.countBy({ id: In(ps.grantees) });
-				if (existingCount !== ps.grantees.length) {
+				const grantees = await this.cacheService.getUsers(ps.grantees);
+
+				if (grantees.size !== ps.grantees.length) {
 					throw new ApiError(meta.errors.noSuchUser);
+				}
+
+				for (const grantee of grantees.values()) {
+					if (grantee.host != null) {
+						throw new ApiError(meta.errors.mustBeLocal);
+					}
 				}
 			}
 
