@@ -68,15 +68,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #label>{{ i18n.ts.permission }}</template>
 				<template #suffix>{{ permsCount || i18n.ts.none }}</template>
 
-				<div class="_gaps_s">
+				<div class="_gaps">
 					<div>{{ i18n.ts.permissionsDescription }}</div>
 
-					<div class="_buttons">
-						<MkButton inline @click="enableAll">{{ i18n.ts.enableAll }}</MkButton>
-						<MkButton inline @click="disableAll">{{ i18n.ts.disableAll }}</MkButton>
+					<div class="_gaps_s">
+						<MkSwitch v-model="enableAllRead">{{ i18n.ts.enableAllRead }}</MkSwitch>
+						<MkSwitch v-model="enableAllWrite">{{ i18n.ts.enableAllWrite }}</MkSwitch>
 					</div>
 
-					<MkSwitch v-for="kind in Object.keys(permissionSwitches)" :key="kind" v-model="permissionSwitches[kind]">{{ i18n.ts._permissions[kind] }}</MkSwitch>
+					<div :class="$style.divider"></div>
+
+					<div class="_gaps_s">
+						<MkSwitch v-for="kind in Object.keys(permissionSwitches)" :key="kind" v-model="permissionSwitches[kind]">{{ i18n.ts._permissions[kind] }}</MkSwitch>
+					</div>
 				</div>
 			</MkFolder>
 
@@ -84,22 +88,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #label>{{ i18n.ts.adminPermission }}</template>
 				<template #suffix>{{ adminPermsCount || i18n.ts.none }}</template>
 
-				<div class="_gaps_s">
+				<div class="_gaps">
 					<div>{{ i18n.ts.adminPermissionsDescription }}</div>
 
-					<div class="_buttons">
-						<MkButton inline :disabled="rank === 'user'" @click="enableAllAdmin">{{ i18n.ts.enableAll }}</MkButton>
-						<MkButton inline :disabled="rank === 'user'" @click="disableAllAdmin">{{ i18n.ts.disableAll }}</MkButton>
+					<div class="_gaps_s">
+						<MkSwitch v-model="enableAllReadAdmin" :disabled="rank === 'user'">{{ i18n.ts.enableAllRead }}</MkSwitch>
+						<MkSwitch v-model="enableAllWriteAdmin" :disabled="rank === 'user'">{{ i18n.ts.enableAllWrite }}</MkSwitch>
 					</div>
 
-					<MkSwitch
-						v-for="kind in Object.keys(permissionSwitchesForAdmin)"
-						:key="kind"
-						v-model="permissionSwitchesForAdmin[kind]"
-						:disabled="rank === 'user'"
-					>
-						{{ i18n.ts._permissions[kind] }}
-					</MkSwitch>
+					<div :class="$style.divider"></div>
+
+					<div class="_gaps_s">
+						<MkSwitch
+							v-for="kind in Object.keys(permissionSwitchesForAdmin)"
+							:key="kind"
+							v-model="permissionSwitchesForAdmin[kind]"
+							:disabled="rank === 'user'"
+						>
+							{{ i18n.ts._permissions[kind] }}
+						</MkSwitch>
+					</div>
 				</div>
 			</MkFolder>
 		</div>
@@ -142,7 +150,12 @@ const emit = defineEmits<{
 }>();
 
 const defaultPermissions = Misskey.permissions.filter(p => !p.startsWith('read:admin') && !p.startsWith('write:admin'));
+const defaultReadPermissions = defaultPermissions.filter(p => p.startsWith('read:'));
+const defaultWritePermissions = defaultPermissions.filter(p => p.startsWith('write:'));
+
 const adminPermissions = Misskey.permissions.filter(p => p.startsWith('read:admin') || p.startsWith('write:admin'));
+const adminReadPermissions = adminPermissions.filter(p => p.startsWith('read:'));
+const adminWritePermissions = adminPermissions.filter(p => p.startsWith('write:'));
 
 const dialog = useTemplateRef('dialog');
 const name = ref(props.initialName);
@@ -173,6 +186,42 @@ if (props.initialPermissions) {
 		}
 	}
 }
+
+const enableAllRead = computed({
+	get() {
+		return defaultReadPermissions.every(p => permissionSwitches.value[p]);
+	},
+	set(value: boolean) {
+		defaultReadPermissions.forEach(p => permissionSwitches.value[p] = value);
+	},
+});
+
+const enableAllWrite = computed({
+	get() {
+		return defaultWritePermissions.every(p => permissionSwitches.value[p]);
+	},
+	set(value: boolean) {
+		defaultWritePermissions.forEach(p => permissionSwitches.value[p] = value);
+	},
+});
+
+const enableAllReadAdmin = computed({
+	get() {
+		return adminReadPermissions.every(p => permissionSwitchesForAdmin.value[p]);
+	},
+	set(value: boolean) {
+		adminReadPermissions.forEach(p => permissionSwitchesForAdmin.value[p] = value);
+	},
+});
+
+const enableAllWriteAdmin = computed({
+	get() {
+		return adminWritePermissions.every(p => permissionSwitchesForAdmin.value[p]);
+	},
+	set(value: boolean) {
+		adminWritePermissions.forEach(p => permissionSwitchesForAdmin.value[p] = value);
+	},
+});
 
 async function ok(): Promise<void> {
 	if (props.withSharedAccess === true && grantees.value.length < 1) {
@@ -205,34 +254,6 @@ async function ok(): Promise<void> {
 		rank: rank.value,
 	});
 	dialog.value?.close();
-}
-
-function disableAll(): void {
-	for (const p in permissionSwitches.value) {
-		permissionSwitches.value[p] = false;
-	}
-}
-
-function disableAllAdmin(): void {
-	if (iAmAdmin) {
-		for (const p in permissionSwitchesForAdmin.value) {
-			permissionSwitchesForAdmin.value[p] = false;
-		}
-	}
-}
-
-function enableAll(): void {
-	for (const p in permissionSwitches.value) {
-		permissionSwitches.value[p] = true;
-	}
-}
-
-function enableAllAdmin(): void {
-	if (iAmAdmin) {
-		for (const p in permissionSwitchesForAdmin.value) {
-			permissionSwitchesForAdmin.value[p] = true;
-		}
-	}
 }
 
 async function addGrantee(): Promise<void> {
@@ -272,5 +293,9 @@ function removeGrantee(index: number) {
 
 .grantee > :first-child {
 	flex: 1;
+}
+
+.divider {
+	border-bottom: 1px solid var(--MI_THEME-divider);
 }
 </style>

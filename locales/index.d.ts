@@ -13617,6 +13617,14 @@ export interface Locale extends ILocale {
      * Are you sure you want to create a token with no permissions?
      */
     "tokenHasNoPermissionsConfirm": string;
+    /**
+     * Enable all read-only permissions
+     */
+    "enableAllRead": string;
+    /**
+     * Enable all write/edit permissions
+     */
+    "enableAllWrite": string;
 }
 declare const locales: {
     [lang: string]: Locale;

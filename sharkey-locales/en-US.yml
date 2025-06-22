@@ -719,3 +719,5 @@ grantSharedAccessNoSelection2: "No shared access users were selected. Please add
 grantSharedAccessSuccess: "Shared access granted"
 grantSharedAccessSuccess2: "Shared access has been granted to {num} users."
 tokenHasNoPermissionsConfirm: "Are you sure you want to create a token with no permissions?"
+enableAllRead: "Enable all read-only permissions"
+enableAllWrite: "Enable all write/edit permissions"
