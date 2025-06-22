@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
-import type { ClipNotesRepository, ClipFavoritesRepository, ClipsRepository, MiUser, MiAccessToken } from '@/models/_.js';
+import type { ClipNotesRepository, ClipFavoritesRepository, ClipsRepository, MiUser } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
 import type { Packed } from '@/misc/json-schema.js';
 import type { } from '@/models/Blocking.js';
@@ -35,7 +35,6 @@ export class ClipEntityService {
 	public async pack(
 		src: MiClip['id'] | MiClip,
 		me?: { id: MiUser['id'] } | null | undefined,
-		token?: MiAccessToken | null,
 		hint?: {
 			packedUser?: Packed<'UserLite'>
 		},
@@ -48,7 +47,7 @@ export class ClipEntityService {
 			createdAt: this.idService.parse(clip.id).date.toISOString(),
 			lastClippedAt: clip.lastClippedAt ? clip.lastClippedAt.toISOString() : null,
 			userId: clip.userId,
-			user: hint?.packedUser ?? this.userEntityService.pack(clip.user ?? clip.userId, me, { token }),
+			user: hint?.packedUser ?? this.userEntityService.pack(clip.user ?? clip.userId),
 			name: clip.name,
 			description: clip.description,
 			isPublic: clip.isPublic,
@@ -62,12 +61,11 @@ export class ClipEntityService {
 	public async packMany(
 		clips: MiClip[],
 		me?: { id: MiUser['id'] } | null | undefined,
-		token?: MiAccessToken | null,
 	) {
 		const _users = clips.map(({ user, userId }) => user ?? userId);
-		const _userMap = await this.userEntityService.packMany(_users, me, { token })
+		const _userMap = await this.userEntityService.packMany(_users, me)
 			.then(users => new Map(users.map(u => [u.id, u])));
-		return Promise.all(clips.map(clip => this.pack(clip, me, token, { packedUser: _userMap.get(clip.userId) })));
+		return Promise.all(clips.map(clip => this.pack(clip, me, { packedUser: _userMap.get(clip.userId) })));
 	}
 }
 

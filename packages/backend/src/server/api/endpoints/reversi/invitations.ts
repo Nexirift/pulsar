@@ -36,10 +36,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userEntityService: UserEntityService,
 		private reversiService: ReversiService,
 	) {
-		super(meta, paramDef, async (ps, me, token) => {
+		super(meta, paramDef, async (ps, me) => {
 			const invitations = await this.reversiService.getInvitations(me);
 
-			return await this.userEntityService.packMany(invitations, me, { token });
+			return await this.userEntityService.packMany(invitations, me);
 		});
 	}
 }

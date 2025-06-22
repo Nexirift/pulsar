@@ -177,7 +177,7 @@ export class NotificationService implements OnApplicationShutdown {
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		} while (true);
 
-		const packed = await this.notificationEntityService.pack(notification, notifieeId, undefined, {});
+		const packed = await this.notificationEntityService.pack(notification, notifieeId, {});
 
 		if (packed == null) return null;
 

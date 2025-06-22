@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { In, EntityNotFoundError } from 'typeorm';
 import { DI } from '@/di-symbols.js';
-import type { FollowRequestsRepository, NotesRepository, MiUser, UsersRepository, MiAccessToken, AccessTokensRepository } from '@/models/_.js';
+import type { FollowRequestsRepository, NotesRepository, MiUser, UsersRepository, AccessTokensRepository } from '@/models/_.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
 import type { MiGroupedNotification, MiNotification } from '@/models/Notification.js';
 import type { MiNote } from '@/models/Note.js';
@@ -69,7 +69,6 @@ export class NotificationEntityService implements OnModuleInit {
 	async #packInternal <T extends MiNotification | MiGroupedNotification> (
 		src: T,
 		meId: MiUser['id'],
-		token: MiAccessToken | null | undefined,
 		options: {
 			checkValidNotifier?: boolean;
 		},
@@ -86,7 +85,7 @@ export class NotificationEntityService implements OnModuleInit {
 		const noteIfNeed = needsNote ? (
 			hint?.packedNotes != null
 				? hint.packedNotes.get(notification.noteId)
-				: undefOnMissing(this.noteEntityService.pack(notification.noteId, { id: meId }, token, {
+				: undefOnMissing(this.noteEntityService.pack(notification.noteId, { id: meId }, {
 					detail: true,
 				}))
 		) : undefined;
@@ -97,7 +96,7 @@ export class NotificationEntityService implements OnModuleInit {
 		const userIfNeed = needsUser ? (
 			hint?.packedUsers != null
 				? hint.packedUsers.get(notification.notifierId)
-				: undefOnMissing(this.userEntityService.pack(notification.notifierId, { id: meId }, { token }))
+				: undefOnMissing(this.userEntityService.pack(notification.notifierId, { id: meId }))
 		) : undefined;
 		// if the user has been deleted, don't show this notification
 		if (needsUser && !userIfNeed) return null;
@@ -107,7 +106,7 @@ export class NotificationEntityService implements OnModuleInit {
 			const reactions = (await Promise.all(notification.reactions.map(async reaction => {
 				const user = hint?.packedUsers != null
 					? hint.packedUsers.get(reaction.userId)!
-					: await undefOnMissing(this.userEntityService.pack(reaction.userId, { id: meId }, { token }));
+					: await undefOnMissing(this.userEntityService.pack(reaction.userId, { id: meId }));
 				return {
 					user,
 					reaction: reaction.reaction,
@@ -132,7 +131,7 @@ export class NotificationEntityService implements OnModuleInit {
 					return packedUser;
 				}
 
-				return undefOnMissing(this.userEntityService.pack(userId, { id: meId }, { token }));
+				return undefOnMissing(this.userEntityService.pack(userId, { id: meId }));
 			}))).filter(x => x != null);
 			// if all users have been deleted, don't show this notification
 			if (users.length === 0) {
@@ -213,7 +212,6 @@ export class NotificationEntityService implements OnModuleInit {
 	async #packManyInternal <T extends MiNotification | MiGroupedNotification>	(
 		notifications: T[],
 		meId: MiUser['id'],
-		token?: MiAccessToken | null,
 	): Promise<T[]> {
 		if (notifications.length === 0) return [];
 
@@ -226,7 +224,7 @@ export class NotificationEntityService implements OnModuleInit {
 			where: { id: In(noteIds) },
 			relations: ['user', 'reply', 'reply.user', 'renote', 'renote.user'],
 		}) : [];
-		const packedNotesArray = await this.noteEntityService.packMany(notes, { id: meId }, token, {
+		const packedNotesArray = await this.noteEntityService.packMany(notes, { id: meId }, {
 			detail: true,
 		});
 		const packedNotes = new Map(packedNotesArray.map(p => [p.id, p]));
@@ -242,7 +240,7 @@ export class NotificationEntityService implements OnModuleInit {
 		const users = userIds.length > 0 ? await this.usersRepository.find({
 			where: { id: In(userIds) },
 		}) : [];
-		const packedUsersArray = await this.userEntityService.packMany(users, { id: meId }, { token });
+		const packedUsersArray = await this.userEntityService.packMany(users, { id: meId });
 		const packedUsers = new Map(packedUsersArray.map(p => [p.id, p]));
 
 		// 既に解決されたフォローリクエストの通知を除外
@@ -258,7 +256,6 @@ export class NotificationEntityService implements OnModuleInit {
 			return this.pack(
 				x,
 				meId,
-				token,
 				{ checkValidNotifier: false },
 				{ packedNotes, packedUsers },
 			);
@@ -271,7 +268,6 @@ export class NotificationEntityService implements OnModuleInit {
 	public async pack(
 		src: MiNotification | MiGroupedNotification,
 		meId: MiUser['id'],
-		token: MiAccessToken | null | undefined,
 
 		options: {
 			checkValidNotifier?: boolean;
@@ -281,25 +277,23 @@ export class NotificationEntityService implements OnModuleInit {
 			packedUsers: Map<MiUser['id'], Packed<'UserLite'>>;
 		},
 	): Promise<Packed<'Notification'> | null> {
-		return await this.#packInternal(src, meId, token, options, hint);
+		return await this.#packInternal(src, meId, options, hint);
 	}
 
 	@bindThis
 	public async packMany(
 		notifications: MiNotification[],
 		meId: MiUser['id'],
-		token?: MiAccessToken | null,
 	): Promise<MiNotification[]> {
-		return await this.#packManyInternal(notifications, meId, token);
+		return await this.#packManyInternal(notifications, meId);
 	}
 
 	@bindThis
 	public async packGroupedMany(
 		notifications: MiGroupedNotification[],
 		meId: MiUser['id'],
-		token?: MiAccessToken | null,
 	): Promise<MiGroupedNotification[]> {
-		return await this.#packManyInternal(notifications, meId, token);
+		return await this.#packManyInternal(notifications, meId);
 	}
 
 	/**

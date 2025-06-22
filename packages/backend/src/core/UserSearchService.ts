@@ -6,7 +6,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Brackets, SelectQueryBuilder } from 'typeorm';
 import { DI } from '@/di-symbols.js';
-import { type FollowingsRepository, MiAccessToken, MiUser, type MutingsRepository, type UserProfilesRepository, type UsersRepository } from '@/models/_.js';
+import { type FollowingsRepository, MiUser, type MutingsRepository, type UserProfilesRepository, type UsersRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { sqlLikeEscape } from '@/misc/sql-like-escape.js';
 import type { Config } from '@/config.js';
@@ -63,7 +63,6 @@ export class UserSearchService {
 	 * @param params 検索条件.
 	 * @param opts 関数の動作を制御するオプション.
 	 * @param me 検索を実行するユーザの情報. 未ログインの場合は指定しない.
-	 * @param token
 	 * @see {@link UserSearchService#buildSearchUserQueries}
 	 * @see {@link UserSearchService#buildSearchUserNoLoginQueries}
 	 */
@@ -79,7 +78,6 @@ export class UserSearchService {
 			detail?: boolean,
 		},
 		me?: MiUser | null,
-		token?: MiAccessToken | null,
 	): Promise<Packed<'User'>[]> {
 		const queries = me ? this.buildSearchUserQueries(me, params) : this.buildSearchUserNoLoginQueries(params);
 
@@ -102,7 +100,7 @@ export class UserSearchService {
 		return this.userEntityService.packMany<'UserLite' | 'UserDetailed'>(
 			[...resultSet].slice(0, limit),
 			me,
-			{ schema: opts?.detail ? 'UserDetailed' : 'UserLite', token },
+			{ schema: opts?.detail ? 'UserDetailed' : 'UserLite' },
 		);
 	}
 

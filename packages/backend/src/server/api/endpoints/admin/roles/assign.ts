@@ -65,13 +65,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private roleService: RoleService,
 	) {
-		super(meta, paramDef, async (ps, me, token) => {
+		super(meta, paramDef, async (ps, me) => {
 			const role = await this.rolesRepository.findOneBy({ id: ps.roleId });
 			if (role == null) {
 				throw new ApiError(meta.errors.noSuchRole);
 			}
 
-			if (!role.canEditMembersByModerator && !(await this.roleService.isAdministrator(me, token))) {
+			if (!role.canEditMembersByModerator && !(await this.roleService.isAdministrator(me))) {
 				throw new ApiError(meta.errors.accessDenied);
 			}
 

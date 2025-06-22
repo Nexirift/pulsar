@@ -314,7 +314,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteEditService: NoteEditService,
 		private readonly noteVisibilityService: NoteVisibilityService,
 	) {
-		super(meta, paramDef, async (ps, me, token) => {
+		super(meta, paramDef, async (ps, me) => {
 			if (ps.text && ps.text.length > this.config.maxNoteLength) {
 				throw new ApiError(meta.errors.maxLength);
 			}
@@ -472,7 +472,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				});
 
 				return {
-					createdNote: await this.noteEntityService.pack(note, me, token),
+					createdNote: await this.noteEntityService.pack(note, me),
 				};
 			} catch (e) {
 				// TODO: 他のErrorもここでキャッチしてエラーメッセージを当てるようにしたい

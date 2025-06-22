@@ -53,7 +53,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private chatEntityService: ChatEntityService,
 		private chatService: ChatService,
 	) {
-		super(meta, paramDef, async (ps, me, token) => {
+		super(meta, paramDef, async (ps, me) => {
 			await this.chatService.checkChatAvailability(me.id, 'read');
 
 			const room = await this.chatService.findRoomById(ps.roomId);
@@ -61,7 +61,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchRoom);
 			}
 
-			if (!await this.chatService.hasPermissionToViewRoomTimeline(me.id, room, token)) {
+			if (!await this.chatService.hasPermissionToViewRoomTimeline(me.id, room)) {
 				throw new ApiError(meta.errors.noSuchRoom);
 			}
 

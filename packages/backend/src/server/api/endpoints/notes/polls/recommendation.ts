@@ -78,7 +78,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly queryService: QueryService,
 		private readonly roleService: RoleService,
 	) {
-		super(meta, paramDef, async (ps, me, token) => {
+		super(meta, paramDef, async (ps, me) => {
 			const query = this.pollsRepository.createQueryBuilder('poll')
 				.innerJoinAndSelect('poll.note', 'note')
 				.innerJoinAndSelect('note.user', 'user')
@@ -175,7 +175,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			const notes = polls.map(poll => poll.note!);
 
-			return await this.noteEntityService.packMany(notes, me, token, {
+			return await this.noteEntityService.packMany(notes, me, {
 				detail: true,
 			});
 		});

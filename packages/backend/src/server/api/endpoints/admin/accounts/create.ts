@@ -121,7 +121,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					throw new ApiError(meta.errors.noPermission);
 				}
 
-				if (me && !await this.roleService.isAdministrator(me, token)) {
+				if (me && !await this.roleService.isAdministrator(me)) {
 					// Only administrators (including root) can create users.
 					throw new ApiError(meta.errors.noAdmin);
 				}

@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
-import type { MiAccessToken, NoteFavoritesRepository } from '@/models/_.js';
+import type { NoteFavoritesRepository } from '@/models/_.js';
 import type { } from '@/models/Blocking.js';
 import type { MiUser } from '@/models/User.js';
 import type { MiNoteFavorite } from '@/models/NoteFavorite.js';
@@ -28,7 +28,6 @@ export class NoteFavoriteEntityService {
 	public async pack(
 		src: MiNoteFavorite['id'] | MiNoteFavorite,
 		me?: { id: MiUser['id'] } | null | undefined,
-		token?: MiAccessToken | null,
 	) {
 		const favorite = typeof src === 'object' ? src : await this.noteFavoritesRepository.findOneByOrFail({ id: src });
 
@@ -36,7 +35,7 @@ export class NoteFavoriteEntityService {
 			id: favorite.id,
 			createdAt: this.idService.parse(favorite.id).date.toISOString(),
 			noteId: favorite.noteId,
-			note: await this.noteEntityService.pack(favorite.note ?? favorite.noteId, me, token),
+			note: await this.noteEntityService.pack(favorite.note ?? favorite.noteId, me),
 		};
 	}
 
@@ -44,8 +43,7 @@ export class NoteFavoriteEntityService {
 	public packMany(
 		favorites: any[],
 		me: { id: MiUser['id'] },
-		token?: MiAccessToken | null,
 	) {
-		return Promise.all(favorites.map(x => this.pack(x, me, token)));
+		return Promise.all(favorites.map(x => this.pack(x, me)));
 	}
 }

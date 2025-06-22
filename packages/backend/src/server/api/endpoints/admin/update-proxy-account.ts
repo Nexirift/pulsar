@@ -40,14 +40,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private moderationLogService: ModerationLogService,
 		private systemAccountService: SystemAccountService,
 	) {
-		super(meta, paramDef, async (ps, me, token) => {
+		super(meta, paramDef, async (ps, me) => {
 			const proxy = await this.systemAccountService.updateCorrespondingUserProfile('proxy', {
 				description: ps.description,
 			});
 
 			const updated = await this.userEntityService.pack(proxy.id, proxy, {
 				schema: 'MeDetailed',
-				token,
 			});
 
 			if (ps.description !== undefined) {

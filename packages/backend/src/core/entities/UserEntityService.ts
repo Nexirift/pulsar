@@ -481,8 +481,8 @@ export class UserEntityService implements OnModuleInit {
 		const isDetailed = opts.schema !== 'UserLite';
 		const meId = me ? me.id : null;
 		const isMe = meId === user.id;
-		const iAmModerator = opts.iAmModerator ?? (me ? await this.roleService.isModerator(me as MiUser, opts.token) : false);
-		const iAmAdmin = opts.iAmAdmin ?? (me ? await this.roleService.isAdministrator(user, opts.token) : false);
+		const iAmModerator = opts.iAmModerator ?? (me ? await this.roleService.isModerator(me as MiUser) : false);
+		const iAmAdmin = opts.iAmAdmin ?? (me ? await this.roleService.isAdministrator(user) : false);
 
 		const profile = isDetailed
 			? (opts.userProfile ?? user.userProfile ?? await this.userProfilesRepository.findOneByOrFail({ userId: user.id }))
@@ -629,11 +629,11 @@ export class UserEntityService implements OnModuleInit {
 				fields: profile!.fields,
 				verifiedLinks: profile!.verifiedLinks,
 				pinnedNoteIds: pins.map(pin => pin.noteId),
-				pinnedNotes: this.noteEntityService.packMany(pins.map(pin => pin.note!), me, opts.token, {
+				pinnedNotes: this.noteEntityService.packMany(pins.map(pin => pin.note!), me, {
 					detail: true,
 				}),
 				pinnedPageId: profile!.pinnedPageId,
-				pinnedPage: profile!.pinnedPageId ? this.pageEntityService.pack(profile!.pinnedPageId, me, opts.token) : null,
+				pinnedPage: profile!.pinnedPageId ? this.pageEntityService.pack(profile!.pinnedPageId, me) : null,
 				publicReactions: this.isLocalUser(user) ? profile!.publicReactions : false, // https://github.com/misskey-dev/misskey/issues/12964
 				followersVisibility: profile!.followersVisibility,
 				followingVisibility: profile!.followingVisibility,
@@ -744,15 +744,12 @@ export class UserEntityService implements OnModuleInit {
 		return await awaitAll(packed);
 	}
 
-	// TODO pass token
-
 	public async packMany<S extends 'MeDetailed' | 'UserDetailedNotMe' | 'UserDetailed' | 'UserLite' = 'UserLite'>(
 		users: (MiUser['id'] | MiUser)[],
 		me?: { id: MiUser['id'] } | null | undefined,
 		options?: {
 			schema?: S,
 			includeSecrets?: boolean,
-			token?: MiAccessToken | null,
 		},
 	): Promise<Packed<S>[]> {
 		if (users.length === 0) return [];
@@ -775,9 +772,8 @@ export class UserEntityService implements OnModuleInit {
 		const _userIds = _users.map(u => u.id);
 
 		// Sync with ApiCallService
-		const roles = me ? await this.roleService.getUserRoles(me.id) : [];
-		const iAmAdmin = roles.some(r => r.isAdministrator) && (options?.token?.rank == null || options?.token.rank === 'admin');
-		const iAmModerator = roles.some(r => r.isAdministrator || r.isModerator) && (options?.token?.rank == null || options?.token.rank === 'admin' || options?.token.rank === 'mod');
+		const iAmAdmin = me ? await this.roleService.isAdministrator(me) : false;
+		const iAmModerator = me ? await this.roleService.isModerator(me) : false;
 
 		const meId = me ? me.id : null;
 		const isDetailed = options && options.schema !== 'UserLite';

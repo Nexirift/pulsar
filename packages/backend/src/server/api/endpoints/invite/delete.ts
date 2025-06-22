@@ -60,9 +60,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private roleService: RoleService,
 	) {
-		super(meta, paramDef, async (ps, me, token) => {
+		super(meta, paramDef, async (ps, me) => {
 			const ticket = await this.registrationTicketsRepository.findOneBy({ id: ps.inviteId });
-			const isModerator = await this.roleService.isModerator(me, token);
+			const isModerator = await this.roleService.isModerator(me);
 
 			if (ticket == null) {
 				throw new ApiError(meta.errors.noSuchCode);

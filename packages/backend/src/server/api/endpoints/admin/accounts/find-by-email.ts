@@ -47,7 +47,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private userEntityService: UserEntityService,
 	) {
-		super(meta, paramDef, async (ps, me, token) => {
+		super(meta, paramDef, async (ps, me) => {
 			const profile = await this.userProfilesRepository.findOne({
 				where: { email: ps.email },
 				relations: ['user'],
@@ -59,7 +59,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const res = await this.userEntityService.pack(profile.user!, me, {
 				schema: 'UserDetailedNotMe',
-				token,
 			});
 
 			return res;

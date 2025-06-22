@@ -91,7 +91,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly cacheService: CacheService,
 		private idService: IdService,
 	) {
-		super(meta, paramDef, async (ps, me, at) => {
+		super(meta, paramDef, async (ps, me) => {
 			const query = this.accessTokensRepository.createQueryBuilder('token')
 				.where('token.userId = :userId', { userId: me.id })
 				.leftJoinAndSelect('token.app', 'app');
@@ -111,7 +111,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const tokens = await query.getMany();
 
 			const users = await this.cacheService.getUsers(tokens.flatMap(token => token.granteeIds));
-			const packedUsers = await this.userEntityService.packMany(Array.from(users.values()), me, { token: at });
+			const packedUsers = await this.userEntityService.packMany(Array.from(users.values()), me);
 			const packedUserMap = new Map(packedUsers.map(u => [u.id, u]));
 
 			return tokens.map(token => ({

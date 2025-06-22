@@ -64,7 +64,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private userEntityService: UserEntityService,
 	) {
-		super(meta, paramDef, async (ps, me, token) => {
+		super(meta, paramDef, async (ps) => {
 			const records = await this.bubbleGameRecordsRepository.find({
 				where: {
 					gameMode: ps.gameMode,
@@ -77,7 +77,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				relations: ['user'],
 			});
 
-			const users = await this.userEntityService.packMany(records.map(r => r.user!), me, { token });
+			const users = await this.userEntityService.packMany(records.map(r => r.user!), me);
 
 			return records.map(r => ({
 				id: r.id,

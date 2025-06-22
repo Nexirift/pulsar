@@ -78,7 +78,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private instanceEntityService: InstanceEntityService,
 	) {
-		super(meta, paramDef, async (ps, me, token) => {
+		super(meta, paramDef, async (ps, me) => {
 			const [topSubInstances, topPubInstances, allSubCount, allPubCount] = await Promise.all([
 				this.instancesRepository.find({
 					where: {
@@ -114,9 +114,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const gotPubCount = topPubInstances.map(x => x.followingCount).reduce((a, b) => a + b, 0);
 
 			return await awaitAll({
-				topSubInstances: this.instanceEntityService.packMany(topSubInstances, me, token),
+				topSubInstances: this.instanceEntityService.packMany(topSubInstances, me),
 				otherFollowersCount: Math.max(0, allSubCount - gotSubCount),
-				topPubInstances: this.instanceEntityService.packMany(topPubInstances, me, token),
+				topPubInstances: this.instanceEntityService.packMany(topPubInstances, me),
 				otherFollowingCount: Math.max(0, allPubCount - gotPubCount),
 			});
 		});

@@ -72,14 +72,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private readonly userEntityService: UserEntityService,
 	) {
-		super(meta, paramDef, async (ps, me, token) => {
+		super(meta, paramDef, async (ps, me) => {
 			const tokens = await this.accessTokensRepository
 				.createQueryBuilder('token')
 				.where(':meIdAsList <@ token.granteeIds', { meIdAsList: [me.id] })
 				.getMany();
 
 			const userIds = tokens.map(token => token.userId);
-			const packedUsers = await this.userEntityService.packMany(userIds, me, { token });
+			const packedUsers = await this.userEntityService.packMany(userIds, me);
 			const packedUserMap = new Map(packedUsers.map(u => [u.id, u]));
 
 			return tokens.map(token => ({

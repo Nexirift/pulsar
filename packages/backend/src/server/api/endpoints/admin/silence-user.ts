@@ -38,10 +38,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly roleService: RoleService,
 		private readonly globalEventService: GlobalEventService,
 	) {
-		super(meta, paramDef, async (ps, me, token) => {
+		super(meta, paramDef, async (ps, me) => {
 			const user = await this.cacheService.findUserById(ps.userId);
 
-			if (await this.roleService.isModerator(user, token)) {
+			if (await this.roleService.isModerator(user)) {
 				throw new Error('cannot silence moderator account');
 			}
 

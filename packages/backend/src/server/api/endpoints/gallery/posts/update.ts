@@ -61,7 +61,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private galleryPostEntityService: GalleryPostEntityService,
 	) {
-		super(meta, paramDef, async (ps, me, token) => {
+		super(meta, paramDef, async (ps, me) => {
 			let files: Array<MiDriveFile> | undefined;
 
 			if (ps.fileIds) {
@@ -90,7 +90,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const post = await this.galleryPostsRepository.findOneByOrFail({ id: ps.postId });
 
-			return await this.galleryPostEntityService.pack(post, me, token);
+			return await this.galleryPostEntityService.pack(post, me);
 		});
 	}
 }

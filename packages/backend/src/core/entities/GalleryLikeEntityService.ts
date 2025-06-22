@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
-import type { GalleryLikesRepository, MiAccessToken } from '@/models/_.js';
+import type { GalleryLikesRepository } from '@/models/_.js';
 import type { } from '@/models/Blocking.js';
 import type { MiGalleryLike } from '@/models/GalleryLike.js';
 import { bindThis } from '@/decorators.js';
@@ -25,13 +25,12 @@ export class GalleryLikeEntityService {
 	public async pack(
 		src: MiGalleryLike['id'] | MiGalleryLike,
 		me?: any,
-		token?: MiAccessToken | null,
 	) {
 		const like = typeof src === 'object' ? src : await this.galleryLikesRepository.findOneByOrFail({ id: src });
 
 		return {
 			id: like.id,
-			post: await this.galleryPostEntityService.pack(like.post ?? like.postId, me, token),
+			post: await this.galleryPostEntityService.pack(like.post ?? like.postId, me),
 		};
 	}
 
@@ -39,9 +38,8 @@ export class GalleryLikeEntityService {
 	public packMany(
 		likes: any[],
 		me: any,
-		token?: MiAccessToken | null,
 	) {
-		return Promise.all(likes.map(x => this.pack(x, me, token)));
+		return Promise.all(likes.map(x => this.pack(x, me)));
 	}
 }
 

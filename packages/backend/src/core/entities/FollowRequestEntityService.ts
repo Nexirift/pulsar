@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
-import type { FollowRequestsRepository, MiAccessToken } from '@/models/_.js';
+import type { FollowRequestsRepository } from '@/models/_.js';
 import type { } from '@/models/Blocking.js';
 import type { MiUser } from '@/models/User.js';
 import type { MiFollowRequest } from '@/models/FollowRequest.js';
@@ -27,7 +27,6 @@ export class FollowRequestEntityService {
 	public async pack(
 		src: MiFollowRequest['id'] | MiFollowRequest,
 		me?: { id: MiUser['id'] } | null | undefined,
-		token?: MiAccessToken | null,
 		hint?: {
 			packedFollower?: Packed<'UserLite'>,
 			packedFollowee?: Packed<'UserLite'>,
@@ -37,8 +36,8 @@ export class FollowRequestEntityService {
 
 		return {
 			id: request.id,
-			follower: hint?.packedFollower ?? await this.userEntityService.pack(request.followerId, me, { token }),
-			followee: hint?.packedFollowee ?? await this.userEntityService.pack(request.followeeId, me, { token }),
+			follower: hint?.packedFollower ?? await this.userEntityService.pack(request.followerId, me),
+			followee: hint?.packedFollowee ?? await this.userEntityService.pack(request.followeeId, me),
 		};
 	}
 
@@ -46,17 +45,16 @@ export class FollowRequestEntityService {
 	public async packMany(
 		requests: MiFollowRequest[],
 		me?: { id: MiUser['id'] } | null | undefined,
-		token?: MiAccessToken | null,
 	) {
 		const _followers = requests.map(({ follower, followerId }) => follower ?? followerId);
 		const _followees = requests.map(({ followee, followeeId }) => followee ?? followeeId);
-		const _userMap = await this.userEntityService.packMany([..._followers, ..._followees], me, { token })
+		const _userMap = await this.userEntityService.packMany([..._followers, ..._followees], me)
 			.then(users => new Map(users.map(u => [u.id, u])));
 		return Promise.all(
 			requests.map(req => {
 				const packedFollower = _userMap.get(req.followerId);
 				const packedFollowee = _userMap.get(req.followeeId);
-				return this.pack(req, me, token, { packedFollower, packedFollowee });
+				return this.pack(req, me, { packedFollower, packedFollowee });
 			}),
 		);
 	}
