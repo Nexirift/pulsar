@@ -36,6 +36,11 @@ export const meta = {
 						optional: false, nullable: false,
 					},
 				},
+				rank: {
+					type: 'string',
+					enum: ['admin', 'mod', 'user'],
+					optional: false, nullable: true,
+				},
 			},
 		},
 		properties: {
@@ -81,6 +86,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				id: token.id,
 				permissions: token.permission,
 				user: packedUserMap.get(token.userId),
+				rank: token.rank,
 			}));
 		});
 	}
