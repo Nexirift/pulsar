@@ -25,67 +25,81 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div>
 				<MkInput v-model="name">
 					<template #label>{{ i18n.ts.name }}</template>
+					<template #caption>{{ i18n.ts.accessTokenNameDescription }}</template>
 				</MkInput>
 			</div>
 
-			<MkFolder v-if="$i?.isAdmin || $i?.isModerator">
+			<MkSelect v-if="$i?.isAdmin" v-model="rank">
 				<template #label>{{ i18n.ts.overrideRank }}</template>
 				<template #caption>{{ i18n.ts.overrideRankDescription }}</template>
-				<template #suffix>{{ i18n.ts._ranks[rank] }}</template>
 
-				<MkSelect v-if="$i?.isAdmin" v-model="rank">
-					<option value="admin">{{ i18n.ts._ranks.admin }}</option>
-					<option value="mod">{{ i18n.ts._ranks.mod }}</option>
-					<option value="user">{{ i18n.ts._ranks.user }}</option>
-				</MkSelect>
+				<option value="admin">{{ i18n.ts._ranks.admin }}</option>
+				<option value="mod">{{ i18n.ts._ranks.mod }}</option>
+				<option value="user">{{ i18n.ts._ranks.user }}</option>
+			</MkSelect>
 
-				<MkSelect v-else v-model="rank">
-					<option value="mod">{{ i18n.ts._ranks.mod }}</option>
-					<option value="user">{{ i18n.ts._ranks.user }}</option>
-				</MkSelect>
-			</MkFolder>
+			<MkSelect v-else v-model="rank">
+				<template #label>{{ i18n.ts.overrideRank }}</template>
+				<template #caption>{{ i18n.ts.overrideRankDescription }}</template>
+
+				<option value="mod">{{ i18n.ts._ranks.mod }}</option>
+				<option value="user">{{ i18n.ts._ranks.user }}</option>
+			</MkSelect>
 
 			<MkFolder>
 				<template #label>{{ i18n.ts.permission }}</template>
-				<template #caption>{{ i18n.ts.permissionsDescription }}</template>
 				<template #suffix>{{ permsCount || i18n.ts.none }}</template>
 
-				<div class="_buttons">
-					<MkButton inline @click="disableAll">{{ i18n.ts.disableAll }}</MkButton>
-					<MkButton inline @click="enableAll">{{ i18n.ts.enableAll }}</MkButton>
-				</div>
 				<div class="_gaps_s">
+					<div>{{ i18n.ts.permissionsDescription }}</div>
+
+					<div class="_buttons">
+						<MkButton inline @click="disableAll">{{ i18n.ts.disableAll }}</MkButton>
+						<MkButton inline @click="enableAll">{{ i18n.ts.enableAll }}</MkButton>
+					</div>
+
 					<MkSwitch v-for="kind in Object.keys(permissionSwitches)" :key="kind" v-model="permissionSwitches[kind]">{{ i18n.ts._permissions[kind] }}</MkSwitch>
 				</div>
 			</MkFolder>
 
 			<MkFolder v-if="iAmAdmin">
 				<template #label>{{ i18n.ts.adminPermission }}</template>
-				<template #caption>{{ i18n.ts.adminPermissionsDescription }}</template>
 				<template #suffix>{{ adminPermsCount || i18n.ts.none }}</template>
 
-				<div class="_buttons">
-					<MkButton inline @click="disableAllAdmin">{{ i18n.ts.disableAll }}</MkButton>
-					<MkButton inline @click="enableAllAdmin">{{ i18n.ts.enableAll }}</MkButton>
-				</div>
+				<div class="_gaps_s">
+					<div>{{ i18n.ts.adminPermissionsDescription }}</div>
 
-				<div :class="$style.adminPermissions" class="_gaps_s">
-					<MkSwitch v-for="kind in Object.keys(permissionSwitchesForAdmin)" :key="kind" v-model="permissionSwitchesForAdmin[kind]">{{ i18n.ts._permissions[kind] }}</MkSwitch>
+					<div class="_buttons">
+						<MkButton inline :disabled="rank !== 'admin'" @click="disableAllAdmin">{{ i18n.ts.disableAll }}</MkButton>
+						<MkButton inline :disabled="rank !== 'admin'" @click="enableAllAdmin">{{ i18n.ts.enableAll }}</MkButton>
+					</div>
+
+					<MkSwitch
+						v-for="kind in Object.keys(permissionSwitchesForAdmin)"
+						:key="kind"
+						v-model="permissionSwitchesForAdmin[kind]"
+						:disabled="rank !== 'admin'"
+					>
+						{{ i18n.ts._permissions[kind] }}
+					</MkSwitch>
 				</div>
 			</MkFolder>
 
 			<MkFolder>
 				<template #label>{{ i18n.ts.sharedAccess }}</template>
-				<template #caption>{{ i18n.ts.sharedAccessDescription }}</template>
 				<template #suffix>{{ grantees.length || i18n.ts.none }}</template>
 
-				<MkButton primary @click="addGrantee">
-					<i class="ti ti-plus"></i> {{ i18n.ts.addGrantee }}
-				</MkButton>
+				<div class="_gaps_s">
+					<div>{{ i18n.ts.sharedAccessDescription }}</div>
 
-				<div v-for="(grantee, i) of grantees" :key="grantee.id" :class="$style.grantee">
-					<MkUserCardMini :user="grantee" :withChart="false"/>
-					<button v-tooltip="i18n.ts.removeGrantee" class="_textButton" @click="() => removeGrantee(i)"><i class="ti ti-x"></i></button>
+					<MkButton primary @click="addGrantee">
+						<i class="ti ti-plus"></i> {{ i18n.ts.addGrantee }}
+					</MkButton>
+
+					<div v-for="(grantee, i) of grantees" :key="grantee.id" :class="$style.grantee">
+						<MkUserCardMini :user="grantee" :withChart="false"/>
+						<button v-tooltip="i18n.ts.removeGrantee" class="_textButton" @click="() => removeGrantee(i)"><i class="ti ti-x"></i></button>
+					</div>
 				</div>
 			</MkFolder>
 		</div>
@@ -141,8 +155,8 @@ const rank = ref<'admin' | 'mod' | 'user'>(
 		: $i?.isModerator
 			? 'mod'
 			: 'user');
-const permsCount = computed(() => Object.values(permissionSwitches).reduce((sum, active) => active ? sum + 1 : sum, 0));
-const adminPermsCount = computed(() => Object.values(permissionSwitchesForAdmin).reduce((sum, active) => active ? sum + 1 : sum, 0));
+const permsCount = computed(() => Object.values(permissionSwitches.value).reduce((sum, active) => active ? sum + 1 : sum, 0));
+const adminPermsCount = computed(() => Object.values(permissionSwitchesForAdmin.value).reduce((sum, active) => active ? sum + 1 : sum, 0));
 
 if (props.initialPermissions) {
 	for (const kind of props.initialPermissions) {
@@ -165,7 +179,7 @@ function ok(): void {
 		name: name.value,
 		permissions: [
 			...Object.keys(permissionSwitches.value).filter(p => permissionSwitches.value[p]),
-			...(iAmAdmin ? Object.keys(permissionSwitchesForAdmin.value).filter(p => permissionSwitchesForAdmin.value[p]) : []),
+			...((iAmAdmin && rank.value === 'admin') ? Object.keys(permissionSwitchesForAdmin.value).filter(p => permissionSwitchesForAdmin.value[p]) : []),
 		],
 		grantees: grantees.value.map(g => g.id),
 		rank: rank.value,
