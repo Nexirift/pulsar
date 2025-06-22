@@ -81,8 +81,10 @@ import MkUserCardMini from '@/components/MkUserCardMini.vue';
 const list = ref<InstanceType<typeof FormPagination>>();
 
 const props = withDefaults(defineProps<{
+	onlySharedAccess?: boolean,
 	limit?: number,
 }>(), {
+	onlySharedAccess: false,
 	limit: 100,
 });
 
@@ -91,6 +93,7 @@ const pagination = computed(() => ({
 	limit: props.limit,
 	params: {
 		sort: '+lastUsedAt',
+		onlySharedAccess: props.onlySharedAccess,
 	},
 }));
 
