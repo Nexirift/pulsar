@@ -41,7 +41,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<template #label>{{ i18n.ts.sharedAccess }}</template>
 							<template #suffix>{{ token.grantees.length }}</template>
 
-							<MkUserCardMini v-for="grantee of token.grantees" :key="grantee.id" :user="grantee" :withChart="false"/>
+							<MkUserCardMini v-for="grantee of token.grantees" :key="grantee.id" :user="grantee" :withChart="true" :withLink="true"/>
 						</MkFolder>
 						<MkFolder v-if="standardPerms(token.permission).length > 0">
 							<template #label>{{ i18n.ts.permission }}</template>
