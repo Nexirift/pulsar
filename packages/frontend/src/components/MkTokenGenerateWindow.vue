@@ -174,7 +174,27 @@ if (props.initialPermissions) {
 	}
 }
 
-function ok(): void {
+async function ok(): Promise<void> {
+	if (props.withSharedAccess === true && grantees.value.length < 1) {
+		await os.alert({
+			type: 'warning',
+			title: i18n.ts.grantSharedAccessNoSelection,
+			text: i18n.ts.grantSharedAccessNoSelection2,
+		});
+		return;
+	}
+
+	if (!Object.values(permissionSwitches.value).some(v => v) && !Object.values(permissionSwitchesForAdmin.value).some(v => v)) {
+		const { canceled } = await os.confirm({
+			type: 'question',
+			okText: i18n.ts.yes,
+			cancelText: i18n.ts.no,
+			text: i18n.ts.tokenHasNoPermissionsConfirm,
+		});
+
+		if (canceled) return;
+	}
+
 	emit('done', {
 		name: name.value,
 		permissions: [
