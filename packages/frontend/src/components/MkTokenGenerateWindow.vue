@@ -46,7 +46,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<option value="user">{{ i18n.ts._ranks.user }}</option>
 			</MkSelect>
 
-			<MkFolder v-if="enableSharedAccess !== false" :defaultOpen="enableSharedAccess === true">
+			<MkFolder v-if="withSharedAccess !== false" :defaultOpen="withSharedAccess === true">
 				<template #label>{{ i18n.ts.sharedAccess }}</template>
 				<template #suffix>{{ grantees.length || i18n.ts.none }}</template>
 
@@ -127,13 +127,13 @@ const props = withDefaults(defineProps<{
 	information?: string | null;
 	initialName?: string | null;
 	initialPermissions?: (typeof Misskey.permissions)[number][] | null;
-	enableSharedAccess?: boolean | null;
+	withSharedAccess?: boolean | null;
 }>(), {
 	title: null,
 	information: null,
 	initialName: null,
 	initialPermissions: null,
-	enableSharedAccess: null,
+	withSharedAccess: null,
 });
 
 const emit = defineEmits<{

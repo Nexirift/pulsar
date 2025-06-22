@@ -107,7 +107,7 @@ export async function authorizePlugin(plugin: Plugin) {
 			information: i18n.ts.pluginTokenRequestedDescription,
 			initialName: plugin.name,
 			initialPermissions: plugin.permissions,
-			enableSharedAccess: false,
+			withSharedAccess: false,
 		}, {
 			done: async result => {
 				const { name, permissions, rank } = result;
