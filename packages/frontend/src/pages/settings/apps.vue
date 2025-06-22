@@ -124,6 +124,10 @@ function adminPerms(perms: string[]): string[] {
 	return perms.filter(perm => isAdmin(perm));
 }
 
+defineExpose({
+	reload: () => list.value?.reload(),
+});
+
 const headerActions = computed(() => []);
 
 const headerTabs = computed(() => []);
