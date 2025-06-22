@@ -99,11 +99,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const accessToken = secureRndstr(32);
 
 			const now = new Date();
-			const accessTokenId = this.idService.gen(now.getTime());
 
 			// Insert access token doc
 			await this.accessTokensRepository.insert({
-				id: accessTokenId,
+				id: this.idService.gen(now.getTime()),
 				lastUsedAt: now,
 				session: ps.session,
 				userId: me.id,
