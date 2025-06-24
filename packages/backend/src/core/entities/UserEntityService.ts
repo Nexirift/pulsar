@@ -30,7 +30,6 @@ import type {
 	DriveFilesRepository,
 	FollowingsRepository,
 	FollowRequestsRepository,
-	MiAccessToken,
 	MiFollowing,
 	MiInstance,
 	MiMeta,
@@ -56,6 +55,7 @@ import { ChatService } from '@/core/ChatService.js';
 import { isSystemAccount } from '@/misc/is-system-account.js';
 import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 import type { CacheService } from '@/core/CacheService.js';
+import { getCallerId } from '@/misc/attach-caller-id.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { NoteEntityService } from './NoteEntityService.js';
 import type { PageEntityService } from './PageEntityService.js';
@@ -439,7 +439,6 @@ export class UserEntityService implements OnModuleInit {
 			instances?: Map<string, MiInstance | null>,
 			securityKeyCounts?: Map<string, number>,
 			myFollowings?: Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>,
-			token?: MiAccessToken | null,
 		},
 	): Promise<Packed<S>> {
 		const opts = Object.assign({
@@ -702,7 +701,7 @@ export class UserEntityService implements OnModuleInit {
 				achievements: profile!.achievements,
 				loggedInDays: profile!.loggedInDates.length,
 				policies: fetchPolicies(),
-				permissions: this.getPermissions(opts.token, iAmModerator, iAmAdmin),
+				permissions: this.getPermissions(user, iAmModerator, iAmAdmin),
 				defaultCW: profile!.defaultCW,
 				defaultCWPriority: profile!.defaultCWPriority,
 				allowUnsignedFetch: user.allowUnsignedFetch,
@@ -882,10 +881,11 @@ export class UserEntityService implements OnModuleInit {
 	}
 
 	@bindThis
-	private getPermissions(token: MiAccessToken | null | undefined, isModerator: boolean, isAdmin: boolean): readonly string[] {
-		let permissions = token?.permission ?? Misskey.permissions;
+	private getPermissions(user: MiUser, isModerator: boolean, isAdmin: boolean): readonly string[] {
+		const token = getCallerId(user);
+		let permissions = token?.accessToken?.permission ?? Misskey.permissions;
 
-		if (!isAdmin) {
+		if (!isModerator && !isAdmin) {
 			permissions = permissions.filter(perm => !perm.startsWith('read:admin') && !perm.startsWith('write:admin'));
 		}
 
