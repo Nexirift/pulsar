@@ -574,13 +574,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async postNoteCreated(note: MiNote, user: MiUser & {
-		id: MiUser['id'];
-		username: MiUser['username'];
-		host: MiUser['host'];
-		isBot: MiUser['isBot'];
-		noindex: MiUser['noindex'];
-	}, data: Option, silent: boolean, mentionedUsers: MinimumUser[]) {
+	public async postNoteCreated(note: MiNote, user: MiUser, data: MiNote & { poll: MiPoll | null }, silent: boolean, mentionedUsers: MinimumUser[]) {
 		this.notesChart.update(note, true);
 		if (note.visibility !== 'specified' && (this.meta.enableChartsForRemoteUser || (user.host == null))) {
 			this.perUserNotesChart.update(user, note, true);

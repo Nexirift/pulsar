@@ -612,13 +612,7 @@ export class NoteEditService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async postNoteEdited(note: MiNote, user: MiUser & {
-		id: MiUser['id'];
-		username: MiUser['username'];
-		host: MiUser['host'];
-		isBot: MiUser['isBot'];
-		noindex: MiUser['noindex'];
-	}, data: Option, silent: boolean, mentionedUsers: MinimumUser[]) {
+	public async postNoteEdited(note: MiNote, user: MiUser, data: MiNote & { poll: MiPoll | null }, silent: boolean, mentionedUsers: MinimumUser[]) {
 		// Register host
 		if (this.meta.enableStatsForFederatedInstances) {
 			if (isRemoteUser(user)) {

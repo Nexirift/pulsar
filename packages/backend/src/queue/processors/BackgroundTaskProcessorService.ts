@@ -19,7 +19,7 @@ import ApRequestChart from '@/core/chart/charts/ap-request.js';
 import FederationChart from '@/core/chart/charts/federation.js';
 import { UpdateInstanceQueue } from '@/core/UpdateInstanceQueue.js';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
-import type { DriveFilesRepository, NoteEditsRepository, NotesRepository, UsersRepository } from '@/models/_.js';
+import type { DriveFilesRepository, NoteEditsRepository, NotesRepository, PollsRepository, UsersRepository } from '@/models/_.js';
 import { MiUser } from '@/models/_.js';
 import { NoteEditService } from '@/core/NoteEditService.js';
 import { HashtagService } from '@/core/HashtagService.js';
@@ -49,6 +49,9 @@ export class BackgroundTaskProcessorService {
 
 		@Inject(DI.usersRepository)
 		private readonly usersRepository: UsersRepository,
+
+		@Inject(DI.pollsRepository)
+		private readonly pollsRepository: PollsRepository,
 
 		private readonly apPersonService: ApPersonService,
 		private readonly cacheService: CacheService,
@@ -246,17 +249,21 @@ export class BackgroundTaskProcessorService {
 	}
 
 	private async processPostNote(task: PostNoteBackgroundTask): Promise<string> {
-		const note = await this.notesRepository.findOneBy({ id: task.noteId });
+		const note = await this.notesRepository.findOne({
+			where: { id: task.noteId },
+			relations: { user: true, renote: true, reply: true, channel: true },
+		});
 		if (!note) return `Skipping post-note task: note ${task.noteId} has been deleted`;
 		const user = await this.cacheService.findUserById(note.userId);
 		if (user.isSuspended) return `Skipping post-note task: note ${task.noteId}'s user ${note.userId} is suspended`;
 
 		const mentionedUsers = await this.cacheService.getUsers(note.mentions);
+		const poll = await this.pollsRepository.findOneBy({ noteId: note.id });
 
 		if (task.edit) {
-			await this.noteEditService.postNoteEdited(note, user, note, task.silent, Array.from(mentionedUsers.values()));
+			await this.noteEditService.postNoteEdited(note, user, { ...note, poll }, task.silent, Array.from(mentionedUsers.values()));
 		} else {
-			await this.noteCreateService.postNoteCreated(note, user, note, task.silent, Array.from(mentionedUsers.values()));
+			await this.noteCreateService.postNoteCreated(note, user, { ...note, poll }, task.silent, Array.from(mentionedUsers.values()));
 		}
 
 		return 'ok';
