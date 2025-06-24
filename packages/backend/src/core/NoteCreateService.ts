@@ -644,7 +644,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			});
 		}
 
-		if (this.isRenote(data) && !this.isQuote(data) && data.renote.userId !== user.id && !user.isBot) {
+		if (this.isPureRenote(data) && data.renote.userId !== user.id && !user.isBot) {
 			await this.incRenoteCount(data.renote, user);
 		}
 
@@ -822,12 +822,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 	@bindThis
 	private async incRenoteCount(renote: MiNote, user: MiUser) {
-		await this.notesRepository.createQueryBuilder().update()
-			.set({
-				renoteCount: () => '"renoteCount" + 1',
-			})
-			.where('id = :id', { id: renote.id })
-			.execute();
+		await this.notesRepository.increment({ id: renote.id }, 'renoteCount', 1);
 
 		// 30%の確率、3日以内に投稿されたノートの場合ハイライト用ランキング更新
 		if (user.isExplorable && Math.random() < 0.3 && (this.timeService.now - this.idService.parse(renote.id).date.getTime()) < 1000 * 60 * 60 * 24 * 3) {
