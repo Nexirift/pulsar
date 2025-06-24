@@ -10,6 +10,7 @@ import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { CacheService } from '@/core/CacheService.js';
+import { QueryService } from '@/core/QueryService.js';
 
 export const meta = {
 	requireCredential: true,
@@ -77,6 +78,9 @@ export const paramDef = {
 	properties: {
 		sort: { type: 'string', enum: ['+createdAt', '-createdAt', '+lastUsedAt', '-lastUsedAt'] },
 		onlySharedAccess: { type: 'boolean' },
+		limit: { type: 'integer', minimum: 1, maximum: 100, default: 30 },
+		sinceId: { type: 'string', format: 'misskey:id' },
+		untilId: { type: 'string', format: 'misskey:id' },
 	},
 	required: [],
 } as const;
@@ -89,11 +93,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private readonly userEntityService: UserEntityService,
 		private readonly cacheService: CacheService,
+		private readonly queryService: QueryService,
 		private idService: IdService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const query = this.accessTokensRepository.createQueryBuilder('token')
+			const query = this.queryService.makePaginationQuery(this.accessTokensRepository.createQueryBuilder('token'), ps.sinceId, ps.untilId)
 				.where('token.userId = :userId', { userId: me.id })
+				.limit(ps.limit)
 				.leftJoinAndSelect('token.app', 'app');
 
 			switch (ps.sort) {

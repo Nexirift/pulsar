@@ -8,6 +8,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import type { AccessTokensRepository } from '@/models/_.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { QueryService } from '@/core/QueryService.js';
 
 export const meta = {
 	requireCredential: true,
@@ -62,7 +63,15 @@ export const meta = {
 	},
 } as const;
 
-export const paramDef = {} as const;
+export const paramDef = {
+	type: 'object',
+	properties: {
+		limit: { type: 'integer', minimum: 1, maximum: 100, default: 30 },
+		sinceId: { type: 'string', format: 'misskey:id' },
+		untilId: { type: 'string', format: 'misskey:id' },
+	},
+	required: [],
+} as const;
 
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
@@ -71,11 +80,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly accessTokensRepository: AccessTokensRepository,
 
 		private readonly userEntityService: UserEntityService,
+		private readonly queryService: QueryService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const tokens = await this.accessTokensRepository
-				.createQueryBuilder('token')
+			const tokens = await this.queryService.makePaginationQuery(this.accessTokensRepository.createQueryBuilder('token'), ps.sinceId, ps.untilId)
 				.where(':meIdAsList <@ token.granteeIds', { meIdAsList: [me.id] })
+				.limit(ps.limit)
 				.getMany();
 
 			const userIds = tokens.map(token => token.userId);
