@@ -531,8 +531,8 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		if (user == null) return false;
 
 		// Check for dropped token permissions
-		const callerId = getCallerId(user);
-		if (callerId?.accessToken?.rank != null && callerId.accessToken.rank !== 'admin' && callerId.accessToken.rank !== 'mod') return false;
+		const rank = getCallerId(user)?.accessToken?.rank;
+		if (rank != null && rank !== 'admin' && rank !== 'mod') return false;
 
 		return (this.meta.rootUserId === user.id) || (await this.getUserRoles(user.id)).some(r => r.isModerator || r.isAdministrator);
 	}
@@ -542,8 +542,8 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		if (user == null) return false;
 
 		// Check for dropped token permissions
-		const callerId = getCallerId(user);
-		if (callerId?.accessToken?.rank != null && callerId.accessToken.rank !== 'admin') return false;
+		const rank = getCallerId(user)?.accessToken?.rank;
+		if (rank != null && rank !== 'admin') return false;
 
 		return (this.meta.rootUserId === user.id) || (await this.getUserRoles(user.id)).some(r => r.isAdministrator);
 	}
