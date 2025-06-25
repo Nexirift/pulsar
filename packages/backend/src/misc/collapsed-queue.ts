@@ -47,6 +47,14 @@ export class CollapsedQueue<K, V> {
 		}
 	}
 
+	delete(key: K) {
+		const job = this.jobs.get(key);
+		if (job) {
+			clearTimeout(job.timer);
+			this.jobs.delete(key);
+		}
+	}
+
 	async performAllNow() {
 		const entries = [...this.jobs.entries()];
 		this.jobs.clear();
