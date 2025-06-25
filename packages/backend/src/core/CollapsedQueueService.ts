@@ -132,9 +132,6 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 				concurrency: 4, // High concurrency - this queue gets a lot of activity
 			},
 		);
-
-		this.internalEventService.on('localUserUpdated', this.onUserUpdated);
-		this.internalEventService.on('remoteUserUpdated', this.onUserUpdated);
 	}
 
 	@bindThis
@@ -169,16 +166,8 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		this.logger.error(`Error persisting ${queue.name}: ${renderInlineError(error)}`);
 	}
 
-	@bindThis
-	private onUserUpdated(data: { id: string }) {
-		this.updateUserQueue.enqueue(data.id, { updatedAt: new Date() });
-	}
-
 	async onApplicationShutdown() {
 		// TODO note/user delete events
-		// TODO remove updated events
-		this.internalEventService.off('localUserUpdated', this.onUserUpdated);
-		this.internalEventService.off('remoteUserUpdated', this.onUserUpdated);
 
 		await this.performAllNow();
 	}
