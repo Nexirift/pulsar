@@ -32,6 +32,7 @@ export type UpdateUserJob = {
 export type UpdateNoteJob = {
 	repliesCountDelta?: number;
 	renoteCountDelta?: number;
+	clippedCountDelta?: number;
 };
 
 @Injectable()
@@ -107,10 +108,12 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 			(oldJob, newJob) => ({
 				repliesCountDelta: (oldJob.repliesCountDelta ?? 0) + (newJob.repliesCountDelta ?? 0),
 				renoteCountDelta: (oldJob.renoteCountDelta ?? 0) + (newJob.renoteCountDelta ?? 0),
+				clippedCountDelta: (oldJob.clippedCountDelta ?? 0) + (newJob.clippedCountDelta ?? 0),
 			}),
 			(id, job) => this.notesRepository.update({ id }, {
 				repliesCount: job.repliesCountDelta ? () => `"repliesCount" + ${job.repliesCountDelta}` : undefined,
 				renoteCount: job.renoteCountDelta ? () => `"renoteCount" + ${job.renoteCountDelta}` : undefined,
+				clippedCount: job.clippedCountDelta ? () => `"clippedCount" + ${job.clippedCountDelta}` : undefined,
 			}),
 			{
 				onError: this.onQueueError,
