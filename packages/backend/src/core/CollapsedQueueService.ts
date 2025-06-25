@@ -29,6 +29,8 @@ export type UpdateInstanceJob = {
 export type UpdateUserJob = {
 	updatedAt?: Date,
 	notesCountDelta?: number,
+	followingCountDelta?: number,
+	followersCountDelta?: number,
 };
 
 export type UpdateNoteJob = {
@@ -97,10 +99,14 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 			(oldJob, newJob) => ({
 				updatedAt: maxDate(oldJob.updatedAt, newJob.updatedAt),
 				notesCountDelta: (oldJob.notesCountDelta ?? 0) + (newJob.notesCountDelta ?? 0),
+				followingCountDelta: (oldJob.followingCountDelta ?? 0) + (newJob.followingCountDelta ?? 0),
+				followersCountDelta: (oldJob.followersCountDelta ?? 0) + (newJob.followersCountDelta ?? 0),
 			}),
 			(id, job) => this.usersRepository.update({ id }, {
 				updatedAt: job.updatedAt,
 				notesCount: job.notesCountDelta ? () => `"notesCount" + ${job.notesCountDelta}` : undefined,
+				followingCount: job.followingCountDelta ? () => `"followingCount" + ${job.followingCountDelta}` : undefined,
+				followersCount: job.followersCountDelta ? () => `"followersCount" + ${job.followersCountDelta}` : undefined,
 			}),
 			{
 				onError: this.onQueueError,
@@ -170,6 +176,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 
 	async onApplicationShutdown() {
 		// TODO note/user delete events
+		// TODO remove updated events
 		this.internalEventService.off('localUserUpdated', this.onUserUpdated);
 		this.internalEventService.off('remoteUserUpdated', this.onUserUpdated);
 

@@ -288,10 +288,8 @@ export class UserFollowingService implements OnModuleInit {
 		// Neither followee nor follower has moved.
 		if (!followeeUser.movedToUri && !followerUser.movedToUri) {
 			//#region Increment counts
-			await Promise.all([
-				this.usersRepository.increment({ id: follower.id }, 'followingCount', 1),
-				this.usersRepository.increment({ id: followee.id }, 'followersCount', 1),
-			]);
+			this.collapsedQueueService.updateUserQueue.enqueue(follower.id, { followingCountDelta: 1 });
+			this.collapsedQueueService.updateUserQueue.enqueue(followee.id, { followersCountDelta: 1 });
 			//#endregion
 
 			//#region Update instance stats
@@ -400,10 +398,8 @@ export class UserFollowingService implements OnModuleInit {
 		// Neither followee nor follower has moved.
 		if (!follower.movedToUri && !followee.movedToUri) {
 			//#region Decrement following / followers counts
-			await Promise.all([
-				this.usersRepository.decrement({ id: follower.id }, 'followingCount', 1),
-				this.usersRepository.decrement({ id: followee.id }, 'followersCount', 1),
-			]);
+			this.collapsedQueueService.updateUserQueue.enqueue(follower.id, { followingCountDelta: -1 });
+			this.collapsedQueueService.updateUserQueue.enqueue(followee.id, { followersCountDelta: -1 });
 			//#endregion
 
 			//#region Update instance stats
