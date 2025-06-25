@@ -33,11 +33,11 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 	) {
 		this.logger = loggerService.getLogger('collapsed-queue');
 		this.updateInstanceQueue = new CollapsedQueue(
-			this.envService.env.NODE_ENV !== 'test'
-				? 60 * 1000 * 5
-				: 0,
+			'updateInstance',
+			this.envService.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0,
 			(oldJob, newJob) => this.collapseUpdateInstance(oldJob, newJob),
 			(id, job) => this.performUpdateInstance(id, job),
+			this.onQueueError,
 		);
 	}
 
@@ -63,11 +63,37 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		});
 	}
 
-	async dispose() {
-		await this.updateInstanceQueue.performAllNow().catch(err => this.logger.error(`Shutdown error in updateInstanceQueue: ${renderInlineError(err)}`));
+	@bindThis
+	async performAllNow() {
+		this.logger.info('Persisting all collapsed queues...');
+
+		await this.performQueue(this.updateInstanceQueue);
+
+		this.logger.info('Persistence complete.');
+	}
+
+	@bindThis
+	private async performQueue<K, V>(queue: CollapsedQueue<K, V>): Promise<void> {
+		try {
+			const results = await queue.performAllNow();
+
+			const [succeeded, failed] = results.reduce((counts, result) => {
+				counts[result.status === 'fulfilled' ? 0 : 1]++;
+				return counts;
+			}, [0, 0]);
+
+			this.logger.debug(`Persistence completed for ${queue.name}: ${succeeded} succeeded and ${failed} failed`);
+		} catch (err) {
+			this.logger.error(`Persistence failed for ${queue.name}: ${renderInlineError(err)}`);
+		}
+	}
+
+	@bindThis
+	private onQueueError<K, V>(queue: CollapsedQueue<K, V>, error: unknown): void {
+		this.logger.error(`Error persisting ${queue.name}: ${renderInlineError(error)}`);
 	}
 
 	async onApplicationShutdown() {
-		await this.dispose();
+		await this.performAllNow();
 	}
 }
