@@ -21,6 +21,7 @@ export type UpdateInstanceJob = {
 	latestRequestReceivedAt?: Date,
 	shouldUnsuspend?: boolean,
 	notesCountDelta?: number,
+	usersCountDelta?: number,
 };
 
 export type UpdateUserJob = {
@@ -68,12 +69,14 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 				latestRequestReceivedAt: maxDate(oldJob.latestRequestReceivedAt, newJob.latestRequestReceivedAt),
 				shouldUnsuspend: oldJob.shouldUnsuspend || newJob.shouldUnsuspend,
 				notesCountDelta: (oldJob.notesCountDelta ?? 0) + (newJob.notesCountDelta ?? 0),
+				usersCountDelta: (oldJob.usersCountDelta ?? 0) + (newJob.usersCountDelta ?? 0),
 			}),
 			(id, job) => this.federatedInstanceService.update(id, {
 				latestRequestReceivedAt: job.latestRequestReceivedAt,
 				isNotResponding: job.latestRequestReceivedAt ? false : undefined,
 				suspensionState: job.shouldUnsuspend ? 'none' : undefined,
 				notesCount: job.notesCountDelta ? () => `"notesCount" + ${job.notesCountDelta}` : undefined,
+				usersCount: job.usersCountDelta ? () => `"usersCount" + ${job.usersCountDelta}` : undefined,
 			}),
 			{
 				onError: this.onQueueError,

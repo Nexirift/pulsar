@@ -47,6 +47,7 @@ import { isRetryableError } from '@/misc/is-retryable-error.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { QueueService } from '@/core/QueueService.js';
+import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 import { getApId, getApType, isActor, isCollection, isCollectionOrOrderedCollection, isPropertyValue } from '../type.js';
 import { ApLoggerService } from '../ApLoggerService.js';
 import { extractApHashtags } from './tag.js';
@@ -123,6 +124,7 @@ export class ApPersonService implements OnModuleInit {
 		private readonly idService: IdService,
 		private readonly timeService: TimeService,
 		private readonly queueService: QueueService,
+		private readonly collapsedQueueService: CollapsedQueueService,
 
 		apLoggerService: ApLoggerService,
 	) {
@@ -576,7 +578,7 @@ export class ApPersonService implements OnModuleInit {
 		// Register host
 		if (this.meta.enableStatsForFederatedInstances) {
 			this.federatedInstanceService.fetchOrRegister(host).then(i => {
-				this.instancesRepository.increment({ id: i.id }, 'usersCount', 1);
+				this.collapsedQueueService.updateInstanceQueue.enqueue(i.id, { usersCountDelta: 1 });
 				if (this.meta.enableChartsForFederatedInstances) {
 					this.instanceChart.newUser(i.host);
 				}
