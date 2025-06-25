@@ -78,19 +78,17 @@ export class NoteDeleteService {
 		const cascadingNotes = await this.findCascadingNotes(note);
 
 		if (note.replyId) {
-			promises.push(this.notesRepository.decrement({ id: note.replyId }, 'repliesCount', 1));
+			this.collapsedQueueService.updateNoteQueue.enqueue(note.replyId, { deltaRepliesCount: -1 });
 		} else if (isPureRenote(note)) {
-			promises.push(this.notesRepository.decrement({ id: note.renoteId }, 'renoteCount', 1));
+			this.collapsedQueueService.updateNoteQueue.enqueue(note.renoteId, { deltaRenoteCount: -1 });
 		}
 
-		const cascadeReplies = cascadingNotes.filter(cascade => cascade.replyId != null);
-		const cascadeRenotes = cascadingNotes.filter(cascade => cascade.renoteId != null);
-
-		if (cascadeReplies.length > 0) {
-			promises.push(this.notesRepository.decrement({ id: In(cascadeReplies.map(cascade => cascade.replyId)) }, 'repliesCount', 1));
-		}
-		if (cascadeRenotes.length > 0) {
-			promises.push(this.notesRepository.decrement({ id: In(cascadeRenotes.map(cascade => cascade.renoteId)) }, 'renoteCount', 1));
+		for (const cascade of cascadingNotes) {
+			if (cascade.replyId) {
+				this.collapsedQueueService.updateNoteQueue.enqueue(cascade.replyId, { deltaRepliesCount: -1 });
+			} else if (isPureRenote(cascade)) {
+				this.collapsedQueueService.updateNoteQueue.enqueue(cascade.renoteId, { deltaRenoteCount: -1 });
+			}
 		}
 
 		if (!quiet) {

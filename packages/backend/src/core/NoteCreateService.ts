@@ -618,7 +618,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		}, user);
 
 		if (data.reply) {
-			await this.saveReply(data.reply, note);
+			this.collapsedQueueService.updateNoteQueue.enqueue(data.reply.id, { deltaRepliesCount: 1 });
 		}
 
 		if (data.reply == null) {
@@ -646,8 +646,10 @@ export class NoteCreateService implements OnApplicationShutdown {
 			});
 		}
 
+		// TODO move these checks into incRenoteCount
 		if (this.isPureRenote(data) && data.renote.userId !== user.id && !user.isBot) {
-			await this.incRenoteCount(data.renote, user);
+			this.collapsedQueueService.updateNoteQueue.enqueue(data.renote.id, { deltaRenoteCount: 1 });
+			await this.incRenoteCount(data.renote, user)
 		}
 
 		if (data.poll && data.poll.expiresAt) {
@@ -822,10 +824,9 @@ export class NoteCreateService implements OnApplicationShutdown {
 	 */
 	readonly isQuote = isQuote;
 
+	// Note: does not increment the count! used only for featured rankings.
 	@bindThis
 	private async incRenoteCount(renote: MiNote, user: MiUser) {
-		await this.notesRepository.increment({ id: renote.id }, 'renoteCount', 1);
-
 		// 30%の確率、3日以内に投稿されたノートの場合ハイライト用ランキング更新
 		if (user.isExplorable && Math.random() < 0.3 && (this.timeService.now - this.idService.parse(renote.id).date.getTime()) < 1000 * 60 * 60 * 24 * 3) {
 			const policies = await this.roleService.getUserPolicies(user);
@@ -876,11 +877,6 @@ export class NoteCreateService implements OnApplicationShutdown {
 			// Create notification
 			nm.push(u.id, 'mention');
 		}
-	}
-
-	@bindThis
-	private async saveReply(reply: MiNote, note: MiNote) {
-		await this.notesRepository.increment({ id: reply.id }, 'repliesCount', 1);
 	}
 
 	@bindThis

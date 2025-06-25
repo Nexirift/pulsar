@@ -14,7 +14,7 @@ import { bindThis } from '@/decorators.js';
 import type { MiInstance } from '@/models/Instance.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
 import { MiUser } from '@/models/User.js';
-import type { MiNote, UsersRepository } from '@/models/_.js';
+import type { MiNote, UsersRepository, NotesRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 
 export type UpdateInstanceJob = {
@@ -28,18 +28,27 @@ export type UpdateUserJob = {
 	notesCountDelta?: number,
 };
 
+export type UpdateNoteJob = {
+	deltaRepliesCount?: number;
+	deltaRenoteCount?: number;
+};
+
 @Injectable()
 export class CollapsedQueueService implements OnApplicationShutdown {
 	// Moved from InboxProcessorService
 	public readonly updateInstanceQueue: CollapsedQueue<MiInstance['id'], UpdateInstanceJob>;
 	// Moved from NoteCreateService, NoteEditService, and NoteDeleteService
 	public readonly updateUserQueue: CollapsedQueue<MiUser['id'], UpdateUserJob>;
+	public readonly updateNoteQueue: CollapsedQueue<MiNote['id'], UpdateNoteJob>;
 
 	private readonly logger: Logger;
 
 	constructor(
 		@Inject(DI.usersRepository)
 		public readonly usersRepository: UsersRepository,
+
+		@Inject(DI.notesRepository)
+		public readonly notesRepository: NotesRepository,
 
 		private readonly federatedInstanceService: FederatedInstanceService,
 		private readonly envService: EnvService,
@@ -85,7 +94,24 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 			}),
 			{
 				onError: this.onQueueError,
-				concurrency: 4,
+				concurrency: 4, // High concurrency - this queue gets a lot of activity
+			},
+		);
+
+		this.updateNoteQueue = new CollapsedQueue(
+			'updateNote',
+			oneMinuteInterval,
+			(oldJob, newJob) => ({
+				deltaRepliesCount: (oldJob.deltaRepliesCount ?? 0) + (newJob.deltaRepliesCount ?? 0),
+				deltaRenoteCount: (oldJob.deltaRenoteCount ?? 0) + (newJob.deltaRenoteCount ?? 0),
+			}),
+			(id, job) => this.notesRepository.update({ id }, {
+				repliesCount: job.deltaRepliesCount ? () => `"repliesCount" + ${job.deltaRepliesCount}` : undefined,
+				renoteCount: job.deltaRenoteCount ? () => `"renoteCount" + ${job.deltaRenoteCount}` : undefined,
+			}),
+			{
+				onError: this.onQueueError,
+				concurrency: 4, // High concurrency - this queue gets a lot of activity
 			},
 		);
 
@@ -99,6 +125,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 
 		await this.performQueue(this.updateInstanceQueue);
 		await this.performQueue(this.updateUserQueue);
+		await this.performQueue(this.updateNoteQueue);
 
 		this.logger.info('Persistence complete.');
 	}
@@ -130,6 +157,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 	}
 
 	async onApplicationShutdown() {
+		// TODO note/user delete events
 		this.internalEventService.off('localUserUpdated', this.onUserUpdated);
 		this.internalEventService.off('remoteUserUpdated', this.onUserUpdated);
 
