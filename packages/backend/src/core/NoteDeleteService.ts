@@ -78,16 +78,16 @@ export class NoteDeleteService {
 		const cascadingNotes = await this.findCascadingNotes(note);
 
 		if (note.replyId) {
-			this.collapsedQueueService.updateNoteQueue.enqueue(note.replyId, { deltaRepliesCount: -1 });
+			this.collapsedQueueService.updateNoteQueue.enqueue(note.replyId, { repliesCountDelta: -1 });
 		} else if (isPureRenote(note)) {
-			this.collapsedQueueService.updateNoteQueue.enqueue(note.renoteId, { deltaRenoteCount: -1 });
+			this.collapsedQueueService.updateNoteQueue.enqueue(note.renoteId, { renoteCountDelta: -1 });
 		}
 
 		for (const cascade of cascadingNotes) {
 			if (cascade.replyId) {
-				this.collapsedQueueService.updateNoteQueue.enqueue(cascade.replyId, { deltaRepliesCount: -1 });
+				this.collapsedQueueService.updateNoteQueue.enqueue(cascade.replyId, { repliesCountDelta: -1 });
 			} else if (isPureRenote(cascade)) {
-				this.collapsedQueueService.updateNoteQueue.enqueue(cascade.renoteId, { deltaRenoteCount: -1 });
+				this.collapsedQueueService.updateNoteQueue.enqueue(cascade.renoteId, { renoteCountDelta: -1 });
 			}
 		}
 

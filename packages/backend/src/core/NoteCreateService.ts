@@ -618,7 +618,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		}, user);
 
 		if (data.reply) {
-			this.collapsedQueueService.updateNoteQueue.enqueue(data.reply.id, { deltaRepliesCount: 1 });
+			this.collapsedQueueService.updateNoteQueue.enqueue(data.reply.id, { repliesCountDelta: 1 });
 		}
 
 		if (data.reply == null) {
@@ -648,7 +648,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 		// TODO move these checks into incRenoteCount
 		if (this.isPureRenote(data) && data.renote.userId !== user.id && !user.isBot) {
-			this.collapsedQueueService.updateNoteQueue.enqueue(data.renote.id, { deltaRenoteCount: 1 });
+			this.collapsedQueueService.updateNoteQueue.enqueue(data.renote.id, { renoteCountDelta: 1 });
 			await this.incRenoteCount(data.renote, user)
 		}
 

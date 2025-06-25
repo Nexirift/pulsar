@@ -29,8 +29,8 @@ export type UpdateUserJob = {
 };
 
 export type UpdateNoteJob = {
-	deltaRepliesCount?: number;
-	deltaRenoteCount?: number;
+	repliesCountDelta?: number;
+	renoteCountDelta?: number;
 };
 
 @Injectable()
@@ -102,12 +102,12 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 			'updateNote',
 			oneMinuteInterval,
 			(oldJob, newJob) => ({
-				deltaRepliesCount: (oldJob.deltaRepliesCount ?? 0) + (newJob.deltaRepliesCount ?? 0),
-				deltaRenoteCount: (oldJob.deltaRenoteCount ?? 0) + (newJob.deltaRenoteCount ?? 0),
+				repliesCountDelta: (oldJob.repliesCountDelta ?? 0) + (newJob.repliesCountDelta ?? 0),
+				renoteCountDelta: (oldJob.renoteCountDelta ?? 0) + (newJob.renoteCountDelta ?? 0),
 			}),
 			(id, job) => this.notesRepository.update({ id }, {
-				repliesCount: job.deltaRepliesCount ? () => `"repliesCount" + ${job.deltaRepliesCount}` : undefined,
-				renoteCount: job.deltaRenoteCount ? () => `"renoteCount" + ${job.deltaRenoteCount}` : undefined,
+				repliesCount: job.repliesCountDelta ? () => `"repliesCount" + ${job.repliesCountDelta}` : undefined,
+				renoteCount: job.renoteCountDelta ? () => `"renoteCount" + ${job.renoteCountDelta}` : undefined,
 			}),
 			{
 				onError: this.onQueueError,
