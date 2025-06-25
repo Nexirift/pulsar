@@ -14,7 +14,7 @@ import { bindThis } from '@/decorators.js';
 import type { MiInstance } from '@/models/Instance.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
 import { MiUser } from '@/models/User.js';
-import type { MiNote, UsersRepository, NotesRepository } from '@/models/_.js';
+import type { MiNote, UsersRepository, NotesRepository, MiAccessToken, AccessTokensRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 
 export type UpdateInstanceJob = {
@@ -42,6 +42,10 @@ export type UpdateNoteJob = {
 	clippedCountDelta?: number;
 };
 
+export type UpdateAccessTokenJob = {
+	lastUsedAt: Date;
+};
+
 @Injectable()
 export class CollapsedQueueService implements OnApplicationShutdown {
 	// Moved from InboxProcessorService
@@ -49,6 +53,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 	// Moved from NoteCreateService, NoteEditService, and NoteDeleteService
 	public readonly updateUserQueue: CollapsedQueue<MiUser['id'], UpdateUserJob>;
 	public readonly updateNoteQueue: CollapsedQueue<MiNote['id'], UpdateNoteJob>;
+	public readonly updateAccessTokenQueue: CollapsedQueue<MiAccessToken['id'], UpdateAccessTokenJob>;
 
 	private readonly logger: Logger;
 
@@ -58,6 +63,9 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 
 		@Inject(DI.notesRepository)
 		public readonly notesRepository: NotesRepository,
+
+		@Inject(DI.accessTokensRepository)
+		public readonly accessTokensRepository: AccessTokensRepository,
 
 		private readonly federatedInstanceService: FederatedInstanceService,
 		private readonly envService: EnvService,
@@ -160,6 +168,21 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 			},
 		);
 
+		this.updateAccessTokenQueue = new CollapsedQueue(
+			'updateAccessToken',
+			fiveMinuteInterval,
+			(oldJob, newJob) => ({
+				lastUsedAt: maxDate(oldJob.lastUsedAt, newJob.lastUsedAt),
+			}),
+			(id, job) => this.accessTokensRepository.update({ id }, {
+				lastUsedAt: job.lastUsedAt,
+			}),
+			{
+				onError: this.onQueueError,
+				concurrency: 2,
+			},
+		);
+
 		this.internalEventService.on('userChangeDeletedState', this.onUserDeleted);
 	}
 
@@ -170,6 +193,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		await this.performQueue(this.updateInstanceQueue);
 		await this.performQueue(this.updateUserQueue);
 		await this.performQueue(this.updateNoteQueue);
+		await this.performQueue(this.updateAccessTokenQueue);
 
 		this.logger.info('Persistence complete.');
 	}
@@ -209,6 +233,8 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 	}
 }
 
+function maxDate(first: Date | undefined, second: Date): Date;
+function maxDate(first: Date, second: Date | undefined): Date;
 function maxDate(first: Date | undefined, second: Date | undefined): Date | undefined;
 function maxDate(first: Date | null | undefined, second: Date | null | undefined): Date | null | undefined;
 
