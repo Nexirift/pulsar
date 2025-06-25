@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 import { CollapsedQueue } from '@/misc/collapsed-queue.js';
@@ -12,55 +12,69 @@ import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { EnvService } from '@/core/EnvService.js';
 import { bindThis } from '@/decorators.js';
 import type { MiInstance } from '@/models/Instance.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
+import { MiUser } from '@/models/User.js';
+import type { UsersRepository } from '@/models/_.js';
+import { DI } from '@/di-symbols.js';
 
 export type UpdateInstanceJob = {
 	latestRequestReceivedAt: Date,
 	shouldUnsuspend: boolean,
 };
 
+export type UpdateUserJob = {
+	updatedAt: Date,
+};
+
 @Injectable()
 export class CollapsedQueueService implements OnApplicationShutdown {
 	// Moved from InboxProcessorService to allow access from ApInboxService
 	public readonly updateInstanceQueue: CollapsedQueue<MiInstance['id'], UpdateInstanceJob>;
+	public readonly updateUserQueue: CollapsedQueue<MiUser['id'], UpdateUserJob>;
 
 	private readonly logger: Logger;
 
 	constructor(
+		@Inject(DI.usersRepository)
+		public readonly usersRepository: UsersRepository,
+
 		private readonly federatedInstanceService: FederatedInstanceService,
 		private readonly envService: EnvService,
+		private readonly internalEventService: InternalEventService,
 
 		loggerService: LoggerService,
 	) {
 		this.logger = loggerService.getLogger('collapsed-queue');
+
+		const fiveMinuteInterval = this.envService.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0;
+
 		this.updateInstanceQueue = new CollapsedQueue(
 			'updateInstance',
-			this.envService.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0,
-			(oldJob, newJob) => this.collapseUpdateInstance(oldJob, newJob),
-			(id, job) => this.performUpdateInstance(id, job),
+			fiveMinuteInterval,
+			(oldJob, newJob) => ({
+				latestRequestReceivedAt: new Date(Math.max(oldJob.latestRequestReceivedAt.getTime(), newJob.latestRequestReceivedAt.getTime())),
+				shouldUnsuspend: oldJob.shouldUnsuspend || newJob.shouldUnsuspend,
+			}),
+			(id, job) => this.federatedInstanceService.update(id, {
+				latestRequestReceivedAt: job.latestRequestReceivedAt,
+				isNotResponding: false,
+				suspensionState: job.shouldUnsuspend ? 'none' : undefined,
+			}),
 			this.onQueueError,
 		);
-	}
 
-	@bindThis
-	private collapseUpdateInstance(oldJob: UpdateInstanceJob, newJob: UpdateInstanceJob) {
-		const latestRequestReceivedAt = oldJob.latestRequestReceivedAt < newJob.latestRequestReceivedAt
-			? newJob.latestRequestReceivedAt
-			: oldJob.latestRequestReceivedAt;
-		const shouldUnsuspend = oldJob.shouldUnsuspend || newJob.shouldUnsuspend;
-		return {
-			latestRequestReceivedAt,
-			shouldUnsuspend,
-		};
-	}
+		this.updateUserQueue = new CollapsedQueue(
+			'updateUser',
+			fiveMinuteInterval,
+			(oldJob, newJob) => ({
+				updatedAt: new Date(Math.max(oldJob.updatedAt.getTime(), newJob.updatedAt.getTime())),
+			}),
+			(id, job) => this.usersRepository.update({ id }, { updatedAt: job.updatedAt }),
+			this.onQueueError,
+		);
 
-	@bindThis
-	private async performUpdateInstance(id: string, job: UpdateInstanceJob) {
-		await this.federatedInstanceService.update(id, {
-			latestRequestReceivedAt: new Date(),
-			isNotResponding: false,
-			// もしサーバーが死んでるために配信が止まっていた場合には自動的に復活させてあげる
-			suspensionState: job.shouldUnsuspend ? 'none' : undefined,
-		});
+		this.internalEventService.on('localUserUpdated', this.onUserUpdated);
+		this.internalEventService.on('remoteUserUpdated', this.onUserUpdated);
 	}
 
 	@bindThis
@@ -68,6 +82,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		this.logger.info('Persisting all collapsed queues...');
 
 		await this.performQueue(this.updateInstanceQueue);
+		await this.performQueue(this.updateUserQueue);
 
 		this.logger.info('Persistence complete.');
 	}
@@ -93,7 +108,15 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		this.logger.error(`Error persisting ${queue.name}: ${renderInlineError(error)}`);
 	}
 
+	@bindThis
+	private onUserUpdated(data: { id: string }) {
+		this.updateUserQueue.enqueue(data.id, { updatedAt: new Date() });
+	}
+
 	async onApplicationShutdown() {
+		this.internalEventService.off('localUserUpdated', this.onUserUpdated);
+		this.internalEventService.off('remoteUserUpdated', this.onUserUpdated);
+
 		await this.performAllNow();
 	}
 }

@@ -59,6 +59,7 @@ import { CollapsedQueue } from '@/misc/collapsed-queue.js';
 import { CacheService } from '@/core/CacheService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
+import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention';
 
@@ -226,6 +227,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		private latestNoteService: LatestNoteService,
 		private readonly timeService: TimeService,
 		private readonly noteVisibilityService: NoteVisibilityService,
+		private readonly collapsedQueueService: CollapsedQueueService,
 	) {
 		this.updateNotesCountQueue = new CollapsedQueue(this.timeService, process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseNotesCount, this.performUpdateNotesCount);
 	}
@@ -604,9 +606,9 @@ export class NoteCreateService implements OnApplicationShutdown {
 		if (!this.isRenote(note) || this.isQuote(note)) {
 			// Increment notes count (user)
 			await this.incNotesCountOfUser(user);
-		} else {
-			await this.queueService.createMarkUserUpdatedJob(user.id);
 		}
+
+		this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: new Date() });
 
 		await this.pushToTl(note, user);
 

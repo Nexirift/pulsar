@@ -184,8 +184,7 @@ export type BackgroundTaskJobData =
 	UpdateLatestNoteBackgroundTask |
 	PostSuspendBackgroundTask |
 	PostUnsuspendBackgroundTask |
-	DeleteApLogsBackgroundTask |
-	MarkUserUpdatedBackgroundTask;
+	DeleteApLogsBackgroundTask;
 
 export type UpdateUserBackgroundTask = {
 	type: 'update-user';
@@ -261,9 +260,4 @@ export type DeleteApLogsBackgroundTask = {
 	type: 'delete-ap-logs';
 	dataType: 'inbox' | 'object';
 	data: string | string[];
-};
-
-export type MarkUserUpdatedBackgroundTask = {
-	type: 'mark-user-updated';
-	userId: string;
 };

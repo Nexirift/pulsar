@@ -19,7 +19,7 @@ export class CollapsedQueue<K, V> {
 		protected readonly timeService: TimeService,
 		private readonly timeout: number,
 		private readonly collapse: (oldValue: V, newValue: V) => V,
-		private readonly perform: (key: K, value: V) => Promise<void>,
+		private readonly perform: (key: K, value: V) => Promise<void | unknown>,
 		private readonly onError?: (queue: CollapsedQueue<K, V>, error: unknown) => void,
 	) {}
 

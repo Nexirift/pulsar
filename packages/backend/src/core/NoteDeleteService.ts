@@ -27,7 +27,7 @@ import { LatestNoteService } from '@/core/LatestNoteService.js';
 import { ApLogService } from '@/core/ApLogService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { trackTask } from '@/misc/promise-tracker.js';
-import { QueueService } from '@/core/QueueService.js';
+import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 import { CacheService } from '@/core/CacheService.js';
 
 @Injectable()
@@ -61,7 +61,7 @@ export class NoteDeleteService {
 		private latestNoteService: LatestNoteService,
 		private readonly apLogService: ApLogService,
 		private readonly timeService: TimeService,
-		private readonly queueService: QueueService,
+		private readonly collapsedQueueService: CollapsedQueueService,
 		private readonly cacheService: CacheService,
 	) {}
 
@@ -142,9 +142,9 @@ export class NoteDeleteService {
 			if (!isPureRenote(note)) {
 				// Decrement notes count (user)
 				promises.push(this.decNotesCountOfUser(user));
-			} else {
-				promises.push(this.queueService.createMarkUserUpdatedJob(user.id));
 			}
+
+			this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: new Date() });
 
 			for (const cascade of cascadingNotes) {
 				if (!isPureRenote(cascade)) {

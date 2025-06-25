@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import * as Bull from 'bullmq';
-import { BackgroundTaskJobData, CheckHibernationBackgroundTask, PostDeliverBackgroundTask, PostInboxBackgroundTask, PostNoteBackgroundTask, UpdateFeaturedBackgroundTask, UpdateInstanceBackgroundTask, UpdateUserTagsBackgroundTask, UpdateUserBackgroundTask, UpdateNoteTagsBackgroundTask, DeleteFileBackgroundTask, UpdateLatestNoteBackgroundTask, PostSuspendBackgroundTask, PostUnsuspendBackgroundTask, DeleteApLogsBackgroundTask, MarkUserUpdatedBackgroundTask } from '@/queue/types.js';
+import { BackgroundTaskJobData, CheckHibernationBackgroundTask, PostDeliverBackgroundTask, PostInboxBackgroundTask, PostNoteBackgroundTask, UpdateFeaturedBackgroundTask, UpdateInstanceBackgroundTask, UpdateUserTagsBackgroundTask, UpdateUserBackgroundTask, UpdateNoteTagsBackgroundTask, DeleteFileBackgroundTask, UpdateLatestNoteBackgroundTask, PostSuspendBackgroundTask, PostUnsuspendBackgroundTask, DeleteApLogsBackgroundTask } from '@/queue/types.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
 import { QueueLoggerService } from '@/queue/QueueLoggerService.js';
 import Logger from '@/logger.js';
@@ -18,7 +18,7 @@ import InstanceChart from '@/core/chart/charts/instance.js';
 import ApRequestChart from '@/core/chart/charts/ap-request.js';
 import FederationChart from '@/core/chart/charts/federation.js';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
-import type { DriveFilesRepository, NoteEditsRepository, NotesRepository, PollsRepository, UsersRepository } from '@/models/_.js';
+import type { DriveFilesRepository, NoteEditsRepository, NotesRepository, PollsRepository } from '@/models/_.js';
 import { MiUser } from '@/models/_.js';
 import { NoteEditService } from '@/core/NoteEditService.js';
 import { HashtagService } from '@/core/HashtagService.js';
@@ -27,7 +27,6 @@ import { LatestNoteService } from '@/core/LatestNoteService.js';
 import { trackTask } from '@/misc/promise-tracker.js';
 import { UserSuspendService } from '@/core/UserSuspendService.js';
 import { ApLogService } from '@/core/ApLogService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
 import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 
 @Injectable()
@@ -47,9 +46,6 @@ export class BackgroundTaskProcessorService {
 		@Inject(DI.noteEditsRepository)
 		private readonly noteEditsRepository: NoteEditsRepository,
 
-		@Inject(DI.usersRepository)
-		private readonly usersRepository: UsersRepository,
-
 		@Inject(DI.pollsRepository)
 		private readonly pollsRepository: PollsRepository,
 
@@ -68,7 +64,6 @@ export class BackgroundTaskProcessorService {
 		private readonly latestNoteService: LatestNoteService,
 		private readonly userSuspendService: UserSuspendService,
 		private readonly apLogService: ApLogService,
-		private readonly internalEventService: InternalEventService,
 
 		queueLoggerService: QueueLoggerService,
 	) {
@@ -102,11 +97,9 @@ export class BackgroundTaskProcessorService {
 			return await this.processPostSuspend(job.data);
 		} else if (job.data.type === 'post-unsuspend') {
 			return await this.processPostUnsuspend(job.data);
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		} else if (job.data.type === 'delete-ap-logs') {
 			return await this.processDeleteApLogs(job.data);
-			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		} else if (job.data.type === 'mark-user-updated') {
-			return await this.processMarkUserUpdated(job.data);
 		} else {
 			this.logger.warn(`Can't process unknown job type "${job.data}"; this is likely a bug. Full job data:`, job.data);
 			throw new Error(`Unknown job type ${job.data}, see system logs for details`);
@@ -348,21 +341,6 @@ export class BackgroundTaskProcessorService {
 		} else {
 			this.logger.warn(`Can't process unknown data type "${task.dataType}"; this is likely a bug. Full task data:`, task);
 			throw new Error(`Unknown task type ${task.dataType}, see system logs for details`);
-		}
-
-		return 'ok';
-	}
-
-	private async processMarkUserUpdated(task: MarkUserUpdatedBackgroundTask): Promise<string> {
-		const user = await this.cacheService.findOptionalUserById(task.userId);
-		if (!user || user.isDeleted) return `Skipping post-unsuspend task: user ${task.userId} has been deleted`;
-
-		await this.usersRepository.update({ id: user.id }, { updatedAt: new Date() });
-
-		if (user.host == null) {
-			await this.internalEventService.emit('localUserUpdated', { id: user.id });
-		} else {
-			await this.internalEventService.emit('remoteUserUpdated', { id: user.id });
 		}
 
 		return 'ok';

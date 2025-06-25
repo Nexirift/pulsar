@@ -55,6 +55,7 @@ import { NoteCreateService } from '@/core/NoteCreateService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import { isPureRenote } from '@/misc/is-renote.js';
+import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention' | 'edited';
 
@@ -224,6 +225,7 @@ export class NoteEditService implements OnApplicationShutdown {
 		private noteCreateService: NoteCreateService,
 		private readonly timeService: TimeService,
 		private readonly noteVisibilityService: NoteVisibilityService,
+		private readonly collapsedQueueService: CollapsedQueueService,
 	) {
 		this.updateNotesCountQueue = new CollapsedQueue(this.timeService, process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseNotesCount, this.performUpdateNotesCount);
 	}
@@ -627,7 +629,7 @@ export class NoteEditService implements OnApplicationShutdown {
 			}
 		}
 
-		await this.queueService.createMarkUserUpdatedJob(user.id);
+		this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: new Date() });
 
 		// ハッシュタグ更新
 		await this.pushToTl(note, user);
