@@ -69,27 +69,21 @@ export class Resolver {
 		return this.recursionLimit;
 	}
 
-	public async resolveCollection(value: string | IObjectWithId, allowAnonymous?: boolean, sentFromUri?: string): Promise<AnyCollection & IObjectWithId>;
-	public async resolveCollection(value: string | IObject, allowAnonymous: boolean | undefined, sentFromUri: string): Promise<AnyCollection & IObjectWithId>;
-	public async resolveCollection(value: string | IObject, allowAnonymous?: boolean, sentFromUri?: string): Promise<AnyCollection>;
 	@bindThis
 	public async resolveCollection(value: string | IObject, allowAnonymous?: boolean, sentFromUri?: string): Promise<AnyCollection> {
-		const collection = typeof value === 'string'
-			? sentFromUri
-				? await this.secureResolve(value, sentFromUri, allowAnonymous)
-				: await this.resolve(value, allowAnonymous)
-			: value; // TODO try and remove this eventually, as it's a major security foot-gun
+		const collection = sentFromUri
+			? await this.secureResolve(value, sentFromUri, allowAnonymous)
+			: allowAnonymous
+				? await this.resolveAnonymous(value)
+				: await this.resolve(value, allowAnonymous);
 
 		if (isCollectionOrOrderedCollection(collection)) {
 			return collection;
 		} else {
-			throw new IdentifiableError('f100eccf-f347-43fb-9b45-96a0831fb635', `collection ${getApId(value)} has unsupported type: ${collection.type}`);
+			throw new IdentifiableError('f100eccf-f347-43fb-9b45-96a0831fb635', `collection ${getNullableApId(value)} has unsupported type: ${collection.type}`);
 		}
 	}
 
-	public async resolveCollectionItems(collection: IAnonymousObject, limit?: number | null, allowAnonymousItems?: true, concurrency?: number): Promise<IAnonymousObject[]>;
-	public async resolveCollectionItems(collection: string | IObjectWithId, limit?: number | null, allowAnonymousItems?: boolean, concurrency?: number): Promise<IObjectWithId[]>;
-	public async resolveCollectionItems(collection: string | IObject, limit?: number | null, allowAnonymousItems?: boolean, concurrency?: number): Promise<IObject[]>;
 	/**
 	 * Recursively resolves items from a collection.
 	 * Stops when reaching the resolution limit or an optional item limit - whichever is lower.
@@ -97,11 +91,12 @@ export class Resolver {
 	 * Malformed collections (mixing Ordered and un-Ordered types) are also supported.
 	 * @param collection Collection to resolve from - can be a URL or object of any supported collection type.
 	 * @param limit Maximum number of items to resolve. If null or undefined (default), then items will be resolved until reaching the recursion limit.
-	 * @param allowAnonymousItems If true, collection items can be anonymous (lack an ID). If false (default), then an error is thrown when reaching an item without ID.
+	 * @param allowAnonymous If true, collection items can be anonymous (lack an ID). If false (default), then an error is thrown when reaching an item without ID.
+	 * @param sentFromUri If collection is an object, this is the URI where it was sent from.
 	 * @param concurrency Maximum number of items to resolve at once. (default: 4)
 	 */
 	@bindThis
-	public async resolveCollectionItems(collection: string | IObject, limit?: number | null, allowAnonymousItems?: boolean, concurrency = 4): Promise<IObject[]> {
+	public async resolveCollectionItems(collection: string | IObject, allowAnonymous = false, sentFromUri?: string, limit?: number | null, concurrency = 4): Promise<IObject[]> {
 		const resolvedItems: IObject[] = [];
 
 		// This is pulled up to avoid code duplication below
@@ -109,11 +104,10 @@ export class Resolver {
 			const sentFrom = current.id;
 			const itemArr = toArray(items);
 			const itemLimit = limit ?? Number.MAX_SAFE_INTEGER;
-			const allowAnonymous = allowAnonymousItems ?? false;
 			await this.resolveItemArray(itemArr, sentFrom, itemLimit, concurrency, allowAnonymous, resolvedItems);
 		};
 
-		let current: AnyCollection | null = await this.resolveCollection(collection);
+		let current: AnyCollection | null = await this.resolveCollection(collection, allowAnonymous, sentFromUri);
 		do {
 			// Iterate all items in the current page
 			if (current.items) {
@@ -131,10 +125,10 @@ export class Resolver {
 				current = null;
 			} else if (isCollection(current) || isOrderedCollection(current)) {
 				// Continue to first page
-				current = current.first ? await this.resolveCollection(current.first, true, current.id) : null;
+				current = current.first ? await this.resolveCollection(current.first, allowAnonymous, current.id) : null;
 			} else if (isCollectionPage(current) || isOrderedCollectionPage(current)) {
 				// Continue to next page
-				current = current.next ? await this.resolveCollection(current.next, true, current.id) : null;
+				current = current.next ? await this.resolveCollection(current.next, allowAnonymous, current.id) : null;
 			} else {
 				// Stop in all other conditions
 				current = null;

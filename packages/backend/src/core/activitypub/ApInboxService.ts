@@ -107,7 +107,7 @@ export class ApInboxService {
 			const results = [] as [string, string | void][];
 			resolver ??= this.apResolverService.createResolver();
 
-			const items = await resolver.resolveCollectionItems(activity);
+			const items = await resolver.resolveCollectionItems(activity, true, getNullableApId(activity) ?? undefined);
 			for (let i = 0; i < items.length; i++) {
 				const act = items[i];
 				if (act.id != null) {
