@@ -42,6 +42,6 @@ export class CollapsedQueue<K, V> {
 		for (const [_key, job] of entries) {
 			this.timeService.stopTimer(job.timer);
 		}
-		await Promise.allSettled(entries.map(([key, job]) => this.perform(key, job.value)));
+		return await Promise.allSettled(entries.map(([key, job]) => this.perform(key, job.value)));
 	}
 }
