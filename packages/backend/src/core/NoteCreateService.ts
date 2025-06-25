@@ -646,10 +646,9 @@ export class NoteCreateService implements OnApplicationShutdown {
 			});
 		}
 
-		// TODO move these checks into incRenoteCount
-		if (this.isPureRenote(data) && data.renote.userId !== user.id && !user.isBot) {
+		if (this.isPureRenote(data)) {
 			this.collapsedQueueService.updateNoteQueue.enqueue(data.renote.id, { renoteCountDelta: 1 });
-			await this.incRenoteCount(data.renote, user)
+			await this.incRenoteCount(data.renote, user);
 		}
 
 		if (data.poll && data.poll.expiresAt) {
@@ -827,6 +826,9 @@ export class NoteCreateService implements OnApplicationShutdown {
 	// Note: does not increment the count! used only for featured rankings.
 	@bindThis
 	private async incRenoteCount(renote: MiNote, user: MiUser) {
+		// Moved down from the containing block
+		if (renote.userId === user.id || user.isBot) return;
+
 		// 30%の確率、3日以内に投稿されたノートの場合ハイライト用ランキング更新
 		if (user.isExplorable && Math.random() < 0.3 && (this.timeService.now - this.idService.parse(renote.id).date.getTime()) < 1000 * 60 * 60 * 24 * 3) {
 			const policies = await this.roleService.getUserPolicies(user);
