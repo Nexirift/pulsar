@@ -136,6 +136,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 			}),
 			{
 				onError: this.onQueueError,
+				onPerform: (_, id) => this.internalEventService.emit('userUpdated', { id }),
 				concurrency: 4, // High concurrency - this queue gets a lot of activity
 			},
 		);
