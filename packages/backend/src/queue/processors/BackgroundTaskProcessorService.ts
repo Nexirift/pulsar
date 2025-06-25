@@ -169,7 +169,7 @@ export class BackgroundTaskProcessorService {
 	}
 
 	private async processPostDeliver(task: PostDeliverBackgroundTask): Promise<string> {
-		let instance = await this.federatedInstanceService.fetchOrRegister(task.host);
+		const instance = await this.federatedInstanceService.fetchOrRegister(task.host);
 		if (instance.isBlocked) return `Skipping post-deliver task: instance ${task.host} is blocked`;
 
 		const success = task.result === 'success';
@@ -188,14 +188,10 @@ export class BackgroundTaskProcessorService {
 
 		// This is messy, but we need to minimize updates to space in Postgres blocks.
 		if (updateNotResponding || updateGoneSuspended || updateAutoSuspended) {
-			instance = await this.federatedInstanceService.update(instance.id, {
-				isNotResponding: updateNotResponding ? !success : undefined,
+			this.collapsedQueueService.updateInstanceQueue.enqueue(instance.id, {
 				notRespondingSince: updateNotResponding ? (success ? null : new Date()) : undefined,
-				suspensionState: updateGoneSuspended
-					? 'goneSuspended'
-					: updateAutoSuspended
-						? 'autoSuspendedForNotResponding'
-						: undefined,
+				shouldSuspendGone: updateGoneSuspended || undefined,
+				shouldSuspendNotResponding: updateAutoSuspended || undefined,
 			});
 		}
 
