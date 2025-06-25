@@ -155,7 +155,7 @@ export class NoteDeleteService {
 				if (isRemoteUser(user)) {
 					if (!isPureRenote(note)) {
 						const i = await this.federatedInstanceService.fetchOrRegister(user.host);
-						promises.push(this.instancesRepository.decrement({ id: i.id }, 'notesCount', 1));
+						this.collapsedQueueService.updateInstanceQueue.enqueue(i.id, { notesCountDelta: -1 });
 					}
 					if (this.meta.enableChartsForFederatedInstances) {
 						this.instanceChart.updateNote(user.host, note, false);
@@ -166,7 +166,7 @@ export class NoteDeleteService {
 					if (this.userEntityService.isRemoteUser(cascade.user)) {
 						if (!isPureRenote(cascade)) {
 							const i = await this.federatedInstanceService.fetchOrRegister(cascade.user.host);
-							promises.push(this.instancesRepository.decrement({ id: i.id }, 'notesCount', 1));
+							this.collapsedQueueService.updateInstanceQueue.enqueue(i.id, { notesCountDelta: -1 });
 						}
 						if (this.meta.enableChartsForFederatedInstances) {
 							this.instanceChart.updateNote(cascade.user.host, cascade, false);
