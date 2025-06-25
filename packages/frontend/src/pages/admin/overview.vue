@@ -60,6 +60,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<template #header>Inbox queue</template>
 			<XQueue domain="inbox"/>
 		</MkFoldableSection>
+
+		<MkFoldableSection class="item">
+			<template #header>{{ i18n.ts.backgroundQueue }}</template>
+			<XQueue domain="background"/>
+		</MkFoldableSection>
 	</div>
 </div>
 </template>
