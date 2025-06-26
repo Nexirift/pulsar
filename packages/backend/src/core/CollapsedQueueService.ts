@@ -102,7 +102,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 				followingCountDelta: (oldJob.followingCountDelta ?? 0) + (newJob.followingCountDelta ?? 0),
 				followersCountDelta: (oldJob.followersCountDelta ?? 0) + (newJob.followersCountDelta ?? 0),
 			}),
-			(id, job) => this.federatedInstanceService.update(id, {
+			async (id, job) => await this.federatedInstanceService.update(id, {
 				// Direct update if defined
 				latestRequestReceivedAt: job.latestRequestReceivedAt,
 
@@ -188,7 +188,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 				renoteCountDelta: (oldJob.renoteCountDelta ?? 0) + (newJob.renoteCountDelta ?? 0),
 				clippedCountDelta: (oldJob.clippedCountDelta ?? 0) + (newJob.clippedCountDelta ?? 0),
 			}),
-			(id, job) => this.notesRepository.update({ id }, {
+			async (id, job) => await this.notesRepository.update({ id }, {
 				repliesCount: job.repliesCountDelta ? () => `"repliesCount" + ${job.repliesCountDelta}` : undefined,
 				renoteCount: job.renoteCountDelta ? () => `"renoteCount" + ${job.renoteCountDelta}` : undefined,
 				clippedCount: job.clippedCountDelta ? () => `"clippedCount" + ${job.clippedCountDelta}` : undefined,
@@ -206,7 +206,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 			(oldJob, newJob) => ({
 				lastUsedAt: maxDate(oldJob.lastUsedAt, newJob.lastUsedAt),
 			}),
-			(id, job) => this.accessTokensRepository.update({ id }, {
+			async (id, job) => await this.accessTokensRepository.update({ id }, {
 				lastUsedAt: job.lastUsedAt,
 			}),
 			{
@@ -227,7 +227,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 				isActive: oldJob.isActive || newJob.isActive,
 				lastUsedAt: maxDate(oldJob.lastUsedAt, newJob.lastUsedAt),
 			}),
-			(id, job) => this.antennaService.updateAntenna(id, {
+			async (id, job) => await this.antennaService.updateAntenna(id, {
 				isActive: job.isActive,
 				lastUsedAt: job.lastUsedAt,
 			}),
