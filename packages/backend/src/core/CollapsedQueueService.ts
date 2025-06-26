@@ -14,8 +14,9 @@ import { bindThis } from '@/decorators.js';
 import type { MiInstance } from '@/models/Instance.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
 import { MiUser } from '@/models/User.js';
-import type { MiNote, UsersRepository, NotesRepository, MiAccessToken, AccessTokensRepository } from '@/models/_.js';
+import type { MiNote, UsersRepository, NotesRepository, MiAccessToken, AccessTokensRepository, MiAntenna, AntennasRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
+import { AntennaService } from '@/core/AntennaService.js';
 
 export type UpdateInstanceJob = {
 	latestRequestReceivedAt?: Date,
@@ -46,14 +47,30 @@ export type UpdateAccessTokenJob = {
 	lastUsedAt: Date;
 };
 
+export type UpdateAntennaJob = {
+	isActive: boolean,
+	lastUsedAt?: Date,
+};
+
+// TODO sync cross-process:
+//  1. Emit internal events when scheduling timer, performing queue, and enqueuing data
+//  2. On schedule, mark ID as deferred.
+//  3. On perform, clear mark.
+//  4. On performAll, skip deferred IDs.
+//  5. On enqueue when ID is deferred, send data as event instead.
+//  6. On delete when ID is deferred, clear mark
+
 @Injectable()
 export class CollapsedQueueService implements OnApplicationShutdown {
 	// Moved from InboxProcessorService
 	public readonly updateInstanceQueue: CollapsedQueue<MiInstance['id'], UpdateInstanceJob>;
+
 	// Moved from NoteCreateService, NoteEditService, and NoteDeleteService
 	public readonly updateUserQueue: CollapsedQueue<MiUser['id'], UpdateUserJob>;
+
 	public readonly updateNoteQueue: CollapsedQueue<MiNote['id'], UpdateNoteJob>;
 	public readonly updateAccessTokenQueue: CollapsedQueue<MiAccessToken['id'], UpdateAccessTokenJob>;
+	public readonly updateAntennaQueue: CollapsedQueue<MiAntenna['id'], UpdateAntennaJob>;
 
 	private readonly logger: Logger;
 
@@ -67,9 +84,13 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		@Inject(DI.accessTokensRepository)
 		public readonly accessTokensRepository: AccessTokensRepository,
 
+		@Inject(DI.antennasRepository)
+		public readonly antennasRepository: AntennasRepository,
+
 		private readonly federatedInstanceService: FederatedInstanceService,
 		private readonly envService: EnvService,
 		private readonly internalEventService: InternalEventService,
+		private readonly antennaService: AntennaService,
 
 		loggerService: LoggerService,
 	) {
@@ -136,15 +157,17 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 				followingCountDelta: (oldJob.followingCountDelta ?? 0) + (newJob.followingCountDelta ?? 0),
 				followersCountDelta: (oldJob.followersCountDelta ?? 0) + (newJob.followersCountDelta ?? 0),
 			}),
-			(id, job) => this.usersRepository.update({ id }, {
-				updatedAt: job.updatedAt,
-				notesCount: job.notesCountDelta ? () => `"notesCount" + ${job.notesCountDelta}` : undefined,
-				followingCount: job.followingCountDelta ? () => `"followingCount" + ${job.followingCountDelta}` : undefined,
-				followersCount: job.followersCountDelta ? () => `"followersCount" + ${job.followersCountDelta}` : undefined,
-			}),
+			async (id, job) => {
+				await this.usersRepository.update({ id }, {
+					updatedAt: job.updatedAt,
+					notesCount: job.notesCountDelta ? () => `"notesCount" + ${job.notesCountDelta}` : undefined,
+					followingCount: job.followingCountDelta ? () => `"followingCount" + ${job.followingCountDelta}` : undefined,
+					followersCount: job.followersCountDelta ? () => `"followersCount" + ${job.followersCountDelta}` : undefined,
+				});
+				await this.internalEventService.emit('userUpdated', { id });
+			},
 			{
 				onError: this.onQueueError,
-				onPerform: (_, id) => this.internalEventService.emit('userUpdated', { id }),
 				concurrency: 4, // High concurrency - this queue gets a lot of activity
 			},
 		);
@@ -183,7 +206,26 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 			},
 		);
 
+		this.updateAntennaQueue = new CollapsedQueue(
+			'updateAntenna',
+			fiveMinuteInterval,
+			(oldJob, newJob) => ({
+				isActive: oldJob.isActive || newJob.isActive,
+				lastUsedAt: maxDate(oldJob.lastUsedAt, newJob.lastUsedAt),
+			}),
+			(id, job) => this.antennaService.updateAntenna(id, {
+				isActive: job.isActive,
+				lastUsedAt: job.lastUsedAt,
+			}),
+			{
+				onError: this.onQueueError,
+				concurrency: 4,
+			},
+		);
+
 		this.internalEventService.on('userChangeDeletedState', this.onUserDeleted);
+		this.internalEventService.on('antennaDeleted', this.onAntennaDeleted);
+		this.internalEventService.on('antennaUpdated', this.onAntennaDeleted);
 	}
 
 	@bindThis
@@ -194,6 +236,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		await this.performQueue(this.updateUserQueue);
 		await this.performQueue(this.updateNoteQueue);
 		await this.performQueue(this.updateAccessTokenQueue);
+		await this.performQueue(this.updateAntennaQueue);
 
 		this.logger.info('Persistence complete.');
 	}
@@ -226,8 +269,15 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		}
 	}
 
+	@bindThis
+	private onAntennaDeleted(data: MiAntenna) {
+		this.updateAntennaQueue.delete(data.id);
+	}
+
 	async onApplicationShutdown() {
 		this.internalEventService.off('userChangeDeletedState', this.onUserDeleted);
+		this.internalEventService.off('antennaDeleted', this.onAntennaDeleted);
+		this.internalEventService.off('antennaUpdated', this.onAntennaDeleted);
 
 		await this.performAllNow();
 	}

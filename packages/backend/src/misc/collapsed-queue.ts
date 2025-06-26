@@ -24,7 +24,6 @@ export class CollapsedQueue<K, V> {
 		private readonly perform: (key: K, value: V) => Promise<void | unknown>,
 		private readonly opts?: {
 			onError?: (queue: CollapsedQueue<K, V>, error: unknown) => void | Promise<void>,
-			onPerform?: (queue: CollapsedQueue<K, V>, key: K, value: V) => void | Promise<void>,
 			concurrency?: number,
 		},
 	) {
@@ -74,7 +73,6 @@ export class CollapsedQueue<K, V> {
 			} else {
 				await this.perform(key, value);
 			}
-			await this.opts?.onPerform?.(this, key, value);
 		} catch (err) {
 			await this.opts?.onError?.(this, err);
 			throw err;

@@ -18,13 +18,15 @@ import type { AntennasRepository, UserListMembershipsRepository } from '@/models
 import type { MiAntenna } from '@/models/Antenna.js';
 import type { MiNote } from '@/models/Note.js';
 import type { MiUser } from '@/models/User.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
 import { CacheService } from './CacheService.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 
 @Injectable()
 export class AntennaService implements OnApplicationShutdown {
+	// TODO implement QuantumSingleCache then replace this
 	private antennasFetched: boolean;
-	private antennas: MiAntenna[];
+	private antennas: Map<string, MiAntenna>;
 
 	constructor(
 		@Inject(DI.redisForTimelines)
@@ -43,9 +45,10 @@ export class AntennaService implements OnApplicationShutdown {
 		private utilityService: UtilityService,
 		private globalEventService: GlobalEventService,
 		private fanoutTimelineService: FanoutTimelineService,
+		private readonly internalEventService: InternalEventService,
 	) {
 		this.antennasFetched = false;
-		this.antennas = [];
+		this.antennas = new Map();
 
 		this.redisForSub.on('message', this.onRedisMessage);
 	}
@@ -58,39 +61,34 @@ export class AntennaService implements OnApplicationShutdown {
 			const { type, body } = obj.message as GlobalEvents['internal']['payload'];
 			switch (type) {
 				case 'antennaCreated':
-					this.antennas.push({ // TODO: このあたりのデシリアライズ処理は各modelファイル内に関数としてexportしたい
+				case 'antennaUpdated':
+					this.antennas.set(body.id, { // TODO: このあたりのデシリアライズ処理は各modelファイル内に関数としてexportしたい
 						...body,
 						lastUsedAt: new Date(body.lastUsedAt),
 						user: null, // joinなカラムは通常取ってこないので
 						userList: null, // joinなカラムは通常取ってこないので
 					});
 					break;
-				case 'antennaUpdated': {
-					const idx = this.antennas.findIndex(a => a.id === body.id);
-					if (idx >= 0) {
-						this.antennas[idx] = { // TODO: このあたりのデシリアライズ処理は各modelファイル内に関数としてexportしたい
-							...body,
-							lastUsedAt: new Date(body.lastUsedAt),
-							user: null, // joinなカラムは通常取ってこないので
-							userList: null, // joinなカラムは通常取ってこないので
-						};
-					} else {
-						// サーバ起動時にactiveじゃなかった場合、リストに持っていないので追加する必要あり
-						this.antennas.push({ // TODO: このあたりのデシリアライズ処理は各modelファイル内に関数としてexportしたい
-							...body,
-							lastUsedAt: new Date(body.lastUsedAt),
-							user: null, // joinなカラムは通常取ってこないので
-							userList: null, // joinなカラムは通常取ってこないので
-						});
-					}
-				}
-					break;
 				case 'antennaDeleted':
-					this.antennas = this.antennas.filter(a => a.id !== body.id);
+					this.antennas.delete(body.id);
 					break;
 				default:
 					break;
 			}
+		}
+	}
+
+	@bindThis
+	public async updateAntenna(id: string, data: Partial<MiAntenna>) {
+		await this.antennasRepository.update({ id }, data);
+
+		const antenna = this.antennas.get(id) ?? await this.antennasRepository.findOneBy({ id });
+		if (antenna) {
+			// This will be handled above to save result
+			await this.internalEventService.emit('antennaUpdated', {
+				...antenna,
+				...data,
+			});
 		}
 	}
 
@@ -212,13 +210,14 @@ export class AntennaService implements OnApplicationShutdown {
 	@bindThis
 	public async getAntennas() {
 		if (!this.antennasFetched) {
-			this.antennas = await this.antennasRepository.findBy({
+			const allAntennas = await this.antennasRepository.findBy({
 				isActive: true,
 			});
+			this.antennas = new Map(allAntennas.map(a => [a.id, a]));
 			this.antennasFetched = true;
 		}
 
-		return this.antennas;
+		return Array.from(this.antennas.values());
 	}
 
 	@bindThis
