@@ -78,62 +78,94 @@ export class QueueService implements OnModuleInit {
 
 	@bindThis
 	public async onModuleInit() {
-		await this.systemQueue.add('tickCharts', {
-		}, {
-			repeat: { pattern: '55 * * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'tickCharts-scheduler',
+			{ pattern: '55 * * * *' },
+			{
+				name: 'tickCharts',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		await this.systemQueue.add('resyncCharts', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'resyncCharts-scheduler',
+			{ pattern: '0 0 * * *' },
+			{
+				name: 'resyncCharts',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		await this.systemQueue.add('cleanCharts', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'cleanCharts-scheduler',
+			{ pattern: '0 0 * * *' },
+			{
+				name: 'cleanCharts',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		await this.systemQueue.add('aggregateRetention', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'aggregateRetention-scheduler',
+			{ pattern: '0 0 * * *' },
+			{
+				name: 'aggregateRetention',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		await this.systemQueue.add('clean', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'clean-scheduler',
+			{ pattern: '0 0 * * *' },
+			{
+				name: 'clean',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		await this.systemQueue.add('checkExpiredMutings', {
-		}, {
-			repeat: { pattern: '*/5 * * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'checkExpiredMutings-scheduler',
+			{ pattern: '*/5 * * * *' },
+			{
+				name: 'checkExpiredMutings',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		await this.systemQueue.add('bakeBufferedReactions', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'backBufferedReactions-scheduler',
+			{ pattern: '0 0 * * *' },
+			{
+				name: 'backBufferedReactions',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		await this.systemQueue.add('checkModeratorsActivity', {
-		}, {
+		await this.systemQueue.upsertJobScheduler(
+			'checkModeratorsActivity-scheduler',
 			// 毎時30分に起動
-			repeat: { pattern: '30 * * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+			{ pattern: '30 * * * *' },
+			{
+				name: 'checkModeratorsActivity',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 	}
 
 	@bindThis
