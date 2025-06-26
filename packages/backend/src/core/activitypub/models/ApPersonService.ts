@@ -494,7 +494,7 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 				user = u as MiRemoteUser;
 				publicKey = await this.userPublickeysRepository.findOneBy({ userId: user.id });
 			} else {
-				this.logger.error(`Error creating Person: ${renderInlineError(e)}`);
+				this.logger.error(`Error creating Person ${uri}: ${renderInlineError(e)}`);
 				throw e;
 			}
 		}
