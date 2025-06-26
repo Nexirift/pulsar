@@ -97,6 +97,8 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 				latestRequestReceivedAt: maxDate(oldJob.latestRequestReceivedAt, newJob.latestRequestReceivedAt),
 				notRespondingSince: maxDate(oldJob.notRespondingSince, newJob.notRespondingSince),
 				shouldUnsuspend: oldJob.shouldUnsuspend || newJob.shouldUnsuspend,
+				shouldSuspendGone: oldJob.shouldSuspendGone || newJob.shouldSuspendGone,
+				shouldSuspendNotResponding: oldJob.shouldSuspendNotResponding || newJob.shouldSuspendNotResponding,
 				notesCountDelta: (oldJob.notesCountDelta ?? 0) + (newJob.notesCountDelta ?? 0),
 				usersCountDelta: (oldJob.usersCountDelta ?? 0) + (newJob.usersCountDelta ?? 0),
 				followingCountDelta: (oldJob.followingCountDelta ?? 0) + (newJob.followingCountDelta ?? 0),
