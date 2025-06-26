@@ -81,7 +81,7 @@ export class AuthenticateService {
 				throw new AuthenticationError('invalid signature');
 			}
 
-			this.collapsedQueueService.updateAccessTokenQueue.enqueue(accessToken.id, {
+			await this.collapsedQueueService.updateAccessTokenQueue.enqueue(accessToken.id, {
 				lastUsedAt: this.timeService.date,
 			});
 

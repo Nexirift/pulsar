@@ -577,12 +577,12 @@ export class ApPersonService implements OnModuleInit {
 
 		// Register host
 		if (this.meta.enableStatsForFederatedInstances) {
-			this.federatedInstanceService.fetchOrRegister(host).then(i => {
-				this.collapsedQueueService.updateInstanceQueue.enqueue(i.id, { usersCountDelta: 1 });
+			this.federatedInstanceService.fetchOrRegister(host).then(async i => {
+				await this.collapsedQueueService.updateInstanceQueue.enqueue(i.id, { usersCountDelta: 1 });
 				if (this.meta.enableChartsForFederatedInstances) {
 					this.instanceChart.newUser(i.host);
 				}
-				this.fetchInstanceMetadataService.fetchInstanceMetadataLazy(i);
+				await this.fetchInstanceMetadataService.fetchInstanceMetadataLazy(i);
 			});
 		}
 

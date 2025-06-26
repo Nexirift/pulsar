@@ -226,7 +226,7 @@ export class ReactionService implements OnModuleInit {
 				.execute();
 		}
 
-		this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: new Date() });
+		await this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: new Date() });
 
 		// 30%の確率、セルフではない、3日以内に投稿されたノートの場合ハイライト用ランキング更新
 		if (
@@ -342,7 +342,7 @@ export class ReactionService implements OnModuleInit {
 				.execute();
 		}
 
-		this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: new Date() });
+		await this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: new Date() });
 
 		this.globalEventService.publishNoteStream(note.id, 'unreacted', {
 			reaction: this.decodeReaction(exist.reaction).reaction,

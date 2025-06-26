@@ -11,10 +11,8 @@ import { renderInlineError } from '@/misc/render-inline-error.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { EnvService } from '@/core/EnvService.js';
 import { bindThis } from '@/decorators.js';
-import type { MiInstance } from '@/models/Instance.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
-import { MiUser } from '@/models/User.js';
-import type { MiNote, UsersRepository, NotesRepository, MiAccessToken, AccessTokensRepository, MiAntenna, AntennasRepository } from '@/models/_.js';
+import type { UsersRepository, NotesRepository, AccessTokensRepository, MiAntenna, AntennasRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { AntennaService } from '@/core/AntennaService.js';
 
@@ -52,25 +50,17 @@ export type UpdateAntennaJob = {
 	lastUsedAt?: Date,
 };
 
-// TODO sync cross-process:
-//  1. Emit internal events when scheduling timer, performing queue, and enqueuing data
-//  2. On schedule, mark ID as deferred.
-//  3. On perform, clear mark.
-//  4. On performAll, skip deferred IDs.
-//  5. On enqueue when ID is deferred, send data as event instead.
-//  6. On delete when ID is deferred, clear mark
-
 @Injectable()
 export class CollapsedQueueService implements OnApplicationShutdown {
 	// Moved from InboxProcessorService
-	public readonly updateInstanceQueue: CollapsedQueue<MiInstance['id'], UpdateInstanceJob>;
+	public readonly updateInstanceQueue: CollapsedQueue<UpdateInstanceJob>;
 
 	// Moved from NoteCreateService, NoteEditService, and NoteDeleteService
-	public readonly updateUserQueue: CollapsedQueue<MiUser['id'], UpdateUserJob>;
+	public readonly updateUserQueue: CollapsedQueue<UpdateUserJob>;
 
-	public readonly updateNoteQueue: CollapsedQueue<MiNote['id'], UpdateNoteJob>;
-	public readonly updateAccessTokenQueue: CollapsedQueue<MiAccessToken['id'], UpdateAccessTokenJob>;
-	public readonly updateAntennaQueue: CollapsedQueue<MiAntenna['id'], UpdateAntennaJob>;
+	public readonly updateNoteQueue: CollapsedQueue<UpdateNoteJob>;
+	public readonly updateAccessTokenQueue: CollapsedQueue<UpdateAccessTokenJob>;
+	public readonly updateAntennaQueue: CollapsedQueue<UpdateAntennaJob>;
 
 	private readonly logger: Logger;
 
@@ -100,6 +90,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		const oneMinuteInterval = this.envService.env.NODE_ENV !== 'test' ? 60 * 1000 : 0;
 
 		this.updateInstanceQueue = new CollapsedQueue(
+			this.internalEventService,
 			'updateInstance',
 			fiveMinuteInterval,
 			(oldJob, newJob) => ({
@@ -149,6 +140,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		);
 
 		this.updateUserQueue = new CollapsedQueue(
+			this.internalEventService,
 			'updateUser',
 			oneMinuteInterval,
 			(oldJob, newJob) => ({
@@ -173,6 +165,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		);
 
 		this.updateNoteQueue = new CollapsedQueue(
+			this.internalEventService,
 			'updateNote',
 			oneMinuteInterval,
 			(oldJob, newJob) => ({
@@ -192,6 +185,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		);
 
 		this.updateAccessTokenQueue = new CollapsedQueue(
+			this.internalEventService,
 			'updateAccessToken',
 			fiveMinuteInterval,
 			(oldJob, newJob) => ({
@@ -207,6 +201,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		);
 
 		this.updateAntennaQueue = new CollapsedQueue(
+			this.internalEventService,
 			'updateAntenna',
 			fiveMinuteInterval,
 			(oldJob, newJob) => ({
@@ -229,20 +224,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	async performAllNow() {
-		this.logger.info('Persisting all collapsed queues...');
-
-		await this.performQueue(this.updateInstanceQueue);
-		await this.performQueue(this.updateUserQueue);
-		await this.performQueue(this.updateNoteQueue);
-		await this.performQueue(this.updateAccessTokenQueue);
-		await this.performQueue(this.updateAntennaQueue);
-
-		this.logger.info('Persistence complete.');
-	}
-
-	@bindThis
-	private async performQueue<K, V>(queue: CollapsedQueue<K, V>): Promise<void> {
+	private async performQueue<V>(queue: CollapsedQueue<V>): Promise<void> {
 		try {
 			const results = await queue.performAllNow();
 
@@ -258,7 +240,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private onQueueError<K, V>(queue: CollapsedQueue<K, V>, error: unknown): void {
+	private onQueueError<V>(queue: CollapsedQueue<V>, error: unknown): void {
 		this.logger.error(`Error persisting ${queue.name}: ${renderInlineError(error)}`);
 	}
 
@@ -274,12 +256,25 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		this.updateAntennaQueue.delete(data.id);
 	}
 
-	async onApplicationShutdown() {
+	@bindThis
+	async dispose() {
 		this.internalEventService.off('userChangeDeletedState', this.onUserDeleted);
 		this.internalEventService.off('antennaDeleted', this.onAntennaDeleted);
 		this.internalEventService.off('antennaUpdated', this.onAntennaDeleted);
 
-		await this.performAllNow();
+		this.logger.info('Persisting all collapsed queues...');
+
+		await this.performQueue(this.updateInstanceQueue);
+		await this.performQueue(this.updateUserQueue);
+		await this.performQueue(this.updateNoteQueue);
+		await this.performQueue(this.updateAccessTokenQueue);
+		await this.performQueue(this.updateAntennaQueue);
+
+		this.logger.info('Persistence complete.');
+	}
+
+	async onApplicationShutdown() {
+		await this.dispose();
 	}
 }
 

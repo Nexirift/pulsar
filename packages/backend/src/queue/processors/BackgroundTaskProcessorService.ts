@@ -188,7 +188,7 @@ export class BackgroundTaskProcessorService {
 
 		// This is messy, but we need to minimize updates to space in Postgres blocks.
 		if (updateNotResponding || updateGoneSuspended || updateAutoSuspended) {
-			this.collapsedQueueService.updateInstanceQueue.enqueue(instance.id, {
+			await this.collapsedQueueService.updateInstanceQueue.enqueue(instance.id, {
 				notRespondingSince: updateNotResponding ? (success ? null : new Date()) : undefined,
 				shouldSuspendGone: updateGoneSuspended || undefined,
 				shouldSuspendNotResponding: updateAutoSuspended || undefined,
@@ -229,7 +229,7 @@ export class BackgroundTaskProcessorService {
 		await this.fetchInstanceMetadataService.fetchInstanceMetadataLazy(instance);
 
 		// Unsuspend instance (deferred)
-		this.collapsedQueueService.updateInstanceQueue.enqueue(instance.id, {
+		await this.collapsedQueueService.updateInstanceQueue.enqueue(instance.id, {
 			latestRequestReceivedAt: new Date(),
 			shouldUnsuspend: instance.suspensionState === 'autoSuspendedForNotResponding',
 		});

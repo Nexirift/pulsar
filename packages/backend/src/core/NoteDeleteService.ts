@@ -78,16 +78,16 @@ export class NoteDeleteService {
 		const cascadingNotes = await this.findCascadingNotes(note);
 
 		if (note.replyId) {
-			this.collapsedQueueService.updateNoteQueue.enqueue(note.replyId, { repliesCountDelta: -1 });
+			await this.collapsedQueueService.updateNoteQueue.enqueue(note.replyId, { repliesCountDelta: -1 });
 		} else if (isPureRenote(note)) {
-			this.collapsedQueueService.updateNoteQueue.enqueue(note.renoteId, { renoteCountDelta: -1 });
+			await this.collapsedQueueService.updateNoteQueue.enqueue(note.renoteId, { renoteCountDelta: -1 });
 		}
 
 		for (const cascade of cascadingNotes) {
 			if (cascade.replyId) {
-				this.collapsedQueueService.updateNoteQueue.enqueue(cascade.replyId, { repliesCountDelta: -1 });
+				await this.collapsedQueueService.updateNoteQueue.enqueue(cascade.replyId, { repliesCountDelta: -1 });
 			} else if (isPureRenote(cascade)) {
-				this.collapsedQueueService.updateNoteQueue.enqueue(cascade.renoteId, { renoteCountDelta: -1 });
+				await this.collapsedQueueService.updateNoteQueue.enqueue(cascade.renoteId, { renoteCountDelta: -1 });
 			}
 		}
 
@@ -139,14 +139,14 @@ export class NoteDeleteService {
 
 			if (!isPureRenote(note)) {
 				// Decrement notes count (user)
-				this.collapsedQueueService.updateUserQueue.enqueue(user.id, { notesCountDelta: -1 });
+				await this.collapsedQueueService.updateUserQueue.enqueue(user.id, { notesCountDelta: -1 });
 			}
 
-			this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: new Date() });
+			await this.collapsedQueueService.updateUserQueue.enqueue(user.id, { updatedAt: new Date() });
 
 			for (const cascade of cascadingNotes) {
 				if (!isPureRenote(cascade)) {
-					this.collapsedQueueService.updateUserQueue.enqueue(cascade.user.id, { notesCountDelta: -1 });
+					await this.collapsedQueueService.updateUserQueue.enqueue(cascade.user.id, { notesCountDelta: -1 });
 				}
 				// Don't mark cascaded user as updated (active)
 			}
@@ -155,7 +155,7 @@ export class NoteDeleteService {
 				if (isRemoteUser(user)) {
 					if (!isPureRenote(note)) {
 						const i = await this.federatedInstanceService.fetchOrRegister(user.host);
-						this.collapsedQueueService.updateInstanceQueue.enqueue(i.id, { notesCountDelta: -1 });
+						await this.collapsedQueueService.updateInstanceQueue.enqueue(i.id, { notesCountDelta: -1 });
 					}
 					if (this.meta.enableChartsForFederatedInstances) {
 						this.instanceChart.updateNote(user.host, note, false);
@@ -166,7 +166,7 @@ export class NoteDeleteService {
 					if (this.userEntityService.isRemoteUser(cascade.user)) {
 						if (!isPureRenote(cascade)) {
 							const i = await this.federatedInstanceService.fetchOrRegister(cascade.user.host);
-							this.collapsedQueueService.updateInstanceQueue.enqueue(i.id, { notesCountDelta: -1 });
+							await this.collapsedQueueService.updateInstanceQueue.enqueue(i.id, { notesCountDelta: -1 });
 						}
 						if (this.meta.enableChartsForFederatedInstances) {
 							this.instanceChart.updateNote(cascade.user.host, cascade, false);

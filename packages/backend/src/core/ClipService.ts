@@ -132,7 +132,7 @@ export class ClipService {
 			lastClippedAt: this.timeService.date,
 		});
 
-		this.collapsedQueueService.updateNoteQueue.enqueue(noteId, { clippedCountDelta: 1 });
+		await this.collapsedQueueService.updateNoteQueue.enqueue(noteId, { clippedCountDelta: 1 });
 	}
 
 	@bindThis
@@ -157,6 +157,6 @@ export class ClipService {
 			clipId: clip.id,
 		});
 
-		this.collapsedQueueService.updateNoteQueue.enqueue(noteId, { clippedCountDelta: -1 });
+		await this.collapsedQueueService.updateNoteQueue.enqueue(noteId, { clippedCountDelta: -1 });
 	}
 }
