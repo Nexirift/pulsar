@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { MoreThan } from 'typeorm';
+import { IsNull, MoreThan } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { USER_ONLINE_THRESHOLD } from '@/const.js';
 import type { UsersRepository } from '@/models/_.js';
@@ -23,7 +23,11 @@ export const meta = {
 		properties: {
 			count: {
 				type: 'number',
-				nullable: false,
+				nullable: false, optional: false,
+			},
+			countAcrossNetwork: {
+				type: 'number',
+				nullable: false, optional: false,
 			},
 		},
 	},
@@ -50,12 +54,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async () => {
+			const countAcrossNetwork = await this.usersRepository.countBy({
+				lastActiveDate: MoreThan(new Date(Date.now() - USER_ONLINE_THRESHOLD)),
+			});
 			const count = await this.usersRepository.countBy({
 				lastActiveDate: MoreThan(new Date(this.timeService.now - USER_ONLINE_THRESHOLD)),
+				host: IsNull(),
 			});
 
 			return {
 				count,
+				countAcrossNetwork,
 			};
 		});
 	}
