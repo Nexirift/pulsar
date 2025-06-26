@@ -4652,6 +4652,11 @@ export type components = {
        * @example xxxxxxxxxx
        */
       id: string;
+      /**
+       * Format: id
+       * @example xxxxxxxxxx
+       */
+      threadId: string;
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
@@ -4696,6 +4701,10 @@ export type components = {
             votes: number;
           }[];
       }) | null;
+      isMutingThread: boolean;
+      isMutingNote: boolean;
+      isFavorited: boolean;
+      isRenoted: boolean;
       emojis?: {
         [key: string]: string;
       };
@@ -28514,6 +28523,8 @@ export type operations = {
           'application/json': {
             isFavorited: boolean;
             isMutedThread: boolean;
+            isMutedNote: boolean;
+            isRenoted: boolean;
           };
         };
       };
@@ -28567,6 +28578,8 @@ export type operations = {
         'application/json': {
           /** Format: misskey:id */
           noteId: string;
+          /** @default false */
+          noteOnly?: boolean;
         };
       };
     };
@@ -28625,6 +28638,8 @@ export type operations = {
         'application/json': {
           /** Format: misskey:id */
           noteId: string;
+          /** @default false */
+          noteOnly?: boolean;
         };
       };
     };

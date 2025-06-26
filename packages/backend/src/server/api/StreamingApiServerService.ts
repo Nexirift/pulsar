@@ -8,9 +8,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import * as WebSocket from 'ws';
 import proxyAddr from 'proxy-addr';
-import ms from 'ms';
 import { DI } from '@/di-symbols.js';
-import type { UsersRepository, MiAccessToken, MiUser } from '@/models/_.js';
+import type { UsersRepository, MiAccessToken, MiUser, NoteReactionsRepository, NotesRepository, NoteFavoritesRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import type { Keyed, RateLimit } from '@/misc/rate-limit-utils.js';
 import { NotificationService } from '@/core/NotificationService.js';
@@ -22,6 +21,7 @@ import { ChannelFollowingService } from '@/core/ChannelFollowingService.js';
 import { getIpHash } from '@/misc/get-ip-hash.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
+import { QueryService } from '@/core/QueryService.js';
 import { AuthenticateService, AuthenticationError } from './AuthenticateService.js';
 import MainStreamConnection from './stream/Connection.js';
 import { ChannelsService } from './stream/ChannelsService.js';
@@ -45,6 +45,16 @@ export class StreamingApiServerService {
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
 
+		@Inject(DI.noteReactionsRepository)
+		private readonly noteReactionsRepository: NoteReactionsRepository,
+
+		@Inject(DI.notesRepository)
+		private readonly notesRepository: NotesRepository,
+
+		@Inject(DI.noteFavoritesRepository)
+		private readonly noteFavoritesRepository: NoteFavoritesRepository,
+
+		private readonly queryService: QueryService,
 		private cacheService: CacheService,
 		private authenticateService: AuthenticateService,
 		private channelsService: ChannelsService,
@@ -168,6 +178,10 @@ export class StreamingApiServerService {
 			};
 
 			const stream = new MainStreamConnection(
+				this.noteReactionsRepository,
+				this.notesRepository,
+				this.noteFavoritesRepository,
+				this.queryService,
 				this.channelsService,
 				this.notificationService,
 				this.cacheService,

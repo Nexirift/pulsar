@@ -11989,6 +11989,22 @@ export interface Locale extends ILocale {
      */
     "renoteMuted": string;
     /**
+     * Mute note
+     */
+    "muteNote": string;
+    /**
+     * Unmute note
+     */
+    "unmuteNote": string;
+    /**
+     * {name} said something in a muted post
+     */
+    "userSaysSomethingInMutedNote": ParameterizedString<"name">;
+    /**
+     * {name} said something in a muted thread
+     */
+    "userSaysSomethingInMutedThread": ParameterizedString<"name">;
+    /**
      * Mark all media from user as NSFW
      */
     "markAsNSFW": string;
@@ -12265,6 +12281,10 @@ export interface Locale extends ILocale {
      * Collapse files
      */
     "collapseFiles": string;
+    /**
+     * Clone
+     */
+    "clone": string;
     /**
      * Uncollapse CWs on notes
      */
