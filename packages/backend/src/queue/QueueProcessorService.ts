@@ -51,6 +51,7 @@ import { ScheduleNotePostProcessorService } from './processors/ScheduleNotePostP
 import { QueueLoggerService } from './QueueLoggerService.js';
 import { QUEUE, baseWorkerOptions } from './const.js';
 import { ImportNotesProcessorService } from './processors/ImportNotesProcessorService.js';
+import { CleanupApLogsProcessorService } from './processors/CleanupApLogsProcessorService.js';
 
 // ref. https://github.com/misskey-dev/misskey/pull/7635#issue-971097019
 function httpRelatedBackoff(attemptsMade: number) {
@@ -136,6 +137,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 		private cleanProcessorService: CleanProcessorService,
 		private scheduleNotePostProcessorService: ScheduleNotePostProcessorService,
 		private readonly timeService: TimeService,
+		private readonly cleanupApLogsProcessorService: CleanupApLogsProcessorService,
 	) {
 		this.logger = this.queueLoggerService.logger;
 
@@ -156,6 +158,7 @@ export class QueueProcessorService implements OnApplicationShutdown {
 					case 'bakeBufferedReactions': return this.bakeBufferedReactionsProcessorService.process();
 					case 'checkModeratorsActivity': return this.checkModeratorsActivityProcessorService.process();
 					case 'clean': return this.cleanProcessorService.process();
+					case 'cleanupApLogs': return this.cleanupApLogsProcessorService.process();
 					default: throw new Error(`unrecognized job type ${job.name} for system`);
 				}
 			};

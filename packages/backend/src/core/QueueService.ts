@@ -124,7 +124,7 @@ export class QueueService implements OnModuleInit {
 
 		await this.systemQueue.upsertJobScheduler(
 			'clean-scheduler',
-			{ pattern: '15 1 * * *' },
+			{ pattern: '10 1 * * *' },
 			{
 				name: 'clean',
 				opts: {
@@ -145,8 +145,19 @@ export class QueueService implements OnModuleInit {
 			});
 
 		await this.systemQueue.upsertJobScheduler(
+			'cleanupApLogs-scheduler',
+			{ pattern: '*/10 * * *' },
+			{
+				name: 'cleanupApLogs',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
+
+		await this.systemQueue.upsertJobScheduler(
 			'backBufferedReactions-scheduler',
-			{ pattern: '30 1 * * *' },
+			{ pattern: '20 1 * * *' },
 			{
 				name: 'backBufferedReactions',
 				opts: {
@@ -158,7 +169,7 @@ export class QueueService implements OnModuleInit {
 		await this.systemQueue.upsertJobScheduler(
 			'checkModeratorsActivity-scheduler',
 			// 毎時30分に起動
-			{ pattern: '45 1 * * *' },
+			{ pattern: '30 1 * * *' },
 			{
 				name: 'checkModeratorsActivity',
 				opts: {
