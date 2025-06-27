@@ -11,11 +11,11 @@ Simple view of a note in the Sharkey style. Used in quote renotes, link previews
 	<div :class="$style.main">
 		<MkNoteHeader :class="$style.header" :classic="true" :note="note" :mini="true"/>
 		<div>
-			<p v-if="mergedCW != null" :class="$style.cw">
-				<Mfm v-if="mergedCW != ''" style="margin-right: 8px;" :text="mergedCW" :isBlock="true" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis"/>
+			<p v-if="props.note.cw != null" :class="$style.cw">
+				<Mfm v-if="props.note.cw != ''" style="margin-right: 8px;" :text="props.note.cw" :isBlock="true" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis"/>
 				<MkCwButton v-model="showContent" :text="note.text" :files="note.files" :poll="note.poll" @click.stop/>
 			</p>
-			<div v-show="mergedCW == null || showContent">
+			<div v-show="props.note.cw == null || showContent">
 				<MkSubNoteContent :hideFiles="hideFiles" :class="$style.text" :note="note" :expandAllCws="props.expandAllCws"/>
 			</div>
 		</div>
@@ -43,8 +43,6 @@ const props = defineProps<{
 let showContent = ref(prefer.s.uncollapseCW);
 
 const note = ref(deepClone(props.note));
-
-const mergedCW = computed(() => computeMergedCw(note.value));
 
 setupNoteViewInterruptors(note, null);
 

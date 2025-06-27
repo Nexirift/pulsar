@@ -12085,6 +12085,10 @@ export interface Locale extends ILocale {
      */
     "userSaysSomethingInMutedThread": ParameterizedString<"name">;
     /**
+     * {name} is flagged: "{cw}"
+     */
+    "userIsFlaggedAs": ParameterizedString<"name" | "cw">;
+    /**
      * Mark all media from user as NSFW
      */
     "markAsNSFW": string;

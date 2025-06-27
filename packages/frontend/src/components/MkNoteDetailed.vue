@@ -4,11 +4,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div
-	v-if="!muted && !threadMuted && !noteMuted"
+<SkMutedNote
 	v-show="!isDeleted"
-	ref="rootEl"
+	ref="rootComp"
 	v-hotkey="keymap"
+	:note="appearNote"
 	:class="$style.root"
 	:tabindex="isDeleted ? '-1' : '0'"
 >
@@ -75,10 +75,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 		</header>
 		<div :class="$style.noteContent">
-			<p v-if="mergedCW != null" :class="$style.cw">
+			<p v-if="appearNote.cw != null" :class="$style.cw">
 				<Mfm
-					v-if="mergedCW != ''"
-					:text="mergedCW"
+					v-if="appearNote.cw != ''"
+					:text="appearNote.cw"
 					:author="appearNote.user"
 					:nyaize="'respect'"
 					:enableEmojiMenu="true"
@@ -87,7 +87,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				/>
 				<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll"/>
 			</p>
-			<div v-show="mergedCW == null || showContent">
+			<div v-show="appearNote.cw == null || showContent">
 				<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 				<div>
 					<MkA v-if="appearNote.replyId" :class="$style.noteReplyTarget" :to="`/notes/${appearNote.replyId}`"><i class="ph-arrow-bend-left-up ph-bold ph-lg"></i></MkA>
@@ -225,10 +225,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkPagination>
 		</div>
 	</div>
-</div>
-<div v-else class="_panel" :class="$style.muted" @click.stop="muted = false">
-	<SkMutedNote :muted="muted" :threadMuted="threadMuted" :noteMuted="noteMuted" :note="appearNote"></SkMutedNote>
-</div>
+</SkMutedNote>
 </template>
 
 <script lang="ts" setup>
@@ -253,7 +250,6 @@ import MkUsersTooltip from '@/components/MkUsersTooltip.vue';
 import MkUrlPreview from '@/components/MkUrlPreview.vue';
 import MkInstanceTicker from '@/components/MkInstanceTicker.vue';
 import { pleaseLogin } from '@/utility/please-login.js';
-import { checkMutes } from '@/utility/check-word-mute.js';
 import { userPage } from '@/filters/user.js';
 import { notePage } from '@/filters/note.js';
 import number from '@/filters/number.js';
@@ -264,7 +260,7 @@ import { reactionPicker } from '@/utility/reaction-picker.js';
 import { extractUrlFromMfm } from '@/utility/extract-url-from-mfm.js';
 import { $i } from '@/i.js';
 import { i18n } from '@/i18n.js';
-import { getNoteClipMenu, getNoteMenu, getRenoteMenu, translateNote } from '@/utility/get-note-menu.js';
+import { getNoteClipMenu, getNoteMenu, translateNote } from '@/utility/get-note-menu.js';
 import { getNoteVersionsMenu } from '@/utility/get-note-versions-menu.js';
 import { checkAnimationFromMfm } from '@/utility/check-animated-mfm.js';
 import { useNoteCapture } from '@/use/use-note-capture.js';
@@ -302,7 +298,8 @@ const note = ref(deepClone(props.note));
 
 const isRenote = Misskey.note.isPureRenote(note.value);
 
-const rootEl = useTemplateRef('rootEl');
+const rootComp = useTemplateRef('rootComp');
+const rootEl = computed(() => rootComp.value?.rootEl ?? null);
 const menuButton = useTemplateRef('menuButton');
 const renoteButton = useTemplateRef('renoteButton');
 const renoteTime = useTemplateRef('renoteTime');
@@ -329,11 +326,7 @@ const quotes = ref<Misskey.entities.Note[]>([]);
 const canRenote = computed(() => ['public', 'home'].includes(appearNote.value.visibility) || (appearNote.value.visibility === 'followers' && appearNote.value.userId === $i?.id));
 const defaultLike = computed(() => prefer.s.like ? prefer.s.like : null);
 
-const mergedCW = computed(() => computeMergedCw(appearNote.value));
-
 const renoteTooltip = computeRenoteTooltip(appearNote);
-
-const { muted, threadMuted, noteMuted } = checkMutes(appearNote);
 
 setupNoteViewInterruptors(note, isDeleted);
 
@@ -1149,14 +1142,5 @@ function animatedMFM() {
 	}
 }
 
-.muted {
-	padding: 8px;
-	text-align: center;
-	opacity: 0.7;
-	cursor: pointer;
-}
-
-.muted:hover {
-	background: var(--MI_THEME-buttonBg);
-}
+// Mute CSS moved to SkMutedNote.vue
 </style>

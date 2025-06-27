@@ -6,11 +6,12 @@ Displays a note in the Sharkey style. Used to show the "main" note in a given co
 -->
 
 <template>
-<div
-	v-if="!hardMuted && muted === false && !threadMuted && !noteMuted"
+<SkMutedNote
 	v-show="!isDeleted"
-	ref="rootEl"
+	ref="rootComp"
 	v-hotkey="keymap"
+	:note="appearNote"
+	:withHardMute="withHardMute"
 	:class="[$style.root, { [$style.showActionsOnlyHover]: prefer.s.showNoteActionsOnlyHover, [$style.skipRender]: prefer.s.skipNoteRender }]"
 	:tabindex="isDeleted ? '-1' : '0'"
 >
@@ -62,10 +63,10 @@ Displays a note in the Sharkey style. Used to show the "main" note in a given co
 		</div>
 		<div :class="[{ [$style.clickToOpen]: prefer.s.clickToOpen }]" @click.stop="prefer.s.clickToOpen ? noteclick(appearNote.id) : undefined">
 			<div style="container-type: inline-size;">
-				<p v-if="mergedCW != null" :class="$style.cw">
+				<p v-if="appearNote.cw != null" :class="$style.cw">
 					<Mfm
-						v-if="mergedCW != ''"
-						:text="mergedCW"
+						v-if="appearNote.cw != ''"
+						:text="appearNote.cw"
 						:author="appearNote.user"
 						:nyaize="'respect'"
 						:enableEmojiMenu="true"
@@ -75,7 +76,7 @@ Displays a note in the Sharkey style. Used to show the "main" note in a given co
 					/>
 					<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll" style="margin: 4px 0;" @click.stop/>
 				</p>
-				<div v-show="mergedCW == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
+				<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
 					<div :class="$style.text">
 						<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 						<Mfm
@@ -169,16 +170,7 @@ Displays a note in the Sharkey style. Used to show the "main" note in a given co
 			</footer>
 		</div>
 	</article>
-</div>
-<div v-else-if="!hardMuted" :class="$style.muted" @click.stop="muted = false">
-	<SkMutedNote :muted="muted" :threadMuted="threadMuted" :noteMuted="noteMuted" :note="appearNote"></SkMutedNote>
-</div>
-<div v-else>
-	<!--
-		MkDateSeparatedList uses TransitionGroup which requires single element in the child elements
-		so MkNote create empty div instead of no elements
-	-->
-</div>
+</SkMutedNote>
 </template>
 
 <script lang="ts" setup>
@@ -188,7 +180,6 @@ import * as Misskey from 'misskey-js';
 import { isLink } from '@@/js/is-link.js';
 import { shouldCollapsed } from '@@/js/collapsed.js';
 import * as config from '@@/js/config.js';
-import { computeMergedCw } from '@@/js/compute-merged-cw.js';
 import type { Ref } from 'vue';
 import type { MenuItem } from '@/types/menu.js';
 import type { OpenOnRemoteOptions } from '@/utility/please-login.js';
@@ -206,7 +197,6 @@ import MkUsersTooltip from '@/components/MkUsersTooltip.vue';
 import MkUrlPreview from '@/components/MkUrlPreview.vue';
 import MkButton from '@/components/MkButton.vue';
 import { pleaseLogin } from '@/utility/please-login.js';
-import { checkMutes } from '@/utility/check-word-mute.js';
 import { notePage } from '@/filters/note.js';
 import { userPage } from '@/filters/user.js';
 import number from '@/filters/number.js';
@@ -273,7 +263,8 @@ function noteclick(id: string) {
 
 const isRenote = Misskey.note.isPureRenote(note.value);
 
-const rootEl = useTemplateRef('rootEl');
+const rootComp = useTemplateRef('rootComp');
+const rootEl = computed(() => rootComp.value?.rootEl ?? null);
 const menuButton = useTemplateRef('menuButton');
 const renoteButton = useTemplateRef('renoteButton');
 const renoteTime = useTemplateRef('renoteTime');
@@ -292,7 +283,6 @@ const selfNoteIds = computed(() => getSelfNoteIds(props.note));
 const isLong = shouldCollapsed(appearNote.value, urls.value);
 const collapsed = ref(prefer.s.expandLongNote && appearNote.value.cw == null && isLong ? false : appearNote.value.cw == null && isLong);
 const isDeleted = ref(false);
-const { muted, hardMuted, threadMuted, noteMuted } = checkMutes(appearNote, computed(() => props.withHardMute));
 const translation = ref<Misskey.entities.NotesTranslateResponse | false | null>(null);
 const translating = ref(false);
 const showTicker = (prefer.s.instanceTicker === 'always') || (prefer.s.instanceTicker === 'remote' && appearNote.value.user.instance);
@@ -314,8 +304,6 @@ const pleaseLoginContext = computed<OpenOnRemoteOptions>(() => ({
 	type: 'lookup',
 	url: appearNote.value.url ?? appearNote.value.uri ?? `${config.url}/notes/${appearNote.value.id}`,
 }));
-
-const mergedCW = computed(() => computeMergedCw(appearNote.value));
 
 const renoteTooltip = computeRenoteTooltip(appearNote);
 
@@ -1341,16 +1329,7 @@ function emitUpdReaction(emoji: string, delta: number) {
 	}
 }
 
-.muted {
-	padding: 8px;
-	text-align: center;
-	opacity: 0.7;
-	cursor: pointer;
-}
-
-.muted:hover {
-	background: var(--MI_THEME-buttonBg);
-}
+// Mute CSS moved to SkMutedNote.vue
 
 .reactionOmitted {
 	display: inline-block;

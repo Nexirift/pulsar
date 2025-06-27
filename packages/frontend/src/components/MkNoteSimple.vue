@@ -9,11 +9,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div :class="$style.main">
 		<MkNoteHeader :class="$style.header" :note="note" :mini="true"/>
 		<div>
-			<p v-if="mergedCW != null" :class="$style.cw">
-				<Mfm v-if="mergedCW != ''" style="margin-right: 8px;" :text="mergedCW" :isBlock="true" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis"/>
+			<p v-if="props.note.cw != null" :class="$style.cw">
+				<Mfm v-if="props.note.cw != ''" style="margin-right: 8px;" :text="props.note.cw" :isBlock="true" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis"/>
 				<MkCwButton v-model="showContent" :text="note.text" :files="note.files" :poll="note.poll" @click.stop/>
 			</p>
-			<div v-show="mergedCW == null || showContent">
+			<div v-show="props.note.cw == null || showContent">
 				<MkSubNoteContent :hideFiles="hideFiles" :class="$style.text" :note="note" :expandAllCws="props.expandAllCws"/>
 				<div v-if="note.isSchedule" style="margin-top: 10px;">
 					<MkButton :class="$style.button" inline @click.stop.prevent="editScheduleNote()"><i class="ti ti-eraser"></i> {{ i18n.ts.edit }}</MkButton>
@@ -52,8 +52,6 @@ const showContent = ref(prefer.s.uncollapseCW);
 const isDeleted = ref(false);
 
 const note = ref(deepClone(props.note));
-
-const mergedCW = computed(() => computeMergedCw(note.value));
 
 if (!note.value.isSchedule) {
 	setupNoteViewInterruptors(note, null);
