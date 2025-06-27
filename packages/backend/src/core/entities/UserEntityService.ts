@@ -645,6 +645,7 @@ export class UserEntityService implements OnModuleInit {
 			...(isDetailed ? {
 				url: profile!.url,
 				uri: user.uri,
+				// TODO hints for all of this
 				movedTo: user.movedToUri ? Promise.resolve(opts.userIdsByUri?.get(user.movedToUri) ?? this.apPersonService.resolvePerson(user.movedToUri).then(user => user.id).catch(() => null)) : null,
 				movedToUri: user.movedToUri,
 				// alsoKnownAs moved from packedUserDetailedNotMeOnly for privacy

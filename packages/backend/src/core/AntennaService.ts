@@ -19,6 +19,7 @@ import type { MiAntenna } from '@/models/Antenna.js';
 import type { MiNote } from '@/models/Note.js';
 import type { MiUser } from '@/models/User.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
+import { promiseMap } from '@/misc/promise-map.js';
 import { CacheService } from './CacheService.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 
@@ -95,7 +96,10 @@ export class AntennaService implements OnApplicationShutdown {
 	@bindThis
 	public async addNoteToAntennas(note: MiNote, noteUser: { id: MiUser['id']; username: string; host: string | null; isBot: boolean; }): Promise<void> {
 		const antennas = await this.getAntennas();
-		const antennasWithMatchResult = await Promise.all(antennas.map(antenna => this.checkHitAntenna(antenna, note, noteUser).then(hit => [antenna, hit] as const)));
+		const antennasWithMatchResult = await promiseMap(antennas, async antenna => {
+			const hit = await this.checkHitAntenna(antenna, note, noteUser);
+			return [antenna, hit] as const;
+		});
 		const matchedAntennas = antennasWithMatchResult.filter(([, hit]) => hit).map(([antenna]) => antenna);
 
 		const redisPipeline = this.redisForTimelines.pipeline();

@@ -24,6 +24,7 @@ import { GetterService } from '@/server/api/GetterService.js';
 import { appendContentWarning } from '@/misc/append-content-warning.js';
 import { isRenote } from '@/misc/is-renote.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
+import { promiseMap } from '@/misc/promise-map.js';
 
 // Missing from Megalodon apparently
 // https://docs.joinmastodon.org/entities/StatusEdit/
@@ -283,11 +284,15 @@ export class MastodonConverters {
 			});
 		});
 
-		const mentions = Promise.all(note.mentions.map(p =>
-			this.getUser(p)
-				.then(u => this.encode(u, mentionedRemoteUsers))
-				.catch(() => null)))
-			.then((p: (Entity.Mention | null)[]) => p.filter(m => m != null));
+		const mentions = promiseMap(note.mentions, async p => {
+			try {
+				const u = await this.getUser(p);
+				return this.encode(u, mentionedRemoteUsers);
+			} catch {
+				return null;
+			}
+		}, { limit: 4 })
+			.then((p: Entity.Mention[]) => p.filter(m => m));
 
 		const tags = note.tags.map(tag => {
 			return {
@@ -363,7 +368,7 @@ export class MastodonConverters {
 	public async convertConversation(conversation: Entity.Conversation, me: MiLocalUser | null): Promise<MastodonEntity.Conversation> {
 		return {
 			id: conversation.id,
-			accounts: await Promise.all(conversation.accounts.map((a: Entity.Account) => this.convertAccount(a))),
+			accounts: await promiseMap(conversation.accounts, async (a: Entity.Account) => await this.convertAccount(a), { limit: 4 }),
 			last_status: conversation.last_status ? await this.convertStatus(conversation.last_status, me) : null,
 			unread: conversation.unread,
 		};

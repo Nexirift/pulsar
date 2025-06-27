@@ -5,7 +5,6 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { IsNull, Not } from 'typeorm';
-import promiseLimit from 'promise-limit';
 import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import type { NotesRepository, PollsRepository, NoteReactionsRepository, UsersRepository, FollowRequestsRepository, MiMeta, SkApFetchLog } from '@/models/_.js';
 import type { Config } from '@/config.js';
@@ -24,6 +23,7 @@ import { toArray } from '@/misc/prelude/array.js';
 import { isPureRenote } from '@/misc/is-renote.js';
 import { CacheService } from '@/core/CacheService.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
+import { promiseMap } from '@/misc/promise-map.js';
 import { AnyCollection, getApId, getNullableApId, IObjectWithId, isCollection, isCollectionOrOrderedCollection, isCollectionPage, isOrderedCollection, isOrderedCollectionPage } from './type.js';
 import { ApDbResolverService } from './ApDbResolverService.js';
 import { ApRendererService } from './ApRendererService.js';
@@ -151,21 +151,20 @@ export class Resolver {
 		const recursionLimit = this.recursionLimit - this.history.size;
 		const batchLimit = Math.min(source.length, recursionLimit, itemLimit);
 
-		const limiter = promiseLimit<IObject>(concurrency);
-		const batch = await Promise.all(source
-			.slice(0, batchLimit)
-			.map(item => limiter(async () => {
-				if (sentFrom) {
-					// Use secureResolve to avoid re-fetching items that were included inline.
-					return await this.secureResolve(item, sentFrom, allowAnonymousItems);
-				} else if (allowAnonymousItems) {
-					return await this.resolveAnonymous(item);
-				} else {
-					// ID is required if we have neither sentFrom not allowAnonymousItems
-					const id = getApId(item);
-					return await this.resolve(id);
-				}
-			})));
+		const batch = await promiseMap(source.slice(0, batchLimit), async item => {
+			if (sentFrom) {
+				// Use secureResolve to avoid re-fetching items that were included inline.
+				return await this.secureResolve(item, sentFrom, allowAnonymousItems);
+			} else if (allowAnonymousItems) {
+				return await this.resolveAnonymous(item);
+			} else {
+				// ID is required if we have neither sentFrom not allowAnonymousItems
+				const id = getApId(item);
+				return await this.resolve(id);
+			}
+		}, {
+			limit: concurrency,
+		});
 
 		destination.push(...batch);
 	};

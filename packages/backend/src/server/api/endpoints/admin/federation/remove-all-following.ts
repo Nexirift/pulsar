@@ -9,6 +9,7 @@ import type { FollowingsRepository, UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { QueueService } from '@/core/QueueService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { promiseMap } from '@/misc/promise-map.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -48,10 +49,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				},
 			]);
 
-			const pairs = await Promise.all(followings.map(f => Promise.all([
-				this.usersRepository.findOneByOrFail({ id: f.followerId }),
-				this.usersRepository.findOneByOrFail({ id: f.followeeId }),
-			]).then(([from, to]) => [{ id: from.id }, { id: to.id }])));
+			const pairs = await promiseMap(followings, async f => {
+				const [from, to] = await Promise.all([
+					this.usersRepository.findOneByOrFail({ id: f.followerId }),
+					this.usersRepository.findOneByOrFail({ id: f.followeeId }),
+				]);
+
+				return [{ id: from.id }, { id: to.id }];
+			});
 
 			await this.moderationLogService.log(me, 'severFollowRelations', {
 				host: ps.host,

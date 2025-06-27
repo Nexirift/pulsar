@@ -48,7 +48,8 @@ import { renderInlineError } from '@/misc/render-inline-error.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { QueueService } from '@/core/QueueService.js';
 import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
-import { getApId, getApType, isActor, isCollection, isCollectionOrOrderedCollection, isPropertyValue } from '../type.js';
+import { promiseMap } from '@/misc/promise-map.js';
+import { getApId, getApType, getNullableApId, isActor, isPost, isPropertyValue } from '../type.js';
 import { ApLoggerService } from '../ApLoggerService.js';
 import { extractApHashtags } from './tag.js';
 import type { OnModuleInit } from '@nestjs/common';
@@ -933,35 +934,27 @@ export class ApPersonService implements OnModuleInit {
 
 		this.logger.info(`Updating the featured: ${user.uri}`);
 
-		const _resolver = resolver ?? this.apResolverService.createResolver();
-
-		// Resolve to (Ordered)Collection Object
-		const collection = user.featured ? await _resolver.resolveCollection(user.featured, true, user.uri).catch(err => {
-			// Permanent error implies hidden or inaccessible, which is a normal thing.
-			if (isRetryableError(err)) {
-				this.logger.warn(`Failed to update featured notes: ${renderInlineError(err)}`);
-			}
-
-			return null;
-		}) : null;
-		if (!collection) return;
-
-		if (!isCollectionOrOrderedCollection(collection)) throw new UnrecoverableError(`failed to update user ${user.uri}: featured ${user.featured} is not Collection or OrderedCollection`);
-
-		// Resolve to Object(may be Note) arrays
-		const unresolvedItems = isCollection(collection) ? collection.items : collection.orderedItems;
-		const items = await Promise.all(toArray(unresolvedItems).map(x => _resolver.resolve(x)));
+		resolver ??= this.apResolverService.createResolver();
 
 		// Resolve and regist Notes
-		const limit = promiseLimit<MiNote | null>(2);
 		const maxPinned = (await this.roleService.getUserPolicies(user.id)).pinLimit;
-		const featuredNotes = await Promise.all(items
-			.filter(item => getApType(item) === 'Note')	// TODO: Noteでなくてもいいかも
-			.slice(0, maxPinned)
-			.map(item => limit(() => this.apNoteService.resolveNote(item, {
-				resolver: _resolver,
-				sentFrom: user.uri,
-			}))));
+		const items = await resolver.resolveCollectionItems(user.featured, true, user.uri, maxPinned, 2);
+		const featuredNotes = await promiseMap(items, async item => {
+			const itemId = getNullableApId(item);
+			if (itemId && isPost(item)) {
+				try {
+					return await this.apNoteService.resolveNote(item, {
+						resolver: resolver,
+						sentFrom: user.uri,
+					});
+				} catch (err) {
+					this.logger.warn(`Couldn't fetch pinned note ${itemId} for user ${user.id} (@${user.username}@${user.host}): ${renderInlineError(err)}`);
+				}
+			}
+			return null;
+		}, {
+			limit: 2,
+		});
 
 		await this.db.transaction(async transactionalEntityManager => {
 			await transactionalEntityManager.delete(MiUserNotePining, { userId: user.id });

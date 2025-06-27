@@ -105,10 +105,13 @@ export class PageEntityService {
 			font: page.font,
 			script: page.script,
 			eyeCatchingImageId: page.eyeCatchingImageId,
-			eyeCatchingImage: page.eyeCatchingImageId ? await this.driveFileEntityService.pack(page.eyeCatchingImageId) : null,
-			attachedFiles: this.driveFileEntityService.packMany((await Promise.all(attachedFiles)).filter(x => x != null)),
+			eyeCatchingImage: page.eyeCatchingImageId ? this.driveFileEntityService.pack(page.eyeCatchingImageId) : null,
+			attachedFiles: Promise
+				.all(attachedFiles)
+				.then(fs => fs.filter(x => x != null))
+				.then(fs => this.driveFileEntityService.packMany(fs)),
 			likedCount: page.likedCount,
-			isLiked: meId ? await this.pageLikesRepository.exists({ where: { pageId: page.id, userId: meId } }) : undefined,
+			isLiked: meId ? this.pageLikesRepository.exists({ where: { pageId: page.id, userId: meId } }) : undefined,
 		});
 	}
 

@@ -34,6 +34,7 @@ import { CacheService } from '@/core/CacheService.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
+import { promiseMap } from '@/misc/promise-map.js';
 import type { DataSource } from 'typeorm';
 
 const FALLBACK = '\u2764';
@@ -298,7 +299,7 @@ export class ReactionService implements OnModuleInit {
 			if (['public', 'home', 'followers'].includes(note.visibility)) {
 				dm.addFollowersRecipe();
 			} else if (note.visibility === 'specified') {
-				const visibleUsers = await Promise.all(note.visibleUserIds.map(id => this.usersRepository.findOneBy({ id })));
+				const visibleUsers = await promiseMap(note.visibleUserIds, async id => await this.cacheService.findOptionalUserById(id), { limit: 2 });
 				for (const u of visibleUsers.filter(u => u && isRemoteUser(u))) {
 					dm.addDirectRecipe(u as MiRemoteUser);
 				}

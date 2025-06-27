@@ -60,6 +60,7 @@ import { CacheService } from '@/core/CacheService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
+import { promiseMap } from '@/misc/promise-map.js';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention';
 
@@ -889,20 +890,16 @@ export class NoteCreateService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async extractMentionedUsers(user: { host: MiUser['host']; }, tokens: mfm.MfmNode[]): Promise<MiUser[]> {
-		if (tokens == null) return [];
+	public async extractMentionedUsers(user: { host: MiUser['host']; }, tokens: mfm.MfmNode[]): Promise<MiUser[]> {
+		if (tokens == null || tokens.length === 0) return [];
 
-		const mentions = extractMentions(tokens);
-		let mentionedUsers = (await Promise.all(mentions.map(m =>
-			this.remoteUserResolveService.resolveUser(m.username, m.host ?? user.host).catch(() => null),
-		))).filter(x => x != null);
+		const allMentions = extractMentions(tokens);
+		const mentions = new Map(allMentions.map(m => [`${m.username.toLowerCase()}@${m.host?.toLowerCase()}`, m]));
 
-		// Drop duplicate users
-		mentionedUsers = mentionedUsers.filter((u, i, self) =>
-			i === self.findIndex(u2 => u.id === u2.id),
-		);
+		const allMentionedUsers = await promiseMap(mentions.values(), async m => await this.remoteUserResolveService.resolveUser(m.username, m.host ?? user.host).catch(() => null), { limit: 2 });
+		const mentionedUsers = new Map(allMentionedUsers.filter(u => u != null).map(u => [u.id, u]));
 
-		return mentionedUsers;
+		return Array.from(mentionedUsers.values());
 	}
 
 	@bindThis
