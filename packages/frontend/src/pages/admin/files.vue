@@ -74,8 +74,9 @@ async function clear() {
 		},
 		keepFilesInUse: {
 			label: i18n.ts.clearCachedFilesOptions.keepFilesInUse,
+			description: i18n.ts.clearCachedFilesOptions.keepFilesInUseDescription,
 			type: 'boolean',
-			default: true,
+			default: false,
 		},
 	});
 

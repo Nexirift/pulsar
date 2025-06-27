@@ -641,3 +641,4 @@ clearCachedFilesOptions:
   oneMonth: "one month"
   oneYear: "one year"
   keepFilesInUse: "Don't delete files used as avatars&c"
+  keepFilesInUseDescription: "this option requires more complicated database queries, you may need to increase the value of db.extra.statement_timeout in the configuration file"
