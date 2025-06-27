@@ -222,6 +222,7 @@ import { getStaticImageUrl } from '@/utility/media-proxy.js';
 import MkSparkle from '@/components/MkSparkle.vue';
 import { prefer } from '@/preferences.js';
 import DynamicNote from '@/components/DynamicNote.vue';
+import MkOmit from '@/components/MkOmit.vue';
 
 function calcAge(birthdate: string): number {
 	const date = new Date(birthdate);
