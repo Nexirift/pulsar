@@ -7,7 +7,7 @@ process.env.NODE_ENV = 'test';
 
 import * as assert from 'assert';
 import { inspect } from 'node:util';
-import { api, post, role, signup, successfulApiCall, uploadFile } from '../utils.js';
+import { api, failedApiCall, post, role, signup, successfulApiCall, uploadFile } from '../utils.js';
 import type * as misskey from 'misskey-js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 
@@ -919,6 +919,12 @@ describe('ユーザー', () => {
 	});
 
 	//#endregion
+
+	test('user with to long bio', async () => {
+		await failedApiCall({ endpoint: 'i/update', user: alice, parameters: {
+			description: 'x'.repeat(10000),
+		} }, { status: 422, code: 'MAX_BIO_LENGTH', id: 'f3bb3543-8bd1-4e6d-9375-55efaf2b4102' });
+	});
 
 	test.todo('を管理人として確認することができる(admin/show-user)');
 	test.todo('を管理人として確認することができる(admin/show-users)');
