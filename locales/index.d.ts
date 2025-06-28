@@ -13285,6 +13285,36 @@ export interface Locale extends ILocale {
      * Signup Reason
      */
     "signupReason": string;
+    "clearCachedFilesOptions": {
+        /**
+         * Delete all cached remote files
+         */
+        "title": string;
+        /**
+         * Only delete files older than:
+         */
+        "olderThan": string;
+        /**
+         * now
+         */
+        "now": string;
+        /**
+         * one week
+         */
+        "oneWeek": string;
+        /**
+         * one month
+         */
+        "oneMonth": string;
+        /**
+         * one year
+         */
+        "oneYear": string;
+        /**
+         * Don't delete files used as avatars&c
+         */
+        "keepFilesInUse": string;
+    };
 }
 declare const locales: {
     [lang: string]: Locale;

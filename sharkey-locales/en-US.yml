@@ -636,3 +636,13 @@ rawInfoDescription: "Extended user data in its raw form. These fields are privat
 rawApDescription: "ActivityPub user data in its raw form. These fields are public and accessible to other instances."
 
 signupReason: "Signup Reason"
+
+clearCachedFilesOptions:
+  title: "Delete all cached remote files"
+  olderThan: "Only delete files older than:"
+  now: "now"
+  oneWeek: "one week"
+  oneMonth: "one month"
+  oneYear: "one year"
+  keepFilesInUse: "Don't delete files used as avatars&c"
+  keepFilesInUseDescription: "this option requires more complicated database queries, you may need to increase the value of db.extra.statement_timeout in the configuration file"
