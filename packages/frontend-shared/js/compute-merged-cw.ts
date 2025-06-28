@@ -9,6 +9,9 @@ import { appendContentWarning } from '@@/js/append-content-warning.js';
 export function computeMergedCw(note: Misskey.entities.Note): string | null {
 	let cw = note.cw;
 
+	if (note.mandatoryCW) {
+		cw = appendContentWarning(cw, note.mandatoryCW);
+	}
 	if (note.user.mandatoryCW) {
 		cw = appendContentWarning(cw, note.user.mandatoryCW);
 	}

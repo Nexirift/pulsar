@@ -497,6 +497,9 @@ export class ApRendererService {
 		let summary = note.cw === '' ? String.fromCharCode(0x200B) : note.cw;
 
 		// Apply mandatory CW, if applicable
+		if (note.mandatoryCW) {
+			summary = appendContentWarning(summary, note.mandatoryCW);
+		}
 		if (author.mandatoryCW) {
 			summary = appendContentWarning(summary, author.mandatoryCW);
 		}

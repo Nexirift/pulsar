@@ -38,6 +38,7 @@ import type {
 	AdminAvatarDecorationsUpdateRequest,
 	AdminCaptchaCurrentResponse,
 	AdminCaptchaSaveRequest,
+	AdminCwNoteRequest,
 	AdminCwUserRequest,
 	AdminDeclineUserRequest,
 	AdminDeleteAccountRequest,
@@ -689,6 +690,7 @@ export type Endpoints = {
 	'admin/avatar-decorations/update': { req: AdminAvatarDecorationsUpdateRequest; res: EmptyResponse };
 	'admin/captcha/current': { req: EmptyRequest; res: AdminCaptchaCurrentResponse };
 	'admin/captcha/save': { req: AdminCaptchaSaveRequest; res: EmptyResponse };
+	'admin/cw-note': { req: AdminCwNoteRequest; res: EmptyResponse };
 	'admin/cw-user': { req: AdminCwUserRequest; res: EmptyResponse };
 	'admin/decline-user': { req: AdminDeclineUserRequest; res: EmptyResponse };
 	'admin/delete-account': { req: AdminDeleteAccountRequest; res: EmptyResponse };

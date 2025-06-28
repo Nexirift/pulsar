@@ -41,6 +41,10 @@ export const packedNoteSchema = {
 			type: 'string',
 			optional: true, nullable: true,
 		},
+		mandatoryCW: {
+			type: 'string',
+			optional: true, nullable: true,
+		},
 		userId: {
 			type: 'string',
 			optional: false, nullable: false,

@@ -127,6 +127,7 @@ function generateDummyNote(override?: Partial<MiNote>): MiNote {
 		renoteUserInstance: null,
 		updatedAt: null,
 		processErrors: [],
+		mandatoryCW: null,
 		...override,
 	};
 }

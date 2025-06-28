@@ -9213,6 +9213,10 @@ export interface Locale extends ILocale {
          */
         "write:admin:cw-user": string;
         /**
+         * Apply mandatory CW on notes
+         */
+        "write:admin:cw-note": string;
+        /**
          * Silence users
          */
         "write:admin:silence-user": string;
@@ -10949,6 +10953,10 @@ export interface Locale extends ILocale {
          */
         "setMandatoryCW": string;
         /**
+         * Set content warning for note
+         */
+        "setMandatoryCWForNote": string;
+        /**
          * Set remote instance as NSFW
          */
         "setRemoteInstanceNSFW": string;
@@ -12089,6 +12097,10 @@ export interface Locale extends ILocale {
      */
     "userIsFlaggedAs": ParameterizedString<"name" | "cw">;
     /**
+     * Note is flagged: "{cw}"
+     */
+    "noteIsFlaggedAs": ParameterizedString<"cw">;
+    /**
      * Mark all media from user as NSFW
      */
     "markAsNSFW": string;
@@ -13038,9 +13050,17 @@ export interface Locale extends ILocale {
      */
     "mandatoryCW": string;
     /**
-     * Applies a content warning to all posts created by this user. If the post already has a CW, then this is appended to the end.
+     * Applies a content warning to all posts created by this user. The forced warnings will appear like a word mute to distinguish them from the author's own content warnings.
      */
     "mandatoryCWDescription": string;
+    /**
+     * Add content warning
+     */
+    "mandatoryCWForNote": string;
+    /**
+     * Applies an additional content warning to this post. The new warning will appear like a word mute to distinguish it from the author's own content warning.
+     */
+    "mandatoryCWForNoteDescription": string;
     /**
      * Fetch linked note
      */

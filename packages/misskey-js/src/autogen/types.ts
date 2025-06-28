@@ -233,6 +233,15 @@ export type paths = {
      */
     post: operations['admin___captcha___save'];
   };
+  '/admin/cw-note': {
+    /**
+     * admin/cw-note
+     * @description No description provided.
+     *
+     * **Credential required**: *Yes* / **Permission**: *write:admin:cw-note*
+     */
+    post: operations['admin___cw-note'];
+  };
   '/admin/cw-user': {
     /**
      * admin/cw-user
@@ -4671,6 +4680,7 @@ export type components = {
       deletedAt?: string | null;
       text: string | null;
       cw?: string | null;
+      mandatoryCW?: string | null;
       /** Format: id */
       userId: string;
       user: components['schemas']['UserLite'];
@@ -7349,6 +7359,59 @@ export type operations = {
           sitekey?: string | null;
           secret?: string | null;
           instanceUrl?: string | null;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (without any results) */
+      204: {
+        content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * admin/cw-note
+   * @description No description provided.
+   *
+   * **Credential required**: *Yes* / **Permission**: *write:admin:cw-note*
+   */
+  'admin___cw-note': {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: misskey:id */
+          noteId: string;
+          cw: string | null;
         };
       };
     };

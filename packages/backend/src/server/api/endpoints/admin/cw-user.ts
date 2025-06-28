@@ -46,7 +46,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			await this.usersRepository.update(ps.userId, {
 				// Collapse empty strings to null
-				// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 				mandatoryCW: ps.cw || null,
 			});
 

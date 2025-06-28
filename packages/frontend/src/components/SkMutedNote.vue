@@ -13,6 +13,11 @@ Displays a placeholder for a muted note.
 	<!-- If hard muted, we want to hide *everything*, including the placeholders and controls to expand. -->
 	<div v-else-if="!mute.hardMuted" :class="[$style.muted, mutedClass]" class="_gaps_s" @click.stop="expandNote = true">
 		<!-- Mandatory CWs -->
+		<I18n v-if="mute.noteMandatoryCW" :src="i18n.ts.noteIsFlaggedAs" tag="small">
+			<template #cw>
+				{{ mute.noteMandatoryCW }}
+			</template>
+		</I18n>
 		<I18n v-if="mute.userMandatoryCW" :src="i18n.ts.userIsFlaggedAs" tag="small">
 			<template #name>
 				<MkUserName :user="note.user"/>
@@ -84,7 +89,7 @@ const expandNote = ref(false);
 
 const mute = computed(() => checkMute(props.note, props.withHardMute));
 const mutedWords = computed(() => mute.value.softMutedWords?.join(', '));
-const isMuted = computed(() => mute.value.hardMuted || mutedWords.value || mute.value.userMandatoryCW || mute.value.noteMuted || mute.value.threadMuted || mute.value.sensitiveMuted);
+const isMuted = computed(() => mute.value.hardMuted || mutedWords.value || mute.value.noteMandatoryCW || mute.value.userMandatoryCW || mute.value.noteMuted || mute.value.threadMuted || mute.value.sensitiveMuted);
 const isExpanded = computed(() => expandNote.value || !isMuted.value);
 const rootClass = computed(() => isExpanded.value ? props.expandedClass : undefined);
 

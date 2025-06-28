@@ -28,6 +28,9 @@ export const getNoteSummary = (note?: Misskey.entities.Note | null): string => {
 
 	// Append mandatory CW, if applicable
 	let cw = note.cw;
+	if (note.mandatoryCW) {
+		cw = appendContentWarning(cw, note.mandatoryCW);
+	}
 	if (note.user.mandatoryCW) {
 		cw = appendContentWarning(cw, note.user.mandatoryCW);
 	}

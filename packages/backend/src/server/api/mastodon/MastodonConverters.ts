@@ -224,7 +224,13 @@ export class MastodonConverters {
 			// TODO avoid re-packing files for each edit
 			const files = await this.driveFileEntityService.packManyByIds(edit.fileIds);
 
-			const cw = appendContentWarning(edit.cw, noteUser.mandatoryCW) ?? '';
+			let cw = edit.cw ?? '';
+			if (note.mandatoryCW) {
+				cw = appendContentWarning(cw, note.mandatoryCW);
+			}
+			if (noteUser.mandatoryCW) {
+				cw = appendContentWarning(cw, noteUser.mandatoryCW);
+			}
 
 			const isQuote = renote && (edit.cw || edit.newText || edit.fileIds.length > 0 || note.replyId);
 			const quoteUri = isQuote
@@ -299,7 +305,13 @@ export class MastodonConverters {
 			? quoteUri.then(quote => this.mfmService.toMastoApiHtml(mfm.parse(text), mentionedRemoteUsers, false, quote) ?? escapeMFM(text))
 			: '';
 
-		const cw = appendContentWarning(note.cw, noteUser.mandatoryCW) ?? '';
+		let cw = note.cw ?? '';
+		if (note.mandatoryCW) {
+			cw = appendContentWarning(cw, note.mandatoryCW);
+		}
+		if (noteUser.mandatoryCW) {
+			cw = appendContentWarning(cw, noteUser.mandatoryCW);
+		}
 
 		const reblogged = await this.mastodonDataService.hasReblog(note.id, me);
 
