@@ -176,10 +176,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<MkResult type="empty" :text="i18n.ts.noNotes"/>
 							</div>
 							<div v-else class="_panel">
-								<DynamicNote v-for="note of user.pinnedNotes" :key="note.id" class="note" :class="$style.pinnedNote" :note="note" :pinned="true" @expandCW="onExpandCW"/>
+								<DynamicNote v-for="note of user.pinnedNotes" :key="note.id" class="note" :class="$style.pinnedNote" :note="note" :pinned="true" @expandMute="n => onExpandCW(n)"/>
 							</div>
 						</div>
-						<MkNotes v-else :class="$style.tl" :noGap="true" :pagination="AllPagination" @expandCW="onExpandCW"/>
+						<MkNotes v-else :class="$style.tl" :noGap="true" :pagination="AllPagination" @expandMute="n => onExpandCW(n)"/>
 					</MkLazy>
 				</MkStickyContainer>
 			</div>
@@ -198,7 +198,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 import { defineAsyncComponent, computed, onMounted, onUnmounted, nextTick, watch, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import { getScrollPosition } from '@@/js/scroll.js';
-import { patchMuteOverrides } from '@/utility/check-word-mute.js';
+import { useMuteOverrides } from '@/utility/check-word-mute.js';
 import MkTab from '@/components/MkTab.vue';
 import MkNotes from '@/components/MkNotes.vue';
 import MkFollowButton from '@/components/MkFollowButton.vue';
@@ -224,6 +224,7 @@ import MkSparkle from '@/components/MkSparkle.vue';
 import { prefer } from '@/preferences.js';
 import DynamicNote from '@/components/DynamicNote.vue';
 import MkOmit from '@/components/MkOmit.vue';
+import { deepAssign } from '@/utility/merge';
 
 function calcAge(birthdate: string): number {
 	const date = new Date(birthdate);
@@ -256,12 +257,20 @@ const emit = defineEmits<{
 	(ev: 'unfoldFiles'): void;
 }>();
 
-const cwOverrides = patchMuteOverrides();
+const muteOverrides = useMuteOverrides();
 
-function onExpandCW() {
-	// This kills the user-level and instance-level CWs for all notes below this point
-	cwOverrides.userMandatoryCW = null;
-	cwOverrides.instanceMandatoryCW = null;
+function onExpandCW(note: Misskey.entities.Note) {
+	if (note.user.id === props.user.id) {
+		// This kills the mandatoryCW for this user below this point
+		deepAssign(muteOverrides, {
+			user: {
+				[props.user.id]: {
+					userMandatoryCW: null,
+					instanceMandatoryCW: null,
+				},
+			},
+		});
+	}
 }
 
 const router = useRouter();

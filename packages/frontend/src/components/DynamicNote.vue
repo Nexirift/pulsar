@@ -14,7 +14,7 @@ Displays a note with either Misskey or Sharkey style, based on user preference.
 	:withHardMute="withHardMute"
 	@reaction="emoji => emit('reaction', emoji)"
 	@removeReaction="emoji => emit('removeReaction', emoji)"
-	@expandCW="n => emit('expandCW', n)"
+	@expandMute="n => emit('expandMute', n)"
 />
 </template>
 
@@ -45,6 +45,6 @@ defineProps<{
 const emit = defineEmits<{
 	(ev: 'reaction', emoji: string): void;
 	(ev: 'removeReaction', emoji: string): void;
-	(ev: 'expandCW', note: Misskey.entities.Note): void;
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
 }>();
 </script>

@@ -94,20 +94,19 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-	(type: 'expand', note: Misskey.entities.Note): void;
+	(type: 'expandMute', note: Misskey.entities.Note): void;
 }>();
 
 const expandNote = ref(false);
 
 function expand() {
 	expandNote.value = true;
-	emit('expand', props.note);
+	emit('expandMute', props.note);
 }
 
-const mute = computed(() => checkMute(props.note, props.withHardMute));
+const mute = checkMute(computed(() => props.note), computed(() => props.withHardMute));
 const mutedWords = computed(() => mute.value.softMutedWords?.join(', '));
-const isMuted = computed(() => mute.value.hardMuted || mutedWords.value || mute.value.noteMandatoryCW || mute.value.userMandatoryCW || mute.value.instanceMandatoryCW || mute.value.noteMuted || mute.value.threadMuted || mute.value.sensitiveMuted);
-const isExpanded = computed(() => expandNote.value || !isMuted.value);
+const isExpanded = computed(() => expandNote.value || !mute.value.hasMute);
 const rootClass = computed(() => isExpanded.value ? props.expandedClass : undefined);
 
 const rootEl = useTemplateRef('rootEl');

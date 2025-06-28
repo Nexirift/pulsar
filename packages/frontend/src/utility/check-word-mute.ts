@@ -4,11 +4,14 @@
  */
 
 import * as Misskey from 'misskey-js';
-import { provide, inject, reactive } from 'vue';
-import type { Ref, Reactive } from 'vue';
+import { provide, inject, reactive, computed } from 'vue';
+import type { Ref, ComputedRef, Reactive } from 'vue';
 import { $i } from '@/i.js';
+import { deepAssign } from '@/utility/merge';
 
 export interface Mute {
+	hasMute: boolean;
+
 	hardMuted?: boolean;
 	softMutedWords?: string[];
 	sensitiveMuted?: boolean;
@@ -23,67 +26,103 @@ export interface Mute {
 	instanceMandatoryCW?: string | null;
 }
 
+export interface MuteOverrides {
+	/**
+	 * Allows directly modifying the Mute object for all mutes.
+	 */
+	all?: Partial<Omit<Mute, 'hasMute'>>;
+
+	/**
+	 * Per instance overrides.
+	 * Key: instance hostname.
+	 */
+	instance: Partial<Record<string, Partial<Mute>>>;
+
+	/**
+	 * Per user overrides.
+	 * Key: user ID.
+	 */
+	user: Partial<Record<string, Partial<Mute>>>;
+
+	/**
+	 * Per note overrides.
+	 * Key: note ID.
+	 */
+	note: Partial<Record<string, Partial<Mute>>>;
+
+	/**
+	 * Per thread overrides.
+	 * Key: thread ID.
+	 */
+	thread: Partial<Record<string, Partial<Mute>>>;
+}
+
 export const muteOverridesSymbol = Symbol('muteOverrides');
 
-export function injectMuteOverrides(): Reactive<Partial<Mute>> | null {
-	return inject(muteOverridesSymbol, null);
-}
+export function useMuteOverrides(): Reactive<MuteOverrides> {
+	// Re-use the same instance if possible
+	let overrides = injectMuteOverrides();
 
-export function provideMuteOverrides(overrides: Reactive<Partial<Mute>> | null) {
-	provide(muteOverridesSymbol, overrides);
-}
-
-export function patchMuteOverrides(patch?: Partial<Mute>): Reactive<Partial<Mute>> {
-	// Inject and re-provide to merge with any overrides injected from above
-	const overrides = injectMuteOverrides() ?? reactive({});
-	provideMuteOverrides(overrides);
-
-	// Assign caller's changes, if any
-	if (patch) {
-		Object.assign(overrides, patch);
+	if (!overrides) {
+		overrides = reactive({
+			note: {},
+			user: {},
+			instance: {},
+			thread: {},
+		});
+		provideMuteOverrides(overrides);
 	}
 
 	return overrides;
 }
 
-export function checkMute(note: Misskey.entities.Note, withHardMute?: boolean): Mute {
-	const mutes = getMutes(note, withHardMute);
-
-	const override = injectMuteOverrides();
-	if (override) {
-		Object.assign(mutes, override);
-	}
-
-	return mutes;
+function injectMuteOverrides(): Reactive<MuteOverrides> | null {
+	return inject(muteOverridesSymbol, null);
 }
 
-function getMutes(note: Misskey.entities.Note, withHardMute?: boolean): Mute {
-	const sensitiveMuted = isSensitiveMuted(note);
+function provideMuteOverrides(overrides: Reactive<MuteOverrides> | null) {
+	provide(muteOverridesSymbol, overrides);
+}
 
-	// My own note
-	if ($i && $i.id === note.userId) {
-		return { sensitiveMuted };
-	}
+export function checkMute(note: ComputedRef<Misskey.entities.Note>, withHardMute?: ComputedRef<boolean>): ComputedRef<Mute> {
+	// inject() can only be used inside script setup, so it MUST be outside the computed block!
+	const overrides = injectMuteOverrides();
 
-	const threadMuted = note.isMutingThread;
-	const noteMuted = note.isMutingNote;
-	const noteMandatoryCW = note.mandatoryCW;
-	const userMandatoryCW = note.user.mandatoryCW;
-	const instanceMandatoryCW = note.user.instance?.mandatoryCW;
+	return computed(() => getMutes(note.value, withHardMute?.value ?? true, overrides));
+}
 
-	// Hard mute
-	if (withHardMute && isHardMuted(note)) {
-		return { hardMuted: true, sensitiveMuted, threadMuted, noteMuted, noteMandatoryCW, userMandatoryCW, instanceMandatoryCW };
-	}
+function getMutes(note: Misskey.entities.Note, withHardMute: boolean, overrides: MuteOverrides | null): Mute {
+	const override: Partial<Mute> = overrides ? deepAssign(
+		{},
+		note.user.host ? overrides.instance[note.user.host] : undefined,
+		overrides.user[note.user.id],
+		overrides.thread[note.threadId],
+		overrides.note[note.id],
+		overrides.all,
+	) : {};
 
-	// Soft mute
-	const softMutedWords = isSoftMuted(note);
-	if (softMutedWords.length > 0) {
-		return { softMutedWords, sensitiveMuted, threadMuted, noteMuted, noteMandatoryCW, userMandatoryCW, instanceMandatoryCW };
-	}
+	const isMe = $i != null && $i.id === note.userId;
 
-	// Other / no mute
-	return { sensitiveMuted, threadMuted, noteMuted, noteMandatoryCW, userMandatoryCW, instanceMandatoryCW };
+	const hardMuted = override.hardMuted ?? (!isMe && withHardMute && isHardMuted(note));
+	const softMutedWords = override.softMutedWords ?? (isMe ? [] : isSoftMuted(note));
+	const sensitiveMuted = override.sensitiveMuted ?? isSensitiveMuted(note);
+	const threadMuted = override.threadMuted ?? (!isMe && note.isMutingThread);
+	const noteMuted = override.noteMuted ?? (!isMe && note.isMutingNote);
+	const noteMandatoryCW = override.noteMandatoryCW !== undefined
+		? override.noteMandatoryCW
+		: (isMe ? null : note.mandatoryCW);
+	const userMandatoryCW = override.userMandatoryCW !== undefined
+		? override.userMandatoryCW
+		: (isMe ? null : note.user.mandatoryCW);
+	const instanceMandatoryCW = override.instanceMandatoryCW !== undefined
+		? override.instanceMandatoryCW
+		: (!isMe && note.user.instance)
+			? note.user.instance.mandatoryCW
+			: null;
+
+	const hasMute = hardMuted || softMutedWords.length > 0 || sensitiveMuted || threadMuted || noteMuted || !!noteMandatoryCW || !!userMandatoryCW || !!instanceMandatoryCW;
+
+	return { hasMute, hardMuted, softMutedWords, sensitiveMuted, threadMuted, noteMuted, noteMandatoryCW, userMandatoryCW, instanceMandatoryCW };
 }
 
 function isHardMuted(note: Misskey.entities.Note): boolean {

@@ -13,6 +13,7 @@ Detailed view of a note in the Sharkey style. Used when opening a note onto its 
 	:note="appearNote"
 	:class="$style.root"
 	:tabindex="isDeleted ? '-1' : '0'"
+	@expandMute="n => emit('expandMute', n)"
 >
 	<div v-if="appearNote.reply && appearNote.reply.replyId && !conversationLoaded" style="padding: 16px">
 		<MkButton style="margin: 0 auto;" primary rounded @click="loadConversation">{{ i18n.ts.loadConversation }}</MkButton>
@@ -296,6 +297,10 @@ const props = withDefaults(defineProps<{
 }>(), {
 	initialTab: 'replies',
 });
+
+const emit = defineEmits<{
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
+}>();
 
 const inChannel = inject('inChannel', null);
 

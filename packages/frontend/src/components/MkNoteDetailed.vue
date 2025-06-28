@@ -11,6 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	:note="appearNote"
 	:class="$style.root"
 	:tabindex="isDeleted ? '-1' : '0'"
+	@expandMute="n => emit('expandMute', n)"
 >
 	<div v-if="appearNote.reply && appearNote.reply.replyId">
 		<div v-if="!conversationLoaded" style="padding: 16px">
@@ -291,6 +292,10 @@ const props = withDefaults(defineProps<{
 }>(), {
 	initialTab: 'replies',
 });
+
+const emit = defineEmits<{
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
+}>();
 
 const inChannel = inject('inChannel', null);
 

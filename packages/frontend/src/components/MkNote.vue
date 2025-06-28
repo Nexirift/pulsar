@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	:withHardMute="withHardMute"
 	:class="[$style.root, { [$style.showActionsOnlyHover]: prefer.s.showNoteActionsOnlyHover, [$style.skipRender]: prefer.s.skipNoteRender }]"
 	:tabindex="isDeleted ? '-1' : '0'"
-	@expand="n => emit('expandCW', n)"
+	@expandMute="n => emit('expandMute', n)"
 >
 	<div v-if="appearNote.reply && inReplyToCollapsed" :class="$style.collapsedInReplyTo">
 		<MkAvatar :class="$style.collapsedInReplyToAvatar" :user="appearNote.reply.user" link preview/>
@@ -245,7 +245,7 @@ provide(DI.mock, props.mock);
 const emit = defineEmits<{
 	(ev: 'reaction', emoji: string): void;
 	(ev: 'removeReaction', emoji: string): void;
-	(ev: 'expandCW', note: Misskey.entities.Note): void;
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
 }>();
 
 const router = useRouter();
