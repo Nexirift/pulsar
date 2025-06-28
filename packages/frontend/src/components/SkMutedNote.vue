@@ -11,7 +11,7 @@ Displays a placeholder for a muted note.
 	<slot v-if="isExpanded"></slot>
 
 	<!-- If hard muted, we want to hide *everything*, including the placeholders and controls to expand. -->
-	<div v-else-if="!mute.hardMuted" :class="[$style.muted, $style.muteContainer, mutedClass]" @click.stop="expandNote = true">
+	<div v-else-if="!mute.hardMuted" :class="[$style.muted, $style.muteContainer, mutedClass]" @click.stop="expand">
 		<!-- Mandatory CWs -->
 		<I18n v-if="mute.noteMandatoryCW" :src="i18n.ts.noteIsFlaggedAs" tag="small">
 			<template #cw>
@@ -80,7 +80,7 @@ import { computed, ref, useTemplateRef, defineExpose } from 'vue';
 import type { Ref } from 'vue';
 import { i18n } from '@/i18n.js';
 import { prefer } from '@/preferences.js';
-import { checkMute } from '@/utility/check-word-mute';
+import { checkMute } from '@/utility/check-word-mute.js';
 
 const props = withDefaults(defineProps<{
 	note: Misskey.entities.Note;
@@ -93,7 +93,16 @@ const props = withDefaults(defineProps<{
 	expandedClass: undefined,
 });
 
+const emit = defineEmits<{
+	(type: 'expand', note: Misskey.entities.Note): void;
+}>();
+
 const expandNote = ref(false);
+
+function expand() {
+	expandNote.value = true;
+	emit('expand', props.note);
+}
 
 const mute = computed(() => checkMute(props.note, props.withHardMute));
 const mutedWords = computed(() => mute.value.softMutedWords?.join(', '));
