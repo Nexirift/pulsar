@@ -17,12 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<div class="_spacer" style="--MI_SPACER-min: 20px; --MI_SPACER-max: 28px;">
 		<MkPagination ref="pagingComponent" :pagination="pagination">
-			<template #empty>
-				<div class="_fullinfo">
-					<img :src="infoImageUrl" draggable="false" alt="no results"/>
-					<div>{{ i18n.ts.noSharedAccess }}</div>
-				</div>
-			</template>
+			<template #empty><MkResult type="empty" :text="i18n.ts.noNotes"/></template>
 
 			<template #default="{ items }">
 				<div class="_gaps">
@@ -54,7 +49,6 @@ import type { Paging } from '@/components/MkPagination.vue';
 import * as os from '@/os.js';
 import { i18n } from '@/i18n';
 import MkModalWindow from '@/components/MkModalWindow.vue';
-import { infoImageUrl } from '@/instance';
 import MkPagination from '@/components/MkPagination.vue';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
 
