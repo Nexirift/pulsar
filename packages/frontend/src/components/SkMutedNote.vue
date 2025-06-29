@@ -28,7 +28,7 @@ Displays a placeholder for a muted note.
 		</I18n>
 		<I18n v-if="mute.instanceMandatoryCW" :src="i18n.ts.instanceIsFlaggedAs" tag="small">
 			<template #name>
-				{{ note.user.instance?.name ?? note.user.host }}
+				{{ instanceName }}
 			</template>
 			<template #cw>
 				{{ mute.instanceMandatoryCW }}
@@ -77,6 +77,7 @@ Displays a placeholder for a muted note.
 <script setup lang="ts">
 import * as Misskey from 'misskey-js';
 import { computed, ref, useTemplateRef, defineExpose } from 'vue';
+import { host } from '@@/js/config.js';
 import type { Ref } from 'vue';
 import { i18n } from '@/i18n.js';
 import { prefer } from '@/preferences.js';
@@ -108,6 +109,18 @@ const mute = checkMute(computed(() => props.note), computed(() => props.withHard
 const mutedWords = computed(() => mute.value.softMutedWords?.join(', '));
 const isExpanded = computed(() => expandNote.value || !mute.value.hasMute);
 const rootClass = computed(() => isExpanded.value ? props.expandedClass : undefined);
+
+const instanceName = computed(() => {
+	if (props.note.user.instance?.name) {
+		if (props.note.user.instance.name.length <= 32) {
+			return props.note.user.instance.name;
+		}
+
+		return `${props.note.user.instance.name.substring(0, 30)}...`;
+	}
+
+	return props.note.user.host ?? host;
+});
 
 const rootEl = useTemplateRef('rootEl');
 defineExpose({
