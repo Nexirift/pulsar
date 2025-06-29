@@ -288,7 +288,7 @@ const importEmojis = async (targets: any[]): Promise<void> => {
 		for (const item of targets) {
 			results.push(await executeWithRetries(item, 'admin/emoji/copy', { emojiId: item.id }));
 		}
-		
+
 		return results;
 	}
 
@@ -308,8 +308,6 @@ const importEmojis = async (targets: any[]): Promise<void> => {
 		name: it.item.name,
 		error: it.err ? JSON.stringify(it.err) : undefined,
 	}));
-
-	await refreshCustomEmojis();
 };
 
 const onRegistryClicked = async (): Promise<void> => {
@@ -323,23 +321,29 @@ const onRegistryClicked = async (): Promise<void> => {
 	}
 
 	const items = gridItems.value.slice(0, MAXIMUM_EMOJI_REGISTER_COUNT);
-	const results: ApiResponse[] = [];
-	for (const item of items) {
-		results.push(
-			await executeWithRetries(item, 'admin/emoji/add', {
-				name: item.name,
-				category: emptyStrToNull(item.category),
-				aliases: emptyStrToEmptyArray(item.aliases),
-				license: emptyStrToNull(item.license),
-				isSensitive: item.isSensitive,
-				localOnly: item.localOnly,
-				roleIdsThatCanBeUsedThisEmojiAsReaction: item.roleIdsThatCanBeUsedThisEmojiAsReaction.map((it: any) => it.id),
-				fileId: item.fileId!,
-			}),
-		);
+
+	async function action(): Promise<ApiResponse[]> {
+		const results: ApiResponse[] = [];
+		for (const item of items) {
+			results.push(
+				await executeWithRetries(item, 'admin/emoji/add', {
+					name: item.name,
+					category: emptyStrToNull(item.category),
+					aliases: emptyStrToEmptyArray(item.aliases),
+					license: emptyStrToNull(item.license),
+					isSensitive: item.isSensitive,
+					localOnly: item.localOnly,
+					roleIdsThatCanBeUsedThisEmojiAsReaction: item.roleIdsThatCanBeUsedThisEmojiAsReaction.map((it: any) => it.id),
+					fileId: item.fileId!,
+				}),
+			);
+		}
+
+		return results;
 	}
 
-	const failedItems = results.filter(it => !it.success);
+	const result = await os.promiseDialog(action());
+	const failedItems = result.filter(it => !it.success);
 	if (failedItems.length > 0) {
 		await os.alert({
 			type: 'error',
@@ -348,7 +352,7 @@ const onRegistryClicked = async (): Promise<void> => {
 		});
 	}
 
-	requestLogs.value = results.map(it => ({
+	requestLogs.value = result.map(it => ({
 		failed: !it.success,
 		url: it.item.url,
 		name: it.item.name,
