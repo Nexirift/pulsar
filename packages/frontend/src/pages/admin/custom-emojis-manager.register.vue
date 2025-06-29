@@ -75,6 +75,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as Misskey from 'misskey-js';
 import { onMounted, ref, useCssModule } from 'vue';
+import { retryOnThrottled } from '@@/js/retry-on-throttled';
 import type { RequestLogItem } from '@/pages/admin/custom-emojis-manager.impl.js';
 import type { GridCellValidationEvent, GridCellValueChangeEvent, GridEvent } from '@/components/grid/grid-event.js';
 import type { DroppedFile } from '@/utility/file-drop.js';
@@ -247,29 +248,19 @@ const registerButtonDisabled = ref<boolean>(false);
 const requestLogs = ref<RequestLogItem[]>([]);
 const isDragOver = ref<boolean>(false);
 
-const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, ms));
-
 type ApiResponse = {
 	item: any;
 	success: boolean;
 	err?: unknown;
 };
 
-const executeWithRetries = async (item: any, apiEndpoint: string, payload: any, retries = 3): Promise<ApiResponse> => {
-	for (let attempt = 0; attempt <= retries; attempt++) {
-		try {
-			await misskeyApi(apiEndpoint, payload);
-			return { item, success: true };
-		} catch (err) {
-			if (attempt < retries) {
-				console.warn(`Retrying ${item.id || item.name}, attempt ${attempt + 1}`);
-				await delay(1000 * (attempt + 1)); // Exponential backoff
-			} else {
-				return { item, success: false, err };
-			}
-		}
+const execute = async (item: any, apiEndpoint: string, payload: any): Promise<ApiResponse> => {
+	try {
+		await retryOnThrottled(() => misskeyApi(apiEndpoint, payload));
+		return { item, success: true };
+	} catch (err) {
+		return { item, success: false, err };
 	}
-	return { item, success: false, err: new Error('Unknown error') }; // Ensures all code paths return a value
 };
 
 const importEmojis = async (targets: any[]): Promise<void> => {
@@ -286,7 +277,7 @@ const importEmojis = async (targets: any[]): Promise<void> => {
 	async function action(): Promise<ApiResponse[]> {
 		const results: ApiResponse[] = [];
 		for (const item of targets) {
-			results.push(await executeWithRetries(item, 'admin/emoji/copy', { emojiId: item.id }));
+			results.push(await execute(item, 'admin/emoji/copy', { emojiId: item.id }));
 		}
 
 		return results;
@@ -326,7 +317,7 @@ const onRegistryClicked = async (): Promise<void> => {
 		const results: ApiResponse[] = [];
 		for (const item of items) {
 			results.push(
-				await executeWithRetries(item, 'admin/emoji/add', {
+				await execute(item, 'admin/emoji/add', {
 					name: item.name,
 					category: emptyStrToNull(item.category),
 					aliases: emptyStrToEmptyArray(item.aliases),

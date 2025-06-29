@@ -90,6 +90,7 @@ import MkPagingButtons from '@/components/MkPagingButtons.vue';
 import { selectFile } from '@/utility/select-file.js';
 import { copyGridDataToClipboard, removeDataFromGrid } from '@/components/grid/grid-utils.js';
 import { useLoading } from '@/components/hook/useLoading.js';
+import { retryOnThrottled } from '@@/js/retry-on-throttled';
 
 type GridItem = {
 	checked: boolean;
@@ -334,37 +335,29 @@ async function onUpdateButtonClicked() {
 		err?: unknown;
 	};
 
-	const executeWithRetries = async (item: any, retries: number = 3): Promise<ApiResponse> => {
-		for (let attempt = 0; attempt <= retries; attempt++) {
-			try {
-				await misskeyApi('admin/emoji/update', {
-					id: item.id,
-					name: item.name,
-					category: emptyStrToNull(item.category),
-					aliases: emptyStrToEmptyArray(item.aliases),
-					license: emptyStrToNull(item.license),
-					isSensitive: item.isSensitive,
-					localOnly: item.localOnly,
-					roleIdsThatCanBeUsedThisEmojiAsReaction: item.roleIdsThatCanBeUsedThisEmojiAsReaction.map((it: any) => it.id),
-					fileId: item.fileId,
-				});
-				return { item, success: true };
-			} catch (err) {
-				if (attempt < retries) {
-					console.warn(`Retrying ${item.name}, attempt ${attempt + 1}`);
-					await delay(1000 * (attempt + 1));
-				} else {
-					return { item, success: false, err };
-				}
-			}
+	const execute = async (item: any): Promise<ApiResponse> => {
+		try {
+			await retryOnThrottled(() => misskeyApi('admin/emoji/update', {
+				id: item.id,
+				name: item.name,
+				category: emptyStrToNull(item.category),
+				aliases: emptyStrToEmptyArray(item.aliases),
+				license: emptyStrToNull(item.license),
+				isSensitive: item.isSensitive,
+				localOnly: item.localOnly,
+				roleIdsThatCanBeUsedThisEmojiAsReaction: item.roleIdsThatCanBeUsedThisEmojiAsReaction.map((it: any) => it.id),
+				fileId: item.fileId,
+			}));
+			return { item, success: true };
+		} catch (error) {
+			return { item, success: false, err: error };
 		}
-		return { item, success: false, err: new Error('Unknown error') };
 	};
 
 	const action = async (): Promise<ApiResponse[]> => {
 		const results: ApiResponse[] = [];
 		for (const item of updatedItems) {
-			results.push(await executeWithRetries(item));
+			results.push(await execute(item));
 		}
 		return results;
 	};

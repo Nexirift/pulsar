@@ -142,6 +142,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script setup lang="ts">
 import { computed, onMounted, ref, useCssModule } from 'vue';
 import * as Misskey from 'misskey-js';
+import { retryOnThrottled } from '@@/js/retry-on-throttled';
 import type { GridSortOrderKey, RequestLogItem } from '@/pages/admin/custom-emojis-manager.impl.js';
 import type { GridCellValueChangeEvent, GridEvent } from '@/components/grid/grid-event.js';
 import type { GridSetting } from '@/components/grid/grid.js';
@@ -310,31 +311,21 @@ function onGridCellValueChange(event: GridCellValueChangeEvent) {
 	}
 }
 
-const delay = (ms: number) => new Promise(resolve => window.setTimeout(resolve, ms));
-
 type ApiResponse = {
 	item: any;
 	success: boolean;
 	err?: unknown;
 };
 
-const executeWithRetries = async (item: any, retries: number = 3): Promise<ApiResponse> => {
-	for (let attempt = 0; attempt <= retries; attempt++) {
-		try {
-			await misskeyApi('admin/emoji/copy', {
-				emojiId: item.id,
-			});
-			return { item, success: true };
-		} catch (err) {
-			if (attempt < retries) {
-				console.warn(`Retrying ${item.id}, attempt ${attempt + 1}`);
-				await delay(1000 * (attempt + 1)); // Exponential backoff
-			} else {
-				return { item, success: false, err };
-			}
-		}
+const execute = async (item: any): Promise<ApiResponse> => {
+	try {
+		await retryOnThrottled(() => misskeyApi('admin/emoji/copy', {
+			emojiId: item.id,
+		}));
+		return { item, success: true };
+	} catch (err) {
+		return { item, success: false, err };
 	}
-	return { item, success: false, err: new Error('Unknown error') }; // Ensures all code paths return a value
 };
 
 const importEmojis = async (targets: any[]): Promise<void> => {
@@ -350,7 +341,7 @@ const importEmojis = async (targets: any[]): Promise<void> => {
 
 	const results: ApiResponse[] = [];
 	for (const item of targets) {
-		results.push(await executeWithRetries(item));
+		results.push(await execute(item));
 	}
 
 	const failedItems = results.filter(it => !it.success);
