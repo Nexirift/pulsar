@@ -5668,6 +5668,8 @@ export type components = {
       maxRemoteCwLength: number;
       maxAltTextLength: number;
       maxRemoteAltTextLength: number;
+      maxBioLength: number;
+      maxRemoteBioLength: number;
       ads: {
           /**
            * Format: id
