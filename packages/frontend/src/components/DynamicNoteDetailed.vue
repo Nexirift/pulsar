@@ -17,7 +17,7 @@ Displays a note in the detailed view with either Misskey or Sharkey style, based
 
 <script setup lang="ts">
 import * as Misskey from 'misskey-js';
-import { defineAsyncComponent, useTemplateRef } from 'vue';
+import { defineAsyncComponent, useTemplateRef, watch } from 'vue';
 import type { ComponentExposed } from 'vue-component-type-helpers';
 import type MkNoteDetailed from '@/components/MkNoteDetailed.vue';
 import type SkNoteDetailed from '@/components/SkNoteDetailed.vue';
@@ -41,7 +41,16 @@ const props = defineProps<{
 	expandAllCws?: boolean;
 }>();
 
-// TODO map to expand all CWs?
+// Expand mandatory CWs when "expand all CWs" is clicked
+watch(() => props.expandAllCws, () => {
+	deepAssign(muteOverrides, {
+		all: {
+			noteMandatoryCW: null,
+			userMandatoryCW: null,
+			instanceMandatoryCW: null,
+		},
+	});
+});
 
 const emit = defineEmits<{
 	(ev: 'expandMute', note: Misskey.entities.Note): void;
