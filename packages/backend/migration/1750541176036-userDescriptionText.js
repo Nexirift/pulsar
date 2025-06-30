@@ -5,7 +5,7 @@
 
 export class UserDescriptionText1750541176036 {
 	async up(queryRunner) {
-		await queryRunner.query(`ALTER TABLE "user_profile" ALTER COLUMN "description" TYPE TEXT USING NULL`);
+		await queryRunner.query(`ALTER TABLE "user_profile" ALTER COLUMN "description" TYPE TEXT`);
 	}
 
 	async down(queryRunner) {
