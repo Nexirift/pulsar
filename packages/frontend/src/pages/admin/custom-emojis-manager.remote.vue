@@ -161,6 +161,7 @@ import { deviceKind } from '@/utility/device-kind.js';
 import MkPagingButtons from '@/components/MkPagingButtons.vue';
 import MkSortOrderEditor from '@/components/MkSortOrderEditor.vue';
 import { useLoading } from '@/components/hook/useLoading.js';
+import promiseLimit from "promise-limit";
 
 type GridItem = {
 	checked: boolean;
@@ -339,10 +340,8 @@ const importEmojis = async (targets: any[]): Promise<void> => {
 		return;
 	}
 
-	const results: ApiResponse[] = [];
-	for (const item of targets) {
-		results.push(await execute(item));
-	}
+	const limit = promiseLimit<ApiResponse>(2);
+	const results = await Promise.all(targets.map(it => limit(() => execute(it))));
 
 	const failedItems = results.filter(it => !it.success);
 	if (failedItems.length > 0) {

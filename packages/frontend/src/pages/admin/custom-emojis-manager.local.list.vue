@@ -49,8 +49,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts">
-import type { SortOrder } from '@/components/MkSortOrderEditor.define.js';
-import type { GridSortOrderKey } from './custom-emojis-manager.impl.js';
+import type {SortOrder} from '@/components/MkSortOrderEditor.define.js';
+import type {GridSortOrderKey} from './custom-emojis-manager.impl.js';
 
 export type EmojiSearchQuery = {
 	name: string | null;
@@ -91,6 +91,7 @@ import { selectFile } from '@/utility/select-file.js';
 import { copyGridDataToClipboard, removeDataFromGrid } from '@/components/grid/grid-utils.js';
 import { useLoading } from '@/components/hook/useLoading.js';
 import { retryOnThrottled } from '@@/js/retry-on-throttled';
+import promiseLimit from "promise-limit";
 
 type GridItem = {
 	checked: boolean;
@@ -355,11 +356,8 @@ async function onUpdateButtonClicked() {
 	};
 
 	const action = async (): Promise<ApiResponse[]> => {
-		const results: ApiResponse[] = [];
-		for (const item of updatedItems) {
-			results.push(await execute(item));
-		}
-		return results;
+		const limit = promiseLimit<ApiResponse>(2);
+		return await Promise.all(updatedItems.map(async it => limit(() => execute(it))));
 	};
 
 	const result = await os.promiseDialog(action());
