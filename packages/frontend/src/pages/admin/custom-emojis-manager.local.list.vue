@@ -49,8 +49,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts">
-import type {SortOrder} from '@/components/MkSortOrderEditor.define.js';
-import type {GridSortOrderKey} from './custom-emojis-manager.impl.js';
+import type { SortOrder } from '@/components/MkSortOrderEditor.define.js';
+import type { GridSortOrderKey } from './custom-emojis-manager.impl.js';
 
 export type EmojiSearchQuery = {
 	name: string | null;
