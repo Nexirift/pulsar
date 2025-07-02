@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </div>
 
 <div v-else :class="$style.mod_player_enabled">
-	<div :class="$style.pattern_display" @click="togglePattern()" @scroll="scrollHandler" @scrollend="scrollEndHandle">
+	<div ref="patternDisplay" :class="$style.pattern_display" @click="togglePattern()" @scroll="scrollHandler" @scrollend="scrollEndHandle">
 		<div v-if="patternHide" :class="$style.pattern_hide">
 			<b><i class="ph-eye ph-bold ph-lg"></i> Pattern Hidden</b>
 			<span>{{ i18n.ts.clickToShow }}</span>
@@ -35,7 +35,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<i class="ph-stop ph-bold ph-lg"></i>
 		</button>
 		<input ref="progress" v-model="position" :class="$style.progress" type="range" min="0" max="1" step="0.1" @mousedown="initSeek()" @mouseup="performSeek()"/>
-		<input v-model="player.context.gain.value" type="range" min="0" max="1" step="0.1"/>
+		<input v-model="player.context.gain.value" type="range" min="0" max="1" step="0.01"/>
 		<a :class="$style.download" :title="i18n.ts.download" :href="module.url" :download="module.name" target="_blank">
 			<i class="ph-download ph-bold ph-lg"></i>
 		</a>
@@ -72,6 +72,7 @@ const colours = {
 const CHAR_WIDTH = 6;
 const CHAR_HEIGHT = 12;
 const ROW_OFFSET_Y = 10;
+const CHANNEL_WIDTH = CHAR_WIDTH * 14;
 const MAX_TIME_SPENT = 50;
 const MAX_TIME_PER_ROW = 15;
 const MAX_ROW_NUMBERS = 0xFF + 1;
@@ -87,7 +88,7 @@ const props = defineProps<{
 interface CanvasDisplay {
 	ctx: CanvasRenderingContext2D,
 	html: HTMLCanvasElement,
-	drawn: { top: number, bottom: number, left: number, right: number },
+	drawn: { top: number, bottom: number },
 	range: { top: number, bottom: number },
 	vPos: number,
 	transform: { x: number, y: number },
@@ -113,8 +114,13 @@ let position = ref(0);
 let patternScrollSlider = ref<HTMLProgressElement>();
 let patternScrollSliderShow = ref(false);
 let patternScrollSliderPos = ref(0);
+let patternDisplay = ref();
 const player = ref(new ChiptuneJsPlayer(new ChiptuneJsConfig()));
 
+let suppressScrollSliderWatcher = false;
+let displayScrollPos = 0;
+let currentColumn = 0;
+let maxChannelsInView = 10;
 let buffer = null;
 let isSeeking = false;
 let firstFrame = true;
@@ -174,7 +180,7 @@ function setupSlice(r: Ref, channels: number) {
 	let slice: CanvasDisplay = {
 		ctx: chtml.getContext('2d', { alpha: false, desynchronized: false }) as CanvasRenderingContext2D,
 		html: chtml,
-		drawn: { top: 0, bottom: 0, left: 0, right: 0 },
+		drawn: { top: 0, bottom: 0 },
 		range: { top: -0xFFFFFFFF, bottom: -0xFFFFFFFF },
 		vPos: -0xFFFFFFFF,
 		channels,
@@ -193,7 +199,7 @@ function setupCanvas() {
 			nbChannels = player.value.currentPlayingNode.nbChannels;
 			nbChannels = nbChannels > MAX_CHANNEL_LIMIT ? MAX_CHANNEL_LIMIT : nbChannels;
 		}
-		sliceWidth = numberRowCanvas.width + (14 * CHAR_WIDTH) * nbChannels + 2;
+		sliceWidth = numberRowCanvas.width + CHANNEL_WIDTH * nbChannels + 2;
 		sliceHeight = HALF_BUFFER * CHAR_HEIGHT;
 		setupSlice(sliceCanvas1, nbChannels);
 		setupSlice(sliceCanvas2, nbChannels);
@@ -213,7 +219,6 @@ onMounted(() => {
 			player.value.play(buffer);
 			progress.value!.max = player.value.duration();
 			bakeNumberRow();
-			//populateCanvasSlices();
 			setupCanvas();
 			display(true);
 		} catch (err) {
@@ -223,6 +228,10 @@ onMounted(() => {
 	}).catch((error) => {
 		console.error(error);
 	});
+	if (patternDisplay.value) {
+		let observer = new ResizeObserver(resizeHandler);
+		observer.observe(patternDisplay.value);
+	}
 });
 
 function playPause() {
@@ -306,6 +315,7 @@ function togglePattern() {
 }
 
 function drawSlices(skipOptimizationChecks = false) {
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	if (ROW_BUFFER <= 0) {
 		lastDrawnRow = player.value.getPattern();
 		lastPattern = player.value.getRow();
@@ -339,8 +349,6 @@ function drawSlices(skipOptimizationChecks = false) {
 				sli.drawn = {
 					top: 0xFFFFFFFF,
 					bottom: -0xFFFFFFFF,
-					left: -0xFFFFFFFF,
-					right: -0xFFFFFFFF,
 				};
 
 				sli.ctx.fillStyle = colours.background;
@@ -369,8 +377,6 @@ function drawSlices(skipOptimizationChecks = false) {
 			sli.drawn = {
 				top: 0xFFFFFFFF,
 				bottom: -0xFFFFFFFF,
-				left: -0xFFFFFFFF,
-				right: -0xFFFFFFFF,
 			};
 
 			sli.ctx.fillStyle = colours.background;
@@ -398,6 +404,7 @@ function drawRow(slice: CanvasDisplay, row: number, pattern: number, drawX = (2 
 	if (!player.value.currentPlayingNode) return false;
 	if (row < 0 || row > player.value.getPatternNumRows(pattern) - 1) return false;
 	const spacer = 11;
+	const skipSpacer = spacer + 3;
 	const space = ' ';
 	let seperators = '';
 	let note = '';
@@ -405,8 +412,18 @@ function drawRow(slice: CanvasDisplay, row: number, pattern: number, drawX = (2 
 	let volume = '';
 	let fx = '';
 	let op = '';
+
 	for (let channel = 0; channel < slice.channels; channel++) {
-		if (channel > 9) break;
+		if (channel < currentColumn) {
+			seperators += space.repeat( skipSpacer );
+			note += space.repeat( skipSpacer );
+			instr += space.repeat( skipSpacer );
+			volume += space.repeat( skipSpacer );
+			fx += space.repeat( skipSpacer );
+			op += space.repeat( skipSpacer );
+			continue;
+		}
+		if (channel === maxChannelsInView + currentColumn) break;
 		const part = player.value.getPatternRowChannel(pattern, row, channel);
 
 		seperators += '|' + space.repeat( spacer + 2 );
@@ -419,8 +436,8 @@ function drawRow(slice: CanvasDisplay, row: number, pattern: number, drawX = (2 
 
 	//console.debug( 'seperators: ' + seperators + '\nnote: ' + note + '\ninstr: ' + instr + '\nvolume: ' + volume + '\nfx: ' + fx + '\nop: ' + op);
 
-	//slice.ctx.fillStyle = '#ff00ff88';
-	//slice.ctx.fillRect(0, drawY - CHAR_HEIGHT, 512, CHAR_HEIGHT);
+	//slice.ctx.fillStyle = '#00ffff88';
+	//slice.ctx.fillRect(0, drawY - 10, sliceWidth, CHAR_HEIGHT);
 
 	slice.ctx.fillStyle = colours.foreground.default;
 	slice.ctx.fillText(seperators, drawX, drawY);
@@ -466,17 +483,29 @@ function display(skipOptimizationChecks = false) {
 	drawSlices(skipOptimizationChecks);
 }
 
-let suppressScrollSliderWatcher = false;
+function forceUpdateDisplay() {
+	const noNode = !player.value.currentPlayingNode;
+	if (noNode) player.value.play(buffer);
+	if (!patternHide.value) display(true);
+	if (noNode) player.value.togglePause();
+}
 
 function scrollHandler() {
 	suppressScrollSliderWatcher = true;
 
-	if (!patternScrollSlider.value) return;
 	if (!sliceDisplay.value) return;
 	if (!sliceDisplay.value.parentElement) return;
 
-	patternScrollSliderPos.value = (sliceDisplay.value.parentElement.scrollLeft) / (sliceWidth - sliceDisplay.value.parentElement.offsetWidth) * 100;
-	patternScrollSlider.value.style.opacity = '1';
+	if (patternScrollSlider.value) {
+		patternScrollSliderPos.value = (sliceDisplay.value.parentElement.scrollLeft) / (sliceWidth - sliceDisplay.value.parentElement.offsetWidth) * 100;
+		patternScrollSlider.value.style.opacity = '1';
+	}
+	displayScrollPos = sliceDisplay.value.parentElement.scrollLeft;
+	const newColumn = Math.trunc((displayScrollPos - numberRowCanvas.width) / CHANNEL_WIDTH);
+	if (newColumn !== currentColumn) {
+		currentColumn = newColumn;
+		forceUpdateDisplay();
+	}
 }
 
 function scrollEndHandle() {
@@ -495,12 +524,19 @@ function handleScrollBarEnable() {
 }
 
 watch(patternScrollSliderPos, () => {
-	if (suppressScrollSliderWatcher) return;
 	if (!sliceDisplay.value) return;
 	if (!sliceDisplay.value.parentElement) return;
+	if (suppressScrollSliderWatcher) return;
 
 	sliceDisplay.value.parentElement.scrollLeft = (sliceWidth - sliceDisplay.value.parentElement.offsetWidth) * patternScrollSliderPos.value / 100;
 });
+
+function resizeHandler(event: ResizeObserverEntry[]) {
+	if (event[0].contentRect.width === 0) return;
+	const newView = Math.ceil(event[0].contentRect.width / CHANNEL_WIDTH) + 1;
+	if (newView > maxChannelsInView) forceUpdateDisplay();
+	maxChannelsInView = newView;
+}
 
 onDeactivated(() => {
 	stop();
