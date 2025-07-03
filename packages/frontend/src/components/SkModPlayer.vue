@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </div>
 
 <div v-else :class="$style.mod_player_enabled">
-	<div ref="patternDisplay" :class="$style.pattern_display" @click="togglePattern()" @scroll="scrollHandler" @scrollend="scrollEndHandle">
+	<div ref="patternDisplay" :style="{ height: displayHeight + 'px' }" :class="$style.pattern_display" @click="togglePattern()" @scroll="scrollHandler" @scrollend="scrollEndHandle">
 		<div v-if="patternHide" :class="$style.pattern_hide">
 			<b><i class="ph-eye ph-bold ph-lg"></i> Pattern Hidden</b>
 			<span>{{ i18n.ts.clickToShow }}</span>
@@ -20,6 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span :class="$style.patternShadowTop"></span>
 		<span :class="$style.patternShadowBottom"></span>
 		<div ref="sliceDisplay" :class="$style.slice_display">
+			<canvas ref="numberRowCanvas" :style="{ top: numberRowOffset + 'px' }" :class="$style.row_canvas"></canvas>
 			<canvas ref="sliceCanvas1" :class="$style.patternSlice"></canvas>
 			<canvas ref="sliceCanvas2" :class="$style.patternSlice"></canvas>
 			<canvas ref="sliceCanvas3" :class="$style.patternSlice"></canvas>
@@ -75,9 +76,9 @@ const ROW_OFFSET_Y = 10;
 const CHANNEL_WIDTH = CHAR_WIDTH * 14;
 const MAX_TIME_SPENT = 50;
 const MAX_TIME_PER_ROW = 15;
-const MAX_ROW_NUMBERS = 0xFF + 1;
-const ROW_BUFFER = 26;
+const MAX_ROW_NUMBERS = 0x100;
 // It would be a great option for users to set themselves.
+const ROW_BUFFER = 26;
 const MAX_CHANNEL_LIMIT = 0xFF;
 const HALF_BUFFER = Math.floor(ROW_BUFFER / 2);
 
@@ -104,9 +105,12 @@ let hide = ref((prefer.s.nsfw === 'force') ? true : isSensitive && (prefer.s.nsf
 let patternHide = ref(false);
 let playing = ref(false);
 let sliceDisplay = ref<HTMLDivElement>();
+let numberRowCanvas = ref();
 let sliceCanvas1 = ref();
 let sliceCanvas2 = ref();
 let sliceCanvas3 = ref();
+const displayHeight = ref(ROW_BUFFER * CHAR_HEIGHT);
+const numberRowOffset = ref(HALF_BUFFER * CHAR_HEIGHT);
 let sliceWidth = 0;
 let sliceHeight = 0;
 let progress = ref<HTMLProgressElement>();
@@ -126,7 +130,6 @@ let isSeeking = false;
 let firstFrame = true;
 let lastPattern = -1;
 let lastDrawnRow = -1;
-let numberRowCanvas = new OffscreenCanvas(2 * CHAR_WIDTH + 1, MAX_ROW_NUMBERS * CHAR_HEIGHT + 1);
 let alreadyHiddenOnce = false;
 let slices: CanvasDisplay[] = [];
 
@@ -157,10 +160,13 @@ const peft = {
 };
 
 function bakeNumberRow() {
-	let ctx = numberRowCanvas.getContext('2d', { alpha: false }) as OffscreenCanvasRenderingContext2D;
+	if (!numberRowCanvas.value) return;
+	numberRowCanvas.value.width = 2 * CHAR_WIDTH + 1;
+	numberRowCanvas.value.height = MAX_ROW_NUMBERS * CHAR_HEIGHT + 1;
+	let ctx = numberRowCanvas.value.getContext('2d', { alpha: false }) as OffscreenCanvasRenderingContext2D;
 	ctx.font = '10px monospace';
 	ctx.fillStyle = colours.background;
-	ctx.fillRect( 0, 0, numberRowCanvas.width, numberRowCanvas.height );
+	ctx.fillRect( 0, 0, numberRowCanvas.value.width, numberRowCanvas.value.height );
 
 	for (let i = 0; i <= MAX_ROW_NUMBERS; i++) {
 		let rowText = i.toString(16);
@@ -177,6 +183,7 @@ function setupSlice(r: Ref, channels: number) {
 	let chtml = r.value as HTMLCanvasElement;
 	chtml.width = sliceWidth;
 	chtml.height = sliceHeight;
+	chtml.style.left = (2 * CHAR_WIDTH + 1) + 'px';
 	let slice: CanvasDisplay = {
 		ctx: chtml.getContext('2d', { alpha: false, desynchronized: false }) as CanvasRenderingContext2D,
 		html: chtml,
@@ -199,14 +206,14 @@ function setupCanvas() {
 			nbChannels = player.value.currentPlayingNode.nbChannels;
 			nbChannels = nbChannels > MAX_CHANNEL_LIMIT ? MAX_CHANNEL_LIMIT : nbChannels;
 		}
-		sliceWidth = numberRowCanvas.width + CHANNEL_WIDTH * nbChannels + 2;
+		sliceWidth = CHANNEL_WIDTH * nbChannels + 2;
 		sliceHeight = HALF_BUFFER * CHAR_HEIGHT;
 		setupSlice(sliceCanvas1, nbChannels);
 		setupSlice(sliceCanvas2, nbChannels);
 		setupSlice(sliceCanvas3, nbChannels);
 	} else {
 		nextTick(() => {
-			debugw('Jumped to the next tick, is Vue ok?');
+			console.warn('SkModPlayer: Jumped to the next tick, is Vue ok?');
 			setupCanvas();
 		});
 	}
@@ -353,7 +360,6 @@ function drawSlices(skipOptimizationChecks = false) {
 
 				sli.ctx.fillStyle = colours.background;
 				sli.ctx.fillRect(0, 0, sliceWidth, sliceHeight);
-				sli.ctx.drawImage(numberRowCanvas, 0, -CHAR_HEIGHT * sli.drawStart);
 
 				//debug(sli);
 			}
@@ -364,7 +370,7 @@ function drawSlices(skipOptimizationChecks = false) {
 				if (sli.drawn.top > newRow) sli.drawn.top = newRow;
 				if (sli.drawn.bottom <= newRow) sli.drawn.bottom = newRow;
 
-				drawRow(sli, newRow, pattern, (2 * CHAR_WIDTH), i * CHAR_HEIGHT + ROW_OFFSET_Y);
+				drawRow(sli, newRow, pattern, 0, i * CHAR_HEIGHT + ROW_OFFSET_Y);
 			}
 		});
 		//debug_playPause();
@@ -381,12 +387,11 @@ function drawSlices(skipOptimizationChecks = false) {
 
 			sli.ctx.fillStyle = colours.background;
 			sli.ctx.fillRect(0, 0, sliceWidth, sliceHeight);
-			sli.ctx.drawImage(numberRowCanvas, 0, -CHAR_HEIGHT * curRow);
 
 			for (let itter = 0; itter < HALF_BUFFER; itter++) {
 				if (sli.drawn.top > curRow) sli.drawn.top = curRow;
 				if (sli.drawn.bottom <= curRow) sli.drawn.bottom = curRow;
-				drawRow(sli, curRow, pattern, (2 * CHAR_WIDTH), itter * CHAR_HEIGHT + ROW_OFFSET_Y);
+				drawRow(sli, curRow, pattern, 0, itter * CHAR_HEIGHT + ROW_OFFSET_Y);
 				curRow++;
 				if (curRow > lower) break;
 			}
@@ -400,7 +405,7 @@ function drawSlices(skipOptimizationChecks = false) {
 	lastPattern = pattern;
 }
 
-function drawRow(slice: CanvasDisplay, row: number, pattern: number, drawX = (2 * CHAR_WIDTH), drawY = ROW_OFFSET_Y) {
+function drawRow(slice: CanvasDisplay, row: number, pattern: number, drawX = 0, drawY = ROW_OFFSET_Y) {
 	if (!player.value.currentPlayingNode) return false;
 	if (row < 0 || row > player.value.getPatternNumRows(pattern) - 1) return false;
 	const spacer = 11;
@@ -497,11 +502,11 @@ function scrollHandler() {
 	if (!sliceDisplay.value.parentElement) return;
 
 	if (patternScrollSlider.value) {
-		patternScrollSliderPos.value = (sliceDisplay.value.parentElement.scrollLeft) / (sliceWidth - sliceDisplay.value.parentElement.offsetWidth) * 100;
+		patternScrollSliderPos.value = (sliceDisplay.value.parentElement.scrollLeft) / ((sliceWidth + 12) - sliceDisplay.value.parentElement.offsetWidth) * 100;
 		patternScrollSlider.value.style.opacity = '1';
 	}
 	displayScrollPos = sliceDisplay.value.parentElement.scrollLeft;
-	const newColumn = Math.trunc((displayScrollPos - numberRowCanvas.width) / CHANNEL_WIDTH);
+	const newColumn = Math.trunc((displayScrollPos) / CHANNEL_WIDTH);
 	if (newColumn !== currentColumn) {
 		currentColumn = newColumn;
 		forceUpdateDisplay();
@@ -528,7 +533,7 @@ watch(patternScrollSliderPos, () => {
 	if (!sliceDisplay.value.parentElement) return;
 	if (suppressScrollSliderWatcher) return;
 
-	sliceDisplay.value.parentElement.scrollLeft = (sliceWidth - sliceDisplay.value.parentElement.offsetWidth) * patternScrollSliderPos.value / 100;
+	sliceDisplay.value.parentElement.scrollLeft = ((sliceWidth + 12) - sliceDisplay.value.parentElement.offsetWidth) * patternScrollSliderPos.value / 100;
 });
 
 function resizeHandler(event: ResizeObserverEntry[]) {
@@ -597,8 +602,15 @@ onDeactivated(() => {
 			background-color: black;
 			image-rendering: pixelated;
 
+			.row_canvas {
+				position: absolute;
+				z-index: 1;
+			}
+
 			.patternSlice {
+				position: relative;
 				image-rendering: pixelated;
+				padding-right: 12px;
 			}
 		}
 
