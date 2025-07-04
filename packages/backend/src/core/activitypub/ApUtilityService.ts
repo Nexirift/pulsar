@@ -7,14 +7,12 @@ import { Injectable } from '@nestjs/common';
 import { UtilityService } from '@/core/UtilityService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { toArray } from '@/misc/prelude/array.js';
-import { EnvService } from '@/core/EnvService.js';
-import { getApId, getOneApHrefNullable, IObject } from './type.js';
+import { getApId, getOneApHrefNullable, IObject } from '@/core/activitypub/type.js';
 
 @Injectable()
 export class ApUtilityService {
 	constructor(
 		private readonly utilityService: UtilityService,
-		private readonly envService: EnvService,
 	) {}
 
 	/**
@@ -39,8 +37,11 @@ export class ApUtilityService {
 	public haveSameAuthority(url1: string, url2: string): boolean {
 		if (url1 === url2) return true;
 
-		const authority1 = this.utilityService.punyHostPSLDomain(url1);
-		const authority2 = this.utilityService.punyHostPSLDomain(url2);
+		const parsed1 = this.utilityService.assertUrl(url1);
+		const parsed2 = this.utilityService.assertUrl(url2);
+
+		const authority1 = this.utilityService.punyHostPSLDomain(parsed1);
+		const authority2 = this.utilityService.punyHostPSLDomain(parsed2);
 		return authority1 === authority2;
 	}
 
@@ -63,56 +64,22 @@ export class ApUtilityService {
 					: undefined,
 			}))
 			.filter(({ url, type }) => {
-				if (!url) return false;
-				if (!this.checkHttps(url)) return false;
-				if (!isAcceptableUrlType(type)) return false;
+				try {
+					if (!url) return false;
+					if (!isAcceptableUrlType(type)) return false;
+					const parsed = this.utilityService.assertUrl(url);
 
-				const urlAuthority = this.utilityService.punyHostPSLDomain(url);
-				return urlAuthority === targetAuthority;
+					const urlAuthority = this.utilityService.punyHostPSLDomain(parsed);
+					return urlAuthority === targetAuthority;
+				} catch {
+					return false;
+				}
 			})
 			.sort((a, b) => {
 				return rankUrlType(a.type) - rankUrlType(b.type);
 			});
 
 		return acceptableUrls[0]?.url ?? null;
-	}
-
-	/**
-	 * Verifies that a provided URL is in a format acceptable for federation.
-	 * @throws {IdentifiableError} If URL cannot be parsed
-	 * @throws {IdentifiableError} If URL is not HTTPS
-	 */
-	public assertApUrl(url: string | URL): void {
-		// If string, parse and validate
-		if (typeof(url) === 'string') {
-			try {
-				url = new URL(url);
-			} catch {
-				throw new IdentifiableError('0bedd29b-e3bf-4604-af51-d3352e2518af', `invalid AP url ${url}: not a valid URL`);
-			}
-		}
-
-		// Must be HTTPS
-		if (!this.checkHttps(url)) {
-			throw new IdentifiableError('0bedd29b-e3bf-4604-af51-d3352e2518af', `invalid AP url ${url}: unsupported protocol ${url.protocol}`);
-		}
-	}
-
-	/**
-	 * Checks if the URL contains HTTPS.
-	 * Additionally, allows HTTP in non-production environments.
-	 * Based on check-https.ts.
-	 */
-	private checkHttps(url: string | URL): boolean {
-		const isNonProd = this.envService.env.NODE_ENV !== 'production';
-
-		try {
-			const proto = new URL(url).protocol;
-			return proto === 'https:' || (proto === 'http:' && isNonProd);
-		} catch {
-			// Invalid URLs don't "count" as HTTPS
-			return false;
-		}
 	}
 }
 

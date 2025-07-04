@@ -3,30 +3,40 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { UtilityService } from '@/core/UtilityService.js';
 import type { IObject } from '@/core/activitypub/type.js';
 import type { EnvService } from '@/core/EnvService.js';
+import type { MiMeta } from '@/models/Meta.js';
+import type { Config } from '@/config.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
+import { UtilityService } from '@/core/UtilityService.js';
 
 describe(ApUtilityService, () => {
 	let serviceUnderTest: ApUtilityService;
 	let env: Record<string, string>;
 
 	beforeEach(() => {
-		const utilityService = {
-			punyHostPSLDomain(input: string) {
-				const host = new URL(input).host;
-				const parts = host.split('.');
-				return `${parts[parts.length - 2]}.${parts[parts.length - 1]}`;
-			},
-		} as unknown as UtilityService;
-
 		env = {};
 		const envService = {
 			env,
 		} as unknown as EnvService;
 
-		serviceUnderTest = new ApUtilityService(utilityService, envService);
+		const config = {
+			host: 'example.com',
+			blockedHosts: [],
+			silencedHosts: [],
+			mediaSilencedHosts: [],
+			federationHosts: [],
+			bubbleInstances: [],
+			deliverSuspendedSoftware: [],
+			federation: 'all',
+		} as unknown as Config;
+		const meta = {
+
+		} as MiMeta;
+
+		const utilityService = new UtilityService(config, meta, envService);
+
+		serviceUnderTest = new ApUtilityService(utilityService);
 	});
 
 	describe('assertIdMatchesUrlAuthority', () => {

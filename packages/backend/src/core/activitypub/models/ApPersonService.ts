@@ -153,7 +153,7 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 	 */
 	@bindThis
 	private validateActor(x: IObject, uri: string): IActor {
-		this.apUtilityService.assertApUrl(uri);
+		this.utilityService.assertUrl(uri);
 		const expectHost = this.utilityService.punyHostPSLDomain(uri);
 
 		if (!isActor(x)) {
@@ -168,7 +168,7 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 			throw new UnrecoverableError(`invalid Actor ${uri}: wrong inbox type`);
 		}
 
-		this.apUtilityService.assertApUrl(x.inbox);
+		this.utilityService.assertUrl(x.inbox);
 		const inboxHost = this.utilityService.punyHostPSLDomain(x.inbox);
 		if (inboxHost !== expectHost) {
 			throw new UnrecoverableError(`invalid Actor ${uri}: wrong inbox host ${inboxHost}`);
@@ -177,7 +177,7 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 		const sharedInboxObject = x.sharedInbox ?? (x.endpoints ? x.endpoints.sharedInbox : undefined);
 		if (sharedInboxObject != null) {
 			const sharedInbox = getApId(sharedInboxObject);
-			this.apUtilityService.assertApUrl(sharedInbox);
+			this.utilityService.assertUrl(sharedInbox);
 			if (!(typeof sharedInbox === 'string' && sharedInbox.length > 0 && this.utilityService.punyHostPSLDomain(sharedInbox) === expectHost)) {
 				throw new UnrecoverableError(`invalid Actor ${uri}: wrong shared inbox ${sharedInbox}`);
 			}
@@ -188,7 +188,7 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 			if (xCollection != null) {
 				const collectionUri = getApId(xCollection);
 				if (typeof collectionUri === 'string' && collectionUri.length > 0) {
-					this.apUtilityService.assertApUrl(collectionUri);
+					this.utilityService.assertUrl(collectionUri);
 					if (this.utilityService.punyHostPSLDomain(collectionUri) !== expectHost) {
 						throw new UnrecoverableError(`invalid Actor ${uri}: wrong ${collection} host ${collectionUri}`);
 					}

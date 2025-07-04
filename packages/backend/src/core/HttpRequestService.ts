@@ -17,7 +17,8 @@ import { StatusError } from '@/misc/status-error.js';
 import { bindThis } from '@/decorators.js';
 import { validateContentTypeSetAsActivityPub } from '@/core/activitypub/misc/validator.js';
 import type { IObject, IObjectWithId } from '@/core/activitypub/type.js';
-import { ApUtilityService } from './activitypub/ApUtilityService.js';
+import { UtilityService } from '@/core/UtilityService.js';
+import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
 import type { Response } from 'node-fetch';
 import type { URL } from 'node:url';
 import type { Socket } from 'node:net';
@@ -132,6 +133,7 @@ export class HttpRequestService {
 		@Inject(DI.config)
 		private config: Config,
 		private readonly apUtilityService: ApUtilityService,
+		private readonly utilityService: UtilityService,
 	) {
 		const cache = new CacheableLookup({
 			maxTtl: 3600,	// 1hours
@@ -236,8 +238,6 @@ export class HttpRequestService {
 
 	@bindThis
 	public async getActivityJson(url: string, isLocalAddressAllowed = false, allowAnonymous = false): Promise<IObjectWithId> {
-		this.apUtilityService.assertApUrl(url);
-
 		const res = await this.send(url, {
 			method: 'GET',
 			headers: {
@@ -310,6 +310,8 @@ export class HttpRequestService {
 		},
 	): Promise<Response> {
 		const timeout = args.timeout ?? 5000;
+
+		this.utilityService.assertUrl(url);
 
 		const controller = new AbortController();
 		setTimeout(() => {
