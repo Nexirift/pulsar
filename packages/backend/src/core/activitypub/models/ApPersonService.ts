@@ -155,8 +155,8 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 	 */
 	@bindThis
 	private validateActor(x: IObject, uri: string): IActor {
-		this.utilityService.assertUrl(uri);
-		const expectHost = this.utilityService.punyHostPSLDomain(uri);
+		const parsedUri = this.utilityService.assertUrl(uri);
+		const expectHost = this.utilityService.punyHostPSLDomain(parsedUri);
 
 		if (!isActor(x)) {
 			throw new UnrecoverableError(`invalid Actor ${uri}: unknown type '${x.type}'`);
