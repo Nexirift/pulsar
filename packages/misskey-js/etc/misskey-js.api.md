@@ -2067,6 +2067,7 @@ declare namespace entities {
         PagesUnlikeRequest,
         PagesUpdateRequest,
         PingResponse,
+        PinnedUsersRequest,
         PinnedUsersResponse,
         PromoReadRequest,
         RenoteMuteCreateRequest,
@@ -3410,6 +3411,9 @@ export const permissions: readonly ["read:account", "write:account", "read:block
 
 // @public (undocumented)
 type PingResponse = operations['ping']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type PinnedUsersRequest = operations['pinned-users']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type PinnedUsersResponse = operations['pinned-users']['responses']['200']['content']['application/json'];

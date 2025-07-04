@@ -563,6 +563,7 @@ import type {
 	PagesUnlikeRequest,
 	PagesUpdateRequest,
 	PingResponse,
+	PinnedUsersRequest,
 	PinnedUsersResponse,
 	PromoReadRequest,
 	RenoteMuteCreateRequest,
@@ -1044,7 +1045,7 @@ export type Endpoints = {
 	'pages/unlike': { req: PagesUnlikeRequest; res: EmptyResponse };
 	'pages/update': { req: PagesUpdateRequest; res: EmptyResponse };
 	'ping': { req: EmptyRequest; res: PingResponse };
-	'pinned-users': { req: EmptyRequest; res: PinnedUsersResponse };
+	'pinned-users': { req: PinnedUsersRequest; res: PinnedUsersResponse };
 	'promo/read': { req: PromoReadRequest; res: EmptyResponse };
 	'renote-mute/create': { req: RenoteMuteCreateRequest; res: EmptyResponse };
 	'renote-mute/delete': { req: RenoteMuteDeleteRequest; res: EmptyResponse };
