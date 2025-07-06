@@ -12,12 +12,12 @@ Before creating an issue, please check the following:
 - To avoid duplication, please search for similar issues before
   creating a new issue.
 
-- Do not use Issues to ask questions or troubleshooting.
+- Do not use Issues to ask questions or for troubleshooting.
 
-  - Issues should only be used to feature requests, suggestions, and
+  - Issues should only be used for feature requests, suggestions, and
     bug tracking.
-  - Please ask questions or troubleshooting in
-    [Discord](https://discord.gg/6VgKmEqHNk).
+  - For questions and troubleshooting, join
+    [our Discord server](https://discord.gg/6VgKmEqHNk).
 
 > [!WARNING]
 > Do not close issues that are about to be resolved. It
@@ -30,18 +30,18 @@ Before creating an issue, please check the following:
   production purposes.
 - **`develop`** branch is where we work for the next release.
 
-  - When you create an MR, basically target it to this branch.
+  - When you create a merge request, target it to this branch.
 
-## Creating an MR
+## Creating a Merge Request
 
-Thank you for your MR! Before creating an MR, please check the
+Thank you for your merge request! Before creating an MR, please check the
 following:
 
 - If possible, prefix the title with a keyword that identifies the
   type of this MR, like `fix` / `refactor` / `feat` / `enhance` /
   `perf` / `chore` etc
 
-- Also, make sure that the granularity of this MR is
+- Make sure that the granularity of this MR is
   appropriate. Please do not include more than one type of change or
   interest in a single MR.
 
@@ -55,81 +55,85 @@ following:
   if possible.
 
 - Please make sure that tests and Lint are passed in advance. You can
-  run it with `pnpm test` and `pnpm lint`. [See more info](#testing)
+  run it with `pnpm test` and `pnpm lint`. See the [testing
+  section](#testing) for more info.
 
 - If this MR includes UI changes, please attach a screenshot in the
   text.
 
 ## Release process
 
-(see also [the
+(See also [the
 wiki](https://activitypub.software/TransFem-org/Sharkey/-/wikis/release-process))
 
-Prerequisites:
+### Creating a release
+#### Prerequisites
+Before creating a release, we must ensure that:
+- `develop` contains exactly the code we want to release.
 
-* `develop` contains exactly the code we want to release
-
-  * it can be useful to mark MRs we want to release with the
+  - It can be useful to mark MRs we want to release with the
     [`for-next-release`
-    label](https://activitypub.software/TransFem-org/Sharkey/-/merge_requests?label_name[]=for-next-release)
+    label](https://activitypub.software/TransFem-org/Sharkey/-/merge_requests?label_name[]=for-next-release).
 
-* we have tested it enough to be confident we can release it to the
-  world
+- We have tested it enough to be confident we can release it to the
+  world.
 
-* the CI pipeline (build, test, lint) passes
+- The CI pipeline (build, test, lint) passes.
 
-* the backend end-to-end tests (`pnpm --filter=backend test:e2e`) pass
-  on your machine
+- The backend end-to-end tests (`pnpm --filter=backend test:e2e`) pass
+  on your machine.
 
-* `package.json` and `packages/misskey-js/package.json` on `develop`
+- `package.json` and `packages/misskey-js/package.json` on `develop`
   have a `"version": "2027.12.0-dev"` or something similarly
-  non-prod-looking
+  non-prod-looking.
 
-* the
+- The
   [changelogs](https://activitypub.software/TransFem-org/Sharkey/-/wikis/changelogs)
-  contain all the changes we want to announce
+  contain all the changes we want to announce.
 
-To release:
+#### To release
+To create a release, we must:
 
-* create a new Branch based on `develop` to change the version to a
-  prod-looking one(e.g. `2027.12.1`)
+1. Create a new Branch based on `develop` to change the version to a
+  prod-looking one (e.g. `2027.12.1`).
 
-	* try to avoid using the same version as Misskey, both to reduce
+	- Try to avoid using the same version as Misskey, both to reduce
     confusion, and because (unlike branches) tags are not scoped by
-    remote and will confuse multi-remote clones
+    remote and will confuse multi-remote clones.
 
-* create a MR to merge the new Branch into `stable`
+2. Create an MR to merge the new branch into `stable`.
 
-* once _that_ is merged, go to
+3. Once that MR is merged, go to
   https://activitypub.software/TransFem-org/Sharkey/-/releases and
-  create a new release
+  create a new release.
 
-  * for the tag, use the same version you just set on `stable`
-    (e.g. `2027.12.1`)
+  - For the tag, use the same version you just set on `stable`
+    (e.g. `2027.12.1`).
 
-  * make sure the tag will be created on `stable`
+  - Make sure the tag will be created on `stable`.
 
-	* for the release name, again use the version (e.g. `2027.12.1`)
+	- For the release name, again use the version (e.g. `2027.12.1`).
 
-	* for the release notes, copy the [changelogs](changelogs)
+	- For the release notes, copy the [changelogs](changelogs).
 
-* wait for all the pipelines to complete
+4. Wait for all the pipelines to complete.
 
-	* in the [container
-    regirstry](https://activitypub.software/TransFem-org/Sharkey/container_registry/2?orderBy=NAME&sort=desc&search[]=)
+	- In the [container
+    registry](https://activitypub.software/TransFem-org/Sharkey/container_registry/2?orderBy=NAME&sort=desc&search[]=)
     you should get (of course with the right version):
 
-	  * `latest`
-		* `2027.12.1-amd64`
-		* `2027.12.1-arm64`
+	  - `latest`
+		- `2027.12.1-amd64`
+		- `2027.12.1-arm64`
 
-* announce the release on the official account!
+5. Announce the release on the official account!
 
-Post release:
+#### Post release
+After creating a release, we must:
 
-* branch off `develop`, merge `stable` into that, change the version
-  to the _next_ number (e.g. `2028.1.0-dev`), create a MR for this
-  branch, get it merged
+- Branch off `develop`, merge `stable` into that new branch, change the version
+  to the *next* number (e.g. `2028.1.0-dev`), create a MR for this
+  branch, and get it merged.
 
 ### Hotfixes / security releases
 
@@ -137,18 +141,18 @@ Sometimes we need to release changes to the latest stable release, *without* wha
 
 In these cases:
 
-* create a branch off `stable`, let's call it `hotfix/2027.12.2`, and
-  change the version number on this branch
+1. Create a branch off `stable` - let's call it `hotfix/2027.12.2`, for
+   example - and change the version number on this branch.
 
-* create branches off `stable`, one per fix (like normal feature /
-  bugfix branches, but starting from the released code), and send MRs
-  targeting `hotfix/2027.12.2`
+2. Create branches off `stable`, one per fix (like normal feature /
+   bugfix branches, but starting from the released code), and send MRs
+   targeting `hotfix/2027.12.2`.
 
-* once all the fixes have been merged into `hotfix/2027.12.2`, create
-  a MR targeting `stable`
+3. Once all the fixes have been merged into `hotfix/2027.12.2`, create
+   a MR targeting `stable`.
 
-* now carry on through the normal release process (third step, the one
-  starting "once that is merged…")
+4. Now carry on through the normal release process (from step 3 of the
+   "[To release](#To%20Release)" section).
 
 ## Icon Font (Shark Font)
 
@@ -160,8 +164,8 @@ Build instructions can all be found over there in the `README`.
 If you have an icon suggestion or want to add an Icon please open an
 issue/merge request over at that repo.
 
-When updating the font make sure to copy **all generated files** from
-the `dest` folder into `packages/backend/assets/fonts/sharkey-icons`
+When updating the font, make sure to copy **all generated files** from
+the `dest` folder into `packages/backend/assets/fonts/sharkey-icons`.
 
 For the CSS, copy the file content and replace the old content in
 `style.css` and for the WOFF, TTF and SVG simply replace them.
@@ -200,7 +204,7 @@ First, you will need to copy
 [`.config/docker_example.env`](.config/docker_example.env) to
 `.config/docker.env`. This file will contain configurations for the
 PostgreSQL database, such as username and password. You may set these
-as you wish.  You will also need to copy
+as you wish. You will also need to copy
 [`.config/example.yml`](.config/example.yml) to
 `.config/default.yml`. This file will contain configurations for
 Sharkey. Ensure that the username and password in the `db:` section
@@ -251,36 +255,44 @@ pnpm dev
 
 ### Testing
 
-(see also [Misskey's docs about testing](./CONTRIBUTING.md#testing))
+(See also [Misskey's docs about testing](./CONTRIBUTING.md#testing)).
 
-To run many of the tests, you need a dedicated database.
+To run many of the tests, you need a dedicated database. To set this up:
 
-* start PostgreSQL and Redis
+1. Start PostgreSQL and Redis
 
-* create the test configuration file:
+	- This is covered in the [environment setup](#Environment%20setup) section.
 
-	```bassh
+2. Create the test configuration file, by copying
+   `.config/test-example.yml` to `.config/test.yml`.
+
+	```bash
 	cp .config/test-example.yml .config/test.yml
 	```
 
-* start the database container:
+3. Start the database container:
 
 	```bash
 	docker compose -f packages/backend/test/compose.yml up
 	```
 
-Now you can run `pnpm test` and `pnpm --filter=backend test:e2e`
+Now you can run `pnpm test` and `pnpm --filter=backend test:e2e` to
+run the tests.
 
 ### Environment Variables
 
 - `MISSKEY_CONFIG_DIR` changes the directory where config files are
-  searched, defaults to [`.config/`](.config/) at the top of the repository
-- `MISSKEY_CONFIG_YML` changes the configuration file name, defaults
+  searched. Defaults to [`.config/`](.config/) at the top of the repository.
+- `MISSKEY_CONFIG_YML` changes the configuration file name. Defaults
   to `default.yml` (e.g. you can set `MISSKEY_CONFIG_YML=2nd.yml` to
-  load `.config/2nd.yml`)
+  load `.config/2nd.yml`).
 - `MISSKEY_WEBFINGER_USE_HTTP` if set to `true`, WebFinger requests
   will be http instead of https, useful for testing federation between
-  servers in localhost. NEVER USE IN PRODUCTION.
+  servers in localhost.
+
+> [!WARNING]
+> Never use `MISSKEY_WEBFINGER_USE_HTTP` for a real instance in production,
+> as it will expose user information to the network.
 
 ## Continuous integration
 
@@ -290,48 +302,56 @@ Configuration files are located in [`.gitlab-ci.yml`](.gitlab-ci.yml).
 
 ### Merging from Misskey into Sharkey
 
-Make sure you have both remotes in the same clone (`git remote add
-misskey https://github.com/misskey-dev/misskey.git`), then:
+Make sure you have both remotes in the same clone. To do this, run
+the following command to add Misskey's remote to your local clone:
 
-	git remote update
-	git checkout develop   # this is Sharkey's develop
-	git checkout -m merge/$(date +%Y-%m-%d)   # or whatever
-	git merge --no-ff misskey/develop
+```bash
+    git remote add misskey https://github.com/misskey-dev/misskey.git
+```
 
-fix conflicts and *commit*! (conflicts in `pnpm-lock.yaml` can usually
-be fixed by running `pnpm install`, it detects conflict markers and
-seems to do a decent job)
+Then, to perform the merge:
 
-*after that commit*, do all the extra work, on the same branch:
+```bash
+git remote update   # Update branches to track the new remote.
+git checkout develop   # Checkout Sharkey's develop branch.
+git checkout -m merge/$(date +%Y-%m-%d)   # Create/switch to a merge branch for the current date.
+git merge --no-ff misskey/develop   # Merge from Misskey's develop branch, forcing a merge commit.
+```
 
-* copy all changes (commit after each step):
-    * in `packages/backend/src/core/activitypub/models/ApNoteService.ts`, from `createNote` to `updateNote`
-    * from `packages/backend/src/core/NoteCreateService.ts` to `packages/backend/src/core/NoteEditService.ts`
-    * from `packages/backend/src/server/api/endpoints/notes/create.ts` to `packages/backend/src/server/api/endpoints/notes/edit.ts`
-    * from MK note components to SK note components (if sensible)
-        * from `packages/frontend/src/components/MkNote.vue` to `packages/frontend/src/components/SkNote.vue`
-        * from `packages/frontend/src/components/MkNoteDetailed.vue` to `packages/frontend/src/components/SkNoteDetailed.vue`
-        * from `packages/frontend/src/components/MkNoteHeader.vue` to `packages/frontend/src/components/SkNoteHeader.vue`
-        * from `packages/frontend/src/components/MkNoteSimple.vue` to `packages/frontend/src/components/SkNoteSimple.vue`
-        * from `packages/frontend/src/components/MkNoteSub.vue` to `packages/frontend/src/components/SkNoteSub.vue`
-    * from MK note components to Dynamic note components (if the public signature changed)
-        * from `packages/frontend/src/components/MkNote.vue` to `packages/frontend/src/components/DynamicNote.vue`
-        * from `packages/frontend/src/components/MkNoteDetailed.vue` to `packages/frontend/src/components/DynamicNoteDetailed.vue`
-        * from `packages/frontend/src/components/MkNoteSimple.vue` to `packages/frontend/src/components/DynamicNoteSimple.vue`
-    * from the global timeline to the bubble timeline
-        * `packages/backend/src/server/api/stream/channels/global-timeline.ts`
-        * `packages/backend/src/server/api/stream/channels/bubble-timeline.ts`
-        * `packages/frontend/src/timelines.ts`
-        * `packages/frontend/src/components/MkTimeline.vue`
-        * `packages/frontend/src/pages/timeline.vue`
-        * `packages/frontend/src/ui/deck/tl-column.vue`
-        * `packages/frontend/src/widgets/WidgetTimeline.vue`
-    * from `packages/backend/src/queue/processors/InboxProcessorService.ts` to `packages/backend/src/core/UpdateInstanceQueue.ts`, where `updateInstanceQueue` is impacted
-    * from `.config/example.yml` to `.config/ci.yml` and `chart/files/default.yml`
-    * in `packages/backend/src/core/MfmService.ts`, from `toHtml` to `toMastoApiHtml`
-    * from `verifyLink` in `packages/backend/src/core/activitypub/models/ApPersonService.ts` to `verifyFieldLinks` in `packages/backend/src/misc/verify-field-link.ts` (if sensible)
+Fix conflicts and *commit!* Conflicts in `pnpm-lock.yaml` can usually
+be fixed by running `pnpm install` - it detects conflict markers and
+seems to do a decent job.
 
-* if there have been any changes to the federated user data (the
+*After that commit,* do all the extra work, on the same branch:
+
+- Copy all changes (commit after each step):
+    - in `packages/backend/src/core/activitypub/models/ApNoteService.ts`, from `createNote` to `updateNote`
+    - from `packages/backend/src/core/NoteCreateService.ts` to `packages/backend/src/core/NoteEditService.ts`
+    - from `packages/backend/src/server/api/endpoints/notes/create.ts` to `packages/backend/src/server/api/endpoints/notes/edit.ts`
+    - from MK note components to SK note components (if sensible)
+        - from `packages/frontend/src/components/MkNote.vue` to `packages/frontend/src/components/SkNote.vue`
+        - from `packages/frontend/src/components/MkNoteDetailed.vue` to `packages/frontend/src/components/SkNoteDetailed.vue`
+        - from `packages/frontend/src/components/MkNoteHeader.vue` to `packages/frontend/src/components/SkNoteHeader.vue`
+        - from `packages/frontend/src/components/MkNoteSimple.vue` to `packages/frontend/src/components/SkNoteSimple.vue`
+        - from `packages/frontend/src/components/MkNoteSub.vue` to `packages/frontend/src/components/SkNoteSub.vue`
+    - from MK note components to Dynamic note components (if the public signature changed)
+        - from `packages/frontend/src/components/MkNote.vue` to `packages/frontend/src/components/DynamicNote.vue`
+        - from `packages/frontend/src/components/MkNoteDetailed.vue` to `packages/frontend/src/components/DynamicNoteDetailed.vue`
+        - from `packages/frontend/src/components/MkNoteSimple.vue` to `packages/frontend/src/components/DynamicNoteSimple.vue`
+    - from the global timeline to the bubble timeline
+        - `packages/backend/src/server/api/stream/channels/global-timeline.ts`
+        - `packages/backend/src/server/api/stream/channels/bubble-timeline.ts`
+        - `packages/frontend/src/timelines.ts`
+        - `packages/frontend/src/components/MkTimeline.vue`
+        - `packages/frontend/src/pages/timeline.vue`
+        - `packages/frontend/src/ui/deck/tl-column.vue`
+        - `packages/frontend/src/widgets/WidgetTimeline.vue`
+    - from `packages/backend/src/queue/processors/InboxProcessorService.ts` to `packages/backend/src/core/UpdateInstanceQueue.ts`, where `updateInstanceQueue` is impacted
+    - from `.config/example.yml` to `.config/ci.yml` and `chart/files/default.yml`
+    - in `packages/backend/src/core/MfmService.ts`, from `toHtml` to `toMastoApiHtml`
+    - from `verifyLink` in `packages/backend/src/core/activitypub/models/ApPersonService.ts` to `verifyFieldLinks` in `packages/backend/src/misc/verify-field-link.ts` (if sensible)
+
+- If there have been any changes to the federated user data (the
   `renderPerson` function in
   `packages/backend/src/core/activitypub/ApRendererService.ts`), make
   sure that the set of fields in `userNeedsPublishing` and
@@ -339,55 +359,57 @@ seems to do a decent job)
   `packages/backend/src/server/api/endpoints/i/update.ts` are still
   correct.
 
-* check the changes against our `develop` (`git diff develop`) and
-  against Misskey (`git diff misskey/develop`)
+- Check the changes against our `develop` branch (`git diff develop`)
+  and against Misskey's `develop` branch (`git diff misskey/develop`).
 
-* re-generate `misskey-js` (`pnpm build-misskey-js-with-types`) and
-  commit
+- Re-generate `misskey-js` (`pnpm build-misskey-js-with-types`) and
+  commit.
 
-* re-generate locales (`pnpm run build-assets`) and commit
+- Re-generate locales (`pnpm run build-assets`) and commit.
 
-* build the frontend: `rm -rf built/; NODE_ENV=development pnpm
-  --filter=frontend --filter=frontend-embed --filter=frontend-shared
-  build` (the `development` tells it to keep some of the original
-  filenames in the built files)
+- Build the frontend with this command:
 
-* make sure there aren't any new `ti-*` classes (Tabler Icons), and
+    ```bash
+    rm -rf built/
+    NODE_ENV=development pnpm --filter=frontend --filter=frontend-embed --filter=frontend-shared build
+    ```
+
+- Make sure there aren't any new `ti-*` classes (Tabler Icons), and
   replace them with appropriate `ph-*` ones (Phosphor Icons) in
   [`vite.replaceicons.ts`](packages/frontend/vite.replaceIcons.ts).
 
-    * This command should show you want to change: `grep -ohrP
+    - This command should show you want to change: `grep -ohrP
       '(?<=["'\''](ti )?)(ti-(?!fw)[\w\-]+)' --exclude \*.map --
       built/ | sort -u`.
 
-    * NOTE: `ti-fw` is a special class that's defined by Misskey,
+    - NOTE: `ti-fw` is a special class that's defined by Misskey,
       leave it alone.
 
-    * After every change, re-build the frontend and check again, until
+    - After every change, re-build the frontend and check again, until
       there are no more `ti-*` classes in the built files.
 
-    * Commit!
+    - Commit!
 
-* double-check the new migration, that they won't conflict with our db
+- Double-check the new migration, that they won't conflict with our db
   changes: `git diff develop -- packages/backend/migration/`
 
-* `pnpm clean; pnpm build`
+- Run `pnpm clean; pnpm build`.
 
-* run tests `pnpm test; pnpm --filter backend test:e2e` (requires a
+- Run tests `pnpm test; pnpm --filter backend test:e2e` (requires a
   test database, [see above](#testing)) and fix them all (the e2e
   tests randomly fail with weird errors like `relation "users" does
-  not exist`, run them again if that happens)
+  not exist`, run them again if that happens).
 
-* run lint `pnpm --filter=backend --filter=frontend-shared lint` +
+- Run lint `pnpm --filter=backend --filter=frontend-shared lint` +
   `pnpm --filter=frontend --filter=frontend-embed eslint` and fix all
-  the problems
+  the problems.
 
 Then push and open a Merge Request.
 
 ### Memory Caches
 
 Sharkey offers multiple memory cache implementations, each meant for a
-different use case.  The following table compares the available
+different use case. The following table compares the available
 options:
 
 | Cache               | Type      | Consistency | Persistence | Data Source | Cardinality | Eviction | Description                                                                                                                                                                                                                                                                |
@@ -416,22 +438,22 @@ evict stale data.
 
 #### Selecting a cache implementation
 
-For most cache uses, `QuantumKVCache` should be considered first.  It
+For most cache uses, `QuantumKVCache` should be considered first. It
 offers strong consistency guarantees, multiple cardinality, and a
 cleaner API surface than the older caches.
 
 An alternate cache implementation should be considered if any of the
 following apply:
 
-* The data is particularly slow to calculate or difficult to
+- The data is particularly slow to calculate or difficult to
   access. In these cases, either `RedisKVCache` or `RedisSingleCache`
   should be considered.
 
-* If stale data is acceptable, then consider `MemoryKVCache` or
+- If stale data is acceptable, then consider `MemoryKVCache` or
   `MemorySingleCache`. These synchronous implementations have much
   less overhead than the other options.
 
-* There is only one data item, or all data items must be fetched
+- There is only one data item, or all data items must be fetched
   together. Using `MemorySingleCache` or `RedisSingleCache` could
   provide a cleaner implementation without resorting to hacks like a
   fixed key.
