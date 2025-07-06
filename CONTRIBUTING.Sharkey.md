@@ -2,7 +2,7 @@
 
 We're glad you're interested in contributing to Sharkey! In this
 document you will find the information you need to contribute to the
-project. We assume you've *also* read Misskey's contribution guide,
+project. Please *also* read Misskey's contribution guide,
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Issues
