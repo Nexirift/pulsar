@@ -6,7 +6,7 @@ Simple view of a note in the Sharkey style. Used in quote renotes, link previews
 -->
 
 <template>
-<div :class="$style.root">
+<SkMutedNote :note="note" :skipMute="skipMute" :class="$style.root" @expandMute="n => emit('expandMute', n)">
 	<MkAvatar :class="$style.avatar" :user="note.user" link preview/>
 	<div :class="$style.main">
 		<MkNoteHeader :class="$style.header" :classic="true" :note="note" :mini="true"/>
@@ -20,7 +20,7 @@ Simple view of a note in the Sharkey style. Used in quote renotes, link previews
 			</div>
 		</div>
 	</div>
-</div>
+</SkMutedNote>
 </template>
 
 <script lang="ts" setup>
@@ -32,6 +32,7 @@ import MkCwButton from '@/components/MkCwButton.vue';
 import { prefer } from '@/preferences.js';
 import { setupNoteViewInterruptors } from '@/plugin.js';
 import { deepClone } from '@/utility/clone.js';
+import SkMutedNote from '@/components/SkMutedNote.vue';
 
 const props = defineProps<{
 	note: Misskey.entities.Note & {
@@ -39,10 +40,11 @@ const props = defineProps<{
 		scheduledNoteId?: string
 	};
 	expandAllCws?: boolean;
+	skipMute?: boolean;
 	hideFiles?: boolean;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
 	(ev: 'editScheduleNote'): void;
 	(ev: 'expandMute', note: Misskey.entities.Note): void;
 }>();

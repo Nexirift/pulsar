@@ -86,14 +86,14 @@ import { checkMute } from '@/utility/check-word-mute.js';
 const props = withDefaults(defineProps<{
 	note: Misskey.entities.Note;
 	withHardMute?: boolean;
-	dive?: boolean;
 	mutedClass?: string | string[] | Record<string, boolean> | (string | string[] | Record<string, boolean>)[];
 	expandedClass?: string | string[] | Record<string, boolean> | (string | string[] | Record<string, boolean>)[];
+	skipMute?: boolean;
 }>(), {
 	withHardMute: true,
-	dive: true,
 	mutedClass: undefined,
 	expandedClass: undefined,
+	skipMute: false,
 });
 
 const emit = defineEmits<{
@@ -107,14 +107,10 @@ function expand() {
 	emit('expandMute', props.note);
 }
 
-const mute = checkMute(
-	computed(() => props.note),
-	computed(() => props.withHardMute),
-	computed(() => props.dive),
-);
+const mute = checkMute(computed(() => props.note), computed(() => props.withHardMute));
 
 const mutedWords = computed(() => mute.value.softMutedWords?.join(', '));
-const isExpanded = computed(() => expandNote.value || !mute.value.hasMute);
+const isExpanded = computed(() => props.skipMute || expandNote.value || !mute.value.hasMute);
 const rootClass = computed(() => isExpanded.value ? props.expandedClass : undefined);
 
 const instanceName = computed(() => {

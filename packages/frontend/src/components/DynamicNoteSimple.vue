@@ -10,8 +10,10 @@ Displays a note in the simple view with either Misskey or Sharkey style, based o
 	ref="rootEl"
 	:note="note"
 	:expandAllCws="expandAllCws"
+	:skipMute="skipMute"
 	:hideFiles="hideFiles"
 	@editScheduledNote="() => emit('editScheduleNote')"
+	@expandMute="n => emit('expandMute', n)"
 />
 </template>
 
@@ -38,10 +40,12 @@ defineProps<{
 		scheduledNoteId?: string
 	};
 	expandAllCws?: boolean;
+	skipMute?: boolean;
 	hideFiles?: boolean;
 }>();
 
 const emit = defineEmits<{
 	(ev: 'editScheduleNote'): void;
+	(ev: 'expandMute', note: Misskey.entities.Note): void;
 }>();
 </script>
