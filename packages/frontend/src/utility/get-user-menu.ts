@@ -102,6 +102,22 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 		});
 	}
 
+	async function setMandatoryCW() {
+		const result = await os.inputText({
+			type: 'text',
+			title: i18n.ts.mandatoryCW,
+			text: i18n.ts.mandatoryCWDescription,
+			default: user.mandatoryCW ?? '',
+		});
+
+		if (result.canceled) return;
+
+		await os.apiWithDialog('admin/cw-user', {
+			userId: user.id,
+			cw: result.result || null,
+		});
+	}
+
 	async function getConfirmed(text: string): Promise<boolean> {
 		const confirm = await os.confirm({
 			type: 'question',
@@ -399,6 +415,14 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 			text: i18n.ts.reportAbuse,
 			action: reportAbuse,
 		});
+
+		if ($i.isModerator) {
+			menuItems.push({
+				icon: 'ph-warning ph-bold ph-lg',
+				text: i18n.ts.mandatoryCW,
+				action: setMandatoryCW,
+			});
+		}
 	}
 
 	if (user.host !== null) {
