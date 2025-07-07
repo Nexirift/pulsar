@@ -73,13 +73,8 @@ function fetch() {
 	misskeyApi('announcements/show', {
 		announcementId: props.announcementId,
 	}).then(async _announcement => {
-		console.log("bbbb");
 		announcement.value = _announcement;
-		console.log("cccc");
-		console.log(announcement.value.confetti);
-		console.log(announcement.value.isRead);
 		if (announcement.value.confetti && !announcement.value.isRead) {
-			console.log("dddd");
 			confetti({
 				duration: 1000 * 3,
 			});
