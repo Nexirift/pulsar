@@ -10,7 +10,7 @@ Horizontal strip that displays a user's badges.
 	<div
 		v-for="badge of badges"
 		:key="badge.key"
-		:class="[$style.badge, semanticClass(badge)]"
+		:class="[$style.badge, $style[`semantic_${badge.style ?? 'neutral'}`]]"
 	>
 		{{ badge.label }}
 	</div>
@@ -39,18 +39,9 @@ export interface Badge {
 </script>
 
 <script setup lang="ts">
-import { useCssModule } from 'vue';
-
-const $style = useCssModule();
-
 defineProps<{
 	badges: Badge[],
 }>();
-
-function semanticClass(badge: Badge): string {
-	const style = badge.style ?? 'neutral';
-	return $style[`semantic_${style}`];
-}
 </script>
 
 <style module lang="scss">
