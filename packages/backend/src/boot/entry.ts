@@ -66,13 +66,13 @@ async function main() {
 	process.on('uncaughtException', (err) => {
 		// Workaround for https://github.com/node-fetch/node-fetch/issues/954
 		if (String(err).match(/^TypeError: .+ is an? url with embedded credentials.$/)) {
-			console.debug('Suppressed node-fetch issue#954, but the current job may fail.');
+			logger.debug('Suppressed node-fetch issue#954, but the current job may fail.');
 			return;
 		}
 
 		// Workaround for https://github.com/node-fetch/node-fetch/issues/1845
 		if (String(err) === 'TypeError: Cannot read properties of undefined (reading \'body\')') {
-			console.debug('Suppressed node-fetch issue#1845, but the current job may fail.');
+			logger.debug('Suppressed node-fetch issue#1845, but the current job may fail.');
 			return;
 		}
 
