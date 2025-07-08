@@ -173,6 +173,10 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 			action: () => {
 				router.push(`/admin/user/${user.id}`);
 			},
+		}, {
+			icon: 'ph-warning ph-bold ph-lg',
+			text: i18n.ts.mandatoryCW,
+			action: setMandatoryCW,
 		}, { type: 'divider' });
 	}
 
@@ -415,14 +419,6 @@ export function getUserMenu(user: Misskey.entities.UserDetailed, router: Router 
 			text: i18n.ts.reportAbuse,
 			action: reportAbuse,
 		});
-
-		if ($i.isModerator) {
-			menuItems.push({
-				icon: 'ph-warning ph-bold ph-lg',
-				text: i18n.ts.mandatoryCW,
-				action: setMandatoryCW,
-			});
-		}
 	}
 
 	if (user.host !== null) {

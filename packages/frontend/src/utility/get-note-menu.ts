@@ -464,10 +464,6 @@ export function getNoteMenu(props: {
 		if (appearNote.userId !== $i.id) {
 			menuItems.push({ type: 'divider' });
 			menuItems.push(getAbuseNoteMenu(appearNote, i18n.ts.reportAbuse));
-
-			if ($i.isModerator || $i.isAdmin) {
-				menuItems.push(getMandatoryCWMenu(appearNote));
-			}
 		}
 
 		if (appearNote.channel && (appearNote.channel.userId === $i.id || $i.isModerator || $i.isAdmin)) {
@@ -519,6 +515,9 @@ export function getNoteMenu(props: {
 					danger: true,
 					action: delEdit,
 				});
+			}
+			if ($i.isModerator || $i.isAdmin) {
+				menuItems.push(getMandatoryCWMenu(appearNote));
 			}
 			menuItems.push({
 				icon: 'ti ti-trash',
