@@ -31,7 +31,7 @@ import { bindThis } from '@/decorators.js';
 import { Resolver } from '@/core/activitypub/ApResolverService.js';
 import { DI } from '@/di-symbols.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { NativeTimeService } from '@/global/TimeService.js';
+import type { MiLocalUser } from '@/models/User.js';
 
 type MockResponse = {
 	type: string;
@@ -115,8 +115,9 @@ export class MockResolver extends Resolver {
 		return this.#remoteGetTrials;
 	}
 
-	public async resolve(value: string | [string]): Promise<IObjectWithId>;
-	public async resolve(value: string | IObject | [string | IObject]): Promise<IObject>;
+	public async resolve(value: string | [string], allowAnonymous?: boolean, fetchUser?: MiLocalUser): Promise<IObjectWithId>;
+	public async resolve(value: string | IObjectWithId | [string | IObjectWithId], allowAnonymous?: boolean, fetchUser?: MiLocalUser): Promise<IObjectWithId>;
+	public async resolve(value: string | IObject | [string | IObject], allowAnonymous?: boolean, fetchUser?: MiLocalUser): Promise<IObject>;
 	@bindThis
 	public async resolve(value: string | IObject | [string | IObject]): Promise<IObject> {
 		value = fromTuple(value);
