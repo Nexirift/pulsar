@@ -273,11 +273,14 @@ To run many of the tests, you need a dedicated database. To set this up:
 3. Start the database container:
 
 	```bash
-	docker compose -f packages/backend/test/compose.yml up
+	docker compose -f packages/backend/test/compose.yml up -d
 	```
 
 Now you can run `pnpm test` and `pnpm --filter=backend test:e2e` to
 run the tests.
+
+To stop the database container, run `docker compose -f
+packages/backend/test/compose.yml up -d down`
 
 ### Environment Variables
 
