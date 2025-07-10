@@ -43,12 +43,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (user.isSuspended) {
-				throw new Error('user already suspended');
+				return;
 			}
 
 			if (await this.roleService.isModerator(user)) {
 				throw new Error('cannot suspend moderator account');
 			}
+
 			await this.userSuspendService.suspend(user, me);
 		});
 	}
