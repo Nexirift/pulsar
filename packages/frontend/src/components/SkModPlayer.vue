@@ -20,10 +20,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span :class="$style.patternShadowTop"></span>
 		<span :class="$style.patternShadowBottom"></span>
 		<div ref="sliceDisplay" :class="$style.slice_display">
-			<canvas ref="numberRowCanvas" :style="{ top: numberRowOffset + 'px' }" :class="$style.row_canvas"></canvas>
-			<canvas ref="sliceCanvas1" :class="$style.patternSlice"></canvas>
-			<canvas ref="sliceCanvas2" :class="$style.patternSlice"></canvas>
-			<canvas ref="sliceCanvas3" :class="$style.patternSlice"></canvas>
+			<span ref="numberRowParent" :class="$style.numberRowParent">
+				<canvas ref="numberRowCanvas" :style="{ top: numberRowOffset + 'px' }" :class="$style.row_canvas"></canvas>
+			</span>
+			<span>
+				<span ref="sliceBackground1" :class="$style.sliceBackground">
+					<canvas ref="sliceCanvas1" :class="$style.patternSlice"></canvas>
+				</span>
+				<span ref="sliceBackground2" :class="$style.sliceBackground">
+					<canvas ref="sliceCanvas2" :class="$style.patternSlice"></canvas>
+				</span>
+				<span ref="sliceBackground3" :class="$style.sliceBackground">
+					<canvas ref="sliceCanvas3" :class="$style.patternSlice"></canvas>
+				</span>
+			</span>
 		</div>
 	</div>
 	<div :class="$style.controls">
@@ -63,10 +73,6 @@ const colours = {
 	foreground: {
 		default: '#ffffff',
 		quarter: '#ffff00',
-		instr: '#80e0ff',
-		volume: '#80ff80',
-		fx: '#ff80e0',
-		operant: '#ffe080',
 	},
 };
 
@@ -91,6 +97,7 @@ const props = defineProps<{
 class CanvasDisplay {
 	ctx: CanvasRenderingContext2D;
 	html: HTMLCanvasElement;
+	background: HTMLSpanElement;
 	drawn: { top: number, bottom: number, completed: boolean };
 	vPos: number;
 	transform: { x: number, y: number };
@@ -98,16 +105,20 @@ class CanvasDisplay {
 	constructor (
 		ctx: CanvasRenderingContext2D,
 		html: HTMLCanvasElement,
+		background: HTMLSpanElement,
 	) {
 		this.ctx = ctx;
 		this.html = html;
 		this.drawn = { top: 0, bottom: 0, completed: false };
 		this.vPos = -0xFFFFFFFF;
-		this.transform = { x: 2 * CHAR_WIDTH + 1, y: 0 };
+		this.transform = { x: 0, y: 0 };
 		this.drawStart = 0;
+		this.background = background;
+		// Hacky solution to seeing raw background while the module isn't loaded yet.
+		background.style.display = 'flex';
 	}
 	updateStyleTransforms () {
-		this.html.style.transform = 'translate(' + this.transform.x + 'px,' + this.transform.y + 'px)';
+		this.background.style.transform = 'translate(' + this.transform.x + 'px,' + this.transform.y + 'px)';
 	}
 	resetDrawn() {
 		this.drawn = {
@@ -130,6 +141,10 @@ let numberRowCanvas = ref();
 let sliceCanvas1 = ref();
 let sliceCanvas2 = ref();
 let sliceCanvas3 = ref();
+let sliceBackground1 = ref();
+let sliceBackground2 = ref();
+let sliceBackground3 = ref();
+let numberRowParent = ref();
 const displayHeight = ref(ROW_BUFFER * CHAR_HEIGHT);
 const numberRowOffset = ref(HALF_BUFFER * CHAR_HEIGHT);
 let sliceWidth = 0;
@@ -154,6 +169,7 @@ let lastDrawnRow = -1;
 let alreadyHiddenOnce = false;
 let virtualCanvasWidth = 0;
 let slices: CanvasDisplay[] = [];
+let numberRowPHTML: HTMLSpanElement;
 //let copyBuffer = { canvas: new OffscreenCanvas(1, 1), ctx: OffscreenCanvasRenderingContext2D };
 
 const PERF_MONITOR = {
@@ -184,9 +200,10 @@ const PERF_MONITOR = {
 };
 
 function bakeNumberRow() {
-	if (!numberRowCanvas.value) return;
+	if (!numberRowCanvas.value && !numberRowParent.value) return;
 	numberRowCanvas.value.width = 2 * CHAR_WIDTH + 1;
 	numberRowCanvas.value.height = MAX_ROW_NUMBERS * CHAR_HEIGHT + 1;
+	numberRowPHTML = numberRowParent.value;
 	let ctx = numberRowCanvas.value.getContext('2d', { alpha: false }) as OffscreenCanvasRenderingContext2D;
 	ctx.font = '10px monospace';
 	ctx.fillStyle = colours.background;
@@ -203,24 +220,26 @@ function bakeNumberRow() {
 	}
 }
 
-function setupSlice(r: Ref) {
-	let chtml = r.value as HTMLCanvasElement;
+function setupSlice(canvas: Ref, back: Ref) {
+	let backgorund = back.value as HTMLSpanElement;
+	let chtml = canvas.value as HTMLCanvasElement;
 	chtml.width = sliceWidth;
 	chtml.height = sliceHeight;
 	let slice = new CanvasDisplay(
 		chtml.getContext('2d', { alpha: false, desynchronized: false }) as CanvasRenderingContext2D,
 		chtml,
+		backgorund,
 	);
 	slice.ctx.font = '10px monospace';
 	slice.ctx.imageSmoothingEnabled = false;
 	slices.push(slice);
 }
 
-// Yes, I'm very evil.
-let updateSliceSize = function() {};
-
 function setupCanvas() {
-	if (sliceCanvas1.value && sliceCanvas2.value && sliceCanvas3.value) {
+	if (
+		sliceCanvas1.value && sliceCanvas2.value && sliceCanvas3.value &&
+		sliceBackground1.value && sliceCanvas2.value && sliceCanvas3.value
+	) {
 		nbChannels = 0;
 		if (player.value.currentPlayingNode) {
 			nbChannels = player.value.currentPlayingNode.nbChannels;
@@ -229,9 +248,9 @@ function setupCanvas() {
 		virtualCanvasWidth = 13 + CHANNEL_WIDTH * nbChannels + 2;
 		sliceWidth = MAX_SLICE_WIDTH > virtualCanvasWidth ? virtualCanvasWidth : maxChannelsInView * CHANNEL_WIDTH + 1;
 		sliceHeight = HALF_BUFFER * CHAR_HEIGHT;
-		setupSlice(sliceCanvas1);
-		setupSlice(sliceCanvas2);
-		setupSlice(sliceCanvas3);
+		setupSlice(sliceCanvas1, sliceBackground1);
+		setupSlice(sliceCanvas2, sliceBackground2);
+		setupSlice(sliceCanvas3, sliceBackground3);
 		if (sliceDisplay.value) sliceDisplay.value.style.minWidth = (virtualCanvasWidth - CHANNEL_WIDTH) + 'px';
 	} else {
 		nextTick(() => {
@@ -382,17 +401,24 @@ function drawSlices(skipOptimizationChecks = false) {
 
 				//debug(sli);
 			}
+			let patternText: string[] = [];
 			for (let i = 0; i < HALF_BUFFER; i++) {
 				const newRow = sli.drawStart + i;
 
-				if (sli.drawn.bottom >= newRow && sli.drawn.top <= newRow || newRow < upper || newRow < upper) continue;
+				if (sli.drawn.bottom >= newRow && sli.drawn.top <= newRow || newRow < upper || newRow < upper) {
+					patternText.push('');
+					continue;
+				}
 				if (sli.drawn.top > newRow) sli.drawn.top = newRow;
 				if (sli.drawn.bottom <= newRow) sli.drawn.bottom = newRow;
 
-				drawRow(sli, newRow, pattern, 0, i * CHAR_HEIGHT + ROW_OFFSET_Y);
+				patternText.push(rowText(sli, newRow, pattern));
+				//drawRow(sli, newRow, pattern, 0, i * CHAR_HEIGHT + ROW_OFFSET_Y);
 			}
+			drawText(sli, patternText);
 		});
 	} else {
+		numberRowPHTML.style.maxHeight = ((player.value.getPatternNumRows(pattern) + HALF_BUFFER) * CHAR_HEIGHT) + 'px';
 		slices.forEach((sli, i) => {
 			sli.drawStart = curRow;
 			sli.vPos = HALF_BUFFER * (i + 1);
@@ -403,13 +429,16 @@ function drawSlices(skipOptimizationChecks = false) {
 			sli.ctx.fillStyle = colours.background;
 			sli.ctx.fillRect(0, 0, sliceWidth, sliceHeight);
 
+			let patternText: string[] = [];
+
 			for (let itter = 0; itter < HALF_BUFFER; itter++) {
 				if (sli.drawn.top > curRow) sli.drawn.top = curRow;
 				if (sli.drawn.bottom <= curRow) sli.drawn.bottom = curRow;
-				drawRow(sli, curRow, pattern, 0, itter * CHAR_HEIGHT + ROW_OFFSET_Y);
+				patternText.push(rowText(sli, curRow, pattern));
 				curRow++;
 				if (curRow > lower) break;
 			}
+			drawText(sli, patternText);
 			//debug(sli);
 		});
 	}
@@ -420,52 +449,24 @@ function drawSlices(skipOptimizationChecks = false) {
 	lastPattern = pattern;
 }
 
-function drawRow(slice: CanvasDisplay, row: number, pattern: number, drawX = 0, drawY = ROW_OFFSET_Y) {
-	if (!player.value.currentPlayingNode) return false;
-	if (row < 0 || row > player.value.getPatternNumRows(pattern) - 1) return false;
-	const spacer = 11;
-	const space = ' ';
-	let seperators = '';
-	let note = '';
-	let instr = '';
-	let volume = '';
-	let fx = '';
-	let op = '';
+function rowText(slice: CanvasDisplay, row: number, pattern: number) : string {
+	if (!player.value.currentPlayingNode) return '';
+	if (row < 0 || row > player.value.getPatternNumRows(pattern) - 1) return '';
+	let retrunStr = '|';
 
 	for (let channel = currentColumn; channel < nbChannels; channel++) {
 		if (channel === maxChannelsInView + currentColumn) break;
 		const part = player.value.getPatternRowChannel(pattern, row, channel);
-
-		seperators += '|' + space.repeat( spacer + 2 );
-		note += part.substring(0, 3) + space.repeat( spacer );
-		instr += part.substring(4, 6) + space.repeat( spacer + 1 );
-		volume += part.substring(6, 9) + space.repeat( spacer );
-		fx += part.substring(10, 11) + space.repeat( spacer + 2 );
-		op += part.substring(11, 13) + space.repeat( spacer + 1 );
+		retrunStr += part + '|';
 	}
+	return retrunStr;
+}
 
-	//console.debug( 'seperators: ' + seperators + '\nnote: ' + note + '\ninstr: ' + instr + '\nvolume: ' + volume + '\nfx: ' + fx + '\nop: ' + op);
-
-	//slice.ctx.fillStyle = '#00ffff88';
-	//slice.ctx.fillRect(0, drawY - 10, sliceWidth, CHAR_HEIGHT);
-
+function drawText(slice: CanvasDisplay, text: string[], drawX = 0, drawY = ROW_OFFSET_Y) {
 	slice.ctx.fillStyle = colours.foreground.default;
-	slice.ctx.fillText(seperators, drawX, drawY);
-
-	slice.ctx.fillStyle = colours.foreground.default;
-	slice.ctx.fillText(note, drawX + CHAR_WIDTH, drawY);
-
-	slice.ctx.fillStyle = colours.foreground.instr;
-	slice.ctx.fillText(instr, drawX + CHAR_WIDTH * 5, drawY);
-
-	slice.ctx.fillStyle = colours.foreground.volume;
-	slice.ctx.fillText(volume, drawX + CHAR_WIDTH * 7, drawY);
-
-	slice.ctx.fillStyle = colours.foreground.fx;
-	slice.ctx.fillText(fx, drawX + CHAR_WIDTH * 11, drawY);
-
-	slice.ctx.fillStyle = colours.foreground.operant;
-	slice.ctx.fillText(op, drawX + CHAR_WIDTH * 12, drawY);
+	text.forEach((str, i) => {
+		if (str.length !== 0) slice.ctx.fillText(str, drawX, drawY + CHAR_HEIGHT * i);
+	});
 
 	return true;
 }
@@ -500,7 +501,7 @@ function forceUpdateDisplay() {
 	if (noNode) player.value.togglePause();
 	if (currentColumn + maxChannelsInView >= nbChannels) return;
 	slices.forEach((sli) => {
-		sli.transform.x = currentColumn * CHANNEL_WIDTH + 1 + 2 * CHAR_WIDTH + 1;
+		sli.transform.x = currentColumn * CHANNEL_WIDTH + 1;
 		sli.updateStyleTransforms();
 	});
 }
@@ -561,6 +562,15 @@ onDeactivated(() => {
 
 <style lang="scss" module>
 
+html {
+		--SkModPlayer-default: #ffffff;
+		--SkModPlayer-quarter: #ffff00;
+		--SkModPlayer-instr: #80e0ff;
+		--SkModPlayer-volume: #80ff80;
+		--SkModPlayer-fx: #ff80e0;
+		--SkModPlayer-operant: #ffe080;
+}
+
 .hide {
 	border-radius: var(--MI-radius-sm) !important;
 	background-color: black !important;
@@ -593,11 +603,12 @@ onDeactivated(() => {
 
 	> .pattern_display {
 		width: 100%;
-		height: 100%;
 		overflow-x: scroll;
 		overflow-y: hidden;
 		background-color: black;
 		text-align: center;
+		flex-flow: column;
+		display: flex;
 		max-height: 312px; /* magic_number = CHAR_HEIGHT * rowBuffer, needs to be in px */
 
 		scrollbar-width: none;
@@ -607,19 +618,46 @@ onDeactivated(() => {
 		}
 
 		.slice_display {
-			display: grid;
+			display: flex;
 			position: relative;
 			background-color: black;
 			image-rendering: pixelated;
-
-			.row_canvas {
-				position: absolute;
-				z-index: 1;
+			span {
+				.sliceBackground {
+					display: none;
+					width: fit-content;
+					height: fit-content;
+					position: relative;
+					background: repeating-linear-gradient(
+						to right,
+						var(--SkModPlayer-default) 0px calc(5 * 6px),
+						var(--SkModPlayer-instr) calc(5 * 6px) calc(7 * 6px),
+						var(--SkModPlayer-volume) calc(7 * 6px) calc(10 * 6px),
+						var(--SkModPlayer-fx) calc(10 * 6px) calc(13 * 6px),
+						var(--SkModPlayer-operant) calc(13 * 6px) calc(14 * 6px),
+					);
+					.patternSlice {
+						position: static;
+						image-rendering: pixelated;
+						mix-blend-mode: multiply;
+					}
+				}
 			}
-
-			.patternSlice {
-				position: relative;
-				image-rendering: pixelated;
+			.numberRowParent {
+				position: sticky;
+				right: 0;
+				z-index: 1;
+				inset: 0;
+				width: fit-content;
+				height: 200%;
+				overflow: clip;
+				background: #000000;
+				.row_canvas {
+					position: relative;
+					right: 0;
+					z-index: 1;
+					inset: 0;
+				}
 			}
 		}
 
@@ -627,7 +665,7 @@ onDeactivated(() => {
 			background: #00000080;
 			width: 100%;
 			height: calc(50% - 14px);
-			translate: -50% -100%;
+			translate: 0 -100%;
 			top: calc(50% - 14px);
 			position: absolute;
 			pointer-events: none;
@@ -638,7 +676,6 @@ onDeactivated(() => {
 			background: #00000080;
 			width: 100%;
 			height: calc(50% - 27px);
-			translate: -50% 0;
 			top: calc(50% - 2px);
 			position: absolute;
 			pointer-events: none;
