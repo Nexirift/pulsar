@@ -434,7 +434,7 @@ function drawSlices(skipOptimizationChecks = false) {
 		});
 	}
 
-	if (sliceDisplay.value) sliceDisplay.value.style.transform = 'translateY(' + newDisplayTanslation + 'px)';
+	if (sliceDisplay.value) sliceDisplay.value.style.transform = 'translateY(' + (newDisplayTanslation - HALF_BUFFER * CHAR_HEIGHT) + 'px)';
 
 	lastDrawnRow = row;
 	lastPattern = pattern;
@@ -557,6 +557,7 @@ html {
 		--SkModPlayer-volume: #80ff80;
 		--SkModPlayer-fx: #ff80e0;
 		--SkModPlayer-operant: #ffe080;
+		--SkModPlayer-Shadow: #00000080;
 }
 
 .hide {
@@ -592,13 +593,10 @@ html {
 	> .pattern_display {
 		width: 100%;
 		overflow-x: scroll;
-		overflow-y: hidden;
+		overflow-y: clip;
 		background-color: black;
 		text-align: center;
-		flex-flow: column;
-		display: flex;
 		max-height: 312px; /* magic_number = CHAR_HEIGHT * rowBuffer, needs to be in px */
-
 		scrollbar-width: none;
 
 		&::-webkit-scrollbar {
@@ -610,6 +608,7 @@ html {
 			position: relative;
 			background-color: black;
 			image-rendering: pixelated;
+			top: 50%;
 			span {
 				.sliceBackground {
 					display: none;
@@ -633,7 +632,6 @@ html {
 			}
 			.numberRowParent {
 				position: sticky;
-				right: 0;
 				z-index: 1;
 				inset: 0;
 				width: fit-content;
@@ -650,10 +648,10 @@ html {
 		}
 
 		.patternShadowTop {
-			background: #00000080;
+			background: var(--SkModPlayer-Shadow);
 			width: 100%;
-			height: calc(50% - 14px);
-			translate: 0 -100%;
+			height: calc(50% - 12px);
+			translate: -50% -100%;
 			top: calc(50% - 14px);
 			position: absolute;
 			pointer-events: none;
@@ -661,9 +659,10 @@ html {
 		}
 
 		.patternShadowBottom {
-			background: #00000080;
+			background: var(--SkModPlayer-Shadow);
 			width: 100%;
 			height: calc(50% - 27px);
+			translate: -50% 0%;
 			top: calc(50% - 2px);
 			position: absolute;
 			pointer-events: none;
