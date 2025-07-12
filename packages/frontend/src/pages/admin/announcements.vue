@@ -75,6 +75,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 								{{ i18n.ts._announcement.confetti }}
 							</MkSwitch>
 						</MkDisableSection>
+						<div :class="$style.forRoles">
+							<MkInfo v-if="announcement.forRoles" :class="$style.forRolesLabel">{{ i18n.tsx._announcement.onlyForRolesRestricted({roles: announcement.forRoles.length}) }}</MkInfo>
+							<MkInfo v-else :class="$style.forRolesLabel">{{ i18n.ts._announcement.onlyForRolesUnrestricted }}</MkInfo>
+							<MkButton primary @click="() => changeRoles(announcement)">
+								{{ i18n.ts._announcement.onlyForRolesChange }}
+							</MkButton>
+						</div>
 						<p v-if="announcement.reads">{{ i18n.tsx.nUsersRead({ n: announcement.reads }) }}</p>
 					</div>
 				</MkFolder>
@@ -134,7 +141,19 @@ function add() {
 		silence: false,
 		needConfirmationToRead: false,
 		confetti: false,
+		forRoles: null,
 	});
+}
+
+async function changeRoles(announcement) {
+	const result = await os.selectRole({
+		initialRoleIds: announcement.forRoles,
+		title: i18n.ts._announcement.onlyForRoles,
+		publicOnly: false,
+	});
+	if (result.canceled) return;
+
+	announcement.forRoles = result.result.length !== 0 ? result.result.map((r) => r.id) : null;
 }
 
 function del(announcement) {
@@ -209,3 +228,12 @@ definePage(() => ({
 	icon: 'ti ti-speakerphone',
 }));
 </script>
+
+<style lang="scss" module>
+.forRoles {
+	display: flex;
+}
+.forRolesLabel {
+	flex-grow: 1;
+}
+</style>
