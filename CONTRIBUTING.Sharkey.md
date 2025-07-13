@@ -60,6 +60,11 @@ following:
   run it with `pnpm test` and `pnpm lint`. See the [testing
   section](#testing) for more info.
 
+- If this MR includes new translated strings, or changes to existing
+  translations, make sure you have edited `sharkey-locales/en-US.yml`
+  and *not* any of the files under `locales/` (the files under
+  `locales/` must stay identical to Misskey)
+
 - If this MR includes UI changes, please attach a screenshot in the
   text.
 
