@@ -45,6 +45,7 @@ export type AdminCwUserRequest = operations['admin___cw-user']['requestBody']['c
 export type AdminDeclineUserRequest = operations['admin___decline-user']['requestBody']['content']['application/json'];
 export type AdminDeleteAccountRequest = operations['admin___delete-account']['requestBody']['content']['application/json'];
 export type AdminDeleteAllFilesOfAUserRequest = operations['admin___delete-all-files-of-a-user']['requestBody']['content']['application/json'];
+export type AdminDriveCleanRemoteFilesRequest = operations['admin___drive___clean-remote-files']['requestBody']['content']['application/json'];
 export type AdminDriveFilesRequest = operations['admin___drive___files']['requestBody']['content']['application/json'];
 export type AdminDriveFilesResponse = operations['admin___drive___files']['responses']['200']['content']['application/json'];
 export type AdminDriveShowFileRequest = operations['admin___drive___show-file']['requestBody']['content']['application/json'];

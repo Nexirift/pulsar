@@ -224,26 +224,8 @@ const props = withDefaults(defineProps<{
 type ExportCompletedNotification = Misskey.entities.Notification & { type: 'exportCompleted' };
 type ImportCompletedNotification = Misskey.entities.Notification & { type: 'importCompleted' };
 
-const exportEntityName = {
-	antenna: i18n.ts.antennas,
-	blocking: i18n.ts.blockedUsers,
-	clip: i18n.ts.clips,
-	customEmoji: i18n.ts.customEmojis,
-	favorite: i18n.ts.favorites,
-	following: i18n.ts.following,
-	muting: i18n.ts.mutedUsers,
-	note: i18n.ts.notes,
-	userList: i18n.ts.lists,
-} as const satisfies Record<ExportCompletedNotification['exportedEntity'], string>;
-
-const importEntityName = {
-	antenna: i18n.ts.antennas,
-	blocking: i18n.ts.blockedUsers,
-	customEmoji: i18n.ts.customEmojis,
-	following: i18n.ts.following,
-	muting: i18n.ts.mutedUsers,
-	userList: i18n.ts.lists,
-} as const satisfies Record<ImportCompletedNotification['importedEntity'], string>;
+const exportEntityName = Misskey.entities.exportEntityName(i18n);
+const importEntityName = Misskey.entities.importEntityName(i18n);
 
 const followRequestDone = ref(true);
 const userDetailed: Ref<Misskey.entities.UserDetailed | null> = ref(null);
