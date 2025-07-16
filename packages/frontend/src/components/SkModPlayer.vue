@@ -233,7 +233,7 @@ function setupSlice(canvas: Ref, back: Ref) {
 	slices.push(slice);
 }
 
-function setupCanvas() {
+function setupCanvas(r = 0) {
 	if (
 		sliceCanvas1.value && sliceCanvas2.value && sliceCanvas3.value &&
 		sliceBackground1.value && sliceCanvas2.value && sliceCanvas3.value
@@ -250,10 +250,10 @@ function setupCanvas() {
 		setupSlice(sliceCanvas2, sliceBackground2);
 		setupSlice(sliceCanvas3, sliceBackground3);
 		if (sliceDisplay.value) sliceDisplay.value.style.minWidth = (virtualCanvasWidth) + 'px';
-	} else {
+	} else if (r < 10) {
 		nextTick(() => {
 			console.warn('SkModPlayer: Jumped to the next tick, is Vue ok?');
-			setupCanvas();
+			setupCanvas(r + 1);
 		});
 	}
 }
