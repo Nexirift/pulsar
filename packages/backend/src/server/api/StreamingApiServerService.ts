@@ -220,6 +220,8 @@ export class StreamingApiServerService implements OnApplicationShutdown {
 					if (connectionsForClient.size < 1) {
 						this.#connectionsByClient.delete(limitActor);
 					}
+
+					stream.dispose();
 				});
 
 				ws.once('error', (e) => {
