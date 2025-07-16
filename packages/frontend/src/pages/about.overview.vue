@@ -16,7 +16,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 	<MkKeyValue>
 		<template #key>{{ i18n.ts.about }}</template>
-		<template #value><div v-html="sanitizeHtml(instance.about)"></div></template>
+		<template #value><div v-html="sanitizeHtml(instance.about || instance.description)"></div></template>
 	</MkKeyValue>
 
 	<FormSection>

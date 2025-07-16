@@ -18,7 +18,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<!-- eslint-disable-next-line vue/no-v-html -->
 				<div v-html="sanitizeHtml(instance.description) || i18n.ts.headlineMisskey"></div>
 			</div>
-			<div v-if="instance.description !== instance.about" :class=$style.showMore>
+			<div v-if="instance.about && instance.description !== instance.about" :class=$style.showMore>
 				<p><a href="/about">{{ i18n.ts.showMore }}</a></p>
 			</div>
 			<div v-if="instance.disableRegistration || instance.federation !== 'all'" :class="$style.mainWarn" class="_gaps_s">

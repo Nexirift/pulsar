@@ -12,4 +12,4 @@ attributionDomainsDescription: "Uma lista de domínios cujo conteúdo pode ser a
 writtenBy: "Escrito por {user}"
 _serverSettings:
   aboutInstance: "Sobre a instância"
-  aboutInstanceDescription: "Uma descrição maior que irá aparecer na página 'Informações da Instância'. Aceita HTML."
+  aboutInstanceDescription: "Uma descrição maior que irá aparecer na página 'Informações da Instância', substituindo a descrição da instância. Aceita HTML."

@@ -6418,7 +6418,7 @@ export interface Locale extends ILocale {
          */
         "aboutInstance": string;
         /**
-         * A longer description that will be displayed in the 'Instance Information' page. Supports HTML.
+         * A longer description that will be displayed in the 'Instance Information' page, going in place of the regular instance description. Supports HTML.
          */
         "aboutInstanceDescription": string;
     };
