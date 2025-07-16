@@ -160,8 +160,6 @@ const player = ref(new ChiptuneJsPlayer(new ChiptuneJsConfig()));
 
 let nbChannels = 0;
 let currentColumn = 0;
-let currentSlidePos = 0;
-let scrollTimerID = -1;
 let maxChannelsInView = 10;
 let buffer = null;
 let isSeeking = false;
@@ -507,10 +505,10 @@ function scrollHandler() {
 		patternScrollSliderPos.value = sliceDisplay.value.parentElement.scrollLeft / (virtualCanvasWidth - sliceDisplay.value.parentElement.offsetWidth);
 		patternScrollSlider.value.style.opacity = '1';
 	}
-	const newColumn = Math.trunc(sliceDisplay.value.parentElement.scrollLeft / CHANNEL_WIDTH);
-	currentSlidePos = sliceDisplay.value.parentElement.scrollLeft;
-	//debug('newColumn', newColumn, 'currentColumn', currentColumn, 'maxChannelsInView', maxChannelsInView, 'newColumn + MAX_SLICE_CHANNELS <= nbChannels', newColumn + maxChannelsInView <= nbChannels);
-	if (newColumn !== currentColumn && newColumn + maxChannelsInView <= nbChannels) {
+	let newColumn = Math.trunc(sliceDisplay.value.parentElement.scrollLeft / CHANNEL_WIDTH);
+	//debug('newColumn', newColumn, 'currentColumn', currentColumn, 'maxChannelsInView', maxChannelsInView, 'newColumn + maxChannelsInView > nbChannels', newColumn + maxChannelsInView > nbChannels);
+	newColumn = newColumn + maxChannelsInView > nbChannels ? nbChannels - maxChannelsInView : newColumn;
+	if (newColumn !== currentColumn) {
 		currentColumn = newColumn;
 		forceUpdateDisplay();
 	}
