@@ -377,7 +377,7 @@ function drawSlices(skipOptimizationChecks = false) {
 			drawText(sli, patternText, (currentRealColumn - currentColumn) * CHANNEL_WIDTH);
 		});
 	} else {
-		numberRowPHTML.style.maxHeight = ((player.value.getPatternNumRows(pattern) + HALF_BUFFER) * CHAR_HEIGHT) + 'px';
+		numberRowPHTML.style.height = ((player.value.getPatternNumRows(pattern) + HALF_BUFFER) * CHAR_HEIGHT) + 'px';
 		slices.forEach((sli, i) => {
 			sli.drawStart = curRow;
 			sli.vPos = HALF_BUFFER * (i + 1);
