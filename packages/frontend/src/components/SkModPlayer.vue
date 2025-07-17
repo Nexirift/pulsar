@@ -409,7 +409,7 @@ function drawSlices(skipOptimizationChecks = false) {
 
 				patternText.push(rowText(sli, newRow, pattern));
 			}
-			drawText(sli, patternText);
+			drawText(sli, patternText, (currentRealColumn - currentColumn) * CHANNEL_WIDTH);
 		});
 	} else {
 		numberRowPHTML.style.maxHeight = ((player.value.getPatternNumRows(pattern) + HALF_BUFFER) * CHAR_HEIGHT) + 'px';
@@ -432,7 +432,7 @@ function drawSlices(skipOptimizationChecks = false) {
 				curRow++;
 				if (curRow > lower) break;
 			}
-			drawText(sli, patternText);
+			drawText(sli, patternText, (currentRealColumn - currentColumn) * CHANNEL_WIDTH);
 		});
 	}
 
@@ -447,8 +447,8 @@ function rowText(slice: CanvasDisplay, row: number, pattern: number) : string {
 	if (row < 0 || row > player.value.getPatternNumRows(pattern) - 1) return '';
 	let retrunStr = '|';
 
-	for (let channel = currentColumn; channel < nbChannels; channel++) {
-		if (channel === channelsInView + currentColumn) break;
+	for (let channel = currentRealColumn; channel < nbChannels; channel++) {
+		if (channel === channelsInView + currentRealColumn) break;
 		const part = player.value.getPatternRowChannel(pattern, row, channel);
 		retrunStr += part + '|';
 	}
@@ -510,12 +510,12 @@ function scrollHandler() {
 		patternScrollSliderPos.value = sliceDisplay.value.parentElement.scrollLeft / ((virtualCanvasWidth - channelsInView + NUMBER_ROW_WIDTH) - sliceDisplay.value.parentElement.offsetWidth);
 		patternScrollSlider.value.style.opacity = '1';
 	}
-	let newColumn = Math.trunc(sliceDisplay.value.parentElement.scrollLeft / CHANNEL_WIDTH);
-	currentRealColumn = newColumn;
-	debug('newColumn', newColumn, 'currentColumn', currentColumn, 'maxChannelsInView', channelsInView, 'currentRealColumn', currentRealColumn);
-	newColumn = newColumn + MAX_SLICE_CHANNELS > nbChannels ? nbChannels - MAX_SLICE_CHANNELS : newColumn;
-	if (newColumn !== currentColumn) {
-		currentColumn = newColumn;
+	const newColumn = Math.trunc(sliceDisplay.value.parentElement.scrollLeft / CHANNEL_WIDTH);
+	const correctedNewColumn = newColumn > nbChannels - MAX_SLICE_CHANNELS ? nbChannels - MAX_SLICE_CHANNELS : newColumn;
+	//debug('newColumn', newColumn, 'currentColumn', currentColumn, 'maxChannelsInView', channelsInView, 'currentRealColumn', currentRealColumn);
+	if (correctedNewColumn !== currentColumn || newColumn !== currentRealColumn) {
+		currentRealColumn = newColumn;
+		currentColumn = correctedNewColumn;
 		forceUpdateDisplay();
 	}
 }
@@ -553,6 +553,7 @@ function scrollEndHandle() {
 
 function handleScrollBarEnable() {
 	patternScrollSliderShow.value = (!patternHide.value && !isTouchUsing);
+	patternScrollSliderShow.value = (!patternHide.value);
 	if (patternScrollSliderShow.value !== true) return;
 
 	if (sliceDisplay.value && sliceDisplay.value.parentElement) patternScrollSliderShow.value = (virtualCanvasWidth > sliceDisplay.value.parentElement.offsetWidth);
@@ -566,13 +567,7 @@ watch(patternScrollSliderPos, () => {
 function resizeHandler(event: ResizeObserverEntry[]) {
 	if (event[0].contentRect.width === 0) return;
 	const newView = Math.ceil(event[0].contentRect.width / CHANNEL_WIDTH) + 1;
-	//if (newView !== maxChannelsInView) updateSliceSize();
-	/*
-	if (newView > maxChannelsInView) {
-		sliceDisplay.value.parentElement.scrollLeft = currentColumn * CHANNEL_WIDTH;
-		forceUpdateDisplay();
-	}
-	*/
+	if (newView > channelsInView) forceUpdateDisplay();
 	channelsInView = newView;
 	handleScrollBarEnable();
 }
