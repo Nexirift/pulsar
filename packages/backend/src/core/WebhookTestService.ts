@@ -13,6 +13,7 @@ import { type WebhookEventTypes } from '@/models/Webhook.js';
 import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import { type UserWebhookPayload, UserWebhookService } from '@/core/UserWebhookService.js';
 import { QueueService } from '@/core/QueueService.js';
+import { IdService } from '@/core/IdService.js';
 import { ModeratorInactivityRemainingTime } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
 
 const oneDayMillis = 24 * 60 * 60 * 1000;
@@ -166,6 +167,7 @@ export class WebhookTestService {
 		private userWebhookService: UserWebhookService,
 		private systemWebhookService: SystemWebhookService,
 		private queueService: QueueService,
+		private readonly idService: IdService,
 	) {
 	}
 
@@ -392,6 +394,7 @@ export class WebhookTestService {
 	private async toPackedNote(note: MiNote, detail = true, override?: Packed<'Note'>): Promise<Packed<'Note'>> {
 		return {
 			id: note.id,
+			threadId: note.threadId ?? note.id,
 			createdAt: new Date().toISOString(),
 			deletedAt: null,
 			text: note.text,
@@ -401,6 +404,10 @@ export class WebhookTestService {
 			replyId: note.replyId,
 			renoteId: note.renoteId,
 			isHidden: false,
+			isMutingThread: false,
+			isMutingNote: false,
+			isFavorited: false,
+			isRenoted: false,
 			visibility: note.visibility,
 			mentions: note.mentions,
 			visibleUserIds: note.visibleUserIds,
@@ -435,10 +442,12 @@ export class WebhookTestService {
 	private async toPackedUserLite(user: MiUser, override?: Packed<'UserLite'>): Promise<Packed<'UserLite'>> {
 		return {
 			...user,
+			createdAt: this.idService.parse(user.id).date.toISOString(),
 			id: user.id,
 			name: user.name,
 			username: user.username,
 			host: user.host,
+			description: 'dummy user',
 			avatarUrl: user.avatarId == null ? null : user.avatarUrl,
 			avatarBlurhash: user.avatarId == null ? null : user.avatarBlurhash,
 			avatarDecorations: user.avatarDecorations.map(it => ({

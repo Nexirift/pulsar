@@ -31,6 +31,12 @@ declare namespace acct {
 export { acct }
 
 // @public (undocumented)
+type Achievement = components['schemas']['Achievement'];
+
+// @public (undocumented)
+type AchievementName = components['schemas']['AchievementName'];
+
+// @public (undocumented)
 type Ad = components['schemas']['Ad'];
 
 // Warning: (ae-forgotten-export) The symbol "operations" needs to be exported by the entry point index.d.ts
@@ -325,6 +331,12 @@ type AdminResolveAbuseUserReportRequest = operations['admin___resolve-abuse-user
 
 // @public (undocumented)
 type AdminRolesAssignRequest = operations['admin___roles___assign']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminRolesCloneRequest = operations['admin___roles___clone']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminRolesCloneResponse = operations['admin___roles___clone']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type AdminRolesCreateRequest = operations['admin___roles___create']['requestBody']['content']['application/json'];
@@ -1585,6 +1597,8 @@ declare namespace entities {
         AdminResetPasswordResponse,
         AdminResolveAbuseUserReportRequest,
         AdminRolesAssignRequest,
+        AdminRolesCloneRequest,
+        AdminRolesCloneResponse,
         AdminRolesCreateRequest,
         AdminRolesCreateResponse,
         AdminRolesDeleteRequest,
@@ -2154,6 +2168,8 @@ declare namespace entities {
         UserDetailed,
         User,
         UserList,
+        Achievement,
+        AchievementName,
         Ad,
         Announcement,
         App,

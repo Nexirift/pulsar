@@ -22,7 +22,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			/>
 			<MkMediaList v-if="message.file" :mediaList="[message.file]" :class="$style.file"/>
 		</MkFukidashi>
-		<SkUrlPreviewGroup :sourceNodes="parsed" :showAsQuote="!message.fromUser.rejectQuotes" style="margin: 8px 0;"/>
+		<div class="_gaps_s" style="margin: 8px 0;" @click.stop>
+			<SkUrlPreviewGroup :sourceNodes="parsed" :showAsQuote="!message.fromUser.rejectQuotes"/>
+		</div>
 		<div :class="$style.footer">
 			<button class="_textButton" style="color: currentColor;" @click="showMenu"><i class="ti ti-dots-circle-horizontal"></i></button>
 			<MkTime :class="$style.time" :time="message.createdAt"/>
@@ -53,7 +55,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { computed, defineAsyncComponent, provide } from 'vue';
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import * as Misskey from 'misskey-js';
 import { url } from '@@/js/config.js';
 import { isLink } from '@@/js/is-link.js';

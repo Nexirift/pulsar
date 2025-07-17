@@ -983,4 +983,50 @@ describe('RoleService', () => {
 			expect(notificationService.createNotification).not.toHaveBeenCalled();
 		});
 	});
+
+	describe('clone', () => {
+		test('clones a role', async () => {
+			const role = await createRole({
+				name: 'original role',
+				color: '#ff0000',
+				policies: {
+					canManageCustomEmojis: {
+						useDefault: false,
+						priority: 0,
+						value: true,
+					},
+				},
+			});
+
+			const clonedRole = await roleService.clone(role);
+
+			expect(clonedRole).toBeDefined();
+			expect(clonedRole.id).not.toBe(role.id);
+			expect(clonedRole.name).toBe(`${role.name} (cloned)`);
+
+			expect(clonedRole).toEqual(expect.objectContaining({
+				color: role.color,
+				policies: {
+					canManageCustomEmojis: {
+						useDefault: false,
+						priority: 0,
+						value: true,
+					},
+				},
+			}));
+		});
+
+		test('clones a role with a too long name', async () => {
+			const role = await createRole({
+				name: 'a'.repeat(254),
+			});
+
+			const clonedRole = await roleService.clone(role);
+
+			expect(clonedRole).toBeDefined();
+			expect(clonedRole.id).not.toBe(role.id);
+			expect(clonedRole.name.endsWith(' (cloned)')).toBeTruthy();
+			expect(clonedRole.name.length).toBe(256);
+		});
+	});
 });

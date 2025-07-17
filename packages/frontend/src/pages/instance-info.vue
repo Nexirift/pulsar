@@ -114,7 +114,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div class="_gaps">
 						<MkInfo v-if="isBaseSilenced" warn>{{ i18n.ts.silencedByBase }}</MkInfo>
 						<MkSwitch v-model="isSilenced" :disabled="!meta || !instance || isBaseSilenced" @update:modelValue="toggleSilenced">{{ i18n.ts.silenceThisInstance }}</MkSwitch>
-						<MkSwitch v-model="isSuspended" :disabled="!instance" @update:modelValue="toggleSuspended">{{ i18n.ts._delivery.stop }}</MkSwitch>
+						<MkSwitch v-model="isSuspended" :disabled="!instance || suspensionState == 'softwareSuspended'" @update:modelValue="toggleSuspended">{{ i18n.ts._delivery.stop }}</MkSwitch>
 						<MkInfo v-if="isBaseBlocked" warn>{{ i18n.ts.blockedByBase }}</MkInfo>
 						<MkSwitch v-model="isBlocked" :disabled="!meta || !instance || isBaseBlocked" @update:modelValue="toggleBlock">{{ i18n.ts.blockThisInstance }}</MkSwitch>
 						<MkSwitch v-model="rejectQuotes" :disabled="!instance" @update:modelValue="toggleRejectQuotes">{{ i18n.ts.rejectQuotesInstance }}</MkSwitch>
@@ -203,7 +203,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch, useCssModule } from 'vue';
+import { ref, computed } from 'vue';
 import * as Misskey from 'misskey-js';
 import type { ChartSrc } from '@/components/MkChart.vue';
 import type { Paging } from '@/components/MkPagination.vue';
@@ -231,12 +231,9 @@ import MkTextarea from '@/components/MkTextarea.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import { $i } from '@/i.js';
 import { copyToClipboard } from '@/utility/copy-to-clipboard';
-import { acct } from '@/filters/user';
 import MkFolder from '@/components/MkFolder.vue';
 import MkNumber from '@/components/MkNumber.vue';
 import SkBadgeStrip from '@/components/SkBadgeStrip.vue';
-
-const $style = useCssModule();
 
 const props = withDefaults(defineProps<{
 	host: string;
@@ -252,7 +249,7 @@ const tab = ref('overview');
 const chartSrc = ref<ChartSrc>('instance-requests');
 const meta = ref<Misskey.entities.AdminMetaResponse | null>(null);
 const instance = ref<Misskey.entities.FederationInstance | null>(null);
-const suspensionState = ref<'none' | 'manuallySuspended' | 'goneSuspended' | 'autoSuspendedForNotResponding'>('none');
+const suspensionState = ref<'none' | 'manuallySuspended' | 'goneSuspended' | 'autoSuspendedForNotResponding' | 'softwareSuspended'>('none');
 const isSuspended = ref(false);
 const isBlocked = ref(false);
 const isSilenced = ref(false);
@@ -439,6 +436,7 @@ async function toggleMediaSilenced(): Promise<void> {
 
 async function toggleSuspended(): Promise<void> {
 	if (!iAmModerator) return;
+	if (suspensionState.value === 'softwareSuspended') return;
 	await os.promiseDialog(async () => {
 		if (!instance.value) throw new Error('No instance?');
 		suspensionState.value = isSuspended.value ? 'manuallySuspended' : 'none';

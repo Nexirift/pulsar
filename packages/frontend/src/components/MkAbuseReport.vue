@@ -63,7 +63,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<template #label>{{ i18n.ts.details }}</template>
 			<div class="_gaps_s">
 				<Mfm :text="report.comment" :parsedNodes="parsedComment" :isBlock="true" :linkNavigationBehavior="'window'" :author="report.reporter" :nyaize="false" :isAnim="false"/>
-				<SkUrlPreviewGroup :sourceNodes="parsedComment" :compact="false" :detail="false" :showAsQuote="true"/>
+				<div class="_gaps_s" @click.stop>
+					<SkUrlPreviewGroup :sourceNodes="parsedComment" :compact="false" :detail="false" :showAsQuote="true"/>
+				</div>
 			</div>
 		</MkFolder>
 
@@ -99,7 +101,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <script lang="ts" setup>
 import { computed, provide, ref, watch } from 'vue';
 import * as Misskey from 'misskey-js';
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import MkButton from '@/components/MkButton.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';

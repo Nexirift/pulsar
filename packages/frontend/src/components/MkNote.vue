@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div
-	v-if="!hardMuted && muted === false"
+	v-if="!hardMuted && muted === false && !threadMuted && !noteMuted"
 	v-show="!isDeleted"
 	ref="rootEl"
 	v-hotkey="keymap"
@@ -72,20 +72,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div v-show="mergedCW == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
 					<div :class="$style.text">
 						<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
-						<MkA v-if="appearNote.replyId" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`"><i class="ph-arrow-bend-left-up ph-bold ph-lg"></i></MkA>
-						<Mfm
-							v-if="appearNote.text"
-							:parsedNodes="parsed"
-							:text="appearNote.text"
-							:author="appearNote.user"
-							:nyaize="'respect'"
-							:emojiUrls="appearNote.emojis"
-							:enableEmojiMenu="true"
-							:enableEmojiMenuReaction="true"
-							:isAnim="allowAnim"
-							:isBlock="true"
-							class="_selectable"
-						/>
+						<div>
+							<MkA v-if="appearNote.replyId" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`"><i class="ph-arrow-bend-left-up ph-bold ph-lg"></i></MkA>
+							<Mfm
+								v-if="appearNote.text"
+								:parsedNodes="parsed"
+								:text="appearNote.text"
+								:author="appearNote.user"
+								:nyaize="'respect'"
+								:emojiUrls="appearNote.emojis"
+								:enableEmojiMenu="true"
+								:enableEmojiMenuReaction="true"
+								:isAnim="allowAnim"
+								class="_selectable"
+							/>
+						</div>
 						<SkNoteTranslation :note="note" :translation="translation" :translating="translating"></SkNoteTranslation>
 						<MkButton v-if="!allowAnim && animated" :class="$style.playMFMButton" :small="true" @click="animatedMFM()" @click.stop><i class="ph-play ph-bold ph-lg "></i> {{ i18n.ts._animatedMFM.play }}</MkButton>
 						<MkButton v-else-if="!prefer.s.animatedMfm && allowAnim && animated" :class="$style.playMFMButton" :small="true" @click="animatedMFM()" @click.stop><i class="ph-stop ph-bold ph-lg "></i> {{ i18n.ts._animatedMFM.stop }}</MkButton>
@@ -94,8 +95,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkMediaList ref="galleryEl" :mediaList="appearNote.files" @click.stop/>
 					</div>
 					<MkPoll v-if="appearNote.poll" :noteId="appearNote.id" :poll="appearNote.poll" :local="!appearNote.user.host" :author="appearNote.user" :emojiUrls="appearNote.emojis" :class="$style.poll" @click.stop/>
-					<div v-if="isEnabledUrlPreview">
-						<SkUrlPreviewGroup :sourceUrls="urls" :sourceNote="appearNote" :compact="true" :detail="false" :showAsQuote="!appearNote.user.rejectQuotes" :skipNoteIds="selfNoteIds" :class="$style.urlPreview" @click.stop/>
+					<div v-if="isEnabledUrlPreview" :class="[$style.urlPreview, '_gaps_s']" @click.stop>
+						<SkUrlPreviewGroup :sourceUrls="urls" :sourceNote="appearNote" :compact="true" :detail="false" :showAsQuote="!appearNote.user.rejectQuotes" :skipNoteIds="selfNoteIds"/>
 					</div>
 					<div v-if="appearNote.renote" :class="$style.quote"><MkNoteSimple :note="appearNote.renote" :class="$style.quoteNote"/></div>
 					<button v-if="isLong && collapsed" :class="$style.collapsed" class="_button" @click.stop @click="collapsed = false">
@@ -124,9 +125,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 					v-tooltip="renoteTooltip"
 					:class="$style.footerButton"
 					class="_button"
-					:style="renoted ? 'color: var(--MI_THEME-accent) !important;' : ''"
+					:style="appearNote.isRenoted ? 'color: var(--MI_THEME-accent) !important;' : ''"
 					@click.stop
-					@mousedown.prevent="renoted ? undoRenote(appearNote) : boostVisibility($event.shiftKey)"
+					@mousedown.prevent="appearNote.isRenoted ? undoRenote(appearNote) : boostVisibility($event.shiftKey)"
 				>
 					<i class="ti ti-repeat"></i>
 					<p v-if="appearNote.renoteCount > 0" :class="$style.footerButtonCount">{{ number(appearNote.renoteCount) }}</p>
@@ -167,8 +168,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 	</article>
 </div>
-<div v-else-if="!hardMuted" :class="$style.muted" @click="muted = false">
-	<SkMutedNote :muted="muted" :note="appearNote"></SkMutedNote>
+<div v-else-if="!hardMuted" :class="$style.muted" @click.stop="muted = false">
+	<SkMutedNote :muted="muted" :threadMuted="threadMuted" :noteMuted="noteMuted" :note="appearNote"></SkMutedNote>
 </div>
 <div v-else>
 	<!--
@@ -180,7 +181,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { computed, inject, onMounted, ref, useTemplateRef, watch, provide } from 'vue';
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import * as Misskey from 'misskey-js';
 import { isLink } from '@@/js/is-link.js';
 import { shouldCollapsed } from '@@/js/collapsed.js';
@@ -305,13 +306,12 @@ const galleryEl = useTemplateRef('galleryEl');
 const isMyRenote = $i && ($i.id === note.value.userId);
 const showContent = ref(prefer.s.uncollapseCW);
 const parsed = computed(() => appearNote.value.text ? mfm.parse(appearNote.value.text) : null);
-const urls = computed(() => parsed.value ? extractPreviewUrls(props.note, parsed.value) : []);
+const urls = computed(() => parsed.value ? extractPreviewUrls(appearNote.value, parsed.value) : []);
 const selfNoteIds = computed(() => getSelfNoteIds(props.note));
 const isLong = shouldCollapsed(appearNote.value, urls.value);
 const collapsed = ref(prefer.s.expandLongNote && appearNote.value.cw == null && isLong ? false : appearNote.value.cw == null && isLong);
 const isDeleted = ref(false);
-const renoted = ref(false);
-const { muted, hardMuted } = checkMutes(appearNote.value, props.withHardMute);
+const { muted, hardMuted, threadMuted, noteMuted } = checkMutes(appearNote, computed(() => props.withHardMute));
 const translation = ref<Misskey.entities.NotesTranslateResponse | false | null>(null);
 const translating = ref(false);
 const showTicker = (prefer.s.instanceTicker === 'always') || (prefer.s.instanceTicker === 'remote' && appearNote.value.user.instance);
@@ -319,7 +319,9 @@ const canRenote = computed(() => ['public', 'home'].includes(appearNote.value.vi
 const renoteCollapsed = ref(
 	prefer.s.collapseRenotes && isRenote && (
 		($i && ($i.id === note.value.userId || $i.id === appearNote.value.userId)) || // `||` must be `||`! See https://github.com/misskey-dev/misskey/issues/13131
-		(appearNote.value.myReaction != null)
+		(appearNote.value.myReaction != null) ||
+		(appearNote.value.isFavorited) ||
+		(appearNote.value.isRenoted)
 	),
 );
 const inReplyToCollapsed = ref(prefer.s.collapseNotesRepliedTo);
@@ -334,7 +336,7 @@ const pleaseLoginContext = computed<OpenOnRemoteOptions>(() => ({
 
 const mergedCW = computed(() => computeMergedCw(appearNote.value));
 
-const renoteTooltip = computeRenoteTooltip(renoted);
+const renoteTooltip = computeRenoteTooltip(appearNote);
 
 let renoting = false;
 
@@ -349,7 +351,7 @@ const keymap = {
 	},
 	'q': () => {
 		if (renoteCollapsed.value) return;
-		if (canRenote.value && !renoted.value && !renoting) renote(prefer.s.visibilityOnBoost);
+		if (canRenote.value && !appearNote.value.isRenoted && !renoting) renote(prefer.s.visibilityOnBoost);
 	},
 	'm': () => {
 		if (renoteCollapsed.value) return;
@@ -459,16 +461,6 @@ if (!props.mock) {
 		});
 	});
 
-	if ($i) {
-		misskeyApi('notes/renotes', {
-			noteId: appearNote.value.id,
-			userId: $i.id,
-			limit: 1,
-		}).then((res) => {
-			renoted.value = res.length > 0;
-		});
-	}
-
 	if (appearNote.value.reactionAcceptance === 'likeOnly') {
 		useTooltip(reactButton, async (showing) => {
 			const reactions = await misskeyApiGet('notes/reactions', {
@@ -527,7 +519,7 @@ function renote(visibility: Visibility, localOnly: boolean = false) {
 				channelId: appearNote.value.channelId,
 			}).then(() => {
 				os.toast(i18n.ts.renoted);
-				renoted.value = true;
+				appearNote.value.isRenoted = true;
 			}).finally(() => { renoting = false; });
 		}
 	} else if (!appearNote.value.channel || appearNote.value.channel.allowRenoteToExternal) {
@@ -548,7 +540,7 @@ function renote(visibility: Visibility, localOnly: boolean = false) {
 				renoteId: appearNote.value.id,
 			}).then(() => {
 				os.toast(i18n.ts.renoted);
-				renoted.value = true;
+				appearNote.value.isRenoted = true;
 			}).finally(() => { renoting = false; });
 		}
 	}
@@ -727,7 +719,7 @@ function undoRenote(note) : void {
 		noteId: note.id,
 	});
 	os.toast(i18n.ts.rmboost);
-	renoted.value = false;
+	appearNote.value.isRenoted = false;
 
 	const el = renoteButton.value as HTMLElement | null | undefined;
 	if (el) {

@@ -432,8 +432,6 @@ export class UserEntityService implements OnModuleInit {
 			userIdsByUri?: Map<string, string>,
 			instances?: Map<string, MiInstance | null>,
 			securityKeyCounts?: Map<string, number>,
-			pendingReceivedFollows?: Set<string>,
-			pendingSentFollows?: Set<string>,
 		},
 	): Promise<Packed<S>> {
 		const opts = Object.assign({
@@ -679,8 +677,8 @@ export class UserEntityService implements OnModuleInit {
 				hasUnreadAntenna: this.getHasUnreadAntenna(user.id),
 				hasUnreadChannel: false, // 後方互換性のため
 				hasUnreadNotification: notificationsInfo?.hasUnread, // 後方互換性のため
-				hasPendingReceivedFollowRequest: opts.pendingReceivedFollows?.has(user.id) ?? this.getHasPendingReceivedFollowRequest(user.id),
-				hasPendingSentFollowRequest: opts.pendingSentFollows?.has(user.id) ?? this.getHasPendingSentFollowRequest(user.id),
+				hasPendingReceivedFollowRequest: this.getHasPendingReceivedFollowRequest(user.id),
+				hasPendingSentFollowRequest: this.getHasPendingSentFollowRequest(user.id),
 				unreadNotificationsCount: notificationsInfo?.unreadCount,
 				mutedWords: profile!.mutedWords,
 				hardMutedWords: profile!.hardMutedWords,
@@ -761,11 +759,8 @@ export class UserEntityService implements OnModuleInit {
 
 		const iAmModerator = await this.roleService.isModerator(me as MiUser);
 		const meId = me ? me.id : null;
-		const isMe = meId && _userIds.includes(meId);
 		const isDetailed = options && options.schema !== 'UserLite';
-		const isDetailedAndMe = isDetailed && isMe;
-		const isDetailedAndMeOrMod = isDetailed && (isMe || iAmModerator);
-		const isDetailedAndNotMe = isDetailed && !isMe;
+		const isDetailedAndMod = isDetailed && iAmModerator;
 
 		const userUris = new Set(_users
 			.flatMap(user => [user.uri, user.movedToUri])
@@ -787,14 +782,14 @@ export class UserEntityService implements OnModuleInit {
 
 		// -- 実行者の有無や指定スキーマの種別によって要否が異なる値群を取得
 
-		const [profilesMap, userMemos, userRelations, pinNotes, userIdsByUri, instances, securityKeyCounts, pendingReceivedFollows, pendingSentFollows] = await Promise.all([
+		const [profilesMap, userMemos, userRelations, pinNotes, userIdsByUri, instances, securityKeyCounts] = await Promise.all([
 			// profilesMap
 			this.cacheService.userProfileCache.fetchMany(_profilesToFetch).then(profiles => new Map(profiles.concat(_profilesFromUsers))),
 			// userMemos
 			isDetailed && meId ? this.userMemosRepository.findBy({ userId: meId })
 				.then(memos => new Map(memos.map(memo => [memo.targetUserId, memo.memo]))) : new Map(),
 			// userRelations
-			isDetailedAndNotMe && meId ? this.getRelations(meId, _userIds) : new Map(),
+			isDetailed && meId ? this.getRelations(meId, _userIds) : new Map(),
 			// pinNotes
 			isDetailed ? this.userNotePiningsRepository.createQueryBuilder('pin')
 				.where('pin.userId IN (:...userIds)', { userIds: _userIds })
@@ -828,7 +823,7 @@ export class UserEntityService implements OnModuleInit {
 			Promise.all(Array.from(userHosts).map(async host => [host, await this.federatedInstanceService.fetch(host)] as const))
 				.then(hosts => new Map(hosts)),
 			// securityKeyCounts
-			isDetailedAndMeOrMod ? this.userSecurityKeysRepository.createQueryBuilder('key')
+			isDetailedAndMod ? this.userSecurityKeysRepository.createQueryBuilder('key')
 				.select('key.userId', 'userId')
 				.addSelect('count(key.id)', 'userCount')
 				.where({
@@ -836,26 +831,8 @@ export class UserEntityService implements OnModuleInit {
 				})
 				.groupBy('key.userId')
 				.getRawMany<{ userId: string, userCount: number }>()
-				.then(counts => new Map(counts.map(c => [c.userId, c.userCount]))) : new Map(),
-			// TODO optimization: cache follow requests
-			// pendingReceivedFollows
-			isDetailedAndMe ? this.followRequestsRepository.createQueryBuilder('req')
-				.select('req.followeeId', 'followeeId')
-				.where({
-					followeeId: In(_userIds),
-				})
-				.groupBy('req.followeeId')
-				.getRawMany<{ followeeId: string }>()
-				.then(reqs => new Set(reqs.map(r => r.followeeId))) : new Set<string>(),
-			// pendingSentFollows
-			isDetailedAndMe ? this.followRequestsRepository.createQueryBuilder('req')
-				.select('req.followerId', 'followerId')
-				.where({
-					followerId: In(_userIds),
-				})
-				.groupBy('req.followerId')
-				.getRawMany<{ followerId: string }>()
-				.then(reqs => new Set(reqs.map(r => r.followerId))) : new Set<string>(),
+				.then(counts => new Map(counts.map(c => [c.userId, c.userCount])))
+			: undefined, // .pack will fetch the keys for the requesting user if it's in the _userIds
 		]);
 
 		return Promise.all(
@@ -872,8 +849,6 @@ export class UserEntityService implements OnModuleInit {
 					userIdsByUri,
 					instances,
 					securityKeyCounts,
-					pendingReceivedFollows,
-					pendingSentFollows,
 				},
 			)),
 		);

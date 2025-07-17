@@ -24,7 +24,7 @@ export interface IObject {
 	cc?: ApObject;
 	to?: ApObject;
 	attributedTo?: ApObject;
-	attachment?: any[];
+	attachment?: IApDocument[];
 	inReplyTo?: any;
 	replies?: ICollection | IOrderedCollection | string;
 	content?: string | null;

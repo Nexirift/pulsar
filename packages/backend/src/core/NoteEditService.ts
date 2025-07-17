@@ -4,7 +4,7 @@
  */
 
 import { setImmediate } from 'node:timers/promises';
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import { DataSource, In, IsNull, LessThan } from 'typeorm';
 import * as Redis from 'ioredis';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
@@ -647,18 +647,15 @@ export class NoteEditService implements OnApplicationShutdown {
 			if (data.reply) {
 				// 通知
 				if (data.reply.userHost === null) {
-					const isThreadMuted = await this.noteThreadMutingsRepository.exists({
-						where: {
-							userId: data.reply.userId,
-							threadId: data.reply.threadId ?? data.reply.id,
-						},
-					});
+					const threadId = data.reply.threadId ?? data.reply.id;
 
 					const [
+						isThreadMuted,
 						userIdsWhoMeMuting,
-					] = data.reply.userId ? await Promise.all([
+					] = await Promise.all([
+						this.cacheService.threadMutingsCache.fetch(data.reply.userId).then(ms => ms.has(threadId)),
 						this.cacheService.userMutingsCache.fetch(data.reply.userId),
-					]) : [new Set<string>()];
+					]);
 
 					const muted = isUserRelated(note, userIdsWhoMeMuting);
 
@@ -675,7 +672,7 @@ export class NoteEditService implements OnApplicationShutdown {
 			//#region AP deliver
 			if (!data.localOnly && this.userEntityService.isLocalUser(user)) {
 				trackTask(async () => {
-					const noteActivity = await this.renderNoteOrRenoteActivity(data, note, user);
+					const noteActivity = await this.apRendererService.renderNoteOrRenoteActivity(note, user, { renote: data.renote });
 					const dm = this.apDeliverManagerService.createDeliverManager(user, noteActivity);
 
 					// メンションされたリモートユーザーに配送
@@ -771,17 +768,6 @@ export class NoteEditService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async renderNoteOrRenoteActivity(data: Option, note: MiNote, user: MiUser) {
-		if (data.localOnly) return null;
-
-		const content = this.isRenote(data) && !this.isQuote(data)
-			? this.apRendererService.renderAnnounce(data.renote.uri ? data.renote.uri : `${this.config.url}/notes/${data.renote.id}`, note)
-			: this.apRendererService.renderUpdate(await this.apRendererService.renderUpNote(note, user, false), user);
-
-		return this.apRendererService.addContext(content);
-	}
-
-	@bindThis
 	private index(note: MiNote) {
 		if (note.text == null && note.cw == null) return;
 
@@ -849,6 +835,7 @@ export class NoteEditService implements OnApplicationShutdown {
 
 			// TODO: あまりにも数が多いと redisPipeline.exec に失敗する(理由は不明)ため、3万件程度を目安に分割して実行するようにする
 			for (const following of followings) {
+				if (following.followerHost !== null) continue;
 				// 基本的にvisibleUserIdsには自身のidが含まれている前提であること
 				if (note.visibility === 'specified' && !note.visibleUserIds.some(v => v === following.followerId)) continue;
 

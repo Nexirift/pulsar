@@ -4,7 +4,7 @@
  */
 
 import { setImmediate } from 'node:timers/promises';
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import { In, DataSource, IsNull, LessThan } from 'typeorm';
 import * as Redis from 'ioredis';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
@@ -676,18 +676,15 @@ export class NoteCreateService implements OnApplicationShutdown {
 				});
 				// 通知
 				if (data.reply.userHost === null) {
-					const isThreadMuted = await this.noteThreadMutingsRepository.exists({
-						where: {
-							userId: data.reply.userId,
-							threadId: data.reply.threadId ?? data.reply.id,
-						},
-					});
+					const threadId = data.reply.threadId ?? data.reply.id;
 
 					const [
+						isThreadMuted,
 						userIdsWhoMeMuting,
-					] = data.reply.userId ? await Promise.all([
+					] = await Promise.all([
+						this.cacheService.threadMutingsCache.fetch(data.reply.userId).then(ms => ms.has(threadId)),
 						this.cacheService.userMutingsCache.fetch(data.reply.userId),
-					]) : [new Set<string>()];
+					]);
 
 					const muted = isUserRelated(note, userIdsWhoMeMuting);
 
@@ -705,14 +702,17 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 				// Notify
 				if (data.renote.userHost === null) {
-					const isThreadMuted = await this.noteThreadMutingsRepository.exists({
-						where: {
-							userId: data.renote.userId,
-							threadId: data.renote.threadId ?? data.renote.id,
-						},
-					});
+					const threadId = data.renote.threadId ?? data.renote.id;
 
-					const muted = data.renote.userId && isUserRelated(note, await this.cacheService.userMutingsCache.fetch(data.renote.userId));
+					const [
+						isThreadMuted,
+						userIdsWhoMeMuting,
+					] = await Promise.all([
+						this.cacheService.threadMutingsCache.fetch(data.renote.userId).then(ms => ms.has(threadId)),
+						this.cacheService.userMutingsCache.fetch(data.renote.userId),
+					]);
+
+					const muted = data.renote.userId && isUserRelated(note, userIdsWhoMeMuting);
 
 					if (!isThreadMuted && !muted) {
 						nm.push(data.renote.userId, type);
@@ -731,7 +731,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			//#region AP deliver
 			if (!data.localOnly && this.userEntityService.isLocalUser(user)) {
 				trackTask(async () => {
-					const noteActivity = await this.renderNoteOrRenoteActivity(data, note, user);
+					const noteActivity = await this.apRendererService.renderNoteOrRenoteActivity(note, user, { renote: data.renote });
 					const dm = this.apDeliverManagerService.createDeliverManager(user, noteActivity);
 
 					// メンションされたリモートユーザーに配送
@@ -842,18 +842,23 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 	@bindThis
 	private async createMentionedEvents(mentionedUsers: MinimumUser[], note: MiNote, nm: NotificationManager) {
+		const [
+			threadMutings,
+			userMutings,
+		] = await Promise.all([
+			this.cacheService.threadMutingsCache.fetchMany(mentionedUsers.map(u => u.id)).then(ms => new Map(ms)),
+			this.cacheService.userMutingsCache.fetchMany(mentionedUsers.map(u => u.id)).then(ms => new Map(ms)),
+		]);
+
 		// Only create mention events for local users, and users for whom the note is visible
 		for (const u of mentionedUsers.filter(u => (note.visibility !== 'specified' || note.visibleUserIds.some(x => x === u.id)) && this.userEntityService.isLocalUser(u))) {
-			const isThreadMuted = await this.noteThreadMutingsRepository.exists({
-				where: {
-					userId: u.id,
-					threadId: note.threadId ?? note.id,
-				},
-			});
+			const threadId = note.threadId ?? note.id;
+			const isThreadMuted = threadMutings.get(u.id)?.has(threadId);
 
-			const muted = u.id && isUserRelated(note, await this.cacheService.userMutingsCache.fetch(u.id));
+			const mutings = userMutings.get(u.id);
+			const isUserMuted = mutings != null && isUserRelated(note, mutings);
 
-			if (isThreadMuted || muted) {
+			if (isThreadMuted || isUserMuted) {
 				continue;
 			}
 
@@ -872,17 +877,6 @@ export class NoteCreateService implements OnApplicationShutdown {
 	@bindThis
 	private saveReply(reply: MiNote, note: MiNote) {
 		this.notesRepository.increment({ id: reply.id }, 'repliesCount', 1);
-	}
-
-	@bindThis
-	private async renderNoteOrRenoteActivity(data: Option, note: MiNote, user: MiUser) {
-		if (data.localOnly) return null;
-
-		const content = this.isRenote(data) && !this.isQuote(data)
-			? this.apRendererService.renderAnnounce(data.renote.uri ? data.renote.uri : `${this.config.url}/notes/${data.renote.id}`, note)
-			: this.apRendererService.renderCreate(await this.apRendererService.renderNote(note, user, false), note);
-
-		return this.apRendererService.addContext(content);
 	}
 
 	@bindThis
@@ -964,6 +958,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 			// TODO: あまりにも数が多いと redisPipeline.exec に失敗する(理由は不明)ため、3万件程度を目安に分割して実行するようにする
 			for (const following of followings) {
+				if (following.followerHost !== null) continue;
 				// 基本的にvisibleUserIdsには自身のidが含まれている前提であること
 				if (note.visibility === 'specified' && !note.visibleUserIds.some(v => v === following.followerId)) continue;
 
