@@ -247,6 +247,7 @@ function setupCanvas(r = 0) {
 		virtualCanvasWidth = NUMBER_ROW_WIDTH + CHANNEL_WIDTH * nbChannels + 2;
 		sliceWidth = MAX_SLICE_WIDTH > virtualCanvasWidth ? virtualCanvasWidth : MAX_SLICE_WIDTH;
 		sliceHeight = HALF_BUFFER * CHAR_HEIGHT;
+		slices = [];
 		setupSlice(sliceCanvas1, sliceBackground1);
 		setupSlice(sliceCanvas2, sliceBackground2);
 		setupSlice(sliceCanvas3, sliceBackground3);
@@ -342,6 +343,8 @@ function toggleVisible() {
 		lastDrawnRow = -1;
 		nextTick(() => {
 			playPause();
+			bakeNumberRow();
+			setupCanvas();
 		});
 	}
 	nextTick(() => { stop(hide.value); });
