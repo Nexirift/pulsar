@@ -93,7 +93,7 @@ class CanvasDisplay {
 	ctx: CanvasRenderingContext2D;
 	html: HTMLCanvasElement;
 	background: HTMLSpanElement;
-	drawn: { top: number, bottom: number, completed: boolean };
+	drawn: { top: number, bottom: number };
 	vPos: number;
 	transform: { x: number, y: number };
 	drawStart: number;
@@ -104,7 +104,7 @@ class CanvasDisplay {
 	) {
 		this.ctx = ctx;
 		this.html = html;
-		this.drawn = { top: 0, bottom: 0, completed: false };
+		this.drawn = { top: 0, bottom: 0 };
 		this.vPos = -0xFFFFFFFF;
 		this.transform = { x: 0, y: 0 };
 		this.drawStart = 0;
@@ -119,7 +119,6 @@ class CanvasDisplay {
 		this.drawn = {
 			top: 0xFFFFFFFF,
 			bottom: -0xFFFFFFFF,
-			completed: false,
 		};
 	}
 }
@@ -617,6 +616,7 @@ html {
 						position: static;
 						image-rendering: pixelated;
 						mix-blend-mode: multiply;
+						background-color: #000000;
 					}
 				}
 			}
