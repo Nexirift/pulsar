@@ -2,7 +2,7 @@
 SPDX-FileCopyrightText: syuilo and misskey-project
 SPDX-License-Identifier: AGPL-3.0-only
 
-Displays a note. Used to show the "main" note in a given context.
+Displays a note in the Sharkey style. Used to show the "main" note in a given context.
 -->
 
 <template>
