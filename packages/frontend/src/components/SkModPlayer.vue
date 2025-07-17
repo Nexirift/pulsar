@@ -642,7 +642,7 @@ html {
 			width: 100%;
 			height: calc(50% - 12px);
 			translate: -50% -100%;
-			top: calc(50% - 14px);
+			top: calc(50% - 13px);
 			position: absolute;
 			pointer-events: none;
 			z-index: 2;
