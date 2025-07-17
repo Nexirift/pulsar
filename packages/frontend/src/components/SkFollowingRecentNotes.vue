@@ -2,7 +2,7 @@
 SPDX-FileCopyrightText: hazelnoot and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
 
-List of a user's recent notes, to display on the "Following" feed.
+List that displays the most recent note from each followed user, in order, with date separators.
 -->
 
 <template>
