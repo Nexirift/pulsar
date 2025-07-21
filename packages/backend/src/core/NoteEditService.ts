@@ -374,8 +374,6 @@ export class NoteEditService implements OnApplicationShutdown {
 			if (data.text === '') {
 				data.text = null;
 			}
-		} else {
-			data.text = null;
 		}
 
 		const maxCwLength = user.host == null
@@ -390,8 +388,6 @@ export class NoteEditService implements OnApplicationShutdown {
 			if (data.cw === '') {
 				data.cw = null;
 			}
-		} else {
-			data.cw = null;
 		}
 
 		let tags = data.apHashtags;
@@ -443,13 +439,13 @@ export class NoteEditService implements OnApplicationShutdown {
 		}
 
 		const update: Partial<MiNote> = {};
-		if (data.text !== oldnote.text) {
+		if (data.text !== undefined && data.text !== oldnote.text) {
 			update.text = data.text;
 		}
-		if (data.cw !== oldnote.cw) {
+		if (data.cw !== undefined && data.cw !== oldnote.cw) {
 			update.cw = data.cw;
 		}
-		if (oldnote.hasPoll !== !!data.poll) {
+		if (data.poll !== undefined && oldnote.hasPoll !== !!data.poll) {
 			update.hasPoll = !!data.poll;
 		}
 		if (data.mandatoryCW !== undefined && oldnote.mandatoryCW !== data.mandatoryCW) {
