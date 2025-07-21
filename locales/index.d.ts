@@ -10378,6 +10378,10 @@ export interface Locale extends ILocale {
          * Scheduled Note was posted
          */
         "scheduledNotePosted": string;
+        /**
+         * Import of {x} has been completed
+         */
+        "importOfXCompleted": ParameterizedString<"x">;
     };
     "_deck": {
         /**
