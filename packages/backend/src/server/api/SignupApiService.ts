@@ -19,11 +19,14 @@ import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
 import { bindThis } from '@/decorators.js';
 import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
 import { RoleService } from '@/core/RoleService.js';
+import Logger from '@/logger.js';
+import { LoggerService } from '@/core/LoggerService.js';
 import { SigninService } from './SigninService.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
 @Injectable()
 export class SignupApiService {
+	private logger: Logger;
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
@@ -56,7 +59,9 @@ export class SignupApiService {
 		private signinService: SigninService,
 		private emailService: EmailService,
 		private roleService: RoleService,
+		private loggerService: LoggerService,
 	) {
+		this.logger = this.loggerService.getLogger('Signup');
 	}
 
 	@bindThis
@@ -389,7 +394,8 @@ export class SignupApiService {
 				userId,
 				ip,
 			}).orIgnore(true).execute();
-		} catch {
+		} catch (err) {
+			this.logger.error(err as Error);
 		}
 	}
 }
