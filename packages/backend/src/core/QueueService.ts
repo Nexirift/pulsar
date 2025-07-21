@@ -156,10 +156,10 @@ export class QueueService implements OnModuleInit {
 			});
 
 		await this.systemQueue.upsertJobScheduler(
-			'backBufferedReactions-scheduler',
+			'bakeBufferedReactions-scheduler',
 			{ pattern: '20 1 * * *' },
 			{
-				name: 'backBufferedReactions',
+				name: 'bakeBufferedReactions',
 				opts: {
 					removeOnComplete: 10,
 					removeOnFail: 30,
