@@ -76,7 +76,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							</MkSwitch>
 						</MkDisableSection>
 						<div :class="$style.forRoles">
-							<MkInfo v-if="announcement.forRoles" :class="$style.forRolesLabel">{{ i18n.tsx._announcement.onlyForRolesRestricted({roles: announcement.forRoles.length}) }}</MkInfo>
+							<MkInfo v-if="announcement.forRoles.length !== 0" :class="$style.forRolesLabel">{{ i18n.tsx._announcement.onlyForRolesRestricted({roles: announcement.forRoles.length}) }}</MkInfo>
 							<MkInfo v-else :class="$style.forRolesLabel">{{ i18n.ts._announcement.onlyForRolesUnrestricted }}</MkInfo>
 							<MkButton primary @click="() => changeRoles(announcement)">
 								{{ i18n.ts._announcement.onlyForRolesChange }}
@@ -141,7 +141,7 @@ function add() {
 		silence: false,
 		needConfirmationToRead: false,
 		confetti: false,
-		forRoles: null,
+		forRoles: [],
 	});
 }
 
@@ -153,7 +153,7 @@ async function changeRoles(announcement) {
 	});
 	if (result.canceled) return;
 
-	announcement.forRoles = result.result.length !== 0 ? result.result.map((r) => r.id) : null;
+	announcement.forRoles = result.result.map((r) => r.id);
 }
 
 function del(announcement) {

@@ -36,7 +36,7 @@ export const paramDef = {
 		icon: { type: 'string', enum: ['info', 'warning', 'error', 'success'] },
 		display: { type: 'string', enum: ['normal', 'banner', 'dialog'] },
 		forExistingUsers: { type: 'boolean' },
-		forRoles: { type: 'array', nullable: true, default: null, items: { type: 'string', nullable: false, format: 'misskey:id' }, },
+		forRoles: { type: 'array', default: [], items: { type: 'string', nullable: false, format: 'misskey:id' }, },
 		silence: { type: 'boolean' },
 		needConfirmationToRead: { type: 'boolean' },
 		confetti: { type: 'boolean' },

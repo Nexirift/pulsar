@@ -65,7 +65,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}))
 				.andWhere(new Brackets(qb => {
 					if (me) qb.orWhere('announcement.forRoles && :roles', { roles: roles.map((r) => r.id) });
-					qb.orWhere('announcement.forRoles IS NULL');
+					qb.orWhere('announcement.forRoles = \'{}\'');
 				}));
 
 			const announcements = await query.limit(ps.limit).getMany();

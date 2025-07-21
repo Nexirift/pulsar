@@ -5,7 +5,7 @@
 
 export class AnnouncementForRoles1752352800438 {
 	async up(queryRunner) {
-		await queryRunner.query(`ALTER TABLE "announcement" ADD "forRoles" text[] DEFAULT null`);
+		await queryRunner.query(`ALTER TABLE "announcement" ADD "forRoles" text[] DEFAULT '{}'`);
 	}
 
 	async down(queryRunner) {

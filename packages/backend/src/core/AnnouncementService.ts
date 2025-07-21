@@ -63,7 +63,7 @@ export class AnnouncementService {
 			}))
 			.andWhere(new Brackets(qb => {
 				qb.orWhere('announcement.forRoles && :roles', { roles: roles.map((r) => r.id) });
-				qb.orWhere('announcement.forRoles IS NULL');
+				qb.orWhere('announcement.forRoles = \'{}\'');
 			}))
 			.andWhere(`announcement.id NOT IN (${ readsQuery.getQuery() })`);
 

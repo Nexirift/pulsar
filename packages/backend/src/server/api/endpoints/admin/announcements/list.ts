@@ -59,7 +59,7 @@ export const meta = {
 				},
 				forRoles: {
 					type: 'array',
-					optional: false, nullable: true,
+					optional: false, nullable: false,
 					items: {
 						type: 'string',
 						optional: false, nullable: false,

@@ -69,9 +69,9 @@ export class MiAnnouncement {
 
 	@Column('text', {
 		array: true,
-		default: null, nullable: true,
+		default: '{}', nullable: false,
 	})
-	public forRoles: MiRole['id'][] | null;
+	public forRoles: MiRole['id'][];
 
 	@Index()
 	@Column('boolean', {

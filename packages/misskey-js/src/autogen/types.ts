@@ -6694,8 +6694,8 @@ export type operations = {
           display?: 'normal' | 'banner' | 'dialog';
           /** @default false */
           forExistingUsers?: boolean;
-          /** @default null */
-          forRoles?: string[] | null;
+          /** @default [] */
+          forRoles?: string[];
           /** @default false */
           silence?: boolean;
           /** @default false */
@@ -6858,7 +6858,7 @@ export type operations = {
               title: string;
               imageUrl: string | null;
               reads: number;
-              forRoles: string[] | null;
+              forRoles: string[];
             })[];
         };
       };
@@ -6914,8 +6914,8 @@ export type operations = {
           /** @enum {string} */
           display?: 'normal' | 'banner' | 'dialog';
           forExistingUsers?: boolean;
-          /** @default null */
-          forRoles?: string[] | null;
+          /** @default [] */
+          forRoles?: string[];
           silence?: boolean;
           needConfirmationToRead?: boolean;
           confetti?: boolean;
