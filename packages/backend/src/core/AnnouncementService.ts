@@ -72,6 +72,7 @@ export class AnnouncementService {
 			// Check how many active dialog queries already exist, to enforce a limit
 			const query = this.announcementsRepository.createQueryBuilder('announcement');
 			query.andWhere('announcement.isActive = true');
+			query.andWhere('announcement.display = \'dialog\'');
 			const count = await query.getCount();
 			if (count >= 5) {
 				throw new IdentifiableError('c0d15f15-f18e-4a40-bcb1-f310d58204ee', 'Too many dialog announcements.');
@@ -136,6 +137,7 @@ export class AnnouncementService {
 			// Check how many active dialog queries already exist, to enforce a limit
 			const query = this.announcementsRepository.createQueryBuilder('announcement');
 			query.andWhere('announcement.isActive = true');
+			query.andWhere('announcement.display = \'dialog\'');
 			const count = await query.getCount();
 			if (count >= 5) {
 				throw new IdentifiableError('c0d15f15-f18e-4a40-bcb1-f310d58204ee', 'Too many dialog announcements.');
