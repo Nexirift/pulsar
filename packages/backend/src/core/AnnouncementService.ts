@@ -14,6 +14,7 @@ import { IdService } from '@/core/IdService.js';
 import { AnnouncementEntityService } from '@/core/entities/AnnouncementEntityService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
 
 @Injectable()
 export class AnnouncementService {
@@ -67,6 +68,16 @@ export class AnnouncementService {
 
 	@bindThis
 	public async create(values: Partial<MiAnnouncement>, moderator?: MiUser): Promise<{ raw: MiAnnouncement; packed: Packed<'Announcement'> }> {
+		if (values.display === 'dialog') {
+			// Check how many active dialog queries already exist, to enforce a limit
+			const query = this.announcementsRepository.createQueryBuilder('announcement');
+			query.andWhere('announcement.isActive = true');
+			const count = await query.getCount();
+			if (count >= 5) {
+				throw new IdentifiableError('c0d15f15-f18e-4a40-bcb1-f310d58204ee', 'Too many dialog announcements.');
+			}
+		}
+
 		const announcement = await this.announcementsRepository.insertOne({
 			id: this.idService.gen(),
 			updatedAt: null,
