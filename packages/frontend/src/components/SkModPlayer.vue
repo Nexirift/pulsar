@@ -755,7 +755,7 @@ onDeactivated(() => {
 				background: var(--MI_THEME-indicator);
 				cursor: pointer;
 				-webkit-appearance: none;
-				box-shadow: calc(-100vw - 14px) 0 0 100vw var(--MI_THEME-accent);
+				box-shadow: calc(-100vw - 14px) 0 0 100vw hsl(from var(--MI_THEME-indicator) h s calc(l + 10));
 				clip-path: polygon(1px 0, 100% 0, 100% 100%, 1px 100%, 1px calc(50% + 10.5px), -100vw calc(50% + 10.5px), -100vw calc(50% - 10.5px), 0 calc(50% - 10.5px));
 				z-index: 1;
 			}
@@ -781,7 +781,7 @@ onDeactivated(() => {
 				height: 100%;
 				border-radius: 0;
 				width: 14px;
-				background: var(--MI_THEME-indicator);
+				background: hsl(from var(--MI_THEME-indicator) h s calc(l + 10));
 				cursor: pointer;
 			}
 
