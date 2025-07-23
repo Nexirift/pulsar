@@ -21,6 +21,7 @@ import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
 
 @Injectable()
 export class UserSuspendService {
@@ -42,6 +43,7 @@ export class UserSuspendService {
 		private apRendererService: ApRendererService,
 		private moderationLogService: ModerationLogService,
 		private readonly cacheService: CacheService,
+		private readonly internalEventService: InternalEventService,
 
 		loggerService: LoggerService,
 	) {
@@ -55,6 +57,8 @@ export class UserSuspendService {
 		await this.usersRepository.update(user.id, {
 			isSuspended: true,
 		});
+
+		await this.internalEventService.emit(user.host == null ? 'localUserUpdated' : 'remoteUserUpdated', { id: user.id });
 
 		await this.moderationLogService.log(moderator, 'suspend', {
 			userId: user.id,
@@ -73,6 +77,8 @@ export class UserSuspendService {
 		await this.usersRepository.update(user.id, {
 			isSuspended: false,
 		});
+
+		await this.internalEventService.emit(user.host == null ? 'localUserUpdated' : 'remoteUserUpdated', { id: user.id });
 
 		await this.moderationLogService.log(moderator, 'unsuspend', {
 			userId: user.id,
