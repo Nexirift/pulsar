@@ -11977,6 +11977,14 @@ export interface Locale extends ILocale {
      */
     "trustedLinkUrlPatternsDescription": string;
     /**
+     * Link to external site warning exclusion list
+     */
+    "trustedDomainsList": string;
+    /**
+     * Following links to these domains will not show a warning. Write one domain per line.
+     */
+    "trustedDomainsListDescription": string;
+    /**
      * Mutuals
      */
     "mutuals": string;
