@@ -6005,6 +6005,14 @@ export interface Locale extends ILocale {
          * New
          */
         "new": string;
+        /**
+         * Throw confetti
+         */
+        "confetti": string;
+        /**
+         * If enabled, the announcement will display a confetti effect when viewed.
+         */
+        "confettiDescription": string;
     };
     "_initialAccountSetting": {
         /**
