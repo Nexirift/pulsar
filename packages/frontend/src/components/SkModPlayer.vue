@@ -20,8 +20,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span :class="$style.patternShadowTop"></span>
 		<span :class="$style.patternShadowBottom"></span>
 		<div ref="sliceDisplay" :class="$style.slice_display">
-			<span ref="numberRowParent" :class="$style.numberRowParent">
-				<canvas ref="numberRowCanvas" :style="{ top: numberRowOffset + 'px' }" :class="$style.row_canvas"></canvas>
+			<span :class="$style.numberRowParent">
+				<span ref="numberRowBackground" :style="{ top: numberRowOffset + 'px' }" :class="$style.numberRowBackground">
+					<canvas ref="numberRowCanvas" :class="$style.row_canvas"></canvas>
+				</span>
 			</span>
 			<span>
 				<span ref="sliceBackground1" :class="$style.sliceBackground">
@@ -66,10 +68,7 @@ import { prefer } from '@/preferences.js';
 
 const colours = {
 	background: '#000000',
-	foreground: {
-		default: '#ffffff',
-		quarter: '#ffff00',
-	},
+	foreground: '#ffffff',
 };
 
 const CHAR_WIDTH = 6;
@@ -136,7 +135,7 @@ const patternHide = ref<boolean>(true);
 const playing = ref<boolean>(false);
 const sliceDisplay = ref<HTMLDivElement>();
 const numberRowCanvas = ref<HTMLCanvasElement>();
-const numberRowParent = ref<HTMLSpanElement>();
+const numberRowBackground = ref<HTMLSpanElement>();
 const sliceCanvas1 = ref<HTMLCanvasElement>();
 const sliceCanvas2 = ref<HTMLCanvasElement>();
 const sliceCanvas3 = ref<HTMLCanvasElement>();
@@ -169,22 +168,20 @@ let slices: CanvasDisplay[] = [];
 let numberRowPHTML: HTMLSpanElement;
 
 function bakeNumberRow() {
-	if (numberRowCanvas.value && numberRowParent.value) {
+	if (numberRowCanvas.value && numberRowBackground.value) {
 		numberRowCanvas.value.width = NUMBER_ROW_WIDTH;
 		numberRowCanvas.value.height = MAX_ROW_NUMBERS * CHAR_HEIGHT + 1;
-		numberRowPHTML = numberRowParent.value;
+		numberRowPHTML = numberRowBackground.value;
+		numberRowPHTML.style.display = 'block';
 		let ctx = numberRowCanvas.value.getContext('2d', { alpha: false }) as CanvasRenderingContext2D;
 		ctx.font = '10px "Liberation Mono", "Courier New", "Droid Sans Mono", "Roboto Mono", "Luxi Mono", "FreeMono", monospace';
 		ctx.fillStyle = colours.background;
 		ctx.fillRect( 0, 0, numberRowCanvas.value.width, numberRowCanvas.value.height );
 
+		ctx.fillStyle = colours.foreground;
 		for (let i = 0; i <= MAX_ROW_NUMBERS; i++) {
 			let rowText = i.toString(16);
 			if (rowText.length === 1) rowText = '0' + rowText;
-
-			ctx.fillStyle = colours.foreground.default;
-			if (i % 4 === 0) ctx.fillStyle = colours.foreground.quarter;
-
 			ctx.fillText(rowText, 0, ROW_OFFSET_Y + i * 12);
 		}
 	}
@@ -425,7 +422,7 @@ function getRowText(slice: CanvasDisplay, row: number, pattern: number) : string
 }
 
 function drawText(slice: CanvasDisplay, text: string[], drawX = 0, drawY = ROW_OFFSET_Y) {
-	slice.ctx.fillStyle = colours.foreground.default;
+	slice.ctx.fillStyle = colours.foreground;
 	text.forEach((str, i) => {
 		if (str.length !== 0) slice.ctx.fillText(str, drawX, drawY + CHAR_HEIGHT * i);
 	});
@@ -595,6 +592,12 @@ onDeactivated(() => {
 		max-height: 312px; /* magic_number = CHAR_HEIGHT * rowBuffer, needs to be in px */
 		scrollbar-width: none;
 
+		canvas {
+			image-rendering: pixelated;
+			mix-blend-mode: multiply;
+			background-color: #000000;
+		}
+
 		.slice_display {
 			display: flex;
 			position: relative;
@@ -617,9 +620,6 @@ onDeactivated(() => {
 					);
 					.patternSlice {
 						position: static;
-						image-rendering: pixelated;
-						mix-blend-mode: multiply;
-						background-color: #000000;
 					}
 				}
 			}
@@ -631,11 +631,20 @@ onDeactivated(() => {
 				height: 200%;
 				overflow: clip;
 				background: #000000;
-				.row_canvas {
+				.numberRowBackground {
 					position: relative;
-					right: 0;
-					z-index: 1;
-					inset: 0;
+					display: none;
+					background-image: repeating-linear-gradient(
+						to bottom,
+						var(--MI_THEME-modPlayerDefault) 0px calc(3 * 12px),
+						var(--MI_THEME-modPlayerQuarter) calc(3 * 12px) calc(4 * 12px),
+					);
+					.row_canvas {
+						position: static;
+						right: 0;
+						z-index: 1;
+						inset: 0;
+					}
 				}
 			}
 		}
