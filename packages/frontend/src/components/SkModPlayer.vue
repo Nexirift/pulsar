@@ -544,14 +544,14 @@ onDeactivated(() => {
 <style lang="scss" module>
 
 :root {
-		--MI_THEME-modPlayerDefault: #ffffff;
-		--MI_THEME-modPlayerQuarter: #ffff00;
-		--MI_THEME-modPlayerInstr: #80e0ff;
-		--MI_THEME-modPlayerVolume: #80ff80;
-		--MI_THEME-modPlayerFx: #ff80e0;
-		--MI_THEME-modPlayerOperant: #ffe080;
-		--MI_THEME-modPlayerShadow: #00000080;
-		--MI_THEME-modPlayerSliderKnob: hsl(from var(--MI_THEME-indicator) h s calc(l * 0.1));
+	--MI_THEME-modPlayerDefault: #ffffff;
+	--MI_THEME-modPlayerQuarter: #ffff00;
+	--MI_THEME-modPlayerInstr: #80e0ff;
+	--MI_THEME-modPlayerVolume: #80ff80;
+	--MI_THEME-modPlayerFx: #ff80e0;
+	--MI_THEME-modPlayerOperant: #ffe080;
+	--MI_THEME-modPlayerShadow: #00000080;
+	--MI_THEME-modPlayerSliderKnob: hsl(from var(--MI_THEME-indicator) h s calc(l * 0.1));
 }
 
 .hide {
