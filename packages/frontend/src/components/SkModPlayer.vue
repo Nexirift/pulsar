@@ -174,7 +174,7 @@ function bakeNumberRow() {
 		numberRowCanvas.value.height = MAX_ROW_NUMBERS * CHAR_HEIGHT + 1;
 		numberRowPHTML = numberRowParent.value;
 		let ctx = numberRowCanvas.value.getContext('2d', { alpha: false }) as CanvasRenderingContext2D;
-		ctx.font = '10px monospace';
+		ctx.font = '10px "Liberation Mono", "Courier New", "Droid Sans Mono", "Roboto Mono", "Luxi Mono", "FreeMono", monospace';
 		ctx.fillStyle = colours.background;
 		ctx.fillRect( 0, 0, numberRowCanvas.value.width, numberRowCanvas.value.height );
 
@@ -185,7 +185,7 @@ function bakeNumberRow() {
 			ctx.fillStyle = colours.foreground.default;
 			if (i % 4 === 0) ctx.fillStyle = colours.foreground.quarter;
 
-			ctx.fillText(rowText, 0, 10 + i * 12);
+			ctx.fillText(rowText, 0, ROW_OFFSET_Y + i * 12);
 		}
 	}
 }
@@ -200,7 +200,7 @@ function setupSlice(canvas: Ref, back: Ref) {
 		chtml,
 		backgorund,
 	);
-	slice.ctx.font = '10px monospace';
+	slice.ctx.font = '10px "Liberation Mono", "Courier New", "Droid Sans Mono", "Roboto Mono", "Luxi Mono", "FreeMono", monospace';
 	slice.ctx.imageSmoothingEnabled = false;
 	slices.push(slice);
 }
@@ -341,7 +341,7 @@ function drawSlices(skipOptimizationChecks = false) {
 	const pattern = player.value.getPattern();
 	const row = player.value.getRow();
 	const lower = row + HALF_BUFFER;
-	const upper = row - HALF_BUFFER;
+	//const upper = row - HALF_BUFFER;
 	const newDisplayTanslation = -row * CHAR_HEIGHT;
 	let curRow = row - HALF_BUFFER;
 
@@ -369,7 +369,7 @@ function drawSlices(skipOptimizationChecks = false) {
 			for (let i = 0; i < HALF_BUFFER; i++) {
 				const newRow = sli.drawStart + i;
 
-				if (sli.drawn.bottom >= newRow && sli.drawn.top <= newRow || newRow < upper || newRow < upper) {
+				if (sli.drawn.bottom >= newRow && sli.drawn.top <= newRow /*|| newRow < upper || newRow > lower*/) {
 					patternText.push('');
 					continue;
 				}
@@ -603,7 +603,7 @@ onDeactivated(() => {
 			top: 50%;
 			span {
 				.sliceBackground {
-					/* display: none; */
+					display: none;
 					width: fit-content;
 					height: fit-content;
 					position: relative;
@@ -752,11 +752,11 @@ onDeactivated(() => {
 				height: 100%;
 				width: 14px;
 				border-radius: 0;
-				background: var(--MI_THEME-indicator);
+				background: hsl(from var(--MI_THEME-indicator) h s calc(l * 0.5));
 				cursor: pointer;
 				-webkit-appearance: none;
-				box-shadow: calc(-100vw - 14px) 0 0 100vw hsl(from var(--MI_THEME-indicator) h s calc(l + 10));
-				clip-path: polygon(1px 0, 100% 0, 100% 100%, 1px 100%, 1px calc(50% + 10.5px), -100vw calc(50% + 10.5px), -100vw calc(50% - 10.5px), 0 calc(50% - 10.5px));
+				box-shadow: calc(-100vw - 14px) 0 0 100vw var(--MI_THEME-accent);
+				clip-path: polygon(1px 0, 100% 0, 100% 100%, 1px 100%, 1px calc(50% + 11px), -100vw calc(50% + 11px), -100vw calc(50% - 10px), 0 calc(50% - 10px));
 				z-index: 1;
 			}
 
@@ -781,7 +781,7 @@ onDeactivated(() => {
 				height: 100%;
 				border-radius: 0;
 				width: 14px;
-				background: hsl(from var(--MI_THEME-indicator) h s calc(l + 10));
+				background: hsl(from var(--MI_THEME-indicator) h s calc(l * 0.5));
 				cursor: pointer;
 			}
 
@@ -814,7 +814,7 @@ onDeactivated(() => {
 				height: 100%;
 				width: 14px;
 				border-radius: 0;
-				background: var(--MI_THEME-indicator);
+				background: hsl(from var(--MI_THEME-indicator) h s calc(l * 0.5));
 				cursor: pointer;
 			}
 
