@@ -37,6 +37,8 @@ import {
 } from '@/global/CacheManagementService.js';
 import type { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { getCallerId } from '@/misc/attach-caller-id.js';
+import Ajv from 'ajv';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
 
 export type RolePolicies = {
 	gtlAvailable: boolean;
@@ -122,6 +124,69 @@ export const DEFAULT_POLICIES: RolePolicies = {
 
 // TODO cache sync fixes (and maybe events too?)
 
+const DefaultPolicieSchema = {
+	type: 'object',
+	additionalProperties: false,
+	properties: {
+		gtlAvailable: { type: 'boolean' },
+		ltlAvailable: { type: 'boolean' },
+		btlAvailable: { type: 'boolean' },
+		canPublicNote: { type: 'boolean' },
+		scheduleNoteMax: { type: 'integer', minimum: 0 },
+		mentionLimit: { type: 'integer', minimum: 0 },
+		canInvite: { type: 'boolean' },
+		inviteLimit: { type: 'integer', minimum: 0 },
+		inviteLimitCycle: { type: 'integer', minimum: 0 },
+		inviteExpirationTime: { type: 'integer', minimum: 0 },
+		canManageCustomEmojis: { type: 'boolean' },
+		canManageAvatarDecorations: { type: 'boolean' },
+		canSearchNotes: { type: 'boolean' },
+		canUseTranslator: { type: 'boolean' },
+		canHideAds: { type: 'boolean' },
+		driveCapacityMb: { type: 'integer', minimum: 0 },
+		maxFileSizeMb: { type: 'integer', minimum: 0 },
+		alwaysMarkNsfw: { type: 'boolean' },
+		canUpdateBioMedia: { type: 'boolean' },
+		pinLimit: { type: 'integer', minimum: 0 },
+		antennaLimit: { type: 'integer', minimum: 0 },
+		wordMuteLimit: { type: 'integer', minimum: 0 },
+		webhookLimit: { type: 'integer', minimum: 0 },
+		clipLimit: { type: 'integer', minimum: 0 },
+		noteEachClipsLimit: { type: 'integer', minimum: 0 },
+		userListLimit: { type: 'integer', minimum: 0 },
+		userEachUserListsLimit: { type: 'integer', minimum: 0 },
+		rateLimitFactor: { type: 'number', minimum: 0.01 },
+		canImportNotes: { type: 'boolean' },
+		avatarDecorationLimit: { type: 'integer', minimum: 0 },
+		canImportAntennas: { type: 'boolean' },
+		canImportBlocking: { type: 'boolean' },
+		canImportFollowing: { type: 'boolean' },
+		canImportMuting: { type: 'boolean' },
+		canImportUserLists: { type: 'boolean' },
+		chatAvailability: { enum: [ 'available', 'readonly', 'unavailable' ] },
+		canTrend: { type: 'boolean' },
+	},
+};
+
+const RoleSchema = {
+	type: 'object',
+	additionalProperties: false,
+	properties: Object.fromEntries(
+		Object.entries(DefaultPolicieSchema.properties).map( e => {
+			return [e[0], {
+				type: 'object',
+				additionalProperties: false,
+				properties: {
+					priority: { type: 'integer', minimum: 0, maximum: 2 },
+					useDefault: { type: 'boolean' },
+					value: e[1],
+				},
+			}];
+		}),
+	),
+};
+
+
 @Injectable()
 export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	private readonly rolesCache: ManagedMemorySingleCache<MiRole[]>;
@@ -129,6 +194,8 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 
 	private cacheService: CacheService;
 	private notificationService: NotificationService;
+	private defaultPoliciesValidator: Ajv;
+	private roleValidator: Ajv;
 
 	public static AlreadyAssignedError = class extends Error {};
 	public static NotAssignedError = class extends Error {};
@@ -756,6 +823,8 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 
 	@bindThis
 	public async create(values: Partial<MiRole>, moderator?: MiUser): Promise<MiRole> {
+		this.assertValidRole(values);
+
 		const date = this.timeService.date;
 		const created = await this.rolesRepository.insertOne({
 			id: this.idService.gen(date.getTime()),
@@ -792,6 +861,8 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 
 	@bindThis
 	public async update(role: MiRole, params: Partial<MiRole>, moderator?: MiUser): Promise<void> {
+		this.assertValidRole(params);
+
 		const date = this.timeService.date;
 		await this.rolesRepository.update(role.id, {
 			updatedAt: date,
@@ -842,5 +913,50 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	@bindThis
 	public onApplicationShutdown(signal?: string | undefined): void {
 		this.dispose();
+	}
+
+	@bindThis
+	public assertValidRole(role: Partial<MiRole>): void {
+		if (!role.policies) return;
+
+		if (!this.roleValidator) {
+			// this is copied from server/api/endpoint-base.ts
+			const ajv = new Ajv.default({
+				useDefault: true,
+				allErrors: true,
+			});
+			this.roleValidator = ajv.compile(RoleSchema);
+		}
+
+		if (this.roleValidator(role.policies)) return;
+
+		throw new IdentifiableError(
+			'39d78ad7-0f00-4bff-b2e2-2e7db889e05d',
+			'invalid policy values',
+			false,
+			this.roleValidator.errors,
+		);
+	}
+
+
+	@bindThis
+	public assertValidDefaultPolicies(policies: object): void {
+		if (!this.defaultPoliciesValidator) {
+			// this is copied from server/api/endpoint-base.ts
+			const ajv = new Ajv.default({
+				useDefault: true,
+				allErrors: true,
+			});
+			this.defaultPoliciesValidator = ajv.compile(DefaultPolicieSchema);
+		}
+
+		if (this.defaultPoliciesValidator(policies)) return;
+
+		throw new IdentifiableError(
+			'39d78ad7-0f00-4bff-b2e2-2e7db889e05d',
+			'invalid policy values',
+			false,
+			this.defaultPoliciesValidator.errors,
+		);
 	}
 }
