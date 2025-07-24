@@ -186,7 +186,7 @@ const RoleSchema: JSONSchemaType<MiRole['policies']> = {
 				[policy, value]: [string, JSONSchemaType<RolePolicies>['properties']['canTrend']]
 			) => {
 			return [
-				policy as string,
+				policy,
 				{
 					type: 'object',
 					additionalProperties: false,
@@ -252,6 +252,14 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		// TODO additional cache for final calculation?
 
 		this.redisForSub.on('message', this.onMessage);
+
+		// this is copied from server/api/endpoint-base.ts
+		const ajv = new Ajv.default({
+			useDefaults: true,
+			allErrors: true,
+		});
+		this.defaultPoliciesValidator = ajv.compile(DefaultPoliciesSchema);
+		this.roleValidator = ajv.compile(RoleSchema);
 	}
 
 	@bindThis
@@ -937,15 +945,6 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	public assertValidRole(role: Partial<MiRole>): void {
 		if (!role.policies) return;
 
-		if (!this.roleValidator) {
-			// this is copied from server/api/endpoint-base.ts
-			const ajv = new Ajv.default({
-				useDefaults: true,
-				allErrors: true,
-			});
-			this.roleValidator = ajv.compile(RoleSchema);
-		}
-
 		if (this.roleValidator(role.policies)) return;
 
 		throw new IdentifiableError(
@@ -958,15 +957,6 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 
 	@bindThis
 	public assertValidDefaultPolicies(policies: object): void {
-		if (!this.defaultPoliciesValidator) {
-			// this is copied from server/api/endpoint-base.ts
-			const ajv = new Ajv.default({
-				useDefaults: true,
-				allErrors: true,
-			});
-			this.defaultPoliciesValidator = ajv.compile(DefaultPoliciesSchema);
-		}
-
 		if (this.defaultPoliciesValidator(policies)) return;
 
 		throw new IdentifiableError(
