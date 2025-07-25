@@ -7,7 +7,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Brackets, Not, WhereExpressionBuilder } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type { MiUser } from '@/models/User.js';
-import { MiInstance } from '@/models/Instance.js';
 import type { UserProfilesRepository, FollowingsRepository, ChannelFollowingsRepository, BlockingsRepository, NoteThreadMutingsRepository, MutingsRepository, RenoteMutingsRepository, MiMeta, InstancesRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
@@ -204,7 +203,7 @@ export class QueryService {
 	@bindThis
 	public generateBlockedHostQueryForNote<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, excludeAuthor?: boolean): SelectQueryBuilder<E> {
 		const checkFor = (key: 'user' | 'replyUser' | 'renoteUser') => this
-			.leftJoinInstance(q, `note.${key}Instance`, `${key}Instance`)
+			.leftJoin(q, `note.${key}Instance`, `${key}Instance`)
 			.andWhere(new Brackets(qb => {
 				qb
 					.orWhere(`"${key}Instance" IS NULL`) // local
@@ -225,31 +224,53 @@ export class QueryService {
 	}
 
 	@bindThis
-	public generateSilencedUserQueryForNotes<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me?: { id: MiUser['id'] } | null): SelectQueryBuilder<E> {
-		if (!me) {
-			return q.andWhere('user.isSilenced = false');
+	public generateSilencedUserQueryForNotes<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me?: { id: MiUser['id'] } | null, excludeAuthor = false): SelectQueryBuilder<E> {
+		const checkFor = (key: 'user' | 'replyUser' | 'renoteUser') => {
+			// These are de-duplicated, since most call sites already provide some of them.
+			this.leftJoin(q, `note.${key}Instance`, `${key}Instance`); // note->instance
+			this.leftJoin(q, `note.${key}`, key); // note->user
+
+			q.andWhere(new Brackets(qb => {
+				// case 1: user does not exist (note is not reply/renote)
+				qb.orWhere(`note.${key}Id IS NULL`);
+
+				// case 2: user not silenced AND instance not silenced
+				qb.orWhere(new Brackets(qbb => qbb
+					.andWhere(new Brackets(qbbb => qbbb
+						.orWhere(`"${key}Instance"."isSilenced" = false`)
+						.orWhere(`"${key}Instance" IS NULL`)))
+					.andWhere(`"${key}"."isSilenced" = false`)));
+
+				if (me) {
+					// case 3: we are the author
+					qb.orWhere(`note.${key}Id = :meId`);
+
+					// case 4: we are following the user
+					this.orFollowingUser(qb, ':meId', `note.${key}Id`);
+				}
+			}));
+		};
+
+		// Set parameters only once
+		if (me) {
+			q.setParameters({ meId: me.id });
 		}
 
-		return this
-			.leftJoinInstance(q, 'note.userInstance', 'userInstance')
-			.andWhere(new Brackets(qb => this
-				// case 1: we are following the user
-				.orFollowingUser(qb, ':meId', 'note.userId')
-				// case 2: user not silenced AND instance not silenced
-				.orWhere(new Brackets(qbb => qbb
-					.andWhere(new Brackets(qbbb => qbbb
-						.orWhere('"userInstance"."isSilenced" = false')
-						.orWhere('"userInstance" IS NULL')))
-					.andWhere('user.isSilenced = false')))))
-			.setParameters({ meId: me.id });
+		if (!excludeAuthor) {
+			checkFor('user');
+		}
+		checkFor('replyUser');
+		checkFor('renoteUser');
+
+		return q;
 	}
 
 	/**
-	 * Left-joins an instance in to the query with a given alias and optional condition.
-	 * These calls are de-duplicated - multiple uses of the same alias are skipped.
+	 * Left-joins a relation into the query with a given alias and optional condition.
+	 * These calls are de-duplicated - multiple uses of the same relation+alias are skipped.
 	 */
 	@bindThis
-	public leftJoinInstance<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, relation: string | typeof MiInstance, alias: string, condition?: string): SelectQueryBuilder<E> {
+	public leftJoin<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, relation: string, alias: string, condition?: string): SelectQueryBuilder<E> {
 		// Skip if it's already joined, otherwise we'll get an error
 		if (!q.expressionMap.joinAttributes.some(j => j.alias.name === alias)) {
 			q.leftJoin(relation, alias, condition);
