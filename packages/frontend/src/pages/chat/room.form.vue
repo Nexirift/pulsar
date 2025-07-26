@@ -194,8 +194,13 @@ function send() {
 		}).then(message => {
 			clear();
 		}).catch(err => {
-			console.error(err);
-		}).then(() => {
+			console.error('Error in chat:', err);
+			return os.alert({
+				type: 'error',
+				title: i18n.ts.error,
+				text: String(err),
+			});
+		}).finally(() => {
 			sending.value = false;
 		});
 	} else if (props.room) {
@@ -206,8 +211,13 @@ function send() {
 		}).then(message => {
 			clear();
 		}).catch(err => {
-			console.error(err);
-		}).then(() => {
+			console.error('Error in chat:', err);
+			return os.alert({
+				type: 'error',
+				title: i18n.ts.error,
+				text: String(err),
+			});
+		}).finally(() => {
 			sending.value = false;
 		});
 	}
