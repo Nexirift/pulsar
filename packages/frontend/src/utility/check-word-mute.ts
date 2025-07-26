@@ -125,7 +125,7 @@ function getMutes(note: Misskey.entities.Note, withHardMute: boolean, overrides:
 			? note.user.instance.mandatoryCW
 			: null;
 
-	const hasMute = hardMuted || softMutedWords.length > 0 || sensitiveMuted || threadMuted || noteMuted || !!noteMandatoryCW || !!userMandatoryCW || !!instanceMandatoryCW;
+	const hasMute = hardMuted || softMutedWords.length > 0 || sensitiveMuted || isSilenced || threadMuted || noteMuted || !!noteMandatoryCW || !!userMandatoryCW || !!instanceMandatoryCW;
 
 	return { hasMute, hardMuted, softMutedWords, sensitiveMuted, isSilenced, threadMuted, noteMuted, noteMandatoryCW, userMandatoryCW, instanceMandatoryCW };
 }
