@@ -159,6 +159,14 @@ function isSensitiveMuted(note: Misskey.entities.Note): boolean {
 }
 
 export function getMutedWords(mutedWords: (string | string[])[], inputs: Iterable<string>): string[] {
+	// Fixup: string is assignable to Iterable<string>, but doesn't work below.
+	// As a workaround, we can special-case it to "upgrade" plain strings into arrays instead.
+	// We also need a noinspection tag, since JetBrains IDEs don't understand this behavior either.
+	// noinspection SuspiciousTypeOfGuard
+	if (typeof(inputs) === 'string') {
+		inputs = [inputs];
+	}
+
 	// Parse mutes
 	const { regexMutes, patternMutes } = parseMutes(mutedWords);
 
