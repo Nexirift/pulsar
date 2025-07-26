@@ -691,6 +691,9 @@ export class QueueService {
 					count: 100,
 				},
 				...opts,
+				deduplication: {
+					id: `${data.from.id}_${data.to.id}_${data.requestId ?? ''}_${data.silent ?? false}_${data.withReplies ?? false}`,
+				},
 			},
 		};
 	}
