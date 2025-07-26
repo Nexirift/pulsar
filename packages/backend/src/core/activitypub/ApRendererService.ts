@@ -585,7 +585,7 @@ export class ApRendererService {
 		const attachment = profile.fields.map(field => ({
 			type: 'PropertyValue',
 			name: field.name,
-			value: this.mfmService.toHtml(mfm.parse(field.value)),
+			value: this.mfmService.toHtml(mfm.parse(field.value), [], [], true),
 		}));
 
 		const emojis = await this.getEmojis(user.emojis);
