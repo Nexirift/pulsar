@@ -543,12 +543,6 @@ export class UserEntityService implements OnModuleInit {
 		let fetchPoliciesPromise: Promise<RolePolicies> | null = null;
 		const fetchPolicies = () => fetchPoliciesPromise ??= this.roleService.getUserPolicies(user);
 
-		const instancePromise = Promise.resolve(user.host
-			? opts.instances?.has(user.host)
-				? opts.instances.get(user.host)
-				: this.federatedInstanceService.fetch(user.host)
-			: null);
-
 		const bypassSilence = isMe || (meId && myFollowings ? myFollowings.has(meId) : false);
 
 		const packed = {
@@ -579,13 +573,13 @@ export class UserEntityService implements OnModuleInit {
 			rejectQuotes: user.rejectQuotes,
 			attributionDomains: user.attributionDomains,
 			isSilenced: user.isSilenced,
-			isSilencedForMe: !bypassSilence && instancePromise.then(i => user.isSilenced || i?.isSilenced),
+			isSilencedForMe: !bypassSilence && user.isSilenced,
 			speakAsCat: user.speakAsCat ?? false,
 			approved: user.approved,
 			requireSigninToViewContents: user.requireSigninToViewContents === false ? undefined : true,
 			makeNotesFollowersOnlyBefore: user.makeNotesFollowersOnlyBefore ?? undefined,
 			makeNotesHiddenBefore: user.makeNotesHiddenBefore ?? undefined,
-			instance: instancePromise.then(instance => instance ? {
+			instance: user.host ? Promise.resolve(opts.instances?.has(user.host) ? opts.instances.get(user.host) : this.federatedInstanceService.fetch(user.host)).then(instance => instance ? {
 				name: instance.name,
 				softwareName: instance.softwareName,
 				softwareVersion: instance.softwareVersion,
@@ -595,7 +589,7 @@ export class UserEntityService implements OnModuleInit {
 				isSilenced: instance.isSilenced,
 				isSilencedForMe: !bypassSilence && instance.isSilenced,
 				mandatoryCW: instance.mandatoryCW,
-			} : undefined),
+			} : undefined) : undefined,
 			followersCount: followersCount ?? 0,
 			followingCount: followingCount ?? 0,
 			notesCount: user.notesCount,
