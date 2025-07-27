@@ -20,7 +20,7 @@ Displays a placeholder for a muted note.
 		</I18n>
 		<I18n v-if="mute.userMandatoryCW" :src="i18n.ts.userIsFlaggedAs" tag="small">
 			<template #name>
-				<MkUserName :user="note.user"/>
+				{{ userName }}
 			</template>
 			<template #cw>
 				{{ mute.userMandatoryCW }}
@@ -38,19 +38,27 @@ Displays a placeholder for a muted note.
 		<!-- Muted notes/threads -->
 		<I18n v-if="mute.noteMuted" :src="i18n.ts.userSaysSomethingInMutedNote" tag="small">
 			<template #name>
-				<MkUserName :user="note.user"/>
+				{{ userName }}
 			</template>
 		</I18n>
 		<I18n v-else-if="mute.threadMuted" :src="i18n.ts.userSaysSomethingInMutedThread" tag="small">
 			<template #name>
-				<MkUserName :user="note.user"/>
+				{{ userName }}
 			</template>
 		</I18n>
 
 		<!-- Silenced users/instances -->
-		<I18n v-if="mute.isSilenced" :src="i18n.ts.silencedUserSaysSomething" tag="small">
+		<I18n v-if="mute.userSilenced" :src="i18n.ts.silencedUserSaysSomething" tag="small">
 			<template #name>
-				<MkUserName :user="note.user"/>
+				{{ userName }}
+			</template>
+			<template #host>
+				{{ host }}
+			</template>
+		</I18n>
+		<I18n v-if="mute.instanceSilenced" :src="i18n.ts.silencedInstanceSaysSomething" tag="small">
+			<template #name>
+				{{ instanceName }}
 			</template>
 			<template #host>
 				{{ host }}
@@ -61,7 +69,7 @@ Displays a placeholder for a muted note.
 		<template v-if="mutedWords">
 			<I18n v-if="prefer.s.showSoftWordMutedWord" :src="i18n.ts.userSaysSomethingAbout" tag="small">
 				<template #name>
-					<MkUserName :user="note.user"/>
+					{{ userName }}
 				</template>
 				<template #word>
 					{{ mutedWords }}
@@ -69,7 +77,7 @@ Displays a placeholder for a muted note.
 			</I18n>
 			<I18n v-else :src="i18n.ts.userSaysSomething" tag="small">
 				<template #name>
-					<MkUserName :user="note.user"/>
+					{{ userName }}
 				</template>
 			</I18n>
 		</template>
@@ -77,7 +85,7 @@ Displays a placeholder for a muted note.
 		<!-- Sensitive mute -->
 		<I18n v-if="mute.sensitiveMuted" :src="i18n.ts.userSaysSomethingSensitive" tag="small">
 			<template #name>
-				<MkUserName :user="note.user"/>
+				{{ userName }}
 			</template>
 		</I18n>
 	</div>
@@ -123,17 +131,10 @@ const mutedWords = computed(() => mute.value.softMutedWords?.join(', '));
 const isExpanded = computed(() => props.skipMute || expandNote.value || !mute.value.hasMute);
 const rootClass = computed(() => isExpanded.value ? props.expandedClass : undefined);
 
-const instanceName = computed(() => {
-	if (props.note.user.instance?.name) {
-		if (props.note.user.instance.name.length <= 32) {
-			return props.note.user.instance.name;
-		}
-
-		return `${props.note.user.instance.name.substring(0, 30)}...`;
-	}
-
-	return props.note.user.host ?? host;
-});
+const userName = computed(() => props.note.user.host
+	? `@${props.note.user.username}@${props.note.user.host}`
+	: `@${props.note.user.username}`);
+const instanceName = computed(() => props.note.user.host ?? host);
 
 const rootEl = useTemplateRef('rootEl');
 defineExpose({

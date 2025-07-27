@@ -16,7 +16,8 @@ export interface Mute {
 	softMutedWords?: string[];
 	sensitiveMuted?: boolean;
 
-	isSilenced?: boolean;
+	userSilenced?: boolean;
+	instanceSilenced?: boolean;
 
 	threadMuted?: boolean;
 	noteMuted?: boolean;
@@ -110,7 +111,8 @@ function getMutes(note: Misskey.entities.Note, withHardMute: boolean, overrides:
 	const hardMuted = override.hardMuted ?? (!isMe && withHardMute && isHardMuted(note));
 	const softMutedWords = override.softMutedWords ?? (isMe ? [] : isSoftMuted(note));
 	const sensitiveMuted = override.sensitiveMuted ?? isSensitiveMuted(note);
-	const isSilenced = override.isSilenced ?? note.user.isSilencedForMe;
+	const userSilenced = override.userSilenced ?? note.user.isSilencedForMe;
+	const instanceSilenced = override.instanceSilenced ?? note.user.instance?.isSilencedForMe ?? false;
 	const threadMuted = override.threadMuted ?? (!isMe && note.isMutingThread);
 	const noteMuted = override.noteMuted ?? (!isMe && note.isMutingNote);
 	const noteMandatoryCW = override.noteMandatoryCW !== undefined
@@ -125,9 +127,9 @@ function getMutes(note: Misskey.entities.Note, withHardMute: boolean, overrides:
 			? note.user.instance.mandatoryCW
 			: null;
 
-	const hasMute = hardMuted || softMutedWords.length > 0 || sensitiveMuted || isSilenced || threadMuted || noteMuted || !!noteMandatoryCW || !!userMandatoryCW || !!instanceMandatoryCW;
+	const hasMute = hardMuted || softMutedWords.length > 0 || sensitiveMuted || userSilenced || instanceSilenced || threadMuted || noteMuted || !!noteMandatoryCW || !!userMandatoryCW || !!instanceMandatoryCW;
 
-	return { hasMute, hardMuted, softMutedWords, sensitiveMuted, isSilenced, threadMuted, noteMuted, noteMandatoryCW, userMandatoryCW, instanceMandatoryCW };
+	return { hasMute, hardMuted, softMutedWords, sensitiveMuted, userSilenced, instanceSilenced, threadMuted, noteMuted, noteMandatoryCW, userMandatoryCW, instanceMandatoryCW };
 }
 
 function isHardMuted(note: Misskey.entities.Note): boolean {

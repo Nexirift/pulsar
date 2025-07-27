@@ -12097,6 +12097,10 @@ export interface Locale extends ILocale {
      */
     "silencedUserSaysSomething": ParameterizedString<"name" | "host">;
     /**
+     * {name} has been silenced by {host} staff
+     */
+    "silencedInstanceSaysSomething": ParameterizedString<"name" | "host">;
+    /**
      * {name} is flagged: "{cw}"
      */
     "userIsFlaggedAs": ParameterizedString<"name" | "cw">;

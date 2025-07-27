@@ -4319,6 +4319,7 @@ export type components = {
         faviconUrl: string | null;
         themeColor: string | null;
         isSilenced: boolean;
+        isSilencedForMe: boolean;
         mandatoryCW: string | null;
       };
       followersCount: number;
