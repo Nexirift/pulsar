@@ -154,6 +154,10 @@ export function printError(error: unknown): string {
 				if ('id' in error.info.e && typeof (error.info.e.id) === 'string') return error.info.e.id;
 			}
 		}
+
+		if ('message' in error && typeof (error.message) === 'string') return error.message;
+		if ('code' in error && typeof (error.code) === 'string') return error.code;
+		if ('id' in error && typeof (error.id) === 'string') return error.id;
 	}
 
 	return String(error);
