@@ -6413,6 +6413,14 @@ export interface Locale extends ILocale {
          * E.g. In the sidebar, to visitors and in the "About" page.
          */
         "sidebarLogoUsageExample": string;
+        /**
+         * About instance
+         */
+        "aboutInstance": string;
+        /**
+         * A longer description that will be displayed in the 'Instance Information' page, going in place of the regular instance description. Supports HTML.
+         */
+        "aboutInstanceDescription": string;
     };
     "_accountMigration": {
         /**
