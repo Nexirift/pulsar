@@ -543,7 +543,7 @@ export class UserEntityService implements OnModuleInit {
 		let fetchPoliciesPromise: Promise<RolePolicies> | null = null;
 		const fetchPolicies = () => fetchPoliciesPromise ??= this.roleService.getUserPolicies(user);
 
-		const bypassSilence = isMe || (meId && myFollowings ? myFollowings.has(meId) : false);
+		const bypassSilence = isMe || (myFollowings ? myFollowings.has(user.id) : false);
 
 		const packed = {
 			id: user.id,
