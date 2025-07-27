@@ -68,9 +68,7 @@ export class ImportCustomEmojisProcessorService {
 			fs.writeFileSync(destPath, '', 'binary');
 			await this.downloadService.downloadUrl(file.url, destPath, { operationTimeout: this.config.import?.downloadTimeout, maxSize: this.config.import?.maxFileSize });
 		} catch (e) { // TODO: 何度か再試行
-			if (e instanceof Error || typeof e === 'string') {
-				this.logger.error('Error importing custom emojis:', e as Error);
-			}
+			this.logger.error(`Error importing custom emojis: ${renderInlineError(e)}`);
 			throw e;
 		}
 
