@@ -104,13 +104,13 @@ function init() {
 	nekoEl.value.style.left = `${nekoPosX - 16}px`;
 	nekoEl.value.style.top = `${nekoPosY - 16}px`;
 
-	window.document.addEventListener('mousemove', mouseCallback);
+	window.document.addEventListener('mousemove', mouseCallback, { passive: true });
 
 	window.requestAnimationFrame(onAnimationFrame);
 }
 
 function uninit() {
-	window.removeEventListener('mousemove', mouseCallback);
+	window.removeEventListener('mousemove', mouseCallback, { passive: true });
 }
 
 function onAnimationFrame(timestamp) {
