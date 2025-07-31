@@ -48,15 +48,55 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</MkPagination>
 				</div>
 			</MkFolder>
-			<MkInfo v-else>{{ i18n.ts._role.isConditionalRole }}</MkInfo>
+			<MkFolder v-else>
+				<template #icon><i class="ti ti-flask"></i></template>
+				<template #label>{{ i18n.ts._role.roleTester }}</template>
+				<div class="_gaps">
+					<div v-if="testUser == null">
+						<MkButton
+							transparent
+							:class="$style.userSelectButton"
+							@click="selectUser"
+						>
+							<div :class="$style.userSelectButtonInner">
+								<span><i class="ti ti-plus"></i></span>
+								<span>{{ i18n.ts.selectUser }}</span>
+							</div>
+						</MkButton>
+					</div>
+					<div v-else :class="$style.userSelectedButtons">
+						<div style="overflow: hidden;">
+							<MkUserCardMini
+								:user="testUser"
+								:withChart="false"
+								:class="$style.userSelectedCard"
+							/>
+						</div>
+						<div>
+							<button
+								class="_button"
+								:class="$style.userSelectedRemoveButton"
+								@click="removeUser"
+							>
+								<i class="ti ti-x"></i>
+							</button>
+						</div>
+					</div>
+					<div v-if="testUser != null">
+						<RolesTester v-model="role.condFormula"	:user="testUser"/>
+					</div>
+				</div>
+			</MkFolder>
 		</div>
 	</div>
 </PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, shallowRef } from 'vue';
 import XEditor from './roles.editor.vue';
+import RolesTester from './RolesTester.vue';
+import type * as Misskey from 'misskey-js';
 import MkFolder from '@/components/MkFolder.vue';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
@@ -64,9 +104,9 @@ import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import MkButton from '@/components/MkButton.vue';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
-import MkInfo from '@/components/MkInfo.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import { useRouter } from '@/router.js';
+import { instance } from '@/instance.js';
 
 const router = useRouter();
 
@@ -87,6 +127,8 @@ const expandedItems = ref([]);
 const role = reactive(await misskeyApi('admin/roles/show', {
 	roleId: props.id,
 }));
+
+const testUser = shallowRef<Misskey.entities.UserDetailed | null>(null);
 
 function edit() {
 	router.push('/admin/roles/' + role.id + '/edit');
@@ -172,6 +214,19 @@ definePage(() => ({
 	title: `${i18n.ts.role}: ${role.name}`,
 	icon: 'ti ti-badge',
 }));
+
+function selectUser() {
+	os.selectUser({
+		includeSelf: true,
+		localOnly: instance.noteSearchableScope === 'local',
+	}).then(_user => {
+		testUser.value = _user;
+	});
+}
+
+function removeUser() {
+	testUser.value = null;
+}
 </script>
 
 <style lang="scss" module>
@@ -211,5 +266,32 @@ definePage(() => ({
 	.chevron {
 		transform: rotateX(180deg);
 	}
+}
+
+.userSelectButton {
+	width: 100%;
+	height: 100%;
+	padding: 12px;
+	border: 2px dashed color(from var(--MI_THEME-fg) srgb r g b / 0.5);
+}
+
+.userSelectButtonInner {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	min-height: 38px;
+}
+
+.userSelectedButtons {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: center;
+}
+
+.userSelectedRemoveButton {
+	width: 32px;
+	height: 32px;
+	color: #ff2a2a;
 }
 </style>

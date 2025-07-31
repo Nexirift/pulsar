@@ -7782,6 +7782,10 @@ export interface Locale extends ILocale {
          * This condition may be incorrect for remote users.
          */
         "remoteDataWarning": string;
+        /**
+         * Role tester
+         */
+        "roleTester": string;
     };
     "_sensitiveMediaDetection": {
         /**
