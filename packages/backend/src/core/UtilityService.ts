@@ -223,8 +223,8 @@ export class UtilityService {
 	@bindThis
 	public isDeliverSuspendedSoftware(software: Pick<MiInstance, 'softwareName' | 'softwareVersion'>): SoftwareSuspension | undefined {
 		// a missing name or version is treated as the empty string
-		const instanceName = software.softwareName ?? '';
-		const instanceVersion = software.softwareVersion ?? '';
+		const softwareName = software.softwareName ?? '';
+		const softwareVersion = software.softwareVersion ?? '';
 
 		function maybeRegexpMatch(test: string, target: string): boolean {
 			const regexpStrPair = test.trim().match(/^\/(.+)\/(.*)$/);
@@ -244,12 +244,12 @@ export class UtilityService {
 			x => (
 				(
 					x.software.trim() === '*' ||
-						x.software === instanceName ||
-						maybeRegexpMatch(x.software, instanceName)
+						x.software === softwareName ||
+						maybeRegexpMatch(x.software, softwareName)
 				) && (
 					x.versionRange.trim() === '*' ||
-						semver.satisfies(instanceVersion, x.versionRange, { includePrerelease: true }) ||
-						maybeRegexpMatch(x.versionRange, instanceVersion)
+						semver.satisfies(softwareVersion, x.versionRange, { includePrerelease: true }) ||
+						maybeRegexpMatch(x.versionRange, softwareVersion)
 				)
 			)
 		);
