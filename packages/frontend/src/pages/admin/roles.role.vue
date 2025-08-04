@@ -172,7 +172,6 @@ definePage(() => ({
 	title: `${i18n.ts.role}: ${role.name}`,
 	icon: 'ti ti-badge',
 }));
-
 </script>
 
 <style lang="scss" module>
