@@ -7783,9 +7783,9 @@ export interface Locale extends ILocale {
          */
         "remoteDataWarning": string;
         /**
-         * Role tester
+         * Select a user to test the condition.
          */
-        "roleTester": string;
+        "selectTestUser": string;
     };
     "_sensitiveMediaDetection": {
         /**
