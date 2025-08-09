@@ -120,10 +120,13 @@ function getMutes(note: Misskey.entities.Note, withHardMute: boolean, overrides:
 		: (isMe ? null : note.mandatoryCW);
 	const userMandatoryCW = override.userMandatoryCW !== undefined
 		? override.userMandatoryCW
-		: (isMe ? null : note.user.mandatoryCW);
+		: !note.user.bypassSilence
+			? note.user.mandatoryCW
+			: null;
+
 	const instanceMandatoryCW = override.instanceMandatoryCW !== undefined
 		? override.instanceMandatoryCW
-		: (!isMe && note.user.instance)
+		: (!note.user.bypassSilence && note.user.instance)
 			? note.user.instance.mandatoryCW
 			: null;
 
