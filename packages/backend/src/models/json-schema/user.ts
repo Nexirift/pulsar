@@ -184,7 +184,7 @@ export const packedUserLiteSchema = {
 			type: 'boolean',
 			nullable: false, optional: false,
 		},
-		isSilencedForMe: {
+		bypassSilence: {
 			type: 'boolean',
 			nullable: false, optional: false,
 		},
@@ -229,10 +229,6 @@ export const packedUserLiteSchema = {
 					nullable: true, optional: false,
 				},
 				isSilenced: {
-					type: 'boolean',
-					nullable: false, optional: false,
-				},
-				isSilencedForMe: {
 					type: 'boolean',
 					nullable: false, optional: false,
 				},
