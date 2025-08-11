@@ -867,6 +867,7 @@ export class UserEntityService implements OnModuleInit {
 					userIdsByUri,
 					instances,
 					securityKeyCounts,
+					myFollowings,
 				},
 			)),
 		);
