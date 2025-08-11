@@ -15,7 +15,7 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { FanoutTimelineName, FanoutTimelineService } from '@/core/FanoutTimelineService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
-import { isQuote, isRenote } from '@/misc/is-renote.js';
+import { isPureRenote, isQuote, isRenote } from '@/misc/is-renote.js';
 import { CacheService } from '@/core/CacheService.js';
 import { isReply } from '@/misc/is-reply.js';
 import { isInstanceMuted } from '@/misc/is-instance-muted.js';
@@ -37,7 +37,9 @@ type TimelineOptions = {
 	excludeReplies?: boolean;
 	excludeBots?: boolean;
 	excludePureRenotes: boolean;
+	includeMutedNotes?: boolean;
 	ignoreAuthorFromUserSuspension?: boolean;
+	ignoreAuthorFromUserSilence?: boolean;
 	dbFallback: (untilId: string | null, sinceId: string | null, limit: number) => Promise<MiNote[]>,
 };
 
@@ -109,17 +111,24 @@ export class FanoutTimelineEndpointService {
 			}
 
 			if (ps.me) {
-				const me = ps.me;
 				const [
 					userIdsWhoMeMuting,
 					userIdsWhoMeMutingRenotes,
 					userIdsWhoBlockingMe,
 					userMutedInstances,
+					myFollowings,
+					myThreadMutings,
+					myNoteMutings,
+					me,
 				] = await Promise.all([
 					this.cacheService.userMutingsCache.fetch(ps.me.id),
 					this.cacheService.renoteMutingsCache.fetch(ps.me.id),
 					this.cacheService.userBlockedCache.fetch(ps.me.id),
-					this.cacheService.userProfileCache.fetch(me.id).then(p => new Set(p.mutedInstances)),
+					this.cacheService.userProfileCache.fetch(ps.me.id).then(p => new Set(p.mutedInstances)),
+					this.cacheService.userFollowingsCache.fetch(ps.me.id).then(fs => new Set(fs.keys())),
+					this.cacheService.threadMutingsCache.fetch(ps.me.id),
+					this.cacheService.noteMutingsCache.fetch(ps.me.id),
+					this.cacheService.findUserById(ps.me.id),
 				]);
 
 				const parentFilter = filter;
@@ -128,6 +137,25 @@ export class FanoutTimelineEndpointService {
 					if (isUserRelated(note, userIdsWhoMeMuting, ps.ignoreAuthorFromMute)) return false;
 					if (!ps.ignoreAuthorFromMute && isRenote(note) && !isQuote(note) && userIdsWhoMeMutingRenotes.has(note.userId)) return false;
 					if (isInstanceMuted(note, userMutedInstances)) return false;
+
+					// Silenced users (when logged in)
+					if (!ps.ignoreAuthorFromUserSilence && !myFollowings.has(note.userId)) {
+						if (note.user?.isSilenced || note.user?.instance?.isSilenced) return false;
+						if (note.reply?.user?.isSilenced || note.reply?.user?.instance?.isSilenced) return false;
+						if (note.renote?.user?.isSilenced || note.renote?.user?.instance?.isSilenced) return false;
+					}
+
+					// Muted threads / posts
+					if (!ps.includeMutedNotes) {
+						if (myThreadMutings.has(note.threadId ?? note.id) || myNoteMutings.has(note.id)) return false;
+						if (note.replyId && myNoteMutings.has(note.replyId)) return false;
+						if (note.renote && (myThreadMutings.has(note.renote.threadId ?? note.renote.id) || myNoteMutings.has(note.renote.id))) return false;
+					}
+
+					// Invisible notes
+					if (!this.noteEntityService.isVisibleForMeSync(note, me, myFollowings, userIdsWhoBlockingMe)) {
+						return false;
+					}
 
 					return parentFilter(note);
 				};
@@ -154,10 +182,24 @@ export class FanoutTimelineEndpointService {
 						replyUser: MiUser | null;
 					};
 					if (!ps.ignoreAuthorFromUserSuspension) {
-						if (note.user!.isSuspended) return false;
+						if (note.user?.isSuspended) return false;
 					}
 					if (note.userId !== note.renoteUserId && noteJoined.renoteUser?.isSuspended) return false;
 					if (note.userId !== note.replyUserId && noteJoined.replyUser?.isSuspended) return false;
+
+					return parentFilter(note);
+				};
+			}
+
+			{
+				const parentFilter = filter;
+				filter = (note) => {
+					// Silenced users (when logged out)
+					if (!ps.ignoreAuthorFromUserSilence && !ps.me) {
+						if (note.user?.isSilenced || note.user?.instance?.isSilenced) return false;
+						if (note.reply?.user?.isSilenced || note.reply?.user?.instance?.isSilenced) return false;
+						if (note.renote?.user?.isSilenced || note.renote?.user?.instance?.isSilenced) return false;
+					}
 
 					return parentFilter(note);
 				};
@@ -215,7 +257,13 @@ export class FanoutTimelineEndpointService {
 			.leftJoinAndSelect('note.channel', 'channel')
 			.leftJoinAndSelect('note.userInstance', 'userInstance')
 			.leftJoinAndSelect('note.replyUserInstance', 'replyUserInstance')
-			.leftJoinAndSelect('note.renoteUserInstance', 'renoteUserInstance');
+			.leftJoinAndSelect('note.renoteUserInstance', 'renoteUserInstance')
+
+			// These are used to ensure full data for boosted replies.
+			// Without loading these relations, certain filters may fail open.
+			.leftJoinAndSelect('renote.reply', 'renoteReply')
+			.leftJoinAndSelect('renote.reply.user', 'renoteReplyUser')
+			.leftJoinAndSelect('renote.replyUserInstance', 'renoteReplyUserInstance');
 
 		const notes = (await query.getMany()).filter(noteFilter);
 
