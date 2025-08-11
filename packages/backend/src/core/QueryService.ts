@@ -285,7 +285,27 @@ export class QueryService {
 	@bindThis
 	public leftJoin<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, relation: string, alias: string, condition?: string): SelectQueryBuilder<E> {
 		// Skip if it's already joined, otherwise we'll get an error
-		if (!q.expressionMap.joinAttributes.some(j => j.alias.name === alias)) {
+		const join = q.expressionMap.joinAttributes.find(j => j.alias.name === alias);
+		if (join) {
+			const oldRelation = typeof(join.entityOrProperty) === 'function'
+				? join.entityOrProperty.name
+				: join.entityOrProperty;
+
+			const oldQuery = join.condition
+				? `JOIN ${oldRelation} AS ${alias} ON ${join.condition}`
+				: `JOIN ${oldRelation} AS ${alias}`;
+			const newQuery = condition
+				? `JOIN ${relation} AS ${alias} ON ${oldRelation}`
+				: `JOIN ${relation} AS ${alias}`;
+
+			if (oldRelation !== relation) {
+				throw new Error(`Query error: cannot add ${newQuery}: alias already used by ${oldQuery}`);
+			}
+
+			if (join.condition !== condition) {
+				throw new Error(`Query error: cannot add ${newQuery}: relation already defined with different condition by ${oldQuery}`);
+			}
+		} else {
 			q.leftJoin(relation, alias, condition);
 		}
 
