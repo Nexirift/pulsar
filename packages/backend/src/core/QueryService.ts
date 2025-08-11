@@ -166,7 +166,7 @@ export class QueryService {
 	// For moderation purposes, you can set isSilenced to forcibly hide existing posts by a user.
 	@bindThis
 	public generateVisibilityQuery<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me?: { id: MiUser['id'] } | null): SelectQueryBuilder<E> {
-		// This code must always be synchronized with the checks in Notes.isVisibleForMe.
+		// This code must always be synchronized with the checks in NoteEntityService.isVisibleForMe.
 		return q.andWhere(new Brackets(qb => {
 			// Public post
 			qb.orWhere('note.visibility = \'public\'')
