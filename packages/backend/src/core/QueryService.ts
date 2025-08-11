@@ -106,11 +106,24 @@ export class QueryService {
 
 	@bindThis
 	public generateMutedNoteThreadQuery<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me: { id: MiUser['id'] }): SelectQueryBuilder<E> {
+		// Muted thread
+		this.andNotMutingThread(q, ':meId', 'coalesce(note.threadId, note.id)');
+
+		// Muted note
+		this.andNotMutingNote(q, ':meId', 'note.id');
+
+		q.andWhere(new Brackets(qb => qb
+			.orWhere('note.renoteId IS NULL')
+			.orWhere(new Brackets(qbb => {
+				// Renote muted thread
+				this.andNotMutingThread(qbb, ':meId', 'coalesce(renote.threadId, renote.id)');
+
+				// Renote muted note
+				this.andNotMutingNote(qbb, ':meId', 'renote.id');
+			}))));
+
 		return this
-			.andNotMutingThread(q, ':meId', 'note.id')
-			.andWhere(new Brackets(qb => this
-				.orNotMutingThread(qb, ':meId', 'note.threadId')
-				.orWhere('note.threadId IS NULL')))
+			.leftJoin(q, 'note.renote', 'renote')
 			.setParameters({ meId: me.id });
 	}
 
@@ -581,7 +594,36 @@ export class QueryService {
 		const threadMutedQuery = this.noteThreadMutingsRepository.createQueryBuilder('threadMuted')
 			.select('1')
 			.andWhere(`threadMuted.userId = ${muterProp}`)
-			.andWhere(`threadMuted.threadId = ${muteeProp}`);
+			.andWhere(`threadMuted.threadId = ${muteeProp}`)
+			.andWhere('threadMuted.isPostMute = false');
+
+		return q[join](`NOT EXISTS (${threadMutedQuery.getQuery()})`, threadMutedQuery.getParameters());
+	}
+
+	/**
+	 * Adds OR condition that muterProp (user ID) is not muting muteeProp (note ID).
+	 * Both props should be expressions, not raw values.
+	 */
+	@bindThis
+	public orNotMutingNote<Q extends WhereExpressionBuilder>(q: Q, muterProp: string, muteeProp: string): Q {
+		return this.excludeMutingNote(q, muterProp, muteeProp, 'orWhere');
+	}
+
+	/**
+	 * Adds AND condition that muterProp (user ID) is not muting muteeProp (note ID).
+	 * Both props should be expressions, not raw values.
+	 */
+	@bindThis
+	public andNotMutingNote<Q extends WhereExpressionBuilder>(q: Q, muterProp: string, muteeProp: string): Q {
+		return this.excludeMutingNote(q, muterProp, muteeProp, 'andWhere');
+	}
+
+	private excludeMutingNote<Q extends WhereExpressionBuilder>(q: Q, muterProp: string, muteeProp: string, join: 'andWhere' | 'orWhere'): Q {
+		const threadMutedQuery = this.noteThreadMutingsRepository.createQueryBuilder('threadMuted')
+			.select('1')
+			.andWhere(`threadMuted.userId = ${muterProp}`)
+			.andWhere(`threadMuted.threadId = ${muteeProp}`)
+			.andWhere('threadMuted.isPostMute = true');
 
 		return q[join](`NOT EXISTS (${threadMutedQuery.getQuery()})`, threadMutedQuery.getParameters());
 	}
