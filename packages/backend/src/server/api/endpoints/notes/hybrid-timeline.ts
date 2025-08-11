@@ -145,14 +145,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				];
 			}
 
-			const [
-				followings,
-				mutedThreads,
-			] = await Promise.all([
-				this.cacheService.userFollowingsCache.fetch(me.id),
-				this.cacheService.threadMutingsCache.fetch(me.id),
-			]);
-
 			const redisTimeline = await this.fanoutTimelineEndpointService.timeline({
 				untilId,
 				sinceId,
@@ -164,17 +156,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				alwaysIncludeMyNotes: true,
 				excludePureRenotes: !ps.withRenotes,
 				excludeBots: !ps.withBots,
-				noteFilter: note => {
-					if (note.reply && note.reply.visibility === 'followers') {
-						if (!followings.has(note.reply.userId) && note.reply.userId !== me.id) return false;
-					}
-
-					if (mutedThreads.has(note.threadId ?? note.id)) {
-						return false;
-					}
-
-					return true;
-				},
 				dbFallback: async (untilId, sinceId, limit) => await this.getFromDb({
 					untilId,
 					sinceId,

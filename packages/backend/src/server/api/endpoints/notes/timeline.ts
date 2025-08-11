@@ -97,14 +97,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return await this.noteEntityService.packMany(timeline, me);
 			}
 
-			const [
-				followings,
-				threadMutings,
-			] = await Promise.all([
-				this.cacheService.userFollowingsCache.fetch(me.id),
-				this.cacheService.threadMutingsCache.fetch(me.id),
-			]);
-
 			const timeline = this.fanoutTimelineEndpointService.timeline({
 				untilId,
 				sinceId,
@@ -115,16 +107,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				redisTimelines: ps.withFiles ? [`homeTimelineWithFiles:${me.id}`] : [`homeTimeline:${me.id}`],
 				alwaysIncludeMyNotes: true,
 				excludePureRenotes: !ps.withRenotes,
-				noteFilter: note => {
-					if (note.reply && note.reply.visibility === 'followers') {
-						if (!followings.has(note.reply.userId) && note.reply.userId !== me.id) return false;
-					}
-					if (!ps.withBots && note.user?.isBot) return false;
-
-					if (threadMutings.has(note.threadId ?? note.id)) return false;
-
-					return true;
-				},
 				dbFallback: async (untilId, sinceId, limit) => await this.getFromDb({
 					untilId,
 					sinceId,

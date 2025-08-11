@@ -117,8 +117,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return await this.noteEntityService.packMany(timeline, me);
 			}
 
-			const mutedThreads = me ? await this.cacheService.threadMutingsCache.fetch(me.id) : null;
-
 			const timeline = await this.fanoutTimelineEndpointService.timeline({
 				untilId,
 				sinceId,
@@ -143,13 +141,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					withBots: ps.withBots,
 					withRenotes: ps.withRenotes,
 				}, me),
-				noteFilter: note => {
-					if (mutedThreads?.has(note.threadId ?? note.id)) {
-						return false;
-					}
-
-					return true;
-				},
 			});
 
 			if (me) {

@@ -134,8 +134,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.withReplies) redisTimelines.push(`userTimelineWithReplies:${ps.userId}`);
 			if (ps.withChannelNotes) redisTimelines.push(`userTimelineWithChannel:${ps.userId}`);
 
-			const isFollowing = me && (await this.cacheService.userFollowingsCache.fetch(me.id)).has(ps.userId);
-
 			const timeline = await this.fanoutTimelineEndpointService.timeline({
 				untilId,
 				sinceId,
@@ -147,14 +145,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				ignoreAuthorFromMute: true,
 				ignoreAuthorFromInstanceBlock: true,
 				ignoreAuthorFromUserSuspension: true,
+				ignoreAuthorFromUserSilence: true,
 				excludeReplies: ps.withChannelNotes && !ps.withReplies, // userTimelineWithChannel may include replies
 				excludeNoFiles: ps.withChannelNotes && ps.withFiles, // userTimelineWithChannel may include notes without files
 				excludePureRenotes: !ps.withRenotes,
 				excludeBots: !ps.withBots,
 				noteFilter: note => {
 					if (note.channel?.isSensitive && !isSelf) return false;
-					if (note.visibility === 'specified' && (!me || (me.id !== note.userId && !note.visibleUserIds.some(v => v === me.id)))) return false;
-					if (note.visibility === 'followers' && !isFollowing && !isSelf) return false;
 
 					// These are handled by DB fallback, but we duplicate them here in case a timeline was already populated with notes
 					if (!ps.withRepliesToSelf && note.reply?.userId === note.userId) return false;
