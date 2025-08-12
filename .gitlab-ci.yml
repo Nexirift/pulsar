@@ -120,19 +120,18 @@ merge_image_manifests:
       artifacts: false
     - job: get_image_tag
       artifacts: true
-  image: docker.io/alpine:latest
   image:
     name: mplatform/manifest-tool:alpine
     entrypoint: [""]
   script:
     - >-
-      manifest-tool
-        --username=${CI_REGISTRY_USER}
-        --password=${CI_REGISTRY_PASSWORD}
-        push from-args
-        --platforms linux/amd64,linux/arm64
-        --tags ${REGISTRY_PUSH_VERSION}
-        --template ${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_VERSION}-ARCH
+      manifest-tool \
+        --username=${CI_REGISTRY_USER} \
+        --password=${CI_REGISTRY_PASSWORD} \
+        push from-args \
+        --platforms linux/amd64,linux/arm64 \
+        --tags ${REGISTRY_PUSH_VERSION} \
+        --template ${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_VERSION}-ARCH \
         --target ${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_TAG}
   only:
     - stable
