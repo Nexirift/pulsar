@@ -449,26 +449,32 @@ export class QueryService {
 	/**
 	 * Adds OR condition that followerProp (user ID) is following followeeProp (user ID).
 	 * Both props should be expressions, not raw values.
+	 * If withReplies is set to a boolean, then this method will only count followings with the matching withReplies value.
 	 */
 	@bindThis
-	public orFollowingUser<Q extends WhereExpressionBuilder>(q: Q, followerProp: string, followeeProp: string): Q {
-		return this.addFollowingUser(q, followerProp, followeeProp, 'orWhere');
+	public orFollowingUser<Q extends WhereExpressionBuilder>(q: Q, followerProp: string, followeeProp: string, withReplies?: boolean): Q {
+		return this.addFollowingUser(q, followerProp, followeeProp, 'orWhere', withReplies);
 	}
 
 	/**
 	 * Adds AND condition that followerProp (user ID) is following followeeProp (user ID).
 	 * Both props should be expressions, not raw values.
+	 * If withReplies is set to a boolean, then this method will only count followings with the matching withReplies value.
 	 */
 	@bindThis
-	public andFollowingUser<Q extends WhereExpressionBuilder>(q: Q, followerProp: string, followeeProp: string): Q {
-		return this.addFollowingUser(q, followerProp, followeeProp, 'andWhere');
+	public andFollowingUser<Q extends WhereExpressionBuilder>(q: Q, followerProp: string, followeeProp: string, withReplies?: boolean): Q {
+		return this.addFollowingUser(q, followerProp, followeeProp, 'andWhere', withReplies);
 	}
 
-	private addFollowingUser<Q extends WhereExpressionBuilder>(q: Q, followerProp: string, followeeProp: string, join: 'andWhere' | 'orWhere'): Q {
+	private addFollowingUser<Q extends WhereExpressionBuilder>(q: Q, followerProp: string, followeeProp: string, join: 'andWhere' | 'orWhere', withReplies?: boolean): Q {
 		const followingQuery = this.followingsRepository.createQueryBuilder('following')
 			.select('1')
 			.andWhere(`following.followerId = ${followerProp}`)
 			.andWhere(`following.followeeId = ${followeeProp}`);
+
+		if (withReplies !== undefined) {
+			followingQuery.andWhere('following.withReplies = :withReplies', { withReplies });
+		}
 
 		return q[join](`EXISTS (${followingQuery.getQuery()})`, followingQuery.getParameters());
 	};
