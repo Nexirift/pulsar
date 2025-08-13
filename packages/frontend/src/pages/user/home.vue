@@ -266,8 +266,13 @@ function onExpandMute(note: Misskey.entities.Note) {
 			user: {
 				[props.user.id]: {
 					userMandatoryCW: null,
-					instanceMandatoryCW: null,
-					isSilenced: false,
+					userSilenced: false,
+				},
+				instance: {
+					[props.user.host ?? '']: {
+						instanceMandatoryCW: null,
+						instanceSilenced: false,
+					},
 				},
 			},
 		});

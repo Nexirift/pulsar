@@ -60,12 +60,13 @@ function onExpandNote(note: Misskey.entities.Note) {
 		user: {
 			[note.user.id]: {
 				userMandatoryCW: null,
-				isSilenced: false,
+				userSilenced: false,
 			},
 		},
 		instance: {
 			[note.user.host ?? '']: {
 				instanceMandatoryCW: null,
+				instanceSilenced: false,
 			},
 		},
 	});
