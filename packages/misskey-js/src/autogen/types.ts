@@ -4732,6 +4732,7 @@ export type components = {
       isMutingNote: boolean;
       isFavorited: boolean;
       isRenoted: boolean;
+      bypassSilence: boolean;
       emojis?: {
         [key: string]: string;
       };

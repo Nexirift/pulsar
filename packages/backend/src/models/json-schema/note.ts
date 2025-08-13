@@ -197,6 +197,10 @@ export const packedNoteSchema = {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
+		bypassSilence: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
 		emojis: {
 			type: 'object',
 			optional: true, nullable: false,

@@ -600,6 +600,7 @@ export class NoteEntityService implements OnModuleInit {
 			detail?: boolean;
 			skipHide?: boolean;
 			withReactionAndUserPairCache?: boolean;
+			bypassSilence?: boolean;
 			_hint_?: {
 				bufferedReactions: Map<MiNote['id'], { deltas: Record<string, number>; pairs: ([MiUser['id'], string])[] }> | null;
 				myReactions: Map<MiNote['id'], string | null>;
@@ -721,6 +722,7 @@ export class NoteEntityService implements OnModuleInit {
 			isMutingNote: mutedNotes.has(note.id),
 			isFavorited,
 			isRenoted,
+			bypassSilence: opts.bypassSilence ?? false,
 
 			...(meId && Object.keys(reactions).length > 0 ? {
 				myReaction: this.populateMyReaction({
@@ -739,6 +741,9 @@ export class NoteEntityService implements OnModuleInit {
 					skipHide: opts.skipHide,
 					withReactionAndUserPairCache: opts.withReactionAndUserPairCache,
 					_hint_: options?._hint_,
+
+					// Don't silence target of self-renote, since the outer note will already be silenced.
+					bypassSilence: options?.bypassSilence || note.userId === note.replyUserId,
 				}) : undefined,
 
 				renote: note.renoteId ? this.pack(note.renote ?? opts._hint_?.notes.get(note.renoteId) ?? note.renoteId, me, {
@@ -746,6 +751,9 @@ export class NoteEntityService implements OnModuleInit {
 					skipHide: opts.skipHide,
 					withReactionAndUserPairCache: opts.withReactionAndUserPairCache,
 					_hint_: options?._hint_,
+
+					// Don't silence target of self-reply, since the outer note will already be silenced.
+					bypassSilence: options?.bypassSilence || note.userId === note.renoteUserId,
 				}) : undefined,
 			} : {}),
 		});
@@ -771,6 +779,7 @@ export class NoteEntityService implements OnModuleInit {
 		options?: {
 			detail?: boolean;
 			skipHide?: boolean;
+			bypassSilence?: boolean;
 		},
 	) {
 		if (notes.length === 0) return [];

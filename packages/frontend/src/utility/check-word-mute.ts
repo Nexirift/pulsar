@@ -107,12 +107,13 @@ function getMutes(note: Misskey.entities.Note, withHardMute: boolean, overrides:
 	) : {};
 
 	const isMe = $i != null && $i.id === note.userId;
+	const bypassSilence = note.bypassSilence || note.user.bypassSilence;
 
 	const hardMuted = override.hardMuted ?? (!isMe && withHardMute && isHardMuted(note));
 	const softMutedWords = override.softMutedWords ?? (isMe ? [] : isSoftMuted(note));
 	const sensitiveMuted = override.sensitiveMuted ?? isSensitiveMuted(note);
-	const userSilenced = override.userSilenced ?? (note.user.isSilenced && !note.user.bypassSilence);
-	const instanceSilenced = override.instanceSilenced ?? (note.user.instance?.isSilenced && !note.user.bypassSilence) ?? false;
+	const userSilenced = override.userSilenced ?? (note.user.isSilenced && !bypassSilence);
+	const instanceSilenced = override.instanceSilenced ?? (note.user.instance?.isSilenced && !bypassSilence) ?? false;
 	const threadMuted = override.threadMuted ?? (!isMe && note.isMutingThread);
 	const noteMuted = override.noteMuted ?? (!isMe && note.isMutingNote);
 	const noteMandatoryCW = override.noteMandatoryCW !== undefined
@@ -120,13 +121,13 @@ function getMutes(note: Misskey.entities.Note, withHardMute: boolean, overrides:
 		: (isMe ? null : note.mandatoryCW);
 	const userMandatoryCW = override.userMandatoryCW !== undefined
 		? override.userMandatoryCW
-		: !note.user.bypassSilence
+		: !bypassSilence
 			? note.user.mandatoryCW
 			: null;
 
 	const instanceMandatoryCW = override.instanceMandatoryCW !== undefined
 		? override.instanceMandatoryCW
-		: (!note.user.bypassSilence && note.user.instance)
+		: (!bypassSilence && note.user.instance)
 			? note.user.instance.mandatoryCW
 			: null;
 
