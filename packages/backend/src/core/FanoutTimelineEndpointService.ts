@@ -202,18 +202,9 @@ export class FanoutTimelineEndpointService {
 			.innerJoinAndSelect('note.user', 'user')
 			.leftJoinAndSelect('note.reply', 'reply')
 			.leftJoinAndSelect('note.renote', 'renote')
-			.leftJoinAndSelect('reply.user', 'replyUser')
-			.leftJoinAndSelect('renote.user', 'renoteUser')
 			.leftJoinAndSelect('note.channel', 'channel')
-			.leftJoinAndSelect('note.userInstance', 'userInstance')
-			.leftJoinAndSelect('note.replyUserInstance', 'replyUserInstance')
-			.leftJoinAndSelect('note.renoteUserInstance', 'renoteUserInstance')
-
-			// These are used to ensure full data for boosted replies.
-			// Without loading these relations, certain filters may fail open.
-			.leftJoinAndSelect('renote.reply', 'renoteReply')
-			.leftJoinAndSelect('renote.reply.user', 'renoteReplyUser')
-			.leftJoinAndSelect('renote.replyUserInstance', 'renoteReplyUserInstance');
+			.leftJoinAndSelect('reply.user', 'replyUser')
+			.leftJoinAndSelect('renote.user', 'renoteUser');
 
 		const notes = (await query.getMany()).filter(noteFilter);
 
