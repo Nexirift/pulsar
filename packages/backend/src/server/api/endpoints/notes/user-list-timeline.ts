@@ -179,7 +179,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		this.queryService.generateBlockedHostQueryForNote(query);
 		this.queryService.generateSuspendedUserQueryForNote(query);
 		this.queryService.generateSilencedUserQueryForNotes(query, me, true);
-		this.queryService.generateMutedUserQueryForNotes(query, me);
+		this.queryService.generateMutedUserQueryForNotes(query, me, true);
 		this.queryService.generateBlockedUserQueryForNotes(query, me);
 
 		if (ps.withFiles) {
