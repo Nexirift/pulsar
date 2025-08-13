@@ -663,9 +663,14 @@ export class QueryService {
 		return q[join](`NOT EXISTS (${threadMutedQuery.getQuery()})`, threadMutedQuery.getParameters());
 	}
 
-	// Requirements: user replyUser renoteUser must be joined
 	@bindThis
-	public generateSuspendedUserQueryForNote(q: SelectQueryBuilder<any>, excludeAuthor?: boolean): void {
+	public generateSuspendedUserQueryForNote<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, excludeAuthor?: boolean): void {
+		this.leftJoin(q, 'note.user', 'user');
+		this.leftJoin(q, 'note.reply', 'reply');
+		this.leftJoin(q, 'note.renote', 'renote');
+		this.leftJoin(q, 'reply.user', 'replyUser');
+		this.leftJoin(q, 'renote.user', 'renoteUser');
+
 		if (excludeAuthor) {
 			const brakets = (user: string) => new Brackets(qb => qb
 				.where(`note.${user}Id IS NULL`)
