@@ -215,13 +215,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			query.andWhere('note.channelId IS NULL');
 		}
 
-		this.queryService.generateVisibilityQuery(query, me);
 		this.queryService.generateBlockedHostQueryForNote(query, true);
 		this.queryService.generateSuspendedUserQueryForNote(query, true);
 		this.queryService.generateSilencedUserQueryForNotes(query, me, true);
 		if (me) {
 			this.queryService.generateMutedUserQueryForNotes(query, me, true);
 			this.queryService.generateBlockedUserQueryForNotes(query, me);
+			this.queryService.generateMutedNoteThreadQuery(query, me);
 		}
 
 		if (ps.withFiles) {
@@ -239,13 +239,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		if (!ps.withRepliesToOthers && !ps.withRepliesToSelf) {
 			query.andWhere('reply.id IS NULL');
 		} else if (!ps.withRepliesToOthers) {
-			query.andWhere('(reply.id IS NULL OR reply."userId" = note."userId")');
+			this.queryService.generateExcludedRepliesQueryForNotes(query, me);
 		} else if (!ps.withRepliesToSelf) {
 			query.andWhere('(reply.id IS NULL OR reply."userId" != note."userId")');
 		}
 
 		if (!ps.withNonPublic) {
 			query.andWhere('note.visibility = \'public\'');
+		} else {
+			this.queryService.generateVisibilityQuery(query, me);
 		}
 
 		if (!ps.withBots) {

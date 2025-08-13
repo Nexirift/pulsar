@@ -92,7 +92,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.limit(ps.limit);
 
 			this.queryService.generateVisibilityQuery(query, me);
-			this.queryService.generateBlockedHostQueryForNote(query);
 			if (me) {
 				this.queryService.generateSilencedUserQueryForNotes(query, me);
 				this.queryService.generateMutedUserQueryForNotes(query, me);
@@ -101,10 +100,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.local) {
 				query.andWhere('note.userHost IS NULL');
+			} else {
+				this.queryService.generateBlockedHostQueryForNote(query);
 			}
 
-			if (ps.reply !== undefined) {
-				query.andWhere(ps.reply ? 'note.replyId IS NOT NULL' : 'note.replyId IS NULL');
+			if (ps.reply) {
+				this.queryService.generateExcludedRepliesQueryForNotes(query, me);
+			} else if (ps.reply === false) {
+				query.andWhere('note.replyId IS NULL');
 			}
 
 			if (ps.renote !== undefined) {

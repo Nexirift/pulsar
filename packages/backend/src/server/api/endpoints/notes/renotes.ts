@@ -97,6 +97,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (me) {
 				this.queryService.generateMutedUserQueryForNotes(query, me);
 				this.queryService.generateBlockedUserQueryForNotes(query, me);
+				this.queryService.generateMutedNoteThreadQuery(query, me);
 			}
 
 			const renotes = await query.limit(ps.limit).getMany();
