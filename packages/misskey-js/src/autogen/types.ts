@@ -4694,6 +4694,7 @@ export type components = {
       mandatoryCW?: string | null;
       /** Format: id */
       userId: string;
+      userHost: string | null;
       user: components['schemas']['UserLite'];
       /**
        * Format: id
