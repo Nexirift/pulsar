@@ -80,6 +80,35 @@ export class QueryService {
 		return q;
 	}
 
+	/**
+	 * Exclude replies from the queries, used for timelines.
+	 * withRepliesProp can be specified to additionally allow replies when a given property is true.
+	 * Must match logic NoteVisibilityService.shouldSilenceForFollowWithoutReplies.
+	 */
+	@bindThis
+	public generateExcludedRepliesQueryForNotes<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me?: { id: MiUser['id'] } | null, withRepliesProp?: string): SelectQueryBuilder<E> {
+		return q
+			.andWhere(new Brackets(qb => {
+				if (withRepliesProp) {
+					// Allow if query specifies it
+					qb.orWhere(`${withRepliesProp} = true`);
+				}
+
+				return this
+					// Allow if we're following w/ replies
+					.orFollowingUser(qb, ':meId', 'note.userId', true)
+					// Allow if it's not a reply
+					.orWhere('note.replyId IS NULL') // 返信ではない
+					// Allow if it's a self-reply (user replied to themself)
+					.orWhere('note.replyUserId = note.userId')
+					// Allow if it's a reply to me
+					.orWhere('note.replyUserId = :meId')
+					// Allow if it's my reply
+					.orWhere('note.userId = :meId');
+			}))
+			.setParameters({ meId: me?.id ?? null });
+	}
+
 	// ここでいうBlockedは被Blockedの意
 	@bindThis
 	public generateBlockedUserQueryForNotes<E extends ObjectLiteral>(q: SelectQueryBuilder<E>, me: { id: MiUser['id'] }): SelectQueryBuilder<E> {
