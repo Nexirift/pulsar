@@ -20,6 +20,7 @@ import { CacheService } from '@/core/CacheService.js';
 import { isReply } from '@/misc/is-reply.js';
 import { isInstanceMuted } from '@/misc/is-instance-muted.js';
 import { NoteVisibilityService, PopulatedNote } from '@/core/NoteVisibilityService.js';
+import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 
 type TimelineOptions = {
 	untilId: string | null,
@@ -58,6 +59,7 @@ export class FanoutTimelineEndpointService {
 		private fanoutTimelineService: FanoutTimelineService,
 		private utilityService: UtilityService,
 		private readonly noteVisibilityService: NoteVisibilityService,
+		private readonly federatedInstanceService: FederatedInstanceService,
 	) {
 	}
 
@@ -199,17 +201,88 @@ export class FanoutTimelineEndpointService {
 	private async getAndFilterFromDb(noteIds: string[], noteFilter: (note: MiNote) => boolean, idCompare: (a: string, b: string) => number): Promise<MiNote[]> {
 		const query = this.notesRepository.createQueryBuilder('note')
 			.where('note.id IN (:...noteIds)', { noteIds: noteIds })
-			.innerJoinAndSelect('note.user', 'user')
 			.leftJoinAndSelect('note.reply', 'reply')
 			.leftJoinAndSelect('note.renote', 'renote')
 			.leftJoinAndSelect('note.channel', 'channel')
-			.leftJoinAndSelect('reply.user', 'replyUser')
-			.leftJoinAndSelect('renote.user', 'renoteUser');
 
-		const notes = (await query.getMany()).filter(noteFilter);
+			// Needed for populated note
+			.leftJoinAndSelect('renote.renote', 'renoteRenote')
+			.leftJoinAndSelect('renote.reply', 'renoteReply')
+		;
 
-		notes.sort((a, b) => idCompare(a.id, b.id));
+		const notes = await query.getMany();
+
+		// Manually populate user/instance since it's cacheable and avoids many joins.
+		// These fields *must* be populated or NoteVisibilityService won't work right!
+		await this.populateUsers(notes);
+
+		notes.filter(noteFilter).sort((a, b) => idCompare(a.id, b.id));
 
 		return notes;
+	}
+
+	private async populateUsers(notes: MiNote[]): Promise<void> {
+		// Enumerate users and instances
+		const usersToFetch = new Set<string>();
+		const instancesToFetch = new Set<string>();
+		for (const note of notes) {
+			usersToFetch.add(note.userId);
+			if (note.userHost) {
+				instancesToFetch.add(note.userHost);
+			}
+			if (note.reply) {
+				usersToFetch.add(note.reply.userId);
+				if (note.replyUserHost) {
+					instancesToFetch.add(note.replyUserHost);
+				}
+			}
+			if (note.renote) {
+				usersToFetch.add(note.renote.userId);
+				if (note.renoteUserHost) {
+					instancesToFetch.add(note.renoteUserHost);
+				}
+				if (note.renote.reply) {
+					usersToFetch.add(note.renote.reply.userId);
+					if (note.renote.replyUserHost) {
+						instancesToFetch.add(note.renote.replyUserHost);
+					}
+				}
+				if (note.renote.renote) {
+					usersToFetch.add(note.renote.renote.userId);
+					if (note.renote.renoteUserHost) {
+						instancesToFetch.add(note.renote.renoteUserHost);
+					}
+				}
+			}
+		}
+
+		// Fetch everything and populate users
+		const [users, instances] = await Promise.all([
+			this.cacheService.getUsers(usersToFetch),
+			this.federatedInstanceService.federatedInstanceCache.fetchMany(instancesToFetch).then(i => new Map(i)),
+		]);
+		for (const [id, user] of Array.from(users)) {
+			users.set(id, {
+				...user,
+				instance: (user.host && instances.get(user.host)) || null,
+			});
+		}
+
+		// Assign users back to notes
+		for (const note of notes) {
+			note.user = users.get(note.userId) ?? null;
+			if (note.reply) {
+				note.reply.user = users.get(note.reply.userId) ?? null;
+			}
+			if (note.renote) {
+				note.renote.user = users.get(note.renote.userId) ?? null;
+				if (note.renote.reply) {
+					note.renote.reply.user = users.get(note.renote.reply.userId) ?? null;
+				}
+				if (note.renote.renote) {
+					note.renote.renote.user = users.get(note.renote.renote.userId) ?? null;
+				}
+			}
+		}
 	}
 }
