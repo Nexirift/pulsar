@@ -674,6 +674,8 @@ export class NoteEntityService implements OnModuleInit {
 					.getExists() : false),
 		]);
 
+		const bypassSilence = opts.bypassSilence || note.userId === meId;
+
 		const packed: Packed<'Note'> = await awaitAll({
 			id: note.id,
 			threadId,
@@ -722,7 +724,7 @@ export class NoteEntityService implements OnModuleInit {
 			isMutingNote: mutedNotes.has(note.id),
 			isFavorited,
 			isRenoted,
-			bypassSilence: opts.bypassSilence ?? false,
+			bypassSilence,
 
 			...(meId && Object.keys(reactions).length > 0 ? {
 				myReaction: this.populateMyReaction({
@@ -742,8 +744,8 @@ export class NoteEntityService implements OnModuleInit {
 					withReactionAndUserPairCache: opts.withReactionAndUserPairCache,
 					_hint_: options?._hint_,
 
-					// Don't silence target of self-renote, since the outer note will already be silenced.
-					bypassSilence: options?.bypassSilence || note.userId === note.replyUserId,
+					// Don't silence target of self-reply, since the outer note will already be silenced.
+					bypassSilence: bypassSilence || note.userId === note.replyUserId,
 				}) : undefined,
 
 				renote: note.renoteId ? this.pack(note.renote ?? opts._hint_?.notes.get(note.renoteId) ?? note.renoteId, me, {
@@ -752,8 +754,8 @@ export class NoteEntityService implements OnModuleInit {
 					withReactionAndUserPairCache: opts.withReactionAndUserPairCache,
 					_hint_: options?._hint_,
 
-					// Don't silence target of self-reply, since the outer note will already be silenced.
-					bypassSilence: options?.bypassSilence || note.userId === note.renoteUserId,
+					// Don't silence target of self-renote, since the outer note will already be silenced.
+					bypassSilence: bypassSilence || note.userId === note.renoteUserId,
 				}) : undefined,
 			} : {}),
 		});
