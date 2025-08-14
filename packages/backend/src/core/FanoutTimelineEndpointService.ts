@@ -101,7 +101,10 @@ export class FanoutTimelineEndpointService {
 
 			if (ps.excludeReplies) {
 				const parentFilter = filter;
-				filter = (note) => !isReply(note, ps.me?.id) && parentFilter(note);
+				filter = (note) => {
+					if (note.userId !== ps.me?.id && isReply(note, ps.me?.id)) return false;
+					return parentFilter(note);
+				};
 			}
 
 			if (ps.excludeBots) {
