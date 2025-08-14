@@ -134,10 +134,10 @@ export class FanoutTimelineEndpointService {
 				const parentFilter = filter;
 				filter = (note) => {
 					if (!ps.ignoreAuthorFromInstanceBlock) {
-						if (note.userInstance?.isBlocked) return false;
+						if (note.user?.instance?.isBlocked) return false;
 					}
-					if (note.userId !== note.renoteUserId && note.renoteUserInstance?.isBlocked) return false;
-					if (note.userId !== note.replyUserId && note.replyUserInstance?.isBlocked) return false;
+					if (note.userId !== note.renoteUserId && note.renote?.user?.instance?.isBlocked) return false;
+					if (note.userId !== note.replyUserId && note.reply?.user?.instance?.isBlocked) return false;
 
 					return parentFilter(note);
 				};
