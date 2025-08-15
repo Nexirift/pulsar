@@ -105,6 +105,10 @@ export class StreamingApiServerService implements OnApplicationShutdown {
 			perMessageDeflate: this.config.websocketCompression,
 		});
 
+		// ws library will kill the process if we don't catch unhandled exceptions.
+		// https://github.com/websockets/ws/issues/1354#issuecomment-1343117738
+		this.#wss.on('error', this.onWsError);
+
 		server.on('upgrade', async (request, socket, head) => {
 			if (request.url == null) {
 				socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
@@ -307,6 +311,7 @@ export class StreamingApiServerService implements OnApplicationShutdown {
 
 		this.#connections.clear();
 		this.#connectionsByClient.clear();
+		this.#wss.off('error', this.onWsError);
 
 		await new Promise<void>((resolve, reject) => {
 			this.#wss.close(err => {
@@ -314,5 +319,11 @@ export class StreamingApiServerService implements OnApplicationShutdown {
 				else resolve();
 			});
 		});
+	}
+
+	@bindThis
+	private async onWsError(error: unknown) {
+		this.#logger.error(`Unhandled error in streaming api: ${renderInlineError(error)}`);
+		this.#logger.debug('Error details:', { error });
 	}
 }
