@@ -3,11 +3,12 @@
 	"compilerOptions": {
 		"target": "ESNext",
 		"module": "ESNext",
-		"moduleResolution": "nodenext",
+		"moduleResolution": "node16",
 		"strict": true,
 		"strictFunctionTypes": true,
 		"strictNullChecks": true,
 		"esModuleInterop": true,
+		"incremental": true,
 		"lib": [
 			"esnext",
 		]

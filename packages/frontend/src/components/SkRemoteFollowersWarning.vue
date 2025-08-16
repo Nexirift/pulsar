@@ -1,19 +1,22 @@
 <!--
 SPDX-FileCopyrightText: hazelnoot and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Warning in the following feed/column that remote users may have incomplete/outdated activity.
 -->
 
 <template>
-<MkInfo v-if="showRemoteWarning" warn closable @close="close">
+<MkInfo v-if="showRemoteWarning" warn closable @close="closeWarning">
 	{{ i18n.ts.remoteFollowersWarning }}
 </MkInfo>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import type { FollowingFeedModel } from '@/types/following-feed.js';
 import { i18n } from '@/i18n.js';
 import MkInfo from '@/components/MkInfo.vue';
-import { followersTab, FollowingFeedModel } from '@/scripts/following-feed-utils.js';
+import { followersTab } from '@/types/following-feed.js';
 
 const props = defineProps<{
 	model: FollowingFeedModel,
@@ -26,7 +29,7 @@ const showRemoteWarning = computed(
 	() => userList.value === followersTab && !remoteWarningDismissed.value,
 );
 
-function close() {
+function closeWarning() {
 	remoteWarningDismissed.value = true;
 }
 </script>

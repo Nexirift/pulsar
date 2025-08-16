@@ -16,7 +16,9 @@
 		"experimentalDecorators": true,
 		"noImplicitReturns": true,
 		"esModuleInterop": true,
+		"verbatimModuleSyntax": true,
 		"skipLibCheck": true,
+		"incremental": true,
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./*"],

@@ -8,9 +8,12 @@ process.env.NODE_ENV = 'test';
 import { jest } from '@jest/globals';
 import { ModuleMocker } from 'jest-mock';
 import { Test } from '@nestjs/testing';
+import { NoOpCacheService } from '../misc/noOpCaches.js';
+import { FakeInternalEventService } from '../misc/FakeInternalEventService.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { AnnouncementService } from '@/core/AnnouncementService.js';
 import { AnnouncementEntityService } from '@/core/entities/AnnouncementEntityService.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
 import type {
 	AnnouncementReadsRepository,
 	AnnouncementsRepository,
@@ -24,6 +27,7 @@ import { CacheService } from '@/core/CacheService.js';
 import { IdService } from '@/core/IdService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { RoleService } from '@/core/RoleService.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import type { TestingModule } from '@nestjs/testing';
 import type { MockFunctionMetadata } from 'jest-mock';
@@ -38,13 +42,14 @@ describe('AnnouncementService', () => {
 	let announcementReadsRepository: AnnouncementReadsRepository;
 	let globalEventService: jest.Mocked<GlobalEventService>;
 	let moderationLogService: jest.Mocked<ModerationLogService>;
+	let roleService: jest.Mocked<RoleService>;
 
 	function createUser(data: Partial<MiUser> = {}) {
 		const un = secureRndstr(16);
 		return usersRepository.insert({
 			id: genAidx(Date.now()),
 			username: un,
-			usernameLower: un,
+			usernameLower: un.toLowerCase(),
 			...data,
 		})
 			.then(x => usersRepository.findOneByOrFail(x.identifiers[0]));
@@ -71,24 +76,31 @@ describe('AnnouncementService', () => {
 				AnnouncementEntityService,
 				CacheService,
 				IdService,
+				InternalEventService,
+				GlobalEventService,
+				ModerationLogService,
+				RoleService,
 			],
 		})
 			.useMocker((token) => {
-				if (token === GlobalEventService) {
-					return {
-						publishMainStream: jest.fn(),
-						publishBroadcastStream: jest.fn(),
-					};
-				} else if (token === ModerationLogService) {
-					return {
-						log: jest.fn(),
-					};
-				} else if (typeof token === 'function') {
+				if (typeof token === 'function') {
 					const mockMetadata = moduleMocker.getMetadata(token) as MockFunctionMetadata<any, any>;
 					const Mock = moduleMocker.generateFromMetadata(mockMetadata);
 					return new Mock();
 				}
 			})
+			.overrideProvider(GlobalEventService).useValue({
+				publishMainStream: jest.fn(),
+				publishBroadcastStream: jest.fn(),
+			} as unknown as GlobalEventService)
+			.overrideProvider(ModerationLogService).useValue({
+				log: jest.fn(),
+			})
+			.overrideProvider(RoleService).useValue({
+				getUserRoles: jest.fn((_) => []),
+			})
+			.overrideProvider(InternalEventService).useClass(FakeInternalEventService)
+			.overrideProvider(CacheService).useClass(NoOpCacheService)
 			.compile();
 
 		app.enableShutdownHooks();
@@ -99,6 +111,7 @@ describe('AnnouncementService', () => {
 		announcementReadsRepository = app.get<AnnouncementReadsRepository>(DI.announcementReadsRepository);
 		globalEventService = app.get<GlobalEventService>(GlobalEventService) as jest.Mocked<GlobalEventService>;
 		moderationLogService = app.get<ModerationLogService>(ModerationLogService) as jest.Mocked<ModerationLogService>;
+		roleService = app.get<RoleService>(RoleService) as jest.Mocked<RoleService>;
 	});
 
 	afterEach(async () => {

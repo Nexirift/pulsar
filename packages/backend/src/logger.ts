@@ -19,23 +19,35 @@ type Context = {
 type Level = 'error' | 'success' | 'warning' | 'debug' | 'info';
 
 export type Data = DataElement | DataElement[];
-export type DataElement = Record<string, unknown> | Error | string | null;
+export type DataElement = DataObject | Error | string | null;
+// https://stackoverflow.com/questions/61148466/typescript-type-that-matches-any-object-but-not-arrays
+export type DataObject = Record<string, unknown> | (object & { length?: never; });
+
+const levelFuncs = {
+	error: 'error',
+	warning: 'warn',
+	success: 'info',
+	info: 'log',
+	debug: 'debug',
+} as const satisfies Record<Level, keyof typeof console>;
 
 // eslint-disable-next-line import/no-default-export
 export default class Logger {
 	private context: Context;
 	private parentLogger: Logger | null = null;
+	public readonly verbose: boolean;
 
-	constructor(context: string, color?: KEYWORD) {
+	constructor(context: string, color?: KEYWORD, verbose?: boolean) {
 		this.context = {
 			name: context,
 			color: color,
 		};
+		this.verbose = verbose ?? envOption.verbose;
 	}
 
 	@bindThis
 	public createSubLogger(context: string, color?: KEYWORD): Logger {
-		const logger = new Logger(context, color);
+		const logger = new Logger(context, color, this.verbose);
 		logger.parentLogger = this;
 		return logger;
 	}
@@ -67,7 +79,9 @@ export default class Logger {
 			level === 'info' ? message :
 			null;
 
-		let log = `${l} ${worker}\t[${contexts.join(' ')}]\t${m}`;
+		let log = envOption.hideWorkerId
+			? `${l}\t[${contexts.join(' ')}]\t\t${m}`
+			: `${l} ${worker}\t[${contexts.join(' ')}]\t\t${m}`;
 		if (envOption.withLogTime) log = chalk.gray(time) + ' ' + log;
 
 		const args: unknown[] = [important ? chalk.bold(log) : log];
@@ -80,7 +94,7 @@ export default class Logger {
 		} else if (data != null) {
 			args.push(data);
 		}
-		console.log(...args);
+		console[levelFuncs[level]](...args);
 	}
 
 	@bindThis
@@ -108,7 +122,7 @@ export default class Logger {
 
 	@bindThis
 	public debug(message: string, data?: Data, important = false): void { // デバッグ用に使う(開発者に必要だが利用者に不要な情報)
-		if (process.env.NODE_ENV !== 'production' || envOption.verbose) {
+		if (process.env.NODE_ENV !== 'production' || this.verbose) {
 			this.log('debug', message, data, important);
 		}
 	}

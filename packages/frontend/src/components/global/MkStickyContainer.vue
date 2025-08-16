@@ -5,26 +5,31 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <template>
 <div ref="rootEl">
-	<div ref="headerEl" :class="$style.header">
+	<div ref="headerEl" :class="{ [$style.header]: sticky }">
 		<slot name="header"></slot>
 	</div>
 	<div
-		:class="$style.body"
+		:class="{ [$style.body]: sticky }"
 		:data-sticky-container-header-height="headerHeight"
 		:data-sticky-container-footer-height="footerHeight"
 	>
 		<slot></slot>
 	</div>
-	<div ref="footerEl" :class="$style.footer">
+	<div ref="footerEl" :class="{ [$style.footer]: sticky }">
 		<slot name="footer"></slot>
 	</div>
 </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, provide, inject, Ref, ref, watch, useTemplateRef } from 'vue';
+import { onMounted, onUnmounted, provide, inject, ref, watch, useTemplateRef } from 'vue';
+import { DI } from '@/di.js';
 
-import { CURRENT_STICKY_BOTTOM, CURRENT_STICKY_TOP } from '@@/js/const.js';
+withDefaults(defineProps<{
+	sticky?: boolean,
+}>(), {
+	sticky: true,
+});
 
 const rootEl = useTemplateRef('rootEl');
 const headerEl = useTemplateRef('headerEl');
@@ -32,13 +37,13 @@ const footerEl = useTemplateRef('footerEl');
 
 const headerHeight = ref<string | undefined>();
 const childStickyTop = ref(0);
-const parentStickyTop = inject<Ref<number>>(CURRENT_STICKY_TOP, ref(0));
-provide(CURRENT_STICKY_TOP, childStickyTop);
+const parentStickyTop = inject(DI.currentStickyTop, ref(0));
+provide(DI.currentStickyTop, childStickyTop);
 
 const footerHeight = ref<string | undefined>();
 const childStickyBottom = ref(0);
-const parentStickyBottom = inject<Ref<number>>(CURRENT_STICKY_BOTTOM, ref(0));
-provide(CURRENT_STICKY_BOTTOM, childStickyBottom);
+const parentStickyBottom = inject(DI.currentStickyBottom, ref(0));
+provide(DI.currentStickyBottom, childStickyBottom);
 
 const calc = () => {
 	// コンポーネントが表示されてないけどKeepAliveで残ってる場合などは null になる

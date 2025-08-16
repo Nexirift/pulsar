@@ -11,11 +11,12 @@ import { inspect } from 'node:util';
 import WebSocket, { ClientOptions } from 'ws';
 import fetch, { File, RequestInit, type Headers } from 'node-fetch';
 import { DataSource } from 'typeorm';
-import { JSDOM } from 'jsdom';
+import { load as cheerio } from 'cheerio/slim';
 import { type Response } from 'node-fetch';
 import Fastify from 'fastify';
 import { entities } from '../src/postgres.js';
 import { loadConfig } from '../src/config.js';
+import type { CheerioAPI } from 'cheerio/slim';
 import type * as misskey from 'misskey-js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
 import { validateContentTypeSetAsActivityPub } from '@/core/activitypub/misc/validator.js';
@@ -35,7 +36,7 @@ export type SystemWebhookPayload = {
 	createdAt: string;
 	type: string;
 	body: any;
-}
+};
 
 const config = loadConfig();
 export const port = config.port;
@@ -44,10 +45,6 @@ export const host = new URL(config.url).host;
 
 export const WEBHOOK_HOST = 'http://localhost:15080';
 export const WEBHOOK_PORT = 15080;
-
-export const cookie = (me: UserToken): string => {
-	return `token=${me.token};`;
-};
 
 export type ApiRequest<E extends keyof misskey.Endpoints, P extends misskey.Endpoints[E]['req'] = misskey.Endpoints[E]['req']> = {
 	endpoint: E,
@@ -468,7 +465,7 @@ export function makeStreamCatcher<T>(
 
 export type SimpleGetResponse = {
 	status: number,
-	body: any | JSDOM | null,
+	body: any | CheerioAPI | null,
 	type: string | null,
 	location: string | null
 };
@@ -499,7 +496,7 @@ export const simpleGet = async (path: string, accept = '*/*', cookie: any = unde
 
 	const body =
 		jsonTypes.includes(res.headers.get('content-type') ?? '') ? await res.json() :
-		htmlTypes.includes(res.headers.get('content-type') ?? '') ? new JSDOM(await res.text()) :
+		htmlTypes.includes(res.headers.get('content-type') ?? '') ? cheerio(await res.text()) :
 		await bodyExtractor(res);
 
 	return {
@@ -655,7 +652,7 @@ export async function sendEnvResetRequest() {
 
 // 与えられた値を強制的にエラーとみなす。この関数は型安全性を破壊するため、異常系のアサーション以外で用いられるべきではない。
 // FIXME(misskey-js): misskey-jsがエラー情報を公開するようになったらこの関数を廃止する
-export function castAsError(obj: Record<string, unknown>): { error: ApiError } {
+export function castAsError(obj: object | null | undefined): { error: ApiError } {
 	return obj as { error: ApiError };
 }
 
@@ -665,7 +662,9 @@ export async function captureWebhook<T = SystemWebhookPayload>(postAction: () =>
 	let timeoutHandle: NodeJS.Timeout | null = null;
 	const result = await new Promise<string>(async (resolve, reject) => {
 		fastify.all('/', async (req, res) => {
-			timeoutHandle && clearTimeout(timeoutHandle);
+			if (timeoutHandle) {
+				clearTimeout(timeoutHandle);
+			}
 
 			const body = JSON.stringify(req.body);
 			res.status(200).send('ok');
@@ -691,4 +690,19 @@ export async function captureWebhook<T = SystemWebhookPayload>(postAction: () =>
 	await fastify.close();
 
 	return JSON.parse(result) as T;
+}
+
+// the packed user inside each note returned by `users/notes` has the
+// latest `notesCount`, not the count at the time the note was
+// created, so we override it
+export function withNotesCount(notes: misskey.entities.Note[], count: number) {
+	return notes.map( note => {
+		return {
+			...note,
+			user: {
+				...note.user,
+				notesCount: count,
+			},
+		};
+	});
 }

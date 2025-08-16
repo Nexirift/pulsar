@@ -35,7 +35,8 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 // Up to 10 attempts, then 1 per minute
 const signinRateLimit: Keyed<RateLimit> = {
 	key: 'signin',
-	max: 10,
+	type: 'bucket',
+	size: 10,
 	dripRate: 1000 * 60,
 };
 
@@ -146,7 +147,7 @@ export class SigninApiService {
 
 		if (isSystemAccount(user)) {
 			return error(403, {
-				id: 's8dhsj9s-a93j-493j-ja9k-kas9sj20aml2',
+				id: 'ba4ba3bc-ef1e-4c74-ad88-1d2b7d69a100',
 			});
 		}
 
@@ -204,37 +205,37 @@ export class SigninApiService {
 			if (process.env.NODE_ENV !== 'test') {
 				if (this.meta.enableHcaptcha && this.meta.hcaptchaSecretKey) {
 					await this.captchaService.verifyHcaptcha(this.meta.hcaptchaSecretKey, body['hcaptcha-response']).catch(err => {
-						throw new FastifyReplyError(400, err);
+						throw new FastifyReplyError(400, String(err), err);
 					});
 				}
 
 				if (this.meta.enableMcaptcha && this.meta.mcaptchaSecretKey && this.meta.mcaptchaSitekey && this.meta.mcaptchaInstanceUrl) {
 					await this.captchaService.verifyMcaptcha(this.meta.mcaptchaSecretKey, this.meta.mcaptchaSitekey, this.meta.mcaptchaInstanceUrl, body['m-captcha-response']).catch(err => {
-						throw new FastifyReplyError(400, err);
+						throw new FastifyReplyError(400, String(err), err);
 					});
 				}
 
 				if (this.meta.enableFC && this.meta.fcSecretKey) {
 					await this.captchaService.verifyFriendlyCaptcha(this.meta.fcSecretKey, body['frc-captcha-solution']).catch(err => {
-						throw new FastifyReplyError(400, err);
+						throw new FastifyReplyError(400, String(err), err);
 					});
 				}
 
 				if (this.meta.enableRecaptcha && this.meta.recaptchaSecretKey) {
 					await this.captchaService.verifyRecaptcha(this.meta.recaptchaSecretKey, body['g-recaptcha-response']).catch(err => {
-						throw new FastifyReplyError(400, err);
+						throw new FastifyReplyError(400, String(err), err);
 					});
 				}
 
 				if (this.meta.enableTurnstile && this.meta.turnstileSecretKey) {
 					await this.captchaService.verifyTurnstile(this.meta.turnstileSecretKey, body['turnstile-response']).catch(err => {
-						throw new FastifyReplyError(400, err);
+						throw new FastifyReplyError(400, String(err), err);
 					});
 				}
 
 				if (this.meta.enableTestcaptcha) {
 					await this.captchaService.verifyTestcaptcha(body['testcaptcha-response']).catch(err => {
-						throw new FastifyReplyError(400, err);
+						throw new FastifyReplyError(400, String(err), err);
 					});
 				}
 			}
@@ -243,7 +244,7 @@ export class SigninApiService {
 				if (profile.password!.startsWith('$2')) {
 					const newHash = await argon2.hash(password);
 					this.userProfilesRepository.update(user.id, {
-						password: newHash
+						password: newHash,
 					});
 				}
 				if (!this.meta.approvalRequiredForSignup && !user.approved) this.usersRepository.update(user.id, { approved: true });
@@ -267,7 +268,7 @@ export class SigninApiService {
 				if (profile.password!.startsWith('$2')) {
 					const newHash = await argon2.hash(password);
 					this.userProfilesRepository.update(user.id, {
-						password: newHash
+						password: newHash,
 					});
 				}
 				await this.userAuthService.twoFactorAuthenticate(profile, token);

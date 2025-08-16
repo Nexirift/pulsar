@@ -7,16 +7,18 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { describe, jest, test } from '@jest/globals';
 import { In } from 'typeorm';
 import { UserSearchService } from '@/core/UserSearchService.js';
-import { FollowingsRepository, MiUser, UserProfilesRepository, UsersRepository } from '@/models/_.js';
+import { FollowingsRepository, InstancesRepository, MiUser, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { genAidx } from '@/misc/id/aidx.js';
 
 describe('UserSearchService', () => {
 	let app: TestingModule;
 	let service: UserSearchService;
 
+	let instancesRepository: InstancesRepository;
 	let usersRepository: UsersRepository;
 	let followingsRepository: FollowingsRepository;
 	let idService: IdService;
@@ -35,6 +37,19 @@ describe('UserSearchService', () => {
 	let bobby: MiUser;
 
 	async function createUser(data: Partial<MiUser> = {}) {
+		if (data.host != null) {
+			await instancesRepository
+				.createQueryBuilder('instance')
+				.insert()
+				.values({
+					id: genAidx(Date.now()),
+					firstRetrievedAt: new Date(),
+					host: data.host,
+				})
+				.orIgnore()
+				.execute();
+		}
+
 		const user = await usersRepository
 			.insert({
 				id: idService.gen(),
@@ -104,6 +119,7 @@ describe('UserSearchService', () => {
 
 		await app.init();
 
+		instancesRepository = app.get<InstancesRepository>(DI.instancesRepository);
 		usersRepository = app.get(DI.usersRepository);
 		userProfilesRepository = app.get(DI.userProfilesRepository);
 		followingsRepository = app.get(DI.followingsRepository);
@@ -113,7 +129,7 @@ describe('UserSearchService', () => {
 	});
 
 	beforeEach(async () => {
-		root = await createUser({ username: 'root', usernameLower: 'root', isRoot: true });
+		root = await createUser({ username: 'root', usernameLower: 'root' });
 		alice = await createUser({ username: 'Alice', usernameLower: 'alice' });
 		alyce = await createUser({ username: 'Alyce', usernameLower: 'alyce' });
 		alycia = await createUser({ username: 'Alycia', usernameLower: 'alycia' });
@@ -134,13 +150,13 @@ describe('UserSearchService', () => {
 		await app.close();
 	});
 
-	describe('search', () => {
+	describe('searchByUsernameAndHost', () => {
 		test('フォロー中のアクティブユーザのうち、"al"から始まる人が全員ヒットする', async () => {
 			await createFollowings(root, [alice, alyce, alycia, alysha, alyson, alyssa, bob, bobbi, bobbie, bobby]);
 			await setActive([alice, alyce, alyssa, bob, bobbi, bobbie, bobby]);
 			await setInactive([alycia, alysha, alyson]);
 
-			const result = await service.search(
+			const result = await service.searchByUsernameAndHost(
 				{ username: 'al' },
 				{ limit: 100 },
 				root,
@@ -154,7 +170,7 @@ describe('UserSearchService', () => {
 			await createFollowings(root, [alycia, alysha, alyson, alyssa, bob, bobbi, bobbie, bobby]);
 			await setInactive([alice, alyce, alycia, alysha, alyson, alyssa, bob, bobbi, bobbie, bobby]);
 
-			const result = await service.search(
+			const result = await service.searchByUsernameAndHost(
 				{ username: 'al' },
 				{ limit: 100 },
 				root,
@@ -168,7 +184,7 @@ describe('UserSearchService', () => {
 			await setActive([alysha, alyson, alyssa, bob, bobbi, bobbie, bobby]);
 			await setInactive([alice, alyce, alycia]);
 
-			const result = await service.search(
+			const result = await service.searchByUsernameAndHost(
 				{ username: 'al' },
 				{ limit: 100 },
 				root,
@@ -181,7 +197,7 @@ describe('UserSearchService', () => {
 		test('フォローしていない非アクティブユーザのうち、"al"から始まる人が全員ヒットする', async () => {
 			await setInactive([alice, alyce, alycia, alysha, alyson, alyssa, bob, bobbi, bobbie, bobby]);
 
-			const result = await service.search(
+			const result = await service.searchByUsernameAndHost(
 				{ username: 'al' },
 				{ limit: 100 },
 				root,
@@ -195,7 +211,7 @@ describe('UserSearchService', () => {
 			await setActive([root, alyssa, bob, bobbi, alyce, alycia]);
 			await setInactive([alyson, alice, alysha, bobbie, bobby]);
 
-			const result = await service.search(
+			const result = await service.searchByUsernameAndHost(
 				{ },
 				{ limit: 100 },
 				root,
@@ -216,7 +232,7 @@ describe('UserSearchService', () => {
 			await setActive([alysha, alyson, alyssa, bob, bobbi, bobbie, bobby]);
 			await setInactive([alice, alyce, alycia]);
 
-			const result = await service.search(
+			const result = await service.searchByUsernameAndHost(
 				{ username: 'al' },
 				{ limit: 100 },
 			);
@@ -228,7 +244,7 @@ describe('UserSearchService', () => {
 		test('[非ログイン] 非アクティブユーザのうち、"al"から始まる人が全員ヒットする', async () => {
 			await setInactive([alice, alyce, alycia, alysha, alyson, alyssa, bob, bobbi, bobbie, bobby]);
 
-			const result = await service.search(
+			const result = await service.searchByUsernameAndHost(
 				{ username: 'al' },
 				{ limit: 100 },
 			);
@@ -240,7 +256,7 @@ describe('UserSearchService', () => {
 			await createFollowings(root, [alice, alyce, alycia, alysha, alyson, alyssa, bob, bobbi, bobbie, bobby]);
 			await setActive([alice, alyce, alycia, alysha, alyson, alyssa, bob, bobbi, bobbie, bobby]);
 
-			const result = await service.search(
+			const result = await service.searchByUsernameAndHost(
 				{ username: 'al', host: 'exam' },
 				{ limit: 100 },
 				root,
@@ -253,7 +269,7 @@ describe('UserSearchService', () => {
 			await setActive([alice, alyce, alycia, alysha, alyson, alyssa, bob, bobbi, bobbie, bobby]);
 			await setSuspended([alice, alyce, alycia]);
 
-			const result = await service.search(
+			const result = await service.searchByUsernameAndHost(
 				{ username: 'al' },
 				{ limit: 100 },
 				root,

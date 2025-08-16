@@ -1,6 +1,8 @@
 <!--
 SPDX-FileCopyrightText: syuilo and other misskey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Simple view of a note in the Sharkey style. Used in quote renotes, link previews, etc.
 -->
 
 <template>
@@ -28,7 +30,7 @@ import { computeMergedCw } from '@@/js/compute-merged-cw.js';
 import MkNoteHeader from '@/components/MkNoteHeader.vue';
 import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
 import MkCwButton from '@/components/MkCwButton.vue';
-import { defaultStore } from '@/store.js';
+import { prefer } from '@/preferences.js';
 
 const props = defineProps<{
 	note: Misskey.entities.Note;
@@ -36,7 +38,7 @@ const props = defineProps<{
 	hideFiles?: boolean;
 }>();
 
-let showContent = ref(defaultStore.state.uncollapseCW);
+let showContent = ref(prefer.s.uncollapseCW);
 
 const mergedCW = computed(() => computeMergedCw(props.note));
 

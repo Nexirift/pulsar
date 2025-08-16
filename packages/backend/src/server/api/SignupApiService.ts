@@ -4,11 +4,10 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-//import bcrypt from 'bcryptjs';
 import * as argon2 from 'argon2';
 import { IsNull } from 'typeorm';
 import { DI } from '@/di-symbols.js';
-import type { RegistrationTicketsRepository, UsedUsernamesRepository, UserPendingsRepository, UserProfilesRepository, UsersRepository, MiRegistrationTicket, MiMeta } from '@/models/_.js';
+import type { RegistrationTicketsRepository, UsedUsernamesRepository, UserPendingsRepository, UserProfilesRepository, UsersRepository, MiRegistrationTicket, MiMeta, UserIpsRepository } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import { CaptchaService } from '@/core/CaptchaService.js';
 import { IdService } from '@/core/IdService.js';
@@ -20,11 +19,14 @@ import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
 import { bindThis } from '@/decorators.js';
 import { L_CHARS, secureRndstr } from '@/misc/secure-rndstr.js';
 import { RoleService } from '@/core/RoleService.js';
+import Logger from '@/logger.js';
+import { LoggerService } from '@/core/LoggerService.js';
 import { SigninService } from './SigninService.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
 @Injectable()
 export class SignupApiService {
+	private logger: Logger;
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
@@ -47,6 +49,9 @@ export class SignupApiService {
 		@Inject(DI.registrationTicketsRepository)
 		private registrationTicketsRepository: RegistrationTicketsRepository,
 
+		@Inject(DI.userIpsRepository)
+		private userIpsRepository: UserIpsRepository,
+
 		private userEntityService: UserEntityService,
 		private idService: IdService,
 		private captchaService: CaptchaService,
@@ -54,7 +59,9 @@ export class SignupApiService {
 		private signinService: SigninService,
 		private emailService: EmailService,
 		private roleService: RoleService,
+		private loggerService: LoggerService,
 	) {
+		this.logger = this.loggerService.getLogger('Signup');
 	}
 
 	@bindThis
@@ -84,37 +91,37 @@ export class SignupApiService {
 		if (process.env.NODE_ENV !== 'test') {
 			if (this.meta.enableHcaptcha && this.meta.hcaptchaSecretKey) {
 				await this.captchaService.verifyHcaptcha(this.meta.hcaptchaSecretKey, body['hcaptcha-response']).catch(err => {
-					throw new FastifyReplyError(400, err);
+					throw new FastifyReplyError(400, String(err), err);
 				});
 			}
 
 			if (this.meta.enableMcaptcha && this.meta.mcaptchaSecretKey && this.meta.mcaptchaSitekey && this.meta.mcaptchaInstanceUrl) {
 				await this.captchaService.verifyMcaptcha(this.meta.mcaptchaSecretKey, this.meta.mcaptchaSitekey, this.meta.mcaptchaInstanceUrl, body['m-captcha-response']).catch(err => {
-					throw new FastifyReplyError(400, err);
+					throw new FastifyReplyError(400, String(err), err);
 				});
 			}
 
 			if (this.meta.enableRecaptcha && this.meta.recaptchaSecretKey) {
 				await this.captchaService.verifyRecaptcha(this.meta.recaptchaSecretKey, body['g-recaptcha-response']).catch(err => {
-					throw new FastifyReplyError(400, err);
+					throw new FastifyReplyError(400, String(err), err);
 				});
 			}
 
 			if (this.meta.enableTurnstile && this.meta.turnstileSecretKey) {
 				await this.captchaService.verifyTurnstile(this.meta.turnstileSecretKey, body['turnstile-response']).catch(err => {
-					throw new FastifyReplyError(400, err);
+					throw new FastifyReplyError(400, String(err), err);
 				});
 			}
 
 			if (this.meta.enableFC && this.meta.fcSecretKey) {
 				await this.captchaService.verifyFriendlyCaptcha(this.meta.fcSecretKey, body['frc-captcha-solution']).catch(err => {
-					throw new FastifyReplyError(400, err);
+					throw new FastifyReplyError(400, String(err), err);
 				});
 			}
 
 			if (this.meta.enableTestcaptcha) {
 				await this.captchaService.verifyTestcaptcha(body['testcaptcha-response']).catch(err => {
-					throw new FastifyReplyError(400, err);
+					throw new FastifyReplyError(400, String(err), err);
 				});
 			}
 		}
@@ -148,7 +155,7 @@ export class SignupApiService {
 
 		let ticket: MiRegistrationTicket | null = null;
 
-		if (this.meta.disableRegistration) {
+		if (this.meta.disableRegistration && process.env.NODE_ENV !== 'test') {
 			if (invitationCode == null || typeof invitationCode !== 'string') {
 				reply.code(400);
 				return;
@@ -205,7 +212,6 @@ export class SignupApiService {
 			const code = secureRndstr(16, { chars: L_CHARS });
 
 			// Generate hash of password
-			//const salt = await bcrypt.genSalt(8);
 			const hash = await argon2.hash(password);
 
 			const pendingUser = await this.userPendingsRepository.insertOne({
@@ -215,6 +221,7 @@ export class SignupApiService {
 				username: username,
 				password: hash,
 				reason: reason,
+				requestOriginIp: this.meta.enableIpLogging ? request.ip : null,
 			});
 
 			const link = `${this.config.url}/signup-complete/${code}`;
@@ -251,6 +258,10 @@ export class SignupApiService {
 				});
 			}
 
+			if (this.meta.enableIpLogging) {
+				this.logIp(request.ip, null, account.id);
+			}
+
 			const moderators = await this.roleService.getModerators();
 
 			for (const moderator of moderators) {
@@ -284,12 +295,16 @@ export class SignupApiService {
 					});
 				}
 
+				if (this.meta.enableIpLogging) {
+					this.logIp(request.ip, null, account.id);
+				}
+
 				return {
 					...res,
 					token: secret,
 				};
 			} catch (err) {
-				throw new FastifyReplyError(400, typeof err === 'string' ? err : (err as Error).toString());
+				throw new FastifyReplyError(400, String(err), err);
 			}
 		}
 	}
@@ -334,6 +349,15 @@ export class SignupApiService {
 				});
 			}
 
+			if (pendingUser.requestOriginIp) {
+				this.logIp(pendingUser.requestOriginIp, this.idService.parse(pendingUser.id).date, account.id);
+			}
+
+			// The sign-up request and the confirmation may've come from different addresses: log both
+			if (this.meta.enableIpLogging) {
+				this.logIp(request.ip, null, account.id);
+			}
+
 			if (this.meta.approvalRequiredForSignup) {
 				if (pendingUser.email) {
 					this.emailService.sendEmail(pendingUser.email, 'Approval pending',
@@ -358,7 +382,20 @@ export class SignupApiService {
 
 			return this.signinService.signin(request, reply, account as MiLocalUser);
 		} catch (err) {
-			throw new FastifyReplyError(400, typeof err === 'string' ? err : (err as Error).toString());
+			throw new FastifyReplyError(400, String(err), err);
+		}
+	}
+
+	@bindThis
+	private logIp(ip: string, ipDate: Date | null, userId: MiLocalUser['id']) {
+		try {
+			this.userIpsRepository.createQueryBuilder().insert().values({
+				createdAt: ipDate ?? new Date(),
+				userId,
+				ip,
+			}).orIgnore(true).execute();
+		} catch (err) {
+			this.logger.error(err as Error);
 		}
 	}
 }

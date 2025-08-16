@@ -7,10 +7,14 @@ import { URL, domainToASCII } from 'node:url';
 import { Inject, Injectable } from '@nestjs/common';
 import RE2 from 're2';
 import psl from 'psl';
+import semver from 'semver';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { bindThis } from '@/decorators.js';
-import { MiMeta } from '@/models/Meta.js';
+import type { MiMeta, SoftwareSuspension } from '@/models/Meta.js';
+import type { MiInstance } from '@/models/Instance.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { EnvService } from '@/core/EnvService.js';
 
 @Injectable()
 export class UtilityService {
@@ -20,6 +24,8 @@ export class UtilityService {
 
 		@Inject(DI.meta)
 		private meta: MiMeta,
+
+		private readonly envService: EnvService,
 	) {
 	}
 
@@ -39,22 +45,59 @@ export class UtilityService {
 		return this.punyHost(uri) === this.toPuny(this.config.host);
 	}
 
+	// メールアドレスのバリデーションを行う
+	// https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address
 	@bindThis
-	public isBlockedHost(blockedHosts: string[], host: string | null): boolean {
+	public validateEmailFormat(email: string): boolean {
+		// Note: replaced MK's complicated regex with a simpler one that is more efficient and reliable.
+		const regexp = /^.+@.+$/;
+		//const regexp = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+		return regexp.test(email);
+	}
+
+	public isBlockedHost(host: string | null): boolean;
+	public isBlockedHost(blockedHosts: string[], host: string | null): boolean;
+	@bindThis
+	public isBlockedHost(blockedHostsOrHost: string[] | string | null, host?: string | null): boolean {
+		const blockedHosts = Array.isArray(blockedHostsOrHost) ? blockedHostsOrHost : this.meta.blockedHosts;
+		host = Array.isArray(blockedHostsOrHost) ? host : blockedHostsOrHost;
+
 		if (host == null) return false;
 		return blockedHosts.some(x => `.${host.toLowerCase()}`.endsWith(`.${x}`));
 	}
 
+	public isSilencedHost(host: string | null): boolean;
+	public isSilencedHost(silencedHosts: string[], host: string | null): boolean;
 	@bindThis
-	public isSilencedHost(silencedHosts: string[] | undefined, host: string | null): boolean {
-		if (!silencedHosts || host == null) return false;
+	public isSilencedHost(silencedHostsOrHost: string[] | string | null, host?: string | null): boolean {
+		const silencedHosts = Array.isArray(silencedHostsOrHost) ? silencedHostsOrHost : this.meta.silencedHosts;
+		host = Array.isArray(silencedHostsOrHost) ? host : silencedHostsOrHost;
+
+		if (host == null) return false;
 		return silencedHosts.some(x => `.${host.toLowerCase()}`.endsWith(`.${x}`));
 	}
 
+	public isMediaSilencedHost(host: string | null): boolean;
+	public isMediaSilencedHost(silencedHosts: string[], host: string | null): boolean;
 	@bindThis
-	public isMediaSilencedHost(silencedHosts: string[] | undefined, host: string | null): boolean {
-		if (!silencedHosts || host == null) return false;
-		return silencedHosts.some(x => `.${host.toLowerCase()}`.endsWith(`.${x}`));
+	public isMediaSilencedHost(mediaSilencedHostsOrHost: string[] | string | null, host?: string | null): boolean {
+		const mediaSilencedHosts = Array.isArray(mediaSilencedHostsOrHost) ? mediaSilencedHostsOrHost : this.meta.mediaSilencedHosts;
+		host = Array.isArray(mediaSilencedHostsOrHost) ? host : mediaSilencedHostsOrHost;
+
+		if (host == null) return false;
+		return mediaSilencedHosts.some(x => `.${host.toLowerCase()}`.endsWith(`.${x}`));
+	}
+
+	@bindThis
+	public isAllowListedHost(host: string | null): boolean {
+		if (host == null) return false;
+		return this.meta.federationHosts.some(x => `.${host.toLowerCase()}`.endsWith(`.${x}`));
+	}
+
+	@bindThis
+	public isBubbledHost(host: string | null): boolean {
+		if (host == null) return false;
+		return this.meta.bubbleInstances.some(x => `.${host.toLowerCase()}`.endsWith(`.${x}`));
 	}
 
 	@bindThis
@@ -106,13 +149,22 @@ export class UtilityService {
 
 	@bindThis
 	public toPuny(host: string): string {
-		return domainToASCII(host.toLowerCase());
+		// domainToASCII will return an empty string if we give it a
+		// string like `name:123`, but `host` may well be in that form
+		// (e.g. when testing locally, you'll get `localhost:3000`); split
+		// the port off, and add it back later
+		const hostParts = host.toLowerCase().match(/^(.+?)(:.+)?$/);
+		if (!hostParts) return '';
+		const hostname = hostParts[1];
+		const port = hostParts[2] ?? '';
+
+		return domainToASCII(hostname) + port;
 	}
 
 	@bindThis
 	public toPunyNullable(host: string | null | undefined): string | null {
 		if (host == null) return null;
-		return domainToASCII(host.toLowerCase());
+		return this.toPuny(host);
 	}
 
 	@bindThis
@@ -135,8 +187,8 @@ export class UtilityService {
 	}
 
 	@bindThis
-	public punyHostPSLDomain(url: string): string {
-		const urlObj = new URL(url);
+	public punyHostPSLDomain(url: string | URL): string {
+		const urlObj = typeof(url) === 'object' ? url : new URL(url);
 		const hostname = urlObj.hostname;
 		const domain = this.specialSuffix(hostname) ?? psl.get(hostname) ?? hostname;
 		const host = `${this.toPuny(domain)}${urlObj.port.length > 0 ? ':' + urlObj.port : ''}`;
@@ -156,5 +208,98 @@ export class UtilityService {
 	public isFederationAllowedUri(uri: string): boolean {
 		const host = this.extractDbHost(uri);
 		return this.isFederationAllowedHost(host);
+	}
+
+	@bindThis
+	public getUrlScheme(url: string): string {
+		try {
+			// Returns in the format "https:" or an empty string
+			return new URL(url).protocol;
+		} catch {
+			return '';
+		}
+	}
+
+	@bindThis
+	public isDeliverSuspendedSoftware(software: Pick<MiInstance, 'softwareName' | 'softwareVersion'>): SoftwareSuspension | undefined {
+		// a missing name or version is treated as the empty string
+		const softwareName = software.softwareName ?? '';
+		const softwareVersion = software.softwareVersion ?? '';
+
+		function maybeRegexpMatch(test: string, target: string): boolean {
+			const regexpStrPair = test.trim().match(/^\/(.+)\/(.*)$/);
+			if (!regexpStrPair) return false; // not a regexp, can't match
+
+			try {
+				return new RE2(regexpStrPair[1], regexpStrPair[2]).test(target);
+			} catch (err) {
+				return false; // not a well-formed regexp, can't match
+			}
+		}
+
+		// each element of `meta.deliverSuspendedSoftware` can have a
+		// normal string, a `*`, or a `/regexp/` for software or
+		// versionRange
+		return this.meta.deliverSuspendedSoftware.find(
+			x => (
+				(
+					x.software.trim() === '*' ||
+						x.software === softwareName ||
+						maybeRegexpMatch(x.software, softwareName)
+				) && (
+					x.versionRange.trim() === '*' ||
+						semver.satisfies(softwareVersion, x.versionRange, { includePrerelease: true }) ||
+						maybeRegexpMatch(x.versionRange, softwareVersion)
+				)
+			)
+		);
+	}
+
+	/**
+	 * Verifies that a provided URL is in a format acceptable for federation.
+	 * @throws {IdentifiableError} If URL cannot be parsed
+	 * @throws {IdentifiableError} If URL is not HTTPS
+	 * @throws {IdentifiableError} If URL contains credentials
+	 */
+	@bindThis
+	public assertUrl(url: string | URL, allowHttp?: boolean): URL | never {
+		// If string, parse and validate
+		if (typeof(url) === 'string') {
+			try {
+				url = new URL(url);
+			} catch {
+				throw new IdentifiableError('0bedd29b-e3bf-4604-af51-d3352e2518af', `invalid url ${url}: not a valid URL`);
+			}
+		}
+
+		// Must be HTTPS
+		if (!this.checkHttps(url, allowHttp)) {
+			throw new IdentifiableError('0bedd29b-e3bf-4604-af51-d3352e2518af', `invalid url ${url}: unsupported protocol ${url.protocol}`);
+		}
+
+		// Must not have credentials
+		if (url.username || url.password) {
+			throw new IdentifiableError('0bedd29b-e3bf-4604-af51-d3352e2518af', `invalid url ${url}: contains embedded credentials`);
+		}
+
+		return url;
+	}
+
+	/**
+	 * Checks if the URL contains HTTPS.
+	 * Additionally, allows HTTP in non-production environments.
+	 * Based on check-https.ts.
+	 */
+	@bindThis
+	public checkHttps(url: string | URL, allowHttp = false): boolean {
+		const isNonProd = this.envService.env.NODE_ENV !== 'production';
+
+		try {
+			const proto = new URL(url).protocol;
+			return proto === 'https:' || (proto === 'http:' && (isNonProd || allowHttp));
+		} catch {
+			// Invalid URLs don't "count" as HTTPS
+			return false;
+		}
 	}
 }

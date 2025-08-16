@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import { Inject, Injectable } from '@nestjs/common';
 import ms from 'ms';
-import { JSDOM } from 'jsdom';
 import { extractCustomEmojisFromMfm } from '@/misc/extract-custom-emojis-from-mfm.js';
 import { extractHashtags } from '@/misc/extract-hashtags.js';
 import * as Acct from '@/misc/acct.js';
@@ -31,8 +30,11 @@ import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.j
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import type { Config } from '@/config.js';
 import { safeForSql } from '@/misc/safe-for-sql.js';
+import { verifyFieldLinks } from '@/misc/verify-field-link.js';
 import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
 import { notificationRecieveConfig } from '@/models/json-schema/user.js';
+import { userUnsignedFetchOptions } from '@/const.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import { ApiLoggerService } from '../../ApiLoggerService.js';
 import { ApiError } from '../../error.js';
 
@@ -139,6 +141,13 @@ export const meta = {
 			code: 'MAX_CW_LENGTH',
 			id: '7004c478-bda3-4b4f-acb2-4316398c9d52',
 		},
+
+		maxBioLength: {
+			message: 'You tried setting a bio which is too long.',
+			code: 'MAX_BIO_LENGTH',
+			id: 'f3bb3543-8bd1-4e6d-9375-55efaf2b4102',
+			httpStatusCode: 422,
+		},
 	},
 
 	res: {
@@ -214,6 +223,7 @@ export const paramDef = {
 		autoSensitive: { type: 'boolean' },
 		followingVisibility: { type: 'string', enum: ['public', 'followers', 'private'] },
 		followersVisibility: { type: 'string', enum: ['public', 'followers', 'private'] },
+		chatScope: { type: 'string', enum: ['everyone', 'followers', 'following', 'mutual', 'none'] },
 		pinnedPageId: { type: 'string', format: 'misskey:id', nullable: true },
 		mutedWords: muteWords,
 		hardMutedWords: muteWords,
@@ -235,6 +245,7 @@ export const paramDef = {
 				receiveFollowRequest: notificationRecieveConfig,
 				followRequestAccepted: notificationRecieveConfig,
 				roleAssigned: notificationRecieveConfig,
+				chatRoomInvitationReceived: notificationRecieveConfig,
 				achievementEarned: notificationRecieveConfig,
 				app: notificationRecieveConfig,
 				test: notificationRecieveConfig,
@@ -254,6 +265,20 @@ export const paramDef = {
 			type: 'string',
 			enum: ['default', 'parent', 'defaultParent', 'parentDefault'],
 			nullable: false,
+		},
+		allowUnsignedFetch: {
+			type: 'string',
+			enum: userUnsignedFetchOptions,
+			nullable: false,
+		},
+		attributionDomains: {
+			type: 'array',
+			items: {
+				type: 'string',
+				minLength: 1,
+				maxLength: 128,
+			},
+			maxItems: 32,
 		},
 	},
 } as const;
@@ -311,7 +336,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					updates.name = trimmedName === '' ? null : trimmedName;
 				}
 			}
-			if (ps.description !== undefined) profileUpdates.description = ps.description;
+			if (ps.description !== undefined) {
+				if (ps.description && ps.description.length > this.config.maxBioLength) {
+					throw new ApiError(meta.errors.maxBioLength);
+				}
+				profileUpdates.description = ps.description;
+			};
 			if (ps.followedMessage !== undefined) profileUpdates.followedMessage = ps.followedMessage;
 			if (ps.lang !== undefined) profileUpdates.lang = ps.lang;
 			if (ps.location !== undefined) profileUpdates.location = ps.location;
@@ -319,10 +349,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.listenbrainz !== undefined) profileUpdates.listenbrainz = ps.listenbrainz;
 			if (ps.followingVisibility !== undefined) profileUpdates.followingVisibility = ps.followingVisibility;
 			if (ps.followersVisibility !== undefined) profileUpdates.followersVisibility = ps.followersVisibility;
+			if (ps.chatScope !== undefined) updates.chatScope = ps.chatScope;
 
 			function checkMuteWordCount(mutedWords: (string[] | string)[], limit: number) {
-				// TODO: ちゃんと数える
-				const length = JSON.stringify(mutedWords).length;
+				const length = mutedWords.reduce((sum, word) => {
+					const wordLength = Array.isArray(word)
+						? word.reduce((l, w) => l + w.length, 0)
+						: word.length;
+					return sum + wordLength;
+				}, 0);
+
 				if (length > limit) {
 					throw new ApiError(meta.errors.tooManyMutedWords);
 				}
@@ -359,6 +395,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 			if (ps.mutedInstances !== undefined) profileUpdates.mutedInstances = ps.mutedInstances;
 			if (ps.notificationRecieveConfig !== undefined) profileUpdates.notificationRecieveConfig = ps.notificationRecieveConfig;
+			if (ps.attributionDomains !== undefined) updates.attributionDomains = ps.attributionDomains;
 			if (typeof ps.isLocked === 'boolean') updates.isLocked = ps.isLocked;
 			if (typeof ps.isExplorable === 'boolean') updates.isExplorable = ps.isExplorable;
 			if (typeof ps.hideOnlineStatus === 'boolean') updates.hideOnlineStatus = ps.hideOnlineStatus;
@@ -492,7 +529,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 					// Retrieve the old account
 					const knownAs = await this.remoteUserResolveService.resolveUser(username, host).catch((e) => {
-						this.apiLoggerService.logger.warn(`failed to resolve dstination user: ${e}`);
+						this.apiLoggerService.logger.warn(`failed to resolve destination user: ${renderInlineError(e)}`);
 						throw new ApiError(meta.errors.noSuchUser);
 					});
 					if (knownAs.id === _user.id) throw new ApiError(meta.errors.forbiddenToSetYourself);
@@ -517,6 +554,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 			if (ps.defaultCWPriority !== undefined) {
 				profileUpdates.defaultCWPriority = ps.defaultCWPriority;
+			}
+
+			if (ps.allowUnsignedFetch !== undefined) {
+				updates.allowUnsignedFetch = ps.allowUnsignedFetch;
 			}
 
 			//#region emojis/tags
@@ -574,9 +615,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				this.globalEventService.publishInternalEvent('localUserUpdated', { id: user.id });
 			}
 
+			const profileUrls = [
+				this.userEntityService.genLocalUserUri(user.id),
+				`${this.config.url}/@${user.username}`,
+			];
+			const verifiedLinks = await verifyFieldLinks(newFields, profileUrls, this.httpRequestService);
+
 			await this.userProfilesRepository.update(user.id, {
 				...profileUpdates,
-				verifiedLinks: [],
+				verifiedLinks,
 			});
 
 			const iObj = await this.userEntityService.pack(user.id, user, {
@@ -586,7 +633,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const updatedProfile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
 
-			this.cacheService.userProfileCache.set(user.id, updatedProfile);
+			await this.cacheService.userProfileCache.set(user.id, updatedProfile);
 
 			// Publish meUpdated event
 			this.globalEventService.publishMainStream(user.id, 'meUpdated', iObj);
@@ -598,18 +645,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			// フォロワーにUpdateを配信
 			if (this.userNeedsPublishing(user, updates) || this.profileNeedsPublishing(profile, updatedProfile)) {
-				this.accountUpdateService.publishToFollowers(user.id);
-			}
-
-			const urls = updatedProfile.fields.filter(x => x.value.startsWith('https://'));
-			for (const url of urls) {
-				this.verifyLink(url.value, user);
+				this.accountUpdateService.publishToFollowers(user);
 			}
 
 			return iObj;
 		});
 	}
 
+	// this function is superseded by '@/misc/verify-field-link.ts'
+	/*
 	private async verifyLink(url: string, user: MiLocalUser) {
 		if (!safeForSql(url)) return;
 
@@ -641,11 +685,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// なにもしない
 		}
 	}
+	*/
 
 	// these two methods need to be kept in sync with
 	// `ApRendererService.renderPerson`
 	private userNeedsPublishing(oldUser: MiLocalUser, newUser: Partial<MiUser>): boolean {
-		const basicFields: (keyof MiUser)[] = ['avatarId', 'bannerId', 'backgroundId', 'isBot', 'username', 'name', 'isLocked', 'isExplorable', 'isCat', 'noindex', 'speakAsCat', 'movedToUri', 'alsoKnownAs', 'hideOnlineStatus', 'enableRss', 'requireSigninToViewContents', 'makeNotesFollowersOnlyBefore', 'makeNotesHiddenBefore'];
+		const basicFields: (keyof MiUser)[] = ['avatarId', 'bannerId', 'backgroundId', 'isBot', 'username', 'name', 'isLocked', 'isExplorable', 'isCat', 'noindex', 'speakAsCat', 'movedToUri', 'alsoKnownAs', 'hideOnlineStatus', 'enableRss', 'requireSigninToViewContents', 'makeNotesFollowersOnlyBefore', 'makeNotesHiddenBefore', 'attributionDomains'];
 		for (const field of basicFields) {
 			if ((field in newUser) && oldUser[field] !== newUser[field]) {
 				return true;

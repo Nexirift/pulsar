@@ -21,7 +21,9 @@
 		"allowSyntheticDefaultImports": true,
 		"isolatedModules": true,
 		"useDefineForClassFields": true,
+		"verbatimModuleSyntax": true,
 		"skipLibCheck": true,
+		"incremental": true,
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./src/*"],

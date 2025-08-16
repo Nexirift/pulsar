@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { userExportableEntities } from '@/types.js';
+import { userExportableEntities, userImportableEntities } from '@/types.js';
 import { MiUser } from './User.js';
 import { MiNote } from './Note.js';
 import { MiAccessToken } from './AccessToken.js';
@@ -76,6 +76,12 @@ export type MiNotification = {
 	createdAt: string;
 	roleId: MiRole['id'];
 } | {
+	type: 'chatRoomInvitationReceived';
+	id: string;
+	createdAt: string;
+	notifierId: MiUser['id'];
+	invitationId: string;
+} | {
 	type: 'achievementEarned';
 	id: string;
 	createdAt: string;
@@ -87,7 +93,17 @@ export type MiNotification = {
 	exportedEntity: typeof userExportableEntities[number];
 	fileId: MiDriveFile['id'];
 } | {
+	type: 'importCompleted';
+	id: string;
+	createdAt: string;
+	importedEntity: typeof userImportableEntities[number];
+	fileId?: MiDriveFile['id'];
+} | {
 	type: 'login';
+	id: string;
+	createdAt: string;
+} | {
+	type: 'createToken';
 	id: string;
 	createdAt: string;
 } | {

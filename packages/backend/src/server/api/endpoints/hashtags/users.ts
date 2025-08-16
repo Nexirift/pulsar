@@ -10,6 +10,7 @@ import { safeForSql } from "@/misc/safe-for-sql.js";
 import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { RoleService } from '@/core/RoleService.js';
 
 export const meta = {
 	requireCredential: false,
@@ -22,7 +23,7 @@ export const meta = {
 		items: {
 			type: 'object',
 			optional: false, nullable: false,
-			ref: 'UserDetailed',
+			ref: 'User',
 		},
 	},
 
@@ -41,6 +42,12 @@ export const paramDef = {
 		sort: { type: 'string', enum: ['+follower', '-follower', '+createdAt', '-createdAt', '+updatedAt', '-updatedAt'] },
 		state: { type: 'string', enum: ['all', 'alive'], default: 'all' },
 		origin: { type: 'string', enum: ['combined', 'local', 'remote'], default: 'local' },
+		trending: { type: 'boolean', default: false },
+		detail: {
+			type: 'boolean',
+			nullable: false,
+			default: true,
+		},
 	},
 	required: ['tag', 'sort'],
 } as const;
@@ -52,6 +59,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private usersRepository: UsersRepository,
 
 		private userEntityService: UserEntityService,
+		private readonly roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (!safeForSql(normalizeForSearch(ps.tag))) throw new Error('Injection');
@@ -80,9 +88,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				case '-updatedAt': query.orderBy('user.updatedAt', 'ASC'); break;
 			}
 
-			const users = await query.limit(ps.limit).getMany();
+			let users = await query.limit(ps.limit).getMany();
 
-			return await this.userEntityService.packMany(users, me, { schema: 'UserDetailed' });
+			// This is not ideal, for a couple of reasons:
+			// 1. It may return less than "limit" results.
+			// 2. A span of more than "limit" consecutive non-trendable users may cause the pagination to stop early.
+			// Unfortunately, there's no better solution unless we refactor role policies to be persisted to the DB.
+			if (ps.trending) {
+				const usersWithRoles = await Promise.all(users.map(async u => [u, await this.roleService.getUserPolicies(u)] as const));
+				users = usersWithRoles
+					.filter(([,p]) => p.canTrend)
+					.map(([u]) => u);
+			}
+
+			return await this.userEntityService.packMany(users, me, { schema: ps.detail ? 'UserDetailed' : 'UserLite' });
 		});
 	}
 }

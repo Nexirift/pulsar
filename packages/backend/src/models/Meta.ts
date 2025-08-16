@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne } from 'typeorm';
+import { type InstanceUnsignedFetchOption, instanceUnsignedFetchOptions } from '@/const.js';
 import { id } from './util/id.js';
 import { MiUser } from './User.js';
 
@@ -14,6 +15,18 @@ export class MiMeta {
 		length: 32,
 	})
 	public id: string;
+
+	@Column({
+		...id(),
+		nullable: true,
+	})
+	public rootUserId: MiUser['id'] | null;
+
+	@ManyToOne(type => MiUser, {
+		onDelete: 'SET NULL',
+		nullable: true,
+	})
+	public rootUser: MiUser | null;
 
 	@Column('varchar', {
 		length: 1024, nullable: true,
@@ -29,6 +42,11 @@ export class MiMeta {
 		length: 1024, nullable: true,
 	})
 	public description: string | null;
+
+	@Column('text', {
+		nullable: true,
+	})
+	public about: string | null;
 
 	/**
 	 * メンテナの名前
@@ -47,7 +65,7 @@ export class MiMeta {
 	public maintainerEmail: string | null;
 
 	@Column('boolean', {
-		default: false,
+		default: true,
 	})
 	public disableRegistration: boolean;
 
@@ -177,18 +195,6 @@ export class MiMeta {
 		default: true,
 	})
 	public cacheRemoteSensitiveFiles: boolean;
-
-	@Column({
-		...id(),
-		nullable: true,
-	})
-	public proxyAccountId: MiUser['id'] | null;
-
-	@ManyToOne(type => MiUser, {
-		onDelete: 'SET NULL',
-	})
-	@JoinColumn()
-	public proxyAccount: MiUser | null;
 
 	@Column('boolean', {
 		default: false,
@@ -381,6 +387,12 @@ export class MiMeta {
 	})
 	public swPrivateKey: string | null;
 
+	@Column('integer', {
+		default: 5000,
+		comment: 'Timeout in milliseconds for translation API requests',
+	})
+	public translationTimeout: number;
+
 	@Column('varchar', {
 		length: 1024,
 		nullable: true,
@@ -407,12 +419,24 @@ export class MiMeta {
 		length: 1024,
 		nullable: true,
 	})
+	public libreTranslateURL: string | null;
+
+	@Column('varchar', {
+		length: 1024,
+		nullable: true,
+	})
+	public libreTranslateKey: string | null;
+
+	@Column('varchar', {
+		length: 1024,
+		nullable: true,
+	})
 	public termsOfServiceUrl: string | null;
 
 	@Column('varchar', {
 		length: 1024,
 		default: 'https://activitypub.software/TransFem-org/Sharkey/',
-		nullable: false,
+		nullable: true,
 	})
 	public repositoryUrl: string | null;
 
@@ -599,8 +623,8 @@ export class MiMeta {
 	})
 	public enableAchievements: boolean;
 
-	@Column('varchar', {
-		length: 2048, nullable: true,
+	@Column('text', {
+		nullable: true,
 	})
 	public robotsTxt: string | null;
 
@@ -630,7 +654,7 @@ export class MiMeta {
 	public bannedEmailDomains: string[];
 
 	@Column('varchar', {
-		length: 1024, array: true, default: '{ "admin", "administrator", "root", "system", "maintainer", "host", "mod", "moderator", "owner", "superuser", "staff", "auth", "i", "me", "everyone", "all", "mention", "mentions", "example", "user", "users", "account", "accounts", "official", "help", "helps", "support", "supports", "info", "information", "informations", "announce", "announces", "announcement", "announcements", "notice", "notification", "notifications", "dev", "developer", "developers", "tech", "misskey" }',
+		length: 1024, array: true, default: '{admin,administrator,root,system,maintainer,host,mod,moderator,owner,superuser,staff,auth,i,me,everyone,all,mention,mentions,example,user,users,account,accounts,official,help,helps,support,supports,info,information,informations,announce,announces,announcement,announcements,notice,notification,notifications,dev,developer,developers,tech,misskey}',
 	})
 	public preservedUsernames: string[];
 
@@ -645,22 +669,22 @@ export class MiMeta {
 	public enableFanoutTimelineDbFallback: boolean;
 
 	@Column('integer', {
-		default: 300,
+		default: 800,
 	})
 	public perLocalUserUserTimelineCacheMax: number;
 
 	@Column('integer', {
-		default: 100,
+		default: 800,
 	})
 	public perRemoteUserUserTimelineCacheMax: number;
 
 	@Column('integer', {
-		default: 300,
+		default: 800,
 	})
 	public perUserHomeTimelineCacheMax: number;
 
 	@Column('integer', {
-		default: 300,
+		default: 800,
 	})
 	public perUserListTimelineCacheMax: number;
 
@@ -676,9 +700,9 @@ export class MiMeta {
 
 	@Column('varchar', {
 		length: 500,
-		nullable: true,
+		default: '❤️',
 	})
-	public defaultLike: string | null;
+	public defaultLike: string;
 
 	@Column('varchar', {
 		length: 256, array: true, default: '{}',
@@ -701,7 +725,7 @@ export class MiMeta {
 	public urlPreviewMaximumContentLength: number;
 
 	@Column('boolean', {
-		default: true,
+		default: false,
 	})
 	public urlPreviewRequireContentLength: boolean;
 
@@ -737,4 +761,28 @@ export class MiMeta {
 		default: '{}',
 	})
 	public federationHosts: string[];
+
+	/**
+	 * In combination with user.allowUnsignedFetch, controls enforcement of HTTP signatures for inbound ActivityPub fetches (GET requests).
+	 */
+	@Column('enum', {
+		enum: instanceUnsignedFetchOptions,
+		default: 'always',
+	})
+	public allowUnsignedFetch: InstanceUnsignedFetchOption;
+
+	@Column('boolean', {
+		default: false,
+	})
+	public enableProxyAccount: boolean;
+
+	@Column('jsonb', {
+		default: [],
+	})
+	public deliverSuspendedSoftware: SoftwareSuspension[];
 }
+
+export type SoftwareSuspension = {
+	software: string,
+	versionRange: string,
+};

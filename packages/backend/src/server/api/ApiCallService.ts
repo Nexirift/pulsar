@@ -20,12 +20,14 @@ import { RoleService } from '@/core/RoleService.js';
 import type { Config } from '@/config.js';
 import { sendRateLimitHeaders } from '@/misc/rate-limit-utils.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import { ApiError } from './error.js';
 import { ApiLoggerService } from './ApiLoggerService.js';
 import { AuthenticateService, AuthenticationError } from './AuthenticateService.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import type { OnApplicationShutdown } from '@nestjs/common';
 import type { IEndpointMeta, IEndpoint } from './endpoints.js';
+import { renderFullError } from '@/misc/render-full-error.js';
 
 const accessDenied = {
 	message: 'Access denied.',
@@ -100,26 +102,26 @@ export class ApiCallService implements OnApplicationShutdown {
 			throw err;
 		} else {
 			const errId = randomUUID();
-			this.logger.error(`Internal error occurred in ${ep.name}: ${err.message}`, {
-				ep: ep.name,
-				ps: data,
-				e: {
-					message: err.message,
-					code: err.name,
-					stack: err.stack,
-					id: errId,
-				},
+			const fullError = renderFullError(err);
+			const message = typeof(fullError) === 'string'
+				? `Internal error id=${errId} occurred in ${ep.name}: ${fullError}`
+				: `Internal error id=${errId} occurred in ${ep.name}:`;
+			const data = typeof(fullError) === 'object'
+				? { e: fullError }
+				: {};
+			this.logger.error(message, {
+				user: userId ?? '<unauthenticated>',
+				...data,
 			});
 
 			if (this.config.sentryForBackend) {
-				Sentry.captureMessage(`Internal error occurred in ${ep.name}: ${err.message}`, {
+				Sentry.captureMessage(`Internal error occurred in ${ep.name}: ${renderInlineError(err)}`, {
 					level: 'error',
 					user: {
 						id: userId,
 					},
 					extra: {
 						ep: ep.name,
-						ps: data,
 						e: {
 							message: err.message,
 							code: err.name,
@@ -146,6 +148,10 @@ export class ApiCallService implements OnApplicationShutdown {
 		request: FastifyRequest<{ Body: Record<string, unknown> | undefined, Querystring: Record<string, unknown> }>,
 		reply: FastifyReply,
 	): void {
+		// Tell crawlers not to index API endpoints.
+		// https://developers.google.com/search/docs/crawling-indexing/block-indexing
+		reply.header('X-Robots-Tag', 'noindex');
+
 		const body = request.method === 'GET'
 			? request.query
 			: request.body;
@@ -213,6 +219,7 @@ export class ApiCallService implements OnApplicationShutdown {
 			? request.headers.authorization.slice(7)
 			: fields['i'];
 		if (token != null && typeof token !== 'string') {
+			cleanup();
 			reply.code(400);
 			return;
 		}
@@ -223,6 +230,7 @@ export class ApiCallService implements OnApplicationShutdown {
 			}, request, reply).then((res) => {
 				this.send(reply, res);
 			}).catch((err: ApiError) => {
+				cleanup();
 				this.#sendApiError(reply, err);
 			});
 
@@ -230,6 +238,7 @@ export class ApiCallService implements OnApplicationShutdown {
 				this.logIp(request, user);
 			}
 		}).catch(err => {
+			cleanup();
 			this.#sendAuthenticationError(reply, err);
 		});
 	}
@@ -341,14 +350,14 @@ export class ApiCallService implements OnApplicationShutdown {
 		}
 
 		if (ep.meta.requireCredential || ep.meta.requireModerator || ep.meta.requireAdmin) {
-			if (user == null) {
+			if (user == null && ep.meta.requireCredential !== 'optional') {
 				throw new ApiError({
 					message: 'Credential required.',
 					code: 'CREDENTIAL_REQUIRED',
 					id: '1384574d-a912-4b81-8601-c7b1c4085df1',
 					httpStatusCode: 401,
 				});
-			} else if (user!.isSuspended) {
+			} else if (user?.isSuspended) {
 				throw new ApiError({
 					message: 'Your account has been suspended.',
 					code: 'YOUR_ACCOUNT_SUSPENDED',
@@ -369,8 +378,8 @@ export class ApiCallService implements OnApplicationShutdown {
 			}
 		}
 
-		if ((ep.meta.requireModerator || ep.meta.requireAdmin) && !user!.isRoot) {
-			const myRoles = await this.roleService.getUserRoles(user!.id);
+		if ((ep.meta.requireModerator || ep.meta.requireAdmin) && (this.meta.rootUserId !== user?.id)) {
+			const myRoles = user ? await this.roleService.getUserRoles(user) : [];
 			if (ep.meta.requireModerator && !myRoles.some(r => r.isModerator || r.isAdministrator)) {
 				throw new ApiError({
 					message: 'You are not assigned to a moderator role.',
@@ -389,10 +398,10 @@ export class ApiCallService implements OnApplicationShutdown {
 			}
 		}
 
-		if (ep.meta.requireRolePolicy != null && !user!.isRoot) {
-			const myRoles = await this.roleService.getUserRoles(user!.id);
-			const policies = await this.roleService.getUserPolicies(user!.id);
-			if (!policies[ep.meta.requireRolePolicy] && !myRoles.some(r => r.isAdministrator)) {
+		if (ep.meta.requiredRolePolicy != null && (this.meta.rootUserId !== user?.id)) {
+			const myRoles = user ? await this.roleService.getUserRoles(user) : [];
+			const policies = await this.roleService.getUserPolicies(user ?? null);
+			if (!policies[ep.meta.requiredRolePolicy] && !myRoles.some(r => r.isAdministrator)) {
 				throw new ApiError({
 					message: 'You are not assigned to a required role.',
 					code: 'ROLE_PERMISSION_DENIED',
@@ -415,7 +424,7 @@ export class ApiCallService implements OnApplicationShutdown {
 		// Cast non JSON input
 		if ((ep.meta.requireFile || request.method === 'GET') && ep.params.properties) {
 			for (const k of Object.keys(ep.params.properties)) {
-				const param = ep.params.properties![k];
+				const param = ep.params.properties[k];
 				if (['boolean', 'number', 'integer'].includes(param.type ?? '') && typeof data[k] === 'string') {
 					try {
 						data[k] = JSON.parse(data[k]);

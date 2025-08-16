@@ -17,6 +17,8 @@ import type { Config } from '@/config.js';
 import { bindThis } from '@/decorators.js';
 import { MiUser } from '@/models/_.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { LoggerService } from '@/core/LoggerService.js';
+import Logger from '@/logger.js';
 import type {
 	AuthenticationResponseJSON,
 	AuthenticatorTransportFuture,
@@ -28,6 +30,8 @@ import type {
 
 @Injectable()
 export class WebAuthnService {
+	private readonly logger: Logger;
+
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
@@ -40,7 +44,9 @@ export class WebAuthnService {
 
 		@Inject(DI.userSecurityKeysRepository)
 		private userSecurityKeysRepository: UserSecurityKeysRepository,
+		loggerService: LoggerService,
 	) {
+		this.logger = loggerService.getLogger('web-authn');
 	}
 
 	@bindThis
@@ -114,8 +120,8 @@ export class WebAuthnService {
 				requireUserVerification: true,
 			});
 		} catch (error) {
-			console.error(error);
-			throw new IdentifiableError('5c1446f8-8ca7-4d31-9f39-656afe9c5d87', 'verification failed');
+			this.logger.error(error as Error, 'Error authenticating webauthn');
+			throw new IdentifiableError('5c1446f8-8ca7-4d31-9f39-656afe9c5d87', 'verification failed', true, error);
 		}
 
 		const { verified } = verification;
@@ -127,11 +133,11 @@ export class WebAuthnService {
 		const { registrationInfo } = verification;
 
 		return {
-			credentialID: registrationInfo.credentialID,
-			credentialPublicKey: registrationInfo.credentialPublicKey,
+			credentialID: registrationInfo.credential.id,
+			credentialPublicKey: registrationInfo.credential.publicKey,
 			attestationObject: registrationInfo.attestationObject,
 			fmt: registrationInfo.fmt,
-			counter: registrationInfo.counter,
+			counter: registrationInfo.credential.counter,
 			userVerified: registrationInfo.userVerified,
 			credentialDeviceType: registrationInfo.credentialDeviceType,
 			credentialBackedUp: registrationInfo.credentialBackedUp,
@@ -212,16 +218,16 @@ export class WebAuthnService {
 				expectedChallenge: challenge,
 				expectedOrigin: relyingParty.origin,
 				expectedRPID: relyingParty.rpId,
-				authenticator: {
-					credentialID: key.id,
-					credentialPublicKey: Buffer.from(key.publicKey, 'base64url'),
+				credential: {
+					id: key.id,
+					publicKey: Buffer.from(key.publicKey, 'base64url'),
 					counter: key.counter,
 					transports: key.transports ? key.transports as AuthenticatorTransportFuture[] : undefined,
 				},
 				requireUserVerification: true,
 			});
 		} catch (error) {
-			throw new IdentifiableError('b18c89a7-5b5e-4cec-bb5b-0419f332d430', `verification failed: ${error}`);
+			throw new IdentifiableError('b18c89a7-5b5e-4cec-bb5b-0419f332d430', `verification failed`, true, error);
 		}
 
 		const { verified, authenticationInfo } = verification;
@@ -292,17 +298,17 @@ export class WebAuthnService {
 				expectedChallenge: challenge,
 				expectedOrigin: relyingParty.origin,
 				expectedRPID: relyingParty.rpId,
-				authenticator: {
-					credentialID: key.id,
-					credentialPublicKey: Buffer.from(key.publicKey, 'base64url'),
+				credential: {
+					id: key.id,
+					publicKey: Buffer.from(key.publicKey, 'base64url'),
 					counter: key.counter,
 					transports: key.transports ? key.transports as AuthenticatorTransportFuture[] : undefined,
 				},
 				requireUserVerification: true,
 			});
 		} catch (error) {
-			console.error(error);
-			throw new IdentifiableError('b18c89a7-5b5e-4cec-bb5b-0419f332d430', 'verification failed');
+			this.logger.error(error as Error, 'Error authenticating webauthn');
+			throw new IdentifiableError('b18c89a7-5b5e-4cec-bb5b-0419f332d430', 'verification failed', true, error);
 		}
 
 		const { verified, authenticationInfo } = verification;

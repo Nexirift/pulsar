@@ -4,10 +4,11 @@
  */
 
 import { setImmediate } from 'node:timers/promises';
-import * as mfm from '@transfem-org/sfm-js';
+import * as mfm from 'mfm-js';
 import { DataSource, In, IsNull, LessThan } from 'typeorm';
 import * as Redis from 'ioredis';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { UnrecoverableError } from 'bullmq';
 import { extractMentions } from '@/misc/extract-mentions.js';
 import { extractCustomEmojisFromMfm } from '@/misc/extract-custom-emojis-from-mfm.js';
 import { extractHashtags } from '@/misc/extract-hashtags.js';
@@ -36,7 +37,6 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerService.js';
-import { NoteReadService } from '@/core/NoteReadService.js';
 import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
 import { bindThis } from '@/decorators.js';
 import { RoleService } from '@/core/RoleService.js';
@@ -46,7 +46,7 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { UserBlockingService } from '@/core/UserBlockingService.js';
 import { CacheService } from '@/core/CacheService.js';
 import { isReply } from '@/misc/is-reply.js';
-import { trackPromise } from '@/misc/promise-tracker.js';
+import { trackTask } from '@/misc/promise-tracker.js';
 import { isUserRelated } from '@/misc/is-user-related.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { LatestNoteService } from '@/core/LatestNoteService.js';
@@ -203,7 +203,6 @@ export class NoteEditService implements OnApplicationShutdown {
 		private globalEventService: GlobalEventService,
 		private queueService: QueueService,
 		private fanoutTimelineService: FanoutTimelineService,
-		private noteReadService: NoteReadService,
 		private notificationService: NotificationService,
 		private relayService: RelayService,
 		private federatedInstanceService: FederatedInstanceService,
@@ -233,7 +232,7 @@ export class NoteEditService implements OnApplicationShutdown {
 		noindex: MiUser['noindex'];
 	}, editid: MiNote['id'], data: Option, silent = false): Promise<MiNote> {
 		if (!editid) {
-			throw new Error('fail');
+			throw new UnrecoverableError('edit failed: missing editid');
 		}
 
 		const oldnote = await this.notesRepository.findOneBy({
@@ -241,11 +240,11 @@ export class NoteEditService implements OnApplicationShutdown {
 		});
 
 		if (oldnote == null) {
-			throw new Error('no such note');
+			throw new UnrecoverableError(`edit failed for ${editid}: missing oldnote`);
 		}
 
 		if (oldnote.userId !== user.id) {
-			throw new Error('not the author');
+			throw new UnrecoverableError(`edit failed for ${editid}: user is not the note author`);
 		}
 
 		// we never want to change the replyId, so fetch the original "parent"
@@ -276,12 +275,12 @@ export class NoteEditService implements OnApplicationShutdown {
 			data.channel = await this.channelsRepository.findOneBy({ id: data.reply.channelId });
 		}
 
+		if (data.updatedAt == null) data.updatedAt = new Date();
 		if (data.visibility == null) data.visibility = 'public';
 		if (data.localOnly == null) data.localOnly = false;
 		if (data.channel != null) data.visibility = 'public';
 		if (data.channel != null) data.visibleUsers = [];
 		if (data.channel != null) data.localOnly = true;
-		if (data.updatedAt == null) data.updatedAt = new Date();
 
 		if (data.visibility === 'public' && data.channel == null) {
 			const sensitiveWords = this.meta.sensitiveWords;
@@ -310,7 +309,7 @@ export class NoteEditService implements OnApplicationShutdown {
 
 		if (this.isRenote(data)) {
 			if (data.renote.id === oldnote.id) {
-				throw new Error('A note can\'t renote itself');
+				throw new IdentifiableError('ea93b7c2-3d6c-4e10-946b-00d50b1a75cb', `edit failed for ${oldnote.id}: cannot renote itself`);
 			}
 
 			switch (data.renote.visibility) {
@@ -326,7 +325,7 @@ export class NoteEditService implements OnApplicationShutdown {
 				case 'followers':
 					// 他人のfollowers noteはreject
 					if (data.renote.userId !== user.id) {
-						throw new Error('Renote target is not public or home');
+						throw new IdentifiableError('b6352a84-e5cd-4b05-a26c-63437a6b98ba', 'Renote target is not public or home');
 					}
 
 					// Renote対象がfollowersならfollowersにする
@@ -334,7 +333,7 @@ export class NoteEditService implements OnApplicationShutdown {
 					break;
 				case 'specified':
 					// specified / direct noteはreject
-					throw new Error('Renote target is not public or home');
+					throw new IdentifiableError('b6352a84-e5cd-4b05-a26c-63437a6b98ba', 'Renote target is not public or home');
 			}
 		}
 
@@ -406,10 +405,10 @@ export class NoteEditService implements OnApplicationShutdown {
 
 		// Parse MFM if needed
 		if (!tags || !emojis || !mentionedUsers) {
-			const tokens = data.text ? mfm.parse(data.text)! : [];
-			const cwTokens = data.cw ? mfm.parse(data.cw)! : [];
+			const tokens = data.text ? mfm.parse(data.text) : [];
+			const cwTokens = data.cw ? mfm.parse(data.cw) : [];
 			const choiceTokens = data.poll && data.poll.choices
-				? concat(data.poll.choices.map(choice => mfm.parse(choice)!))
+				? concat(data.poll.choices.map(choice => mfm.parse(choice)))
 				: [];
 
 			const combinedTokens = tokens.concat(cwTokens).concat(choiceTokens);
@@ -424,7 +423,7 @@ export class NoteEditService implements OnApplicationShutdown {
 		// if the host is media-silenced, custom emojis are not allowed
 		if (this.utilityService.isMediaSilencedHost(this.meta.mediaSilencedHosts, user.host)) emojis = [];
 
-		tags = tags.filter(tag => Array.from(tag ?? '').length <= 128).splice(0, 32);
+		tags = tags.filter(tag => Array.from(tag).length <= 128).splice(0, 32);
 
 		if (data.reply && (user.id !== data.reply.userId) && !mentionedUsers.some(u => u.id === data.reply!.userId)) {
 			mentionedUsers.push(await this.usersRepository.findOneByOrFail({ id: data.reply!.userId }));
@@ -467,10 +466,8 @@ export class NoteEditService implements OnApplicationShutdown {
 			update.hasPoll = !!data.poll;
 		}
 
-		// technically we should check if the two sets of files are
-		// different, or if their descriptions have changed. In practice
-		// this is good enough.
-		const filesChanged = oldnote.fileIds?.length || data.files?.length;
+		// TODO deep-compare files
+		const filesChanged = oldnote.fileIds.length || data.files?.length;
 
 		const poll = await this.pollsRepository.findOneBy({ noteId: oldnote.id });
 
@@ -564,7 +561,7 @@ export class NoteEditService implements OnApplicationShutdown {
 						noteVisibility: note.visibility,
 						userId: user.id,
 						userHost: user.host,
-						channelId: data.channel ? data.channel.id : null,
+						channelId: data.channel?.id ?? null,
 					});
 
 					if (!oldnote.hasPoll) {
@@ -577,12 +574,15 @@ export class NoteEditService implements OnApplicationShutdown {
 				await this.notesRepository.update(oldnote.id, note);
 			}
 
+			// Re-fetch note to get the default values of null / unset fields.
+			const edited = await this.notesRepository.findOneByOrFail({ id: note.id });
+
 			setImmediate('post edited', { signal: this.#shutdownController.signal }).then(
-				() => this.postNoteEdited(note, oldnote, user, data, silent, tags!, mentionedUsers!),
+				() => this.postNoteEdited(edited, oldnote, user, data, silent, tags!, mentionedUsers!),
 				() => { /* aborted, ignore this */ },
 			);
 
-			return note;
+			return edited;
 		} else {
 			return oldnote;
 		}
@@ -610,6 +610,8 @@ export class NoteEditService implements OnApplicationShutdown {
 			}
 		}
 
+		this.usersRepository.update({ id: user.id }, { updatedAt: new Date() });
+
 		// ハッシュタグ更新
 		this.pushToTl(note, user);
 
@@ -628,44 +630,12 @@ export class NoteEditService implements OnApplicationShutdown {
 		if (!silent) {
 			if (this.userEntityService.isLocalUser(user)) this.activeUsersChart.write(user);
 
-			// 未読通知を作成
-			if (data.visibility === 'specified') {
-				if (data.visibleUsers == null) throw new Error('invalid param');
-
-				for (const u of data.visibleUsers) {
-					// ローカルユーザーのみ
-					if (!this.userEntityService.isLocalUser(u)) continue;
-
-					this.noteReadService.insertNoteUnread(u.id, note, {
-						isSpecified: true,
-						isMentioned: false,
-					});
-				}
-			} else {
-				for (const u of mentionedUsers) {
-					// ローカルユーザーのみ
-					if (!this.userEntityService.isLocalUser(u)) continue;
-
-					this.noteReadService.insertNoteUnread(u.id, note, {
-						isSpecified: false,
-						isMentioned: true,
-					});
-				}
-			}
-
 			// Pack the note
 			const noteObj = await this.noteEntityService.pack(note, null, { skipHide: true, withReactionAndUserPairCache: true });
-			if (data.poll != null) {
-				this.globalEventService.publishNoteStream(note.id, 'updated', {
-					cw: note.cw,
-					text: note.text!,
-				});
-			} else {
-				this.globalEventService.publishNoteStream(note.id, 'updated', {
-					cw: note.cw,
-					text: note.text!,
-				});
-			}
+			this.globalEventService.publishNoteStream(note.id, 'updated', {
+				cw: note.cw,
+				text: note.text ?? '',
+			});
 
 			this.roleService.addNoteToRoleTimeline(noteObj);
 
@@ -673,31 +643,25 @@ export class NoteEditService implements OnApplicationShutdown {
 
 			const nm = new NotificationManager(this.mutingsRepository, this.notificationService, user, note);
 
-			//await this.createMentionedEvents(mentionedUsers, note, nm);
-
 			// If has in reply to note
 			if (data.reply) {
 				// 通知
 				if (data.reply.userHost === null) {
-					const isThreadMuted = await this.noteThreadMutingsRepository.exists({
-						where: {
-							userId: data.reply.userId,
-							threadId: data.reply.threadId ?? data.reply.id,
-						},
-					});
+					const threadId = data.reply.threadId ?? data.reply.id;
 
 					const [
+						isThreadMuted,
 						userIdsWhoMeMuting,
-					] = data.reply.userId ? await Promise.all([
+					] = await Promise.all([
+						this.cacheService.threadMutingsCache.fetch(data.reply.userId).then(ms => ms.has(threadId)),
 						this.cacheService.userMutingsCache.fetch(data.reply.userId),
-					]) : [new Set<string>()];
+					]);
 
 					const muted = isUserRelated(note, userIdsWhoMeMuting);
 
 					if (!isThreadMuted && !muted) {
 						nm.push(data.reply.userId, 'edited');
 						this.globalEventService.publishMainStream(data.reply.userId, 'edited', noteObj);
-
 						this.webhookService.enqueueUserWebhook(data.reply.userId, 'reply', { note: noteObj });
 					}
 				}
@@ -707,8 +671,8 @@ export class NoteEditService implements OnApplicationShutdown {
 
 			//#region AP deliver
 			if (!data.localOnly && this.userEntityService.isLocalUser(user)) {
-				(async () => {
-					const noteActivity = await this.renderNoteOrRenoteActivity(data, note, user);
+				trackTask(async () => {
+					const noteActivity = await this.apRendererService.renderNoteOrRenoteActivity(note, user, { renote: data.renote });
 					const dm = this.apDeliverManagerService.createDeliverManager(user, noteActivity);
 
 					// メンションされたリモートユーザーに配送
@@ -751,12 +715,12 @@ export class NoteEditService implements OnApplicationShutdown {
 						}
 					}
 
-					if (['public'].includes(note.visibility)) {
-						this.relayService.deliverToRelays(user, noteActivity);
-					}
+					await dm.execute();
 
-					trackPromise(dm.execute());
-				})();
+					if (['public'].includes(note.visibility)) {
+						await this.relayService.deliverToRelays(user, noteActivity);
+					}
+				});
 			}
 			//#endregion
 		}
@@ -801,52 +765,6 @@ export class NoteEditService implements OnApplicationShutdown {
 			note.cw != null ||
 			note.poll != null ||
 			(note.files != null && note.files.length > 0);
-	}
-
-	// TODO why is this unused?
-	@bindThis
-	private async createMentionedEvents(mentionedUsers: MinimumUser[], note: MiNote, nm: NotificationManager) {
-		for (const u of mentionedUsers.filter(u => this.userEntityService.isLocalUser(u))) {
-			const isThreadMuted = await this.noteThreadMutingsRepository.exists({
-				where: {
-					userId: u.id,
-					threadId: note.threadId ?? note.id,
-				},
-			});
-
-			const [
-				userIdsWhoMeMuting,
-			] = u.id ? await Promise.all([
-				this.cacheService.userMutingsCache.fetch(u.id),
-			]) : [new Set<string>()];
-
-			const muted = isUserRelated(note, userIdsWhoMeMuting);
-
-			if (isThreadMuted || muted) {
-				continue;
-			}
-
-			const detailPackedNote = await this.noteEntityService.pack(note, u, {
-				detail: true,
-			});
-
-			this.globalEventService.publishMainStream(u.id, 'edited', detailPackedNote);
-			this.webhookService.enqueueUserWebhook(u.id, 'edited', { note: detailPackedNote });
-
-			// Create notification
-			nm.push(u.id, 'edited');
-		}
-	}
-
-	@bindThis
-	private async renderNoteOrRenoteActivity(data: Option, note: MiNote, user: MiUser) {
-		if (data.localOnly) return null;
-
-		const content = this.isRenote(data) && !this.isQuote(data)
-			? this.apRendererService.renderAnnounce(data.renote.uri ? data.renote.uri : `${this.config.url}/notes/${data.renote.id}`, note)
-			: this.apRendererService.renderUpdate(await this.apRendererService.renderUpNote(note, user, false), user);
-
-		return this.apRendererService.addContext(content);
 	}
 
 	@bindThis
@@ -901,14 +819,7 @@ export class NoteEditService implements OnApplicationShutdown {
 			// TODO: キャッシュ？
 			// eslint-disable-next-line prefer-const
 			let [followings, userListMemberships] = await Promise.all([
-				this.followingsRepository.find({
-					where: {
-						followeeId: user.id,
-						followerHost: IsNull(),
-						isFollowerHibernated: false,
-					},
-					select: ['followerId', 'withReplies'],
-				}),
+				this.cacheService.getNonHibernatedFollowers(user.id),
 				this.userListMembershipsRepository.find({
 					where: {
 						userId: user.id,
@@ -924,6 +835,7 @@ export class NoteEditService implements OnApplicationShutdown {
 
 			// TODO: あまりにも数が多いと redisPipeline.exec に失敗する(理由は不明)ため、3万件程度を目安に分割して実行するようにする
 			for (const following of followings) {
+				if (following.followerHost !== null) continue;
 				// 基本的にvisibleUserIdsには自身のidが含まれている前提であること
 				if (note.visibility === 'specified' && !note.visibleUserIds.some(v => v === following.followerId)) continue;
 
@@ -1025,17 +937,19 @@ export class NoteEditService implements OnApplicationShutdown {
 		});
 
 		if (hibernatedUsers.length > 0) {
-			this.usersRepository.update({
-				id: In(hibernatedUsers.map(x => x.id)),
-			}, {
-				isHibernated: true,
-			});
-
-			this.followingsRepository.update({
-				followerId: In(hibernatedUsers.map(x => x.id)),
-			}, {
-				isFollowerHibernated: true,
-			});
+			await Promise.all([
+				this.usersRepository.update({
+					id: In(hibernatedUsers.map(x => x.id)),
+				}, {
+					isHibernated: true,
+				}),
+				this.followingsRepository.update({
+					followerId: In(hibernatedUsers.map(x => x.id)),
+				}, {
+					isFollowerHibernated: true,
+				}),
+				this.cacheService.hibernatedUserCache.setMany(hibernatedUsers.map(x => [x.id, true])),
+			]);
 		}
 	}
 

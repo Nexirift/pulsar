@@ -6,6 +6,7 @@
 import { Entity, Index, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { id } from './util/id.js';
 import { MiUser } from './User.js';
+import { MiRole } from './Role.js';
 
 @Entity('announcement')
 export class MiAnnouncement {
@@ -66,11 +67,22 @@ export class MiAnnouncement {
 	})
 	public forExistingUsers: boolean;
 
+	@Column('text', {
+		array: true,
+		default: '{}', nullable: false,
+	})
+	public forRoles: MiRole['id'][];
+
 	@Index()
 	@Column('boolean', {
 		default: false,
 	})
 	public silence: boolean;
+
+	@Column('boolean', {
+		default: false,
+	})
+	public confetti: boolean;
 
 	@Index()
 	@Column({

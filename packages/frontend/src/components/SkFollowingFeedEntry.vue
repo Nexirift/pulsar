@@ -1,10 +1,12 @@
 <!--
 SPDX-FileCopyrightText: hazelnoot and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Selectable entry on the "Following" feed, displaying a user with their most recent note.
 -->
 
 <template>
-<div :class="$style.root" @click="$emit('select', note.user)">
+<div v-if="!hardMuted" :class="$style.root" @click="$emit('select', note.user)">
 	<div :class="$style.avatar">
 		<MkAvatar :class="$style.icon" :user="note.user" indictor/>
 	</div>
@@ -18,31 +20,39 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkA>
 		</header>
 		<div>
-			<div v-if="isMuted" :class="[$style.text, $style.muted]">({{ i18n.ts.postFiltered }})</div>
+			<div v-if="muted || threadMuted || noteMuted" :class="[$style.text, $style.muted]">
+				<SkMutedNote :muted="muted" :threadMuted="threadMuted" :noteMuted="noteMuted" :note="note"></SkMutedNote>
+			</div>
 			<Mfm v-else :class="$style.text" :text="getNoteSummary(note)" :isBlock="true" :plain="true" :nowrap="false" :isNote="true" nyaize="respect" :author="note.user"/>
 		</div>
 	</div>
+</div>
+<div v-else>
+	<!--
+		MkDateSeparatedList uses TransitionGroup which requires single element in the child elements
+		so MkNote create empty div instead of no elements
+	-->
 </div>
 </template>
 
 <script lang="ts" setup>
 import * as Misskey from 'misskey-js';
-import { getNoteSummary } from '@/scripts/get-note-summary.js';
+import { computed } from 'vue';
+import { getNoteSummary } from '@/utility/get-note-summary.js';
 import { userPage } from '@/filters/user.js';
 import { notePage } from '@/filters/note.js';
-import { i18n } from '@/i18n.js';
+import { checkMutes } from '@/utility/check-word-mute';
+import SkMutedNote from '@/components/SkMutedNote.vue';
 
-withDefaults(defineProps<{
+const props = defineProps<{
 	note: Misskey.entities.Note,
-	isMuted: boolean
-}>(), {
-	isMuted: false,
-});
+}>();
 
 defineEmits<{
 	(event: 'select', user: Misskey.entities.UserLite): void
 }>();
 
+const { muted, hardMuted, threadMuted, noteMuted } = checkMutes(computed(() => props.note));
 </script>
 
 <style lang="scss" module>

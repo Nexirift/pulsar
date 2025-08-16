@@ -4,6 +4,8 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
+import { FakeInternalEventService } from '../../misc/FakeInternalEventService.js';
+import { NoOpCacheService } from '../../misc/noOpCaches.js';
 import type { MiUser } from '@/models/User.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { GlobalModule } from '@/GlobalModule.js';
@@ -50,6 +52,8 @@ import { AccountMoveService } from '@/core/AccountMoveService.js';
 import { ReactionService } from '@/core/ReactionService.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
+import { ChatService } from '@/core/ChatService.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
 
 process.env.NODE_ENV = 'test';
 
@@ -73,7 +77,7 @@ describe('UserEntityService', () => {
 					...userData,
 					id: genAidx(Date.now()),
 					username: un,
-					usernameLower: un,
+					usernameLower: un.toLowerCase(),
 				})
 				.then(x => usersRepository.findOneByOrFail(x.identifiers[0]));
 
@@ -172,6 +176,8 @@ describe('UserEntityService', () => {
 				ReactionService,
 				ReactionsBufferingService,
 				NotificationService,
+				ChatService,
+				InternalEventService,
 			];
 
 			app = await Test.createTestingModule({
@@ -180,7 +186,10 @@ describe('UserEntityService', () => {
 					...services,
 					...services.map(x => ({ provide: x.name, useExisting: x })),
 				],
-			}).compile();
+			})
+				.overrideProvider(InternalEventService).useClass(FakeInternalEventService)
+				.overrideProvider(CacheService).useClass(NoOpCacheService)
+				.compile();
 			await app.init();
 			app.enableShutdownHooks();
 
@@ -230,7 +239,7 @@ describe('UserEntityService', () => {
 		});
 
 		test('MeDetailed', async() => {
-			const achievements = [{ name: 'achievement', unlockedAt: new Date().getTime() }];
+			const achievements = [{ name: 'iLoveMisskey' as const, unlockedAt: new Date().getTime() }];
 			const me = await createUser({}, {
 				birthday: '2000-01-01',
 				achievements: achievements,

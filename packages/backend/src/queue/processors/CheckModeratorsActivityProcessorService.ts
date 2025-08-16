@@ -29,7 +29,7 @@ export type ModeratorInactivityEvaluationResult = {
 	isModeratorsInactive: boolean;
 	inactiveModerators: MiUser[];
 	remainingTime: ModeratorInactivityRemainingTime;
-}
+};
 
 export type ModeratorInactivityRemainingTime = {
 	time: number;
@@ -98,16 +98,16 @@ export class CheckModeratorsActivityProcessorService {
 
 	@bindThis
 	public async process(): Promise<void> {
-		this.logger.info('start.');
+		this.logger.debug('start.');
 
 		const meta = await this.metaService.fetch(false);
 		if (!meta.disableRegistration) {
 			await this.processImpl();
 		} else {
-			this.logger.info('is already invitation only.');
+			this.logger.debug('is already invitation only.');
 		}
 
-		this.logger.succ('finish.');
+		this.logger.debug('finish.');
 	}
 
 	@bindThis

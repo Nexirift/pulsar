@@ -7,14 +7,10 @@ import type { Config } from '@/config.js';
 import type { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import type { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import type { ApRequestService } from '@/core/activitypub/ApRequestService.js';
-import { Resolver } from '@/core/activitypub/ApResolverService.js';
-import type { IObject } from '@/core/activitypub/type.js';
+import type { IObject, IObjectWithId } from '@/core/activitypub/type.js';
 import type { HttpRequestService } from '@/core/HttpRequestService.js';
-import type { InstanceActorService } from '@/core/InstanceActorService.js';
 import type { LoggerService } from '@/core/LoggerService.js';
-import type { MetaService } from '@/core/MetaService.js';
 import type { UtilityService } from '@/core/UtilityService.js';
-import { bindThis } from '@/decorators.js';
 import type {
 	FollowRequestsRepository,
 	MiMeta,
@@ -23,8 +19,13 @@ import type {
 	PollsRepository,
 	UsersRepository,
 } from '@/models/_.js';
+import type { CacheService } from '@/core/CacheService.js';
 import { ApLogService } from '@/core/ApLogService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
+import { fromTuple } from '@/misc/from-tuple.js';
+import { SystemAccountService } from '@/core/SystemAccountService.js';
+import { bindThis } from '@/decorators.js';
+import { Resolver } from '@/core/activitypub/ApResolverService.js';
 
 type MockResponse = {
 	type: string;
@@ -45,7 +46,7 @@ export class MockResolver extends Resolver {
 			{} as NoteReactionsRepository,
 			{} as FollowRequestsRepository,
 			{} as UtilityService,
-			{} as InstanceActorService,
+			{} as SystemAccountService,
 			{} as ApRequestService,
 			{} as HttpRequestService,
 			{} as ApRendererService,
@@ -53,6 +54,7 @@ export class MockResolver extends Resolver {
 			loggerService,
 			{} as ApLogService,
 			{} as ApUtilityService,
+			{} as CacheService,
 		);
 	}
 
@@ -72,8 +74,11 @@ export class MockResolver extends Resolver {
 		return this.#remoteGetTrials;
 	}
 
+	public async resolve(value: string | [string]): Promise<IObjectWithId>;
+	public async resolve(value: string | IObject | [string | IObject]): Promise<IObject>;
 	@bindThis
-	public async resolve(value: string | IObject): Promise<IObject> {
+	public async resolve(value: string | IObject | [string | IObject]): Promise<IObject> {
+		value = fromTuple(value);
 		if (typeof value !== 'string') return value;
 
 		this.#remoteGetTrials.push(value);

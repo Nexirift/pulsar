@@ -8,6 +8,7 @@ import type { MiMeta } from '@/models/Meta.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { MetaService } from '@/core/MetaService.js';
+import { instanceUnsignedFetchOptions } from '@/const.js';
 
 export const meta = {
 	tags: ['admin'],
@@ -66,9 +67,10 @@ export const paramDef = {
 		name: { type: 'string', nullable: true },
 		shortName: { type: 'string', nullable: true },
 		description: { type: 'string', nullable: true },
+		about: { type: 'string', nullable: true },
 		defaultLightTheme: { type: 'string', nullable: true },
 		defaultDarkTheme: { type: 'string', nullable: true },
-		defaultLike: { type: 'string', nullable: true },
+		defaultLike: { type: 'string' },
 		cacheRemoteFiles: { type: 'boolean' },
 		cacheRemoteSensitiveFiles: { type: 'boolean' },
 		emailRequiredForSignup: { type: 'boolean' },
@@ -95,7 +97,6 @@ export const paramDef = {
 		setSensitiveFlagAutomatically: { type: 'boolean' },
 		enableSensitiveMediaDetectionForVideos: { type: 'boolean' },
 		enableBotTrending: { type: 'boolean' },
-		proxyAccountId: { type: 'string', format: 'misskey:id', nullable: true },
 		maintainerName: { type: 'string', nullable: true },
 		maintainerEmail: { type: 'string', nullable: true },
 		langs: {
@@ -103,10 +104,13 @@ export const paramDef = {
 				type: 'string',
 			},
 		},
+		translationTimeout: { type: 'number' },
 		deeplAuthKey: { type: 'string', nullable: true },
 		deeplIsPro: { type: 'boolean' },
 		deeplFreeMode: { type: 'boolean' },
 		deeplFreeInstance: { type: 'string', nullable: true },
+		libreTranslateURL: { type: 'string', nullable: true },
+		libreTranslateKey: { type: 'string', nullable: true },
 		enableEmail: { type: 'boolean' },
 		email: { type: 'string', nullable: true },
 		smtpSecure: { type: 'boolean' },
@@ -127,7 +131,7 @@ export const paramDef = {
 		useObjectStorage: { type: 'boolean' },
 		objectStorageBaseUrl: { type: 'string', nullable: true },
 		objectStorageBucket: { type: 'string', nullable: true },
-		objectStoragePrefix: { type: 'string', nullable: true },
+		objectStoragePrefix: { type: 'string', pattern: /^[a-zA-Z0-9-._\/]*$/.source, nullable: true },
 		objectStorageEndpoint: { type: 'string', nullable: true },
 		objectStorageRegion: { type: 'string', nullable: true },
 		objectStoragePort: { type: 'integer', nullable: true },
@@ -201,6 +205,26 @@ export const paramDef = {
 			type: 'array',
 			items: {
 				type: 'string',
+			},
+		},
+		allowUnsignedFetch: {
+			type: 'string',
+			enum: instanceUnsignedFetchOptions,
+			nullable: false,
+		},
+		enableProxyAccount: {
+			type: 'boolean',
+			nullable: false,
+		},
+		deliverSuspendedSoftware: {
+			type: 'array',
+			items: {
+				type: 'object',
+				properties: {
+					software: { type: 'string' },
+					versionRange: { type: 'string' },
+				},
+				required: ['software', 'versionRange'],
 			},
 		},
 	},
@@ -317,6 +341,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				set.description = ps.description;
 			}
 
+			if (ps.about !== undefined) {
+				set.about = ps.about;
+			}
+
 			if (ps.defaultLightTheme !== undefined) {
 				set.defaultLightTheme = ps.defaultLightTheme;
 			}
@@ -397,12 +425,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				set.turnstileSecretKey = ps.turnstileSecretKey;
 			}
 
-			if (ps.enableFC !== undefined) {
-				set.enableFC = ps.enableFC;
-			}
-
 			if (ps.enableTestcaptcha !== undefined) {
 				set.enableTestcaptcha = ps.enableTestcaptcha;
+			}
+
+			if (ps.enableFC !== undefined) {
+				set.enableFC = ps.enableFC;
 			}
 
 			if (ps.fcSiteKey !== undefined) {
@@ -415,10 +443,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.enableBotTrending !== undefined) {
 				set.enableBotTrending = ps.enableBotTrending;
-			}
-
-			if (ps.proxyAccountId !== undefined) {
-				set.proxyAccountId = ps.proxyAccountId;
 			}
 
 			if (ps.maintainerName !== undefined) {
@@ -553,6 +577,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				set.objectStorageS3ForcePathStyle = ps.objectStorageS3ForcePathStyle;
 			}
 
+			if (ps.translationTimeout !== undefined) {
+				set.translationTimeout = ps.translationTimeout;
+			}
+
 			if (ps.deeplAuthKey !== undefined) {
 				if (ps.deeplAuthKey === '') {
 					set.deeplAuthKey = null;
@@ -574,6 +602,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					set.deeplFreeInstance = null;
 				} else {
 					set.deeplFreeInstance = ps.deeplFreeInstance;
+				}
+			}
+
+			if (ps.libreTranslateURL !== undefined) {
+				if (ps.libreTranslateURL === '') {
+					set.libreTranslateURL = null;
+				} else {
+					set.libreTranslateURL = ps.libreTranslateURL;
+				}
+			}
+
+			if (ps.libreTranslateKey !== undefined) {
+				if (ps.libreTranslateKey === '') {
+					set.libreTranslateKey = null;
+				} else {
+					set.libreTranslateKey = ps.libreTranslateKey;
 				}
 			}
 
@@ -731,8 +775,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				set.federation = ps.federation;
 			}
 
+			if (ps.deliverSuspendedSoftware !== undefined) {
+				set.deliverSuspendedSoftware = ps.deliverSuspendedSoftware;
+			}
+
 			if (Array.isArray(ps.federationHosts)) {
 				set.federationHosts = ps.federationHosts.filter(Boolean).map(x => x.toLowerCase());
+			}
+
+			if (ps.allowUnsignedFetch !== undefined) {
+				set.allowUnsignedFetch = ps.allowUnsignedFetch;
+			}
+
+			if (ps.enableProxyAccount !== undefined) {
+				set.enableProxyAccount = ps.enableProxyAccount;
 			}
 
 			const before = await this.metaService.fetch(true);
@@ -742,9 +798,29 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const after = await this.metaService.fetch(true);
 
 			this.moderationLogService.log(me, 'updateServerSettings', {
-				before,
-				after,
+				before: sanitize(before),
+				after: sanitize(after),
 			});
 		});
 	}
 }
+
+function sanitize(meta: Partial<MiMeta>): Partial<MiMeta> {
+	return {
+		...meta,
+		hcaptchaSecretKey: '<redacted>',
+		mcaptchaSecretKey: '<redacted>',
+		recaptchaSecretKey: '<redacted>',
+		turnstileSecretKey: '<redacted>',
+		fcSecretKey: '<redacted>',
+		smtpPass: '<redacted>',
+		swPrivateKey: '<redacted>',
+		objectStorageAccessKey: '<redacted>',
+		objectStorageSecretKey: '<redacted>',
+		deeplAuthKey: '<redacted>',
+		libreTranslateKey: '<redacted>',
+		verifymailAuthKey: '<redacted>',
+		truemailAuthKey: '<redacted>',
+	};
+}
+

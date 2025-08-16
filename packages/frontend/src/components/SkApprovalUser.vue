@@ -1,6 +1,8 @@
 <!--
 SPDX-FileCopyrightText: marie and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Displays an account pending approval, with the signup reason and buttons to approve or delete it.
 -->
 
 <template>
@@ -19,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div>{{ email }}</div>
 			</div>
 			<div>
-				<div :class="$style.label">Reason</div>
+				<div :class="$style.label">{{ i18n.ts.signupReason }}</div>
 				<div>{{ reason }}</div>
 			</div>
 		</div>
@@ -38,7 +40,7 @@ import MkFolder from '@/components/MkFolder.vue';
 import MkButton from '@/components/MkButton.vue';
 import { i18n } from '@/i18n.js';
 import * as os from '@/os.js';
-import { misskeyApi } from '@/scripts/misskey-api.js';
+import { misskeyApi } from '@/utility/misskey-api.js';
 
 const props = defineProps<{
 	user: Misskey.entities.User;
@@ -65,7 +67,7 @@ const emits = defineEmits<{
 async function deleteAccount() {
 	const confirm = await os.confirm({
 		type: 'warning',
-		text: i18n.ts.deleteAccountConfirm,
+		text: i18n.ts.deleteThisAccountConfirm,
 	});
 	if (confirm.canceled) return;
 

@@ -3,9 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Entity, Column, Index, OneToOne, JoinColumn, PrimaryColumn } from 'typeorm';
+import { Entity, Column, Index, OneToOne, JoinColumn, PrimaryColumn, ManyToOne } from 'typeorm';
+import { type UserUnsignedFetchOption, userUnsignedFetchOptions } from '@/const.js';
+import { MiInstance } from '@/models/Instance.js';
 import { id } from './util/id.js';
 import { MiDriveFile } from './DriveFile.js';
+import type { MiUserProfile } from './UserProfile.js';
 
 @Entity('user')
 @Index(['usernameLower', 'host'], { unique: true })
@@ -125,17 +128,21 @@ export class MiUser {
 	})
 	public backgroundId: MiDriveFile['id'] | null;
 
-	@OneToOne(type => MiDriveFile, {
+	@OneToOne(() => MiDriveFile, {
 		onDelete: 'SET NULL',
 	})
-	@JoinColumn()
+	@JoinColumn({
+		foreignKeyConstraintName: 'FK_q5lm0tbgejtfskzg0rc4wd7t1n',
+	})
 	public background: MiDriveFile | null;
 
+	// avatarId が null になったとしてもこれが null でない可能性があるため、このフィールドを使うときは avatarId の non-null チェックをすること
 	@Column('varchar', {
 		length: 512, nullable: true,
 	})
 	public avatarUrl: string | null;
 
+	// bannerId が null になったとしてもこれが null でない可能性があるため、このフィールドを使うときは bannerId の non-null チェックをすること
 	@Column('varchar', {
 		length: 512, nullable: true,
 	})
@@ -146,11 +153,13 @@ export class MiUser {
 	})
 	public backgroundUrl: string | null;
 
+	// avatarId が null になったとしてもこれが null でない可能性があるため、このフィールドを使うときは avatarId の non-null チェックをすること
 	@Column('varchar', {
 		length: 128, nullable: true,
 	})
 	public avatarBlurhash: string | null;
 
+	// bannerId が null になったとしてもこれが null でない可能性があるため、このフィールドを使うときは bannerId の non-null チェックをすること
 	@Column('varchar', {
 		length: 128, nullable: true,
 	})
@@ -226,12 +235,6 @@ export class MiUser {
 	})
 	public speakAsCat: boolean;
 
-	@Column('boolean', {
-		default: false,
-		comment: 'Whether the User is the root.',
-	})
-	public isRoot: boolean;
-
 	@Index()
 	@Column('boolean', {
 		default: true,
@@ -273,12 +276,33 @@ export class MiUser {
 	})
 	public emojis: string[];
 
+	// チャットを許可する相手
+	// everyone: 誰からでも
+	// followers: フォロワーのみ
+	// following: フォローしているユーザーのみ
+	// mutual: 相互フォローのみ
+	// none: 誰からも受け付けない
+	@Column('varchar', {
+		length: 128, default: 'mutual',
+	})
+	public chatScope: 'everyone' | 'followers' | 'following' | 'mutual' | 'none';
+
 	@Index()
 	@Column('varchar', {
 		length: 128, nullable: true,
 		comment: 'The host of the User. It will be null if the origin of the user is local.',
 	})
 	public host: string | null;
+
+	@ManyToOne(() => MiInstance, {
+		onDelete: 'CASCADE',
+	})
+	@JoinColumn({
+		name: 'host',
+		foreignKeyConstraintName: 'FK_user_host',
+		referencedColumnName: 'host',
+	})
+	public instance: MiInstance | null;
 
 	@Column('varchar', {
 		length: 512, nullable: true,
@@ -335,7 +359,7 @@ export class MiUser {
 	 */
 	@Column('boolean', {
 		name: 'enable_rss',
-		default: true,
+		default: false,
 	})
 	public enableRss: boolean;
 
@@ -357,6 +381,24 @@ export class MiUser {
 	})
 	public rejectQuotes: boolean;
 
+	/**
+	 * In combination with meta.allowUnsignedFetch, controls enforcement of HTTP signatures for inbound ActivityPub fetches (GET requests).
+	 */
+	@Column('enum', {
+		enum: userUnsignedFetchOptions,
+		default: 'staff',
+	})
+	public allowUnsignedFetch: UserUnsignedFetchOption;
+
+	@Column('text', {
+		name: 'attributionDomains',
+		array: true, default: '{}',
+	})
+	public attributionDomains: string[];
+
+	@OneToOne('user_profile', (profile: MiUserProfile) => profile.user)
+	public userProfile: MiUserProfile | null;
+
 	constructor(data: Partial<MiUser>) {
 		if (data == null) return;
 
@@ -369,30 +411,30 @@ export class MiUser {
 export type MiLocalUser = MiUser & {
 	host: null;
 	uri: null;
-}
+};
 
 export type MiPartialLocalUser = Partial<MiUser> & {
 	id: MiUser['id'];
 	host: null;
 	uri: null;
-}
+};
 
 export type MiRemoteUser = MiUser & {
 	host: string;
 	uri: string;
-}
+};
 
 export type MiPartialRemoteUser = Partial<MiUser> & {
 	id: MiUser['id'];
 	host: string;
 	uri: string;
-}
+};
 
 export const localUsernameSchema = { type: 'string', pattern: /^\w{1,20}$/.toString().slice(1, -1) } as const;
 export const passwordSchema = { type: 'string', minLength: 1 } as const;
 export const nameSchema = { type: 'string', minLength: 1, maxLength: 50 } as const;
-export const descriptionSchema = { type: 'string', minLength: 1, maxLength: 1500 } as const;
+export const descriptionSchema = { type: 'string', minLength: 1 } as const;
 export const followedMessageSchema = { type: 'string', minLength: 1, maxLength: 256 } as const;
 export const locationSchema = { type: 'string', minLength: 1, maxLength: 50 } as const;
-export const listenbrainzSchema = { type: "string", minLength: 1, maxLength: 128 } as const;
+export const listenbrainzSchema = { type: 'string', minLength: 1, maxLength: 128 } as const;
 export const birthdaySchema = { type: 'string', pattern: /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.toString().slice(1, -1) } as const;

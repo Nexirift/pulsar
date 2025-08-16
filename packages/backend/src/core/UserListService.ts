@@ -6,26 +6,27 @@
 import { Inject, Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { ModuleRef } from '@nestjs/core';
-import type { UserListMembershipsRepository } from '@/models/_.js';
+import type { MiMeta, UserListMembershipsRepository } from '@/models/_.js';
 import type { MiUser } from '@/models/User.js';
 import type { MiUserList } from '@/models/UserList.js';
 import type { MiUserListMembership } from '@/models/UserListMembership.js';
 import { IdService } from '@/core/IdService.js';
-import type { GlobalEvents } from '@/core/GlobalEventService.js';
+import type { GlobalEvents, InternalEventTypes } from '@/core/GlobalEventService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { ProxyAccountService } from '@/core/ProxyAccountService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueService } from '@/core/QueueService.js';
-import { RedisKVCache } from '@/misc/cache.js';
+import { QuantumKVCache } from '@/misc/QuantumKVCache.js';
 import { RoleService } from '@/core/RoleService.js';
+import { SystemAccountService } from '@/core/SystemAccountService.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
 
 @Injectable()
 export class UserListService implements OnApplicationShutdown, OnModuleInit {
 	public static TooManyUsersError = class extends Error {};
 
-	public membersCache: RedisKVCache<Set<string>>;
+	public membersCache: QuantumKVCache<Set<string>>;
 	private roleService: RoleService;
 
 	constructor(
@@ -40,21 +41,23 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 		@Inject(DI.userListMembershipsRepository)
 		private userListMembershipsRepository: UserListMembershipsRepository,
 
+		@Inject(DI.meta)
+		private readonly meta: MiMeta,
+
 		private userEntityService: UserEntityService,
 		private idService: IdService,
 		private globalEventService: GlobalEventService,
-		private proxyAccountService: ProxyAccountService,
 		private queueService: QueueService,
+		private systemAccountService: SystemAccountService,
+		private readonly internalEventService: InternalEventService,
 	) {
-		this.membersCache = new RedisKVCache<Set<string>>(this.redisClient, 'userListMembers', {
+		this.membersCache = new QuantumKVCache<Set<string>>(this.internalEventService, 'userListMembers', {
 			lifetime: 1000 * 60 * 30, // 30m
-			memoryCacheLifetime: 1000 * 60, // 1m
 			fetcher: (key) => this.userListMembershipsRepository.find({ where: { userListId: key }, select: ['userId'] }).then(xs => new Set(xs.map(x => x.userId))),
-			toRedisConverter: (value) => JSON.stringify(Array.from(value)),
-			fromRedisConverter: (value) => new Set(JSON.parse(value)),
 		});
 
-		this.redisForSub.on('message', this.onMessage);
+		this.internalEventService.on('userListMemberAdded', this.onMessage);
+		this.internalEventService.on('userListMemberRemoved', this.onMessage);
 	}
 
 	async onModuleInit() {
@@ -62,15 +65,12 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 	}
 
 	@bindThis
-	private async onMessage(_: string, data: string): Promise<void> {
-		const obj = JSON.parse(data);
-
-		if (obj.channel === 'internal') {
-			const { type, body } = obj.message as GlobalEvents['internal']['payload'];
+	private async onMessage<E extends 'userListMemberAdded' | 'userListMemberRemoved'>(body: InternalEventTypes[E], type: E): Promise<void> {
+		{
 			switch (type) {
 				case 'userListMemberAdded': {
 					const { userListId, memberId } = body;
-					const members = await this.membersCache.get(userListId);
+					const members = this.membersCache.get(userListId);
 					if (members) {
 						members.add(memberId);
 					}
@@ -78,7 +78,7 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 				}
 				case 'userListMemberRemoved': {
 					const { userListId, memberId } = body;
-					const members = await this.membersCache.get(userListId);
+					const members = this.membersCache.get(userListId);
 					if (members) {
 						members.delete(memberId);
 					}
@@ -110,11 +110,9 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 		this.globalEventService.publishUserListStream(list.id, 'userAdded', await this.userEntityService.pack(target));
 
 		// このインスタンス内にこのリモートユーザーをフォローしているユーザーがいなくても投稿を受け取るためにダミーのユーザーがフォローしたということにする
-		if (this.userEntityService.isRemoteUser(target)) {
-			const proxy = await this.proxyAccountService.fetch();
-			if (proxy) {
-				this.queueService.createFollowJob([{ from: { id: proxy.id }, to: { id: target.id } }]);
-			}
+		if (this.userEntityService.isRemoteUser(target) && this.meta.enableProxyAccount) {
+			const proxy = await this.systemAccountService.fetch('proxy');
+			this.queueService.createFollowJob([{ from: { id: proxy.id }, to: { id: target.id } }]);
 		}
 	}
 
@@ -149,7 +147,8 @@ export class UserListService implements OnApplicationShutdown, OnModuleInit {
 
 	@bindThis
 	public dispose(): void {
-		this.redisForSub.off('message', this.onMessage);
+		this.internalEventService.off('userListMemberAdded', this.onMessage);
+		this.internalEventService.off('userListMemberRemoved', this.onMessage);
 		this.membersCache.dispose();
 	}
 

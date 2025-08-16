@@ -44,6 +44,9 @@ import { correctFilename } from '@/misc/correct-filename.js';
 import { isMimeImage } from '@/misc/is-mime-image.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { UtilityService } from '@/core/UtilityService.js';
+import { BunnyService } from '@/core/BunnyService.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
+import { LoggerService } from './LoggerService.js';
 
 type AddFileArgs = {
 	/** User who wish to add file */
@@ -121,6 +124,7 @@ export class DriveService {
 		private downloadService: DownloadService,
 		private internalStorageService: InternalStorageService,
 		private s3Service: S3Service,
+		private bunnyService: BunnyService,
 		private imageProcessingService: ImageProcessingService,
 		private videoProcessingService: VideoProcessingService,
 		private globalEventService: GlobalEventService,
@@ -131,8 +135,10 @@ export class DriveService {
 		private perUserDriveChart: PerUserDriveChart,
 		private instanceChart: InstanceChart,
 		private utilityService: UtilityService,
+
+		loggerService: LoggerService,
 	) {
-		const logger = new Logger('drive', 'blue');
+		const logger = loggerService.getLogger('drive', 'blue');
 		this.registerLogger = logger.createSubLogger('register', 'yellow');
 		this.downloaderLogger = logger.createSubLogger('downloader');
 		this.deleteLogger = logger.createSubLogger('delete');
@@ -148,11 +154,22 @@ export class DriveService {
 	@bindThis
 	private async save(file: MiDriveFile, path: string, name: string, info: FileInfo): Promise<MiDriveFile> {
 		const type = info.type.mime;
-		const hash = info.md5;
-		const size = info.size;
+		let hash = info.md5;
+		let size = info.size;
 
 		// thunbnail, webpublic を必要なら生成
 		const alts = await this.generateAlts(path, type, !file.uri);
+
+		if (type && type.startsWith('video/')) {
+			try {
+				await this.videoProcessingService.webOptimizeVideo(path, type);
+				const newInfo = await this.fileInfoService.getFileInfo(path);
+				hash = newInfo.md5;
+				size = newInfo.size;
+			} catch (err) {
+				this.registerLogger.warn(`Video optimization failed: ${renderInlineError(err)}`);
+			}
+		}
 
 		if (this.meta.useObjectStorage) {
 		//#region ObjectStorage params
@@ -177,7 +194,8 @@ export class DriveService {
 				?? `${ this.meta.objectStorageUseSSL ? 'https' : 'http' }://${ this.meta.objectStorageEndpoint }${ this.meta.objectStoragePort ? `:${this.meta.objectStoragePort}` : '' }/${ this.meta.objectStorageBucket }`;
 
 			// for original
-			const key = `${this.meta.objectStoragePrefix}/${randomUUID()}${ext}`;
+			const prefix = this.meta.objectStoragePrefix ? `${this.meta.objectStoragePrefix}/` : '';
+			const key = `${prefix}${randomUUID()}${ext}`;
 			const url = `${ baseUrl }/${ key }`;
 
 			// for alts
@@ -188,24 +206,24 @@ export class DriveService {
 			//#endregion
 
 			//#region Uploads
-			this.registerLogger.info(`uploading original: ${key}`);
+			this.registerLogger.debug(`uploading original: ${key}`);
 			const uploads = [
 				this.upload(key, fs.createReadStream(path), type, null, name),
 			];
 
 			if (alts.webpublic) {
-				webpublicKey = `${this.meta.objectStoragePrefix}/webpublic-${randomUUID()}.${alts.webpublic.ext}`;
+				webpublicKey = `${prefix}webpublic-${randomUUID()}.${alts.webpublic.ext}`;
 				webpublicUrl = `${ baseUrl }/${ webpublicKey }`;
 
-				this.registerLogger.info(`uploading webpublic: ${webpublicKey}`);
+				this.registerLogger.debug(`uploading webpublic: ${webpublicKey}`);
 				uploads.push(this.upload(webpublicKey, alts.webpublic.data, alts.webpublic.type, alts.webpublic.ext, name));
 			}
 
 			if (alts.thumbnail) {
-				thumbnailKey = `${this.meta.objectStoragePrefix}/thumbnail-${randomUUID()}.${alts.thumbnail.ext}`;
+				thumbnailKey = `${prefix}thumbnail-${randomUUID()}.${alts.thumbnail.ext}`;
 				thumbnailUrl = `${ baseUrl }/${ thumbnailKey }`;
 
-				this.registerLogger.info(`uploading thumbnail: ${thumbnailKey}`);
+				this.registerLogger.debug(`uploading thumbnail: ${thumbnailKey}`);
 				uploads.push(this.upload(thumbnailKey, alts.thumbnail.data, alts.thumbnail.type, alts.thumbnail.ext, `${name}.thumbnail`));
 			}
 
@@ -249,11 +267,11 @@ export class DriveService {
 			const [url, thumbnailUrl, webpublicUrl] = await Promise.all(promises);
 
 			if (thumbnailUrl) {
-				this.registerLogger.info(`thumbnail stored: ${thumbnailAccessKey}`);
+				this.registerLogger.debug(`thumbnail stored: ${thumbnailAccessKey}`);
 			}
 
 			if (webpublicUrl) {
-				this.registerLogger.info(`web stored: ${webpublicAccessKey}`);
+				this.registerLogger.debug(`web stored: ${webpublicAccessKey}`);
 			}
 
 			file.storedInternal = true;
@@ -297,7 +315,7 @@ export class DriveService {
 					thumbnail,
 				};
 			} catch (err) {
-				this.registerLogger.warn(`GenerateVideoThumbnail failed: ${err}`);
+				this.registerLogger.warn(`GenerateVideoThumbnail failed: ${renderInlineError(err)}`);
 				return {
 					webpublic: null,
 					thumbnail: null,
@@ -330,7 +348,7 @@ export class DriveService {
 			metadata.height && metadata.height <= 2048
 			);
 		} catch (err) {
-			this.registerLogger.warn(`sharp failed: ${err}`);
+			this.registerLogger.warn(`sharp failed: ${renderInlineError(err)}`);
 			return {
 				webpublic: null,
 				thumbnail: null,
@@ -341,7 +359,7 @@ export class DriveService {
 		let webpublic: IImage | null = null;
 
 		if (generateWeb && !satisfyWebpublic && !isAnimated) {
-			this.registerLogger.info('creating web image');
+			this.registerLogger.debug('creating web image');
 
 			try {
 				if (['image/jpeg', 'image/webp', 'image/avif'].includes(type)) {
@@ -352,12 +370,12 @@ export class DriveService {
 					this.registerLogger.debug('web image not created (not an required image)');
 				}
 			} catch (err) {
-				this.registerLogger.warn('web image not created (an error occurred)', err as Error);
+				this.registerLogger.warn(`web image not created: ${renderInlineError(err)}`);
 			}
 		} else {
-			if (satisfyWebpublic) this.registerLogger.info('web image not created (original satisfies webpublic)');
-			else if (isAnimated) this.registerLogger.info('web image not created (animated image)');
-			else this.registerLogger.info('web image not created (from remote)');
+			if (satisfyWebpublic) this.registerLogger.debug('web image not created (original satisfies webpublic)');
+			else if (isAnimated) this.registerLogger.debug('web image not created (animated image)');
+			else this.registerLogger.debug('web image not created (from remote)');
 		}
 		// #endregion webpublic
 
@@ -371,7 +389,7 @@ export class DriveService {
 				thumbnail = await this.imageProcessingService.convertSharpToWebp(img, 498, 422);
 			}
 		} catch (err) {
-			this.registerLogger.warn('thumbnail not created (an error occurred)', err as Error);
+			this.registerLogger.warn(`Error creating thumbnail: ${renderInlineError(err)}`);
 		}
 		// #endregion thumbnail
 
@@ -405,20 +423,22 @@ export class DriveService {
 		);
 		if (this.meta.objectStorageSetPublicRead) params.ACL = 'public-read';
 
-		await this.s3Service.upload(this.meta, params)
-			.then(
-				result => {
-					if ('Bucket' in result) { // CompleteMultipartUploadCommandOutput
-						this.registerLogger.debug(`Uploaded: ${result.Bucket}/${result.Key} => ${result.Location}`);
-					} else { // AbortMultipartUploadCommandOutput
-						this.registerLogger.error(`Upload Result Aborted: key = ${key}, filename = ${filename}`);
-					}
-				})
-			.catch(
-				err => {
-					this.registerLogger.error(`Upload Failed: key = ${key}, filename = ${filename}`, err);
-				},
-			);
+		try {
+			if (this.bunnyService.usingBunnyCDN(this.meta)) {
+				await this.bunnyService.upload(this.meta, key, stream);
+			} else {
+				const result = await this.s3Service.upload(this.meta, params);
+				if ('Bucket' in result) { // CompleteMultipartUploadCommandOutput
+					this.registerLogger.debug(`Uploaded: ${result.Bucket}/${result.Key} => ${result.Location}`);
+				} else { // AbortMultipartUploadCommandOutput
+					this.registerLogger.error(`Upload Result Aborted: key = ${key}, filename = ${filename}`);
+					throw new Error('S3 upload aborted');
+				}
+			}
+		} catch (err) {
+			this.registerLogger.error(`Upload Failed: key = ${key}, filename = ${filename}: ${renderInlineError(err)}`);
+			throw err;
+		}
 	}
 
 	// Expire oldest file (without avatar or banner) of remote user
@@ -476,7 +496,6 @@ export class DriveService {
 	}: AddFileArgs): Promise<MiDriveFile> {
 		const userRoleNSFW = user && (await this.roleService.getUserPolicies(user.id)).alwaysMarkNsfw;
 		const info = await this.fileInfoService.getFileInfo(path);
-		this.registerLogger.info(`${JSON.stringify(info)}`);
 
 		// detect name
 		const detectedName = correctFilename(
@@ -486,6 +505,8 @@ export class DriveService {
 			ext ?? info.type.ext,
 		);
 
+		this.registerLogger.debug(`Detected file info: ${JSON.stringify(info)}`);
+
 		if (user && !force) {
 		// Check if there is a file with the same hash
 			const matched = await this.driveFilesRepository.findOneBy({
@@ -494,7 +515,7 @@ export class DriveService {
 			});
 
 			if (matched) {
-				this.registerLogger.info(`file with same hash is found: ${matched.id}`);
+				this.registerLogger.debug(`file with same hash is found: ${matched.id}`);
 				if (sensitive && !matched.isSensitive) {
 					// The file is federated as sensitive for this time, but was federated as non-sensitive before.
 					// Therefore, update the file to sensitive.
@@ -514,11 +535,23 @@ export class DriveService {
 
 			const policies = await this.roleService.getUserPolicies(user.id);
 			const driveCapacity = 1024 * 1024 * policies.driveCapacityMb;
+			const maxFileSize = 1024 * 1024 * policies.maxFileSizeMb;
 			this.registerLogger.debug('drive capacity override applied');
 			this.registerLogger.debug(`overrideCap: ${driveCapacity}bytes, usage: ${usage}bytes, u+s: ${usage + info.size}bytes`);
 
+			if (maxFileSize < info.size) {
+				if (isLocalUser) {
+					throw new IdentifiableError('f9e4e5f3-4df4-40b5-b400-f236945f7073', 'Max file size exceeded.');
+				} else {
+					// For remote users, throwing an exception will break Activity processing.
+					// Instead, force "link" mode which does not cache the file locally.
+					isLink = true;
+				}
+			}
+
 			// If usage limit exceeded
-			if (driveCapacity < usage + info.size) {
+			// Repeat the "!isLink" check because it could be set to true by the previous block.
+			if (driveCapacity < usage + info.size && !isLink) {
 				if (isLocalUser) {
 					throw new IdentifiableError('c6244ed2-a39a-4e1c-bf93-f0fbd7764fa6', 'No free space.', true);
 				}
@@ -610,14 +643,14 @@ export class DriveService {
 			} catch (err) {
 			// duplicate key error (when already registered)
 				if (isDuplicateKeyValueError(err)) {
-					this.registerLogger.info(`already registered ${file.uri}`);
+					this.registerLogger.debug(`already registered ${file.uri}`);
 
 					file = await this.driveFilesRepository.findOneBy({
 						uri: file.uri!,
 						userId: user ? user.id : IsNull(),
 					}) as MiDriveFile;
 				} else {
-					this.registerLogger.error(err as Error);
+					this.registerLogger.error('Error in drive register', err as Error);
 					throw err;
 				}
 			}
@@ -625,7 +658,7 @@ export class DriveService {
 			file = await (this.save(file, path, detectedName, info));
 		}
 
-		this.registerLogger.succ(`drive file has been created ${file.id}`);
+		this.registerLogger.info(`Created file ${file.id} (${detectedName}) of type ${info.type.mime} for user ${user?.id ?? '<none>'}`);
 
 		if (user) {
 			this.driveFileEntityService.pack(file, { self: true }).then(packedFile => {
@@ -708,14 +741,14 @@ export class DriveService {
 	@bindThis
 	public async deleteFile(file: MiDriveFile, isExpired = false, deleter?: MiUser) {
 		if (file.storedInternal) {
-			this.internalStorageService.del(file.accessKey!);
+			this.deleteLocalFile(file.accessKey!);
 
 			if (file.thumbnailUrl) {
-				this.internalStorageService.del(file.thumbnailAccessKey!);
+				this.deleteLocalFile(file.thumbnailAccessKey!);
 			}
 
 			if (file.webpublicUrl) {
-				this.internalStorageService.del(file.webpublicAccessKey!);
+				this.deleteLocalFile(file.webpublicAccessKey!);
 			}
 		} else if (!file.isLink) {
 			this.queueService.createDeleteObjectStorageFileJob(file.accessKey!);
@@ -737,14 +770,14 @@ export class DriveService {
 		const promises = [];
 
 		if (file.storedInternal) {
-			promises.push(this.internalStorageService.del(file.accessKey!));
+			promises.push(this.deleteLocalFile(file.accessKey!));
 
 			if (file.thumbnailUrl) {
-				promises.push(this.internalStorageService.del(file.thumbnailAccessKey!));
+				promises.push(this.deleteLocalFile(file.thumbnailAccessKey!));
 			}
 
 			if (file.webpublicUrl) {
-				promises.push(this.internalStorageService.del(file.webpublicAccessKey!));
+				promises.push(this.deleteLocalFile(file.webpublicAccessKey!));
 			}
 		} else if (!file.isLink) {
 			promises.push(this.deleteObjectStorageFile(file.accessKey!));
@@ -814,14 +847,33 @@ export class DriveService {
 				Bucket: this.meta.objectStorageBucket,
 				Key: key,
 			} as DeleteObjectCommandInput;
-
-			await this.s3Service.delete(this.meta, param);
+			if (this.bunnyService.usingBunnyCDN(this.meta)) {
+				await this.bunnyService.delete(this.meta, key);
+			} else {
+				await this.s3Service.delete(this.meta, param);
+			}
 		} catch (err: any) {
 			if (err.name === 'NoSuchKey') {
-				this.deleteLogger.warn(`The object storage had no such key to delete: ${key}. Skipping this.`, err as Error);
+				this.deleteLogger.warn(`The object storage had no such key to delete: ${key}. Skipping this.`);
 				return;
 			} else {
 				throw new Error(`Failed to delete the file from the object storage with the given key: ${key}`, {
+					cause: err,
+				});
+			}
+		}
+	}
+
+	@bindThis
+	public async deleteLocalFile(key: string) {
+		try {
+			await this.internalStorageService.del(key);
+		} catch (err: any) {
+			if (err.code === 'ENOENT') {
+				this.deleteLogger.warn(`The file to delete did not exist: ${key}. Skipping this.`);
+				return;
+			} else {
+				throw new Error(`Failed to delete the file: ${key}`, {
 					cause: err,
 				});
 			}
@@ -855,13 +907,10 @@ export class DriveService {
 			}
 
 			const driveFile = await this.addFile({ user, path, name, comment, folderId, force, isLink, url, uri, sensitive, requestIp, requestHeaders });
-			this.downloaderLogger.succ(`Got: ${driveFile.id}`);
+			this.downloaderLogger.debug(`Upload succeeded: created file ${driveFile.id}`);
 			return driveFile!;
 		} catch (err) {
-			this.downloaderLogger.error(`Failed to create drive file: ${err}`, {
-				url: url,
-				e: err,
-			});
+			this.downloaderLogger.error(`Failed to create drive file from ${url}: ${renderInlineError(err)}`);
 			throw err;
 		} finally {
 			cleanup();

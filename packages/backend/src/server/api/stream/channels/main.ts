@@ -32,27 +32,25 @@ class MainChannel extends Channel {
 			switch (data.type) {
 				case 'notification': {
 					// Ignore notifications from instances the user has muted
-					if (isUserFromMutedInstance(data.body, new Set<string>(this.userProfile?.mutedInstances ?? []))) return;
+					if (isUserFromMutedInstance(data.body, this.userMutedInstances)) return;
 					if (data.body.userId && this.userIdsWhoMeMuting.has(data.body.userId)) return;
 
 					if (data.body.note && data.body.note.isHidden) {
+						if (this.isNoteMutedOrBlocked(data.body.note)) return;
+						if (!this.isNoteVisibleToMe(data.body.id)) return;
 						const note = await this.noteEntityService.pack(data.body.note.id, this.user, {
 							detail: true,
 						});
-						this.connection.cacheNote(note);
 						data.body.note = note;
 					}
 					break;
 				}
 				case 'mention': {
-					if (isInstanceMuted(data.body, new Set<string>(this.userProfile?.mutedInstances ?? []))) return;
-
-					if (this.userIdsWhoMeMuting.has(data.body.userId)) return;
+					if (this.isNoteMutedOrBlocked(data.body)) return;
 					if (data.body.isHidden) {
 						const note = await this.noteEntityService.pack(data.body.id, this.user, {
 							detail: true,
 						});
-						this.connection.cacheNote(note);
 						data.body = note;
 					}
 					break;

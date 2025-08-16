@@ -11,14 +11,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 	@close="cancel()"
 >
 	<template #header>{{ i18n.ts.schedulePostList }}</template>
-	<MkSpacer :marginMin="14" :marginMax="16">
+	<div class="_spacer" style="--MI_SPACER-min: 14px; --MI_SPACER-max: 16px;">
 		<MkPagination ref="paginationEl" :pagination="pagination">
-			<template #empty>
-				<div class="_fullinfo">
-					<img :src="infoImageUrl" class="_ghost"/>
-					<div>{{ i18n.ts.nothing }}</div>
-				</div>
-			</template>
+			<template #empty><MkResult type="empty" :text="i18n.ts.nothing"/></template>
 
 			<template #default="{ items }">
 				<div class="_gaps">
@@ -26,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</template>
 		</MkPagination>
-	</MkSpacer>
+	</div>
 </MkModalWindow>
 </template>
 
@@ -37,7 +32,6 @@ import MkModalWindow from '@/components/MkModalWindow.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import MkNoteSimple from '@/components/MkNoteSimple.vue';
 import { i18n } from '@/i18n.js';
-import { infoImageUrl } from '@/instance.js';
 
 const emit = defineEmits<{
 	(ev: 'cancel'): void;

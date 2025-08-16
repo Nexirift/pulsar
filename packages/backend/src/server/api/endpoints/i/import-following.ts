@@ -15,11 +15,14 @@ import { ApiError } from '../../error.js';
 export const meta = {
 	secure: true,
 	requireCredential: true,
-	requireRolePolicy: 'canImportFollowing',
+	requiredRolePolicy: 'canImportFollowing',
 	prohibitMoved: true,
+
+	// 1 per minute
 	limit: {
-		duration: ms('1hour'),
-		max: 1,
+		type: 'bucket',
+		size: 1,
+		dripRate: 1000 * 60,
 	},
 
 	errors: {

@@ -24,20 +24,48 @@ export interface IObject {
 	cc?: ApObject;
 	to?: ApObject;
 	attributedTo?: ApObject;
-	attachment?: any[];
+	attachment?: IApDocument[];
 	inReplyTo?: any;
-	replies?: ICollection;
+	replies?: ICollection | IOrderedCollection | string;
 	content?: string | null;
-	startTime?: Date;
-	endTime?: Date;
+	startTime?: Date; // TODO these are wrong - should be string
+	endTime?: Date; // TODO these are wrong - should be string
+	updated?: string;
 	icon?: any;
 	image?: any;
 	mediaType?: string;
 	url?: ApObject | string;
 	href?: string;
+	rel?: string | string[];
 	tag?: IObject | IObject[];
 	sensitive?: boolean;
 }
+
+export interface IObjectWithId extends IObject {
+	id: string;
+}
+
+export function isObjectWithId(object: IObject): object is IObjectWithId {
+	return typeof(object.id) === 'string';
+}
+
+export interface IAnonymousObject extends IObject {
+	id: undefined;
+}
+
+export function isAnonymousObject(object: IObject): object is IAnonymousObject {
+	return object.id === undefined;
+}
+
+export interface ILink extends IObject {
+	'@context'?: string | string[] | Obj | Obj[];
+	type: 'Link' | 'Mention';
+	href: string;
+}
+
+export const isLink = (object: IObject): object is ILink =>
+	(getApType(object) === 'Link' || getApType(object) === 'Link') &&
+	typeof object.href === 'string';
 
 /**
  * Get array of ActivityStreams Objects id
@@ -59,24 +87,34 @@ export function getOneApId(value: ApObject): string {
 /**
  * Get ActivityStreams Object id
  */
-export function getApId(value: string | IObject | [string | IObject]): string {
-	// eslint-disable-next-line no-param-reassign
-	value = fromTuple(value);
+export function getApId(value: unknown | [unknown] | unknown[], sourceForLogs?: string): string {
+	const id = getNullableApId(value);
 
-	if (typeof value === 'string') return value;
-	if (typeof value.id === 'string') return value.id;
-	throw new IdentifiableError('ad2dc287-75c1-44c4-839d-3d2e64576675', `invalid AP object ${value}: missing id`);
+	if (id == null) {
+		const message = sourceForLogs
+			? `invalid AP object ${value} (sent from ${sourceForLogs}): missing id`
+			: `invalid AP object ${value}: missing id`;
+		throw new IdentifiableError('ad2dc287-75c1-44c4-839d-3d2e64576675', message);
+	}
+
+	return id;
 }
 
 /**
  * Get ActivityStreams Object id, or null if not present
  */
-export function getNullableApId(value: string | IObject | [string | IObject]): string | null {
-	// eslint-disable-next-line no-param-reassign
-	value = fromTuple(value);
+export function getNullableApId(source: unknown | [unknown] | unknown[]): string | null {
+	const value: unknown = fromTuple(source);
 
-	if (typeof value === 'string') return value;
-	if (typeof value.id === 'string') return value.id;
+	if (value != null) {
+		if (typeof value === 'string') {
+			return value;
+		}
+		if (typeof (value) === 'object' && 'id' in value && typeof (value.id) === 'string') {
+			return value.id;
+		}
+	}
+
 	return null;
 }
 
@@ -108,7 +146,7 @@ export interface IActivity extends IObject {
 	actor: IObject | string;
 	// ActivityPub spec allows for arrays: https://www.w3.org/TR/activitystreams-vocabulary/#properties
 	// Misskey can only handle one value, so we use a tuple for that case.
-	object: IObject | string | [IObject | string] ;
+	object: IObject | string | [IObject | string];
 	target?: IObject | string;
 	/** LD-Signature */
 	signature?: {
@@ -121,19 +159,45 @@ export interface IActivity extends IObject {
 	};
 }
 
-export interface ICollection extends IObject {
-	type: 'Collection';
-	totalItems: number;
+export interface CollectionBase extends IObject {
+	totalItems?: number;
 	first?: IObject | string;
+	last?: IObject | string;
+	current?: IObject | string;
+	partOf?: IObject | string;
+	next?: IObject | string;
+	prev?: IObject | string;
 	items?: ApObject;
-}
-
-export interface IOrderedCollection extends IObject {
-	type: 'OrderedCollection';
-	totalItems: number;
-	first?: IObject | string;
 	orderedItems?: ApObject;
 }
+
+export interface ICollection extends CollectionBase {
+	type: 'Collection';
+	totalItems: number;
+	items?: ApObject;
+	orderedItems?: undefined;
+}
+
+export interface IOrderedCollection extends CollectionBase {
+	type: 'OrderedCollection';
+	totalItems: number;
+	items?: undefined;
+	orderedItems?: ApObject;
+}
+
+export interface ICollectionPage extends CollectionBase {
+	type: 'CollectionPage';
+	items?: ApObject;
+	orderedItems?: undefined;
+}
+
+export interface IOrderedCollectionPage extends CollectionBase {
+	type: 'OrderedCollectionPage';
+	items?: undefined;
+	orderedItems?: ApObject;
+}
+
+export type AnyCollection = ICollection | IOrderedCollection | ICollectionPage | IOrderedCollectionPage;
 
 export const validPost = ['Note', 'Question', 'Article', 'Audio', 'Document', 'Image', 'Page', 'Video', 'Event'];
 
@@ -152,7 +216,7 @@ export interface IPost extends IObject {
 	_misskey_content?: string;
 	quoteUrl?: string;
 	quoteUri?: string;
-	updated?: string;
+	quote?: string;
 }
 
 export interface IQuestion extends IObject {
@@ -212,7 +276,7 @@ export interface IActor extends IObject {
 	followers?: string | ICollection | IOrderedCollection;
 	following?: string | ICollection | IOrderedCollection;
 	featured?: string | IOrderedCollection;
-	outbox: string | IOrderedCollection;
+	outbox?: string | IOrderedCollection;
 	endpoints?: {
 		sharedInbox?: string;
 	};
@@ -223,6 +287,7 @@ export interface IActor extends IObject {
 	enableRss?: boolean;
 	listenbrainz?: string;
 	backgroundUrl?: string;
+	attributionDomains?: string[];
 }
 
 export const isCollection = (object: IObject): object is ICollection =>
@@ -231,8 +296,14 @@ export const isCollection = (object: IObject): object is ICollection =>
 export const isOrderedCollection = (object: IObject): object is IOrderedCollection =>
 	getApType(object) === 'OrderedCollection';
 
-export const isCollectionOrOrderedCollection = (object: IObject): object is ICollection | IOrderedCollection =>
-	isCollection(object) || isOrderedCollection(object);
+export const isCollectionPage = (object: IObject): object is ICollectionPage =>
+	getApType(object) === 'CollectionPage';
+
+export const isOrderedCollectionPage = (object: IObject): object is IOrderedCollectionPage =>
+	getApType(object) === 'OrderedCollectionPage';
+
+export const isCollectionOrOrderedCollection = (object: IObject): object is AnyCollection =>
+	isCollection(object) || isOrderedCollection(object) || isCollectionPage(object) || isOrderedCollectionPage(object);
 
 export interface IApPropertyValue extends IObject {
 	type: 'PropertyValue';
@@ -247,9 +318,8 @@ export const isPropertyValue = (object: IObject): object is IApPropertyValue =>
 	'value' in object &&
 	typeof object.value === 'string';
 
-export interface IApMention extends IObject {
+export interface IApMention extends ILink {
 	type: 'Mention';
-	href: string;
 	name: string;
 }
 
@@ -368,6 +438,13 @@ export interface IMove extends IActivity {
 	type: 'Move';
 	target: IObject | string;
 }
+
+export const validActivityTypes = ['Announce', 'Create', 'Update', 'Delete', 'Undo', 'Follow', 'Accept', 'Reject', 'Add', 'Remove', 'Like', 'Dislike', 'EmojiReaction', 'EmojiReact', 'Flag', 'Block', 'Move'];
+
+export const isActivity = (object: IObject): object is IActivity => {
+	const type = getApType(object);
+	return type != null && validActivityTypes.includes(type);
+};
 
 export const isApObject = (object: string | IObject): object is IObject => typeof(object) === 'object';
 export const isCreate = (object: IObject): object is ICreate => getApType(object) === 'Create';

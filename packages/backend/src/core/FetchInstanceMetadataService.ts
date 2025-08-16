@@ -5,9 +5,9 @@
 
 import { URL } from 'node:url';
 import { Inject, Injectable } from '@nestjs/common';
-import { JSDOM } from 'jsdom';
 import tinycolor from 'tinycolor2';
 import * as Redis from 'ioredis';
+import { load as cheerio } from 'cheerio/slim';
 import type { MiInstance } from '@/models/Instance.js';
 import type Logger from '@/logger.js';
 import { DI } from '@/di-symbols.js';
@@ -15,7 +15,8 @@ import { LoggerService } from '@/core/LoggerService.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { bindThis } from '@/decorators.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
-import type { DOMWindow } from 'jsdom';
+import { renderInlineError } from '@/misc/render-inline-error.js';
+import type { CheerioAPI } from 'cheerio/slim';
 
 type NodeInfo = {
 	openRegistrations?: unknown;
@@ -90,7 +91,7 @@ export class FetchInstanceMetadataService {
 				}
 			}
 
-			this.logger.info(`Fetching metadata of ${instance.host} ...`);
+			this.logger.debug(`Fetching metadata of ${instance.host} ...`);
 
 			const [info, dom, manifest] = await Promise.all([
 				this.fetchNodeinfo(instance).catch(() => null),
@@ -106,7 +107,7 @@ export class FetchInstanceMetadataService {
 				this.getDescription(info, dom, manifest).catch(() => null),
 			]);
 
-			this.logger.succ(`Successfuly fetched metadata of ${instance.host}`);
+			this.logger.debug(`Successfuly fetched metadata of ${instance.host}`);
 
 			const updates = {
 				infoUpdatedAt: new Date(),
@@ -128,9 +129,9 @@ export class FetchInstanceMetadataService {
 
 			await this.federatedInstanceService.update(instance.id, updates);
 
-			this.logger.succ(`Successfuly updated metadata of ${instance.host}`);
+			this.logger.info(`Successfully updated metadata of ${instance.host}`);
 		} catch (e) {
-			this.logger.error(`Failed to update metadata of ${instance.host}: ${e}`);
+			this.logger.error(`Failed to update metadata of ${instance.host}: ${renderInlineError(e)}`);
 		} finally {
 			await this.unlock(host);
 		}
@@ -138,7 +139,7 @@ export class FetchInstanceMetadataService {
 
 	@bindThis
 	private async fetchNodeinfo(instance: MiInstance): Promise<NodeInfo> {
-		this.logger.info(`Fetching nodeinfo of ${instance.host} ...`);
+		this.logger.debug(`Fetching nodeinfo of ${instance.host} ...`);
 
 		try {
 			const wellknown = await this.httpRequestService.getJson('https://' + instance.host + '/.well-known/nodeinfo')
@@ -170,28 +171,25 @@ export class FetchInstanceMetadataService {
 					throw err.statusCode ?? err.message;
 				});
 
-			this.logger.succ(`Successfuly fetched nodeinfo of ${instance.host}`);
+			this.logger.debug(`Successfuly fetched nodeinfo of ${instance.host}`);
 
 			return info as NodeInfo;
 		} catch (err) {
-			this.logger.error(`Failed to fetch nodeinfo of ${instance.host}: ${err}`);
+			this.logger.warn(`Failed to fetch nodeinfo of ${instance.host}: ${renderInlineError(err)}`);
 
 			throw err;
 		}
 	}
 
 	@bindThis
-	private async fetchDom(instance: MiInstance): Promise<Document> {
-		this.logger.info(`Fetching HTML of ${instance.host} ...`);
+	private async fetchDom(instance: MiInstance): Promise<CheerioAPI> {
+		this.logger.debug(`Fetching HTML of ${instance.host} ...`);
 
 		const url = 'https://' + instance.host;
 
 		const html = await this.httpRequestService.getHtml(url);
 
-		const { window } = new JSDOM(html);
-		const doc = window.document;
-
-		return doc;
+		return cheerio(html);
 	}
 
 	@bindThis
@@ -206,12 +204,15 @@ export class FetchInstanceMetadataService {
 	}
 
 	@bindThis
-	private async fetchFaviconUrl(instance: MiInstance, doc: Document | null): Promise<string | null> {
+	private async fetchFaviconUrl(instance: MiInstance, doc: CheerioAPI | null): Promise<string | null> {
 		const url = 'https://' + instance.host;
 
 		if (doc) {
 			// https://github.com/misskey-dev/misskey/pull/8220#issuecomment-1025104043
-			const href = Array.from(doc.getElementsByTagName('link')).reverse().find(link => link.relList.contains('icon'))?.href;
+			const href = doc('link[rel][href]')
+				.filter((_, link) => link.attribs.rel.split(' ').includes('icon'))
+				.last()
+				.attr('href');
 
 			if (href) {
 				return (new URL(href, url)).href;
@@ -232,7 +233,7 @@ export class FetchInstanceMetadataService {
 	}
 
 	@bindThis
-	private async fetchIconUrl(instance: MiInstance, doc: Document | null, manifest: Record<string, any> | null): Promise<string | null> {
+	private async fetchIconUrl(instance: MiInstance, doc: CheerioAPI | null, manifest: Record<string, any> | null): Promise<string | null> {
 		if (manifest && manifest.icons && manifest.icons.length > 0 && manifest.icons[0].src) {
 			const url = 'https://' + instance.host;
 			return (new URL(manifest.icons[0].src, url)).href;
@@ -242,13 +243,16 @@ export class FetchInstanceMetadataService {
 			const url = 'https://' + instance.host;
 
 			// https://github.com/misskey-dev/misskey/pull/8220#issuecomment-1025104043
-			const links = Array.from(doc.getElementsByTagName('link')).reverse();
+			const links = Array.from(doc('link[rel][href]')).reverse().map(link => ({
+				rel: link.attribs.rel.split(' '),
+				href: link.attribs.href,
+			}));
 			// https://github.com/misskey-dev/misskey/pull/8220/files/0ec4eba22a914e31b86874f12448f88b3e58dd5a#r796487559
 			const href =
 				[
-					links.find(link => link.relList.contains('apple-touch-icon-precomposed'))?.href,
-					links.find(link => link.relList.contains('apple-touch-icon'))?.href,
-					links.find(link => link.relList.contains('icon'))?.href,
+					links.find(link => link.rel.includes('apple-touch-icon-precomposed'))?.href,
+					links.find(link => link.rel.includes('apple-touch-icon'))?.href,
+					links.find(link => link.rel.includes('icon'))?.href,
 				]
 					.find(href => href);
 
@@ -261,8 +265,8 @@ export class FetchInstanceMetadataService {
 	}
 
 	@bindThis
-	private async getThemeColor(info: NodeInfo | null, doc: Document | null, manifest: Record<string, any> | null): Promise<string | null> {
-		const themeColor = info?.metadata?.themeColor ?? doc?.querySelector('meta[name="theme-color"]')?.getAttribute('content') ?? manifest?.theme_color;
+	private async getThemeColor(info: NodeInfo | null, doc: CheerioAPI | null, manifest: Record<string, any> | null): Promise<string | null> {
+		const themeColor = info?.metadata?.themeColor ?? doc?.('meta[name="theme-color"][content]').attr('content') ?? manifest?.theme_color;
 
 		if (themeColor) {
 			const color = new tinycolor(themeColor);
@@ -273,7 +277,7 @@ export class FetchInstanceMetadataService {
 	}
 
 	@bindThis
-	private async getSiteName(info: NodeInfo | null, doc: Document | null, manifest: Record<string, any> | null): Promise<string | null> {
+	private async getSiteName(info: NodeInfo | null, doc: CheerioAPI | null, manifest: Record<string, any> | null): Promise<string | null> {
 		if (info && info.metadata) {
 			if (typeof info.metadata.nodeName === 'string') {
 				return info.metadata.nodeName;
@@ -283,7 +287,7 @@ export class FetchInstanceMetadataService {
 		}
 
 		if (doc) {
-			const og = doc.querySelector('meta[property="og:title"]')?.getAttribute('content');
+			const og = doc('meta[property="og:title"][content]').attr('content');
 
 			if (og) {
 				return og;
@@ -298,7 +302,7 @@ export class FetchInstanceMetadataService {
 	}
 
 	@bindThis
-	private async getDescription(info: NodeInfo | null, doc: Document | null, manifest: Record<string, any> | null): Promise<string | null> {
+	private async getDescription(info: NodeInfo | null, doc: CheerioAPI | null, manifest: Record<string, any> | null): Promise<string | null> {
 		if (info && info.metadata) {
 			if (typeof info.metadata.nodeDescription === 'string') {
 				return info.metadata.nodeDescription;
@@ -308,12 +312,12 @@ export class FetchInstanceMetadataService {
 		}
 
 		if (doc) {
-			const meta = doc.querySelector('meta[name="description"]')?.getAttribute('content');
+			const meta = doc('meta[name="description"][content]').attr('content');
 			if (meta) {
 				return meta;
 			}
 
-			const og = doc.querySelector('meta[property="og:description"]')?.getAttribute('content');
+			const og = doc('meta[property="og:description"][content]').attr('content');
 			if (og) {
 				return og;
 			}

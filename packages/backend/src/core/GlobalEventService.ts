@@ -20,7 +20,7 @@ import type { MiPage } from '@/models/Page.js';
 import type { MiWebhook } from '@/models/Webhook.js';
 import type { MiSystemWebhook } from '@/models/SystemWebhook.js';
 import type { MiMeta } from '@/models/Meta.js';
-import { MiAvatarDecoration, MiReversiGame, MiRole, MiRoleAssignment } from '@/models/_.js';
+import { MiAvatarDecoration, MiChatMessage, MiChatRoom, MiReversiGame, MiRole, MiRoleAssignment } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -72,12 +72,8 @@ export interface MainEventTypes {
 	readAllNotifications: undefined;
 	notificationFlushed: undefined;
 	unreadNotification: Packed<'Notification'>;
-	unreadMention: MiNote['id'];
-	readAllUnreadMentions: undefined;
-	unreadSpecifiedNote: MiNote['id'];
-	readAllUnreadSpecifiedNotes: undefined;
-	readAllAntennas: undefined;
 	unreadAntenna: MiAntenna;
+	newChatMessage: Packed<'ChatMessage'>;
 	readAllAnnouncements: undefined;
 	myTokenRegenerated: undefined;
 	signin: {
@@ -168,6 +164,21 @@ export interface AdminEventTypes {
 	};
 }
 
+export interface ChatEventTypes {
+	message: Packed<'ChatMessageLite'>;
+	deleted: Packed<'ChatMessageLite'>['id'];
+	react: {
+		reaction: string;
+		user?: Packed<'UserLite'>;
+		messageId: MiChatMessage['id'];
+	};
+	unreact: {
+		reaction: string;
+		user?: Packed<'UserLite'>;
+		messageId: MiChatMessage['id'];
+	};
+}
+
 export interface ReversiEventTypes {
 	matched: {
 		game: Packed<'ReversiGameDetailed'>;
@@ -207,7 +218,7 @@ export interface ReversiGameEventTypes {
 type Events<T extends object> = { [K in keyof T]: { type: K; body: T[K]; } };
 type EventUnionFromDictionary<
 	T extends object,
-	U = Events<T>
+	U = Events<T>,
 > = U[keyof U];
 
 type SerializedAll<T> = {
@@ -216,7 +227,7 @@ type SerializedAll<T> = {
 
 type UndefinedAsNullAll<T> = {
 	[K in keyof T]: T[K] extends undefined ? null : T[K];
-}
+};
 
 export interface InternalEventTypes {
 	userChangeSuspendedState: { id: MiUser['id']; isSuspended: MiUser['isSuspended']; };
@@ -254,6 +265,7 @@ export interface InternalEventTypes {
 	unmute: { muterId: MiUser['id']; muteeId: MiUser['id']; };
 	userListMemberAdded: { userListId: MiUserList['id']; memberId: MiUser['id']; };
 	userListMemberRemoved: { userListId: MiUserList['id']; memberId: MiUser['id']; };
+	quantumCacheUpdated: { name: string, keys: string[] };
 }
 
 type EventTypesToEventPayload<T> = EventUnionFromDictionary<UndefinedAsNullAll<SerializedAll<T>>>;
@@ -300,6 +312,14 @@ export type GlobalEvents = {
 		name: 'notesStream';
 		payload: Serialized<Packed<'Note'>>;
 	};
+	chatUser: {
+		name: `chatUserStream:${MiUser['id']}-${MiUser['id']}`;
+		payload: EventTypesToEventPayload<ChatEventTypes>;
+	};
+	chatRoom: {
+		name: `chatRoomStream:${MiChatRoom['id']}`;
+		payload: EventTypesToEventPayload<ChatEventTypes>;
+	};
 	reversi: {
 		name: `reversiStream:${MiUser['id']}`;
 		payload: EventTypesToEventPayload<ReversiEventTypes>;
@@ -334,12 +354,12 @@ export class GlobalEventService {
 	}
 
 	@bindThis
-	private publish(channel: StreamChannels, type: string | null, value?: any): void {
+	private async publish(channel: StreamChannels, type: string | null, value?: any): Promise<void> {
 		const message = type == null ? value : value == null ?
 			{ type: type, body: null } :
 			{ type: type, body: value };
 
-		this.redisForPub.publish(this.config.host, JSON.stringify({
+		await this.redisForPub.publish(this.config.host, JSON.stringify({
 			channel: channel,
 			message: message,
 		}));
@@ -348,6 +368,11 @@ export class GlobalEventService {
 	@bindThis
 	public publishInternalEvent<K extends keyof InternalEventTypes>(type: K, value?: InternalEventTypes[K]): void {
 		this.publish('internal', type, typeof value === 'undefined' ? null : value);
+	}
+
+	@bindThis
+	public async publishInternalEventAsync<K extends keyof InternalEventTypes>(type: K, value?: InternalEventTypes[K]): Promise<void> {
+		await this.publish('internal', type, typeof value === 'undefined' ? null : value);
 	}
 
 	@bindThis
@@ -396,6 +421,16 @@ export class GlobalEventService {
 	@bindThis
 	public publishAdminStream<K extends keyof AdminEventTypes>(userId: MiUser['id'], type: K, value?: AdminEventTypes[K]): void {
 		this.publish(`adminStream:${userId}`, type, typeof value === 'undefined' ? null : value);
+	}
+
+	@bindThis
+	public publishChatUserStream<K extends keyof ChatEventTypes>(fromUserId: MiUser['id'], toUserId: MiUser['id'], type: K, value?: ChatEventTypes[K]): void {
+		this.publish(`chatUserStream:${fromUserId}-${toUserId}`, type, typeof value === 'undefined' ? null : value);
+	}
+
+	@bindThis
+	public publishChatRoomStream<K extends keyof ChatEventTypes>(toRoomId: MiChatRoom['id'], type: K, value?: ChatEventTypes[K]): void {
+		this.publish(`chatRoomStream:${toRoomId}`, type, typeof value === 'undefined' ? null : value);
 	}
 
 	@bindThis

@@ -1,6 +1,8 @@
 <!--
 SPDX-FileCopyrightText: kopper and other Sharkey contributors
 SPDX-License-Identifier: AGPL-3.0-only
+
+Displays Oneko, a cat that follows the cursor.
 -->
 
 <template>
@@ -11,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 // oneko.js: https://github.com/adryd325/oneko.js
 // modified to be a vue component by ShittyKopper :3
 
-import { shallowRef, onMounted } from 'vue';
+import { shallowRef, onMounted, onUnmounted } from 'vue';
 
 const nekoEl = shallowRef<HTMLDivElement>();
 
@@ -23,7 +25,7 @@ let mousePosY = 0;
 
 let frameCount = 0;
 let idleTime = 0;
-let idleAnimation: string|null = null;
+let idleAnimation: string | null = null;
 let idleAnimationFrame = 0;
 let lastFrameTimestamp;
 
@@ -91,18 +93,24 @@ const spriteSets = {
 	],
 };
 
+function mouseCallback(event) {
+	mousePosX = event.clientX;
+	mousePosY = event.clientY;
+}
+
 function init() {
 	if (!nekoEl.value) return;
 
 	nekoEl.value.style.left = `${nekoPosX - 16}px`;
 	nekoEl.value.style.top = `${nekoPosY - 16}px`;
 
-	document.addEventListener('mousemove', (event) => {
-		mousePosX = event.clientX;
-		mousePosY = event.clientY;
-	});
+	window.document.addEventListener('mousemove', mouseCallback, { passive: true });
 
 	window.requestAnimationFrame(onAnimationFrame);
+}
+
+function uninit() {
+	window.removeEventListener('mousemove', mouseCallback, { passive: true });
 }
 
 function onAnimationFrame(timestamp) {
@@ -140,7 +148,6 @@ function idle() {
 	if (
 		idleTime > 10 &&
       Math.floor(Math.random() * 200) === 0 &&
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       idleAnimation == null
 	) {
 		let avalibleIdleAnimations = ['sleeping', 'scratchSelf'];
@@ -230,6 +237,7 @@ function frame() {
 }
 
 onMounted(init);
+onUnmounted(uninit);
 </script>
 
 <style module>

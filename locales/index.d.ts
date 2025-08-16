@@ -899,6 +899,10 @@ export interface Locale extends ILocale {
      */
     "software": string;
     /**
+     * ソフトウェア名
+     */
+    "softwareName": string;
+    /**
      * バージョン
      */
     "version": string;
@@ -1175,10 +1179,6 @@ export interface Locale extends ILocale {
      */
     "saved": string;
     /**
-     * チャット
-     */
-    "messaging": string;
-    /**
      * アップロード
      */
     "upload": string;
@@ -1227,9 +1227,9 @@ export interface Locale extends ILocale {
      */
     "noMoreHistory": string;
     /**
-     * チャットを開始
+     * チャットを始める
      */
-    "startMessaging": string;
+    "startChat": string;
     /**
      * {n}人が読みました
      */
@@ -1403,7 +1403,7 @@ export interface Locale extends ILocale {
      */
     "inputNewFileName": string;
     /**
-     * Enter new alt text
+     * 新しいキャプションを入力してください
      */
     "inputNewDescription": string;
     /**
@@ -1719,6 +1719,10 @@ export interface Locale extends ILocale {
      */
     "withFileAntenna": string;
     /**
+     * センシティブなチャンネルのノートを除外
+     */
+    "excludeNotesInSensitiveChannel": string;
+    /**
      * ブラウザへのプッシュ通知を有効にする
      */
     "enableServiceworker": string;
@@ -1982,14 +1986,6 @@ export interface Locale extends ILocale {
      * The text in clipboard is long. Would you like to attach it as a text file?
      */
     "attachAsFileQuestion": string;
-    /**
-     * まだチャットはありません
-     */
-    "noMessagesYet": string;
-    /**
-     * 新しいメッセージがあります
-     */
-    "newMessageExists": string;
     /**
      * メッセージに添付できるファイルはひとつです
      */
@@ -2455,7 +2451,7 @@ export interface Locale extends ILocale {
      */
     "disablePagesScript": string;
     /**
-     * リモートユーザー情報の更新
+     * Refresh remote data
      */
     "updateRemoteUser": string;
     /**
@@ -2603,11 +2599,11 @@ export interface Locale extends ILocale {
      */
     "description": string;
     /**
-     * Add alt text
+     * キャプションを付ける
      */
     "describeFile": string;
     /**
-     * Enter alt text
+     * キャプションを入力
      */
     "enterFileDescription": string;
     /**
@@ -2810,6 +2806,10 @@ export interface Locale extends ILocale {
      * コピー
      */
     "copy": string;
+    /**
+     * クリップボードにコピーされました
+     */
+    "copiedToClipboard": string;
     /**
      * メトリクス
      */
@@ -3940,6 +3940,10 @@ export interface Locale extends ILocale {
      */
     "logoutConfirm": string;
     /**
+     * ログアウトするとクライアントの設定情報がブラウザから消去されます。再ログイン時に設定情報を復元できるようにするためには、設定の自動バックアップを有効にしてください。
+     */
+    "logoutWillClearClientData": string;
+    /**
      * 最終利用日時
      */
     "lastActiveDate": string;
@@ -4084,7 +4088,7 @@ export interface Locale extends ILocale {
      */
     "windowRestore": string;
     /**
-     * Alt text
+     * キャプション
      */
     "caption": string;
     /**
@@ -4972,7 +4976,7 @@ export interface Locale extends ILocale {
      */
     "disableStreamingTimeline": string;
     /**
-     * 通知をグルーピングして表示する
+     * 通知をグルーピング
      */
     "useGroupedNotifications": string;
     /**
@@ -5255,6 +5259,532 @@ export interface Locale extends ILocale {
      * このサーバーは連合が無効化されています。他のサーバーのユーザーとやり取りすることはできません。
      */
     "federationDisabled": string;
+    /**
+     * リアクションする際に確認する
+     */
+    "confirmOnReact": string;
+    /**
+     * " {emoji} " をリアクションしますか？
+     */
+    "reactAreYouSure": ParameterizedString<"emoji">;
+    /**
+     * このメディアをセンシティブとして設定しますか？
+     */
+    "markAsSensitiveConfirm": string;
+    /**
+     * このメディアのセンシティブ指定を解除しますか？
+     */
+    "unmarkAsSensitiveConfirm": string;
+    /**
+     * 環境設定
+     */
+    "preferences": string;
+    /**
+     * アクセシビリティ
+     */
+    "accessibility": string;
+    /**
+     * 設定のプロファイル
+     */
+    "preferencesProfile": string;
+    /**
+     * 設定IDをコピー
+     */
+    "copyPreferenceId": string;
+    /**
+     * 初期値に戻す
+     */
+    "resetToDefaultValue": string;
+    /**
+     * アカウントで上書き
+     */
+    "overrideByAccount": string;
+    /**
+     * 無題
+     */
+    "untitled": string;
+    /**
+     * 名前はありません
+     */
+    "noName": string;
+    /**
+     * スキップ
+     */
+    "skip": string;
+    /**
+     * 復元
+     */
+    "restore": string;
+    /**
+     * デバイス間で同期
+     */
+    "syncBetweenDevices": string;
+    /**
+     * サーバーに設定値が存在します
+     */
+    "preferenceSyncConflictTitle": string;
+    /**
+     * 同期が有効にされた設定項目は設定値をサーバーに保存しますが、この設定項目のサーバーに保存された設定値が見つかりました。どちらの設定値で上書きしますか？
+     */
+    "preferenceSyncConflictText": string;
+    /**
+     * サーバーの設定値
+     */
+    "preferenceSyncConflictChoiceServer": string;
+    /**
+     * デバイスの設定値
+     */
+    "preferenceSyncConflictChoiceDevice": string;
+    /**
+     * 同期の有効化をキャンセル
+     */
+    "preferenceSyncConflictChoiceCancel": string;
+    /**
+     * ペースト
+     */
+    "paste": string;
+    /**
+     * 絵文字パレット
+     */
+    "emojiPalette": string;
+    /**
+     * 投稿フォーム
+     */
+    "postForm": string;
+    /**
+     * 文字数
+     */
+    "textCount": string;
+    /**
+     * 情報
+     */
+    "information": string;
+    /**
+     * チャット
+     */
+    "chat": string;
+    /**
+     * 旧設定情報を移行
+     */
+    "migrateOldSettings": string;
+    /**
+     * 通常これは自動で行われていますが、何らかの理由により上手く移行されなかった場合は手動で移行処理をトリガーできます。現在の設定情報は上書きされます。
+     */
+    "migrateOldSettings_description": string;
+    /**
+     * 圧縮
+     */
+    "compress": string;
+    /**
+     * 右
+     */
+    "right": string;
+    /**
+     * 下
+     */
+    "bottom": string;
+    /**
+     * 上
+     */
+    "top": string;
+    /**
+     * 埋め込み
+     */
+    "embed": string;
+    /**
+     * 設定を移行しています。しばらくお待ちください... (後ほど、設定→その他→旧設定情報を移行 で手動で移行することもできます)
+     */
+    "settingsMigrating": string;
+    /**
+     * 読み取り専用
+     */
+    "readonly": string;
+    /**
+     * デッキへ戻る
+     */
+    "goToDeck": string;
+    /**
+     * 連合ジョブ
+     */
+    "federationJobs": string;
+    /**
+     * ドライブでは、過去にアップロードしたファイルの一覧が表示されます。<br>
+     * ノートに添付する際に再利用したり、あとで投稿するファイルを予めアップロードしておくこともできます。<br>
+     * <b>ファイルを削除すると、今までそのファイルを使用した全ての場所(ノート、ページ、アバター、バナー等)からも見えなくなるので注意してください。</b><br>
+     * フォルダを作って整理することもできます。
+     */
+    "driveAboutTip": string;
+    /**
+     * スクロールして閉じる
+     */
+    "scrollToClose": string;
+    "_chat": {
+        /**
+         * まだメッセージはありません
+         */
+        "noMessagesYet": string;
+        /**
+         * 新しいメッセージ
+         */
+        "newMessage": string;
+        /**
+         * 個人チャット
+         */
+        "individualChat": string;
+        /**
+         * 特定ユーザーとの一対一のチャットができます。
+         */
+        "individualChat_description": string;
+        /**
+         * ルームチャット
+         */
+        "roomChat": string;
+        /**
+         * 複数人でのチャットができます。
+         * また、個人チャットを許可していないユーザーとでも、相手が受け入れればチャットができます。
+         */
+        "roomChat_description": string;
+        /**
+         * ルームを作成
+         */
+        "createRoom": string;
+        /**
+         * ユーザーを招待してチャットを始めましょう
+         */
+        "inviteUserToChat": string;
+        /**
+         * 作成したルーム
+         */
+        "yourRooms": string;
+        /**
+         * 参加中のルーム
+         */
+        "joiningRooms": string;
+        /**
+         * 招待
+         */
+        "invitations": string;
+        /**
+         * 招待はありません
+         */
+        "noInvitations": string;
+        /**
+         * 履歴
+         */
+        "history": string;
+        /**
+         * 履歴はありません
+         */
+        "noHistory": string;
+        /**
+         * ルームはありません
+         */
+        "noRooms": string;
+        /**
+         * ユーザーを招待
+         */
+        "inviteUser": string;
+        /**
+         * 送信した招待
+         */
+        "sentInvitations": string;
+        /**
+         * 参加
+         */
+        "join": string;
+        /**
+         * 無視
+         */
+        "ignore": string;
+        /**
+         * ルームから退出
+         */
+        "leave": string;
+        /**
+         * メンバー
+         */
+        "members": string;
+        /**
+         * メッセージを検索
+         */
+        "searchMessages": string;
+        /**
+         * ホーム
+         */
+        "home": string;
+        /**
+         * 送信
+         */
+        "send": string;
+        /**
+         * 改行
+         */
+        "newline": string;
+        /**
+         * このルームをミュート
+         */
+        "muteThisRoom": string;
+        /**
+         * ルームを削除
+         */
+        "deleteRoom": string;
+        /**
+         * このサーバー、またはこのアカウントでチャットは有効化されていません。
+         */
+        "chatNotAvailableForThisAccountOrServer": string;
+        /**
+         * このサーバー、またはこのアカウントでチャットは読み取り専用となっています。新たに書き込んだり、チャットルームを作成・参加したりすることはできません。
+         */
+        "chatIsReadOnlyForThisAccountOrServer": string;
+        /**
+         * 相手のアカウントでチャット機能が使えない状態になっています。
+         */
+        "chatNotAvailableInOtherAccount": string;
+        /**
+         * このユーザーとのチャットを開始できません
+         */
+        "cannotChatWithTheUser": string;
+        /**
+         * チャットが使えない状態になっているか、相手がチャットを開放していません。
+         */
+        "cannotChatWithTheUser_description": string;
+        /**
+         * チャットする
+         */
+        "chatWithThisUser": string;
+        /**
+         * このユーザーはフォロワーからのみチャットを受け付けています。
+         */
+        "thisUserAllowsChatOnlyFromFollowers": string;
+        /**
+         * このユーザーは、このユーザーがフォローしているユーザーからのみチャットを受け付けています。
+         */
+        "thisUserAllowsChatOnlyFromFollowing": string;
+        /**
+         * このユーザーは相互フォローのユーザーからのみチャットを受け付けています。
+         */
+        "thisUserAllowsChatOnlyFromMutualFollowing": string;
+        /**
+         * このユーザーは誰からもチャットを受け付けていません。
+         */
+        "thisUserNotAllowedChatAnyone": string;
+        /**
+         * チャットを許可する相手
+         */
+        "chatAllowedUsers": string;
+        /**
+         * 自分からチャットメッセージを送った相手とはこの設定に関わらずチャットが可能です。
+         */
+        "chatAllowedUsers_note": string;
+        "_chatAllowedUsers": {
+            /**
+             * 誰でも
+             */
+            "everyone": string;
+            /**
+             * 自分のフォロワーのみ
+             */
+            "followers": string;
+            /**
+             * 自分がフォローしているユーザーのみ
+             */
+            "following": string;
+            /**
+             * 相互フォローのユーザーのみ
+             */
+            "mutual": string;
+            /**
+             * 誰も許可しない
+             */
+            "none": string;
+        };
+    };
+    "_emojiPalette": {
+        /**
+         * パレット
+         */
+        "palettes": string;
+        /**
+         * パレットのデバイス間同期を有効にする
+         */
+        "enableSyncBetweenDevicesForPalettes": string;
+        /**
+         * メインで使用するパレット
+         */
+        "paletteForMain": string;
+        /**
+         * リアクションで使用するパレット
+         */
+        "paletteForReaction": string;
+    };
+    "_settings": {
+        /**
+         * ドライブの管理と設定、使用量の確認、ファイルをアップロードする際の設定を行えます。
+         */
+        "driveBanner": string;
+        /**
+         * プラグインを利用するとクライアントの機能を拡張することができます。プラグインのインストール、個別の設定と管理が行えます。
+         */
+        "pluginBanner": string;
+        /**
+         * サーバーからの受信する通知の種類と範囲や、プッシュ通知の設定が行えます。
+         */
+        "notificationsBanner": string;
+        /**
+         * API
+         */
+        "api": string;
+        /**
+         * Webhook
+         */
+        "webhook": string;
+        /**
+         * サービス連携
+         */
+        "serviceConnection": string;
+        /**
+         * 外部のアプリ・サービスと連携するためのアクセストークンやWebhookの管理と設定が行えます。
+         */
+        "serviceConnectionBanner": string;
+        /**
+         * アカウントのデータ
+         */
+        "accountData": string;
+        /**
+         * アカウントデータのアーカイブをエクスポート/インポートして管理できます。
+         */
+        "accountDataBanner": string;
+        /**
+         * 非表示にするコンテンツの設定や、特定のユーザーからのアクションを制限する設定と管理を行えます。
+         */
+        "muteAndBlockBanner": string;
+        /**
+         * クライアントの視覚や動作に関するパーソナライズを行い、より最適に使用できるように設定できます。
+         */
+        "accessibilityBanner": string;
+        /**
+         * コンテンツの公開範囲、見つけやすさ、フォローの承認制などアカウントのプライバシーに関する設定を行えます。
+         */
+        "privacyBanner": string;
+        /**
+         * パスワード、ログイン方法、認証アプリ、パスキーなどアカウントのセキュリティに関する設定を行えます。
+         */
+        "securityBanner": string;
+        /**
+         * 好みに応じた、クライアントの全体的な動作の設定が行えます。
+         */
+        "preferencesBanner": string;
+        /**
+         * 好みに応じた、クライアントの見た目・表示方法に関する設定が行えます。
+         */
+        "appearanceBanner": string;
+        /**
+         * クライアントで再生するサウンドの設定が行えます。
+         */
+        "soundsBanner": string;
+        /**
+         * タイムラインとノート
+         */
+        "timelineAndNote": string;
+        /**
+         * 全てのテキスト要素を選択可能にする
+         */
+        "makeEveryTextElementsSelectable": string;
+        /**
+         * 有効にすると、一部のシチュエーションでのユーザビリティが低下する場合があります。
+         */
+        "makeEveryTextElementsSelectable_description": string;
+        /**
+         * アイコンをスクロールに追従させる
+         */
+        "useStickyIcons": string;
+        /**
+         * ナビゲーションバーに副ボタンを表示
+         */
+        "showNavbarSubButtons": string;
+        /**
+         * オンのとき
+         */
+        "ifOn": string;
+        /**
+         * オフのとき
+         */
+        "ifOff": string;
+        /**
+         * デバイス間でインストールしたテーマを同期
+         */
+        "enableSyncThemesBetweenDevices": string;
+        /**
+         * ひっぱって更新
+         */
+        "enablePullToRefresh": string;
+        /**
+         * マウスでは、ホイールを押し込みながらドラッグします。
+         */
+        "enablePullToRefresh_description": string;
+        "_chat": {
+            /**
+             * 送信者の名前を表示
+             */
+            "showSenderName": string;
+            /**
+             * Enterで送信
+             */
+            "sendOnEnter": string;
+        };
+    };
+    "_preferencesProfile": {
+        /**
+         * プロファイル名
+         */
+        "profileName": string;
+        /**
+         * このデバイスを識別する名前を設定してください。
+         */
+        "profileNameDescription": string;
+        /**
+         * 例: 「メインPC」、「スマホ」など
+         */
+        "profileNameDescription2": string;
+        /**
+         * プロファイルの管理
+         */
+        "manageProfiles": string;
+    };
+    "_preferencesBackup": {
+        /**
+         * 自動バックアップ
+         */
+        "autoBackup": string;
+        /**
+         * バックアップから復元
+         */
+        "restoreFromBackup": string;
+        /**
+         * バックアップが見つかりませんでした
+         */
+        "noBackupsFoundTitle": string;
+        /**
+         * 自動で作成されたバックアップは見つかりませんでしたが、バックアップファイルを手動で保存している場合、それをインポートして復元することはできます。
+         */
+        "noBackupsFoundDescription": string;
+        /**
+         * 復元するバックアップを選択してください
+         */
+        "selectBackupToRestore": string;
+        /**
+         * 自動バックアップを有効にするにはプロファイル名の設定が必要です。
+         */
+        "youNeedToNameYourProfileToEnableAutoBackup": string;
+        /**
+         * このデバイスで設定の自動バックアップは有効になっていません。
+         */
+        "autoPreferencesBackupIsNotEnabledForThisDevice": string;
+        /**
+         * 設定のバックアップが見つかりました
+         */
+        "backupFound": string;
+    };
     "_accountSettings": {
         /**
          * コンテンツの表示にログインを必須にする
@@ -5292,6 +5822,10 @@ export interface Locale extends ILocale {
          * リモートサーバーに連合されたノートには効果が及ばない場合があります。
          */
         "mayNotEffectForFederatedNotes": string;
+        /**
+         * これらの制限は簡易的なものです。リモートサーバーでの閲覧やモデレーション時など、一部のシチュエーションでは適用されない場合があります。
+         */
+        "mayNotEffectSomeSituations": string;
         /**
          * 指定した時間を経過しているノート
          */
@@ -5358,6 +5892,10 @@ export interface Locale extends ILocale {
              * サーバー応答なしのため停止中
              */
             "autoSuspendedForNotResponding": string;
+            /**
+             * 配信停止中のソフトウェアであるため停止中
+             */
+            "softwareSuspended": string;
         };
     };
     "_bubbleGame": {
@@ -5467,6 +6005,14 @@ export interface Locale extends ILocale {
          * New
          */
         "new": string;
+        /**
+         * Throw confetti
+         */
+        "confetti": string;
+        /**
+         * If enabled, the announcement will display a confetti effect when viewed.
+         */
+        "confettiDescription": string;
     };
     "_initialAccountSetting": {
         /**
@@ -5856,6 +6402,14 @@ export interface Locale extends ILocale {
          */
         "thisSettingWillAutomaticallyOffWhenModeratorsInactive": string;
         /**
+         * 配信停止中のソフトウェア
+         */
+        "deliverSuspendedSoftware": string;
+        /**
+         * You can specify a range of names and versions of the server's software to stop delivery for vulnerability or other reasons. This version information is provided by the server and is not guaranteed to be reliable. A semver range specification can be used to specify the version, but specifying >= 2024.3.1 will not include custom versions such as 2024.3.1-custom.0, so it is recommended that a prerelease specification be used, such as >= 2024.3.1-0. Specifying * will match any name or version, even when the server doesn't provide one. You can also provide a regular expression like /^sharkey-/i or /^1-/
+         */
+        "deliverSuspendedSoftwareDescription": string;
+        /**
          * Logo URL
          */
         "sidebarLogoUrl": string;
@@ -5867,6 +6421,14 @@ export interface Locale extends ILocale {
          * E.g. In the sidebar, to visitors and in the "About" page.
          */
         "sidebarLogoUsageExample": string;
+        /**
+         * About instance
+         */
+        "aboutInstance": string;
+        /**
+         * A longer description that will be displayed in the 'Instance Information' page, going in place of the regular instance description. Supports HTML.
+         */
+        "aboutInstanceDescription": string;
     };
     "_accountMigration": {
         /**
@@ -6903,6 +7465,14 @@ export interface Locale extends ILocale {
          */
         "descriptionOfDisplayOrder": string;
         /**
+         * アサイン状態を移行先アカウントにも引き継ぐ
+         */
+        "preserveAssignmentOnMoveAccount": string;
+        /**
+         * オンにすると、このロールが付与されたアカウントが移行された際に、移行先アカウントにもこのロールが引き継がれるようになります。
+         */
+        "preserveAssignmentOnMoveAccount_description": string;
+        /**
          * モデレーターのメンバー編集を許可
          */
         "canEditMembersByModerator": string;
@@ -6973,6 +7543,10 @@ export interface Locale extends ILocale {
              * ドライブ容量
              */
             "driveCapacity": string;
+            /**
+             * アップロード可能な最大ファイルサイズ
+             */
+            "maxFileSize": string;
             /**
              * ファイルにNSFWを常に付与
              */
@@ -7058,6 +7632,10 @@ export interface Locale extends ILocale {
              */
             "canImportUserLists": string;
             /**
+             * チャットを許可
+             */
+            "chatAvailability": string;
+            /**
              * Can view the bubble timeline
              */
             "btlAvailable": string;
@@ -7069,6 +7647,10 @@ export interface Locale extends ILocale {
              * Maximum number of scheduled notes
              */
             "scheduleNoteMax": string;
+            /**
+             * Can appear in trending notes / users
+             */
+            "canTrend": string;
         };
         "_condition": {
             /**
@@ -7147,7 +7729,59 @@ export interface Locale extends ILocale {
              * ～ではない
              */
             "not": string;
+            /**
+             * Is from a specific instance
+             */
+            "isFromInstance": string;
+            /**
+             * Hostname (case-insensitive)
+             */
+            "isFromInstanceHost": string;
+            /**
+             * Match subdomains
+             */
+            "isFromInstanceSubdomains": string;
+            /**
+             * User is from a bubble instance
+             */
+            "fromBubbleInstance": string;
+            /**
+             * Has X or fewer local followers
+             */
+            "localFollowersLessThanOrEq": string;
+            /**
+             * Has X or more local followers
+             */
+            "localFollowersMoreThanOrEq": string;
+            /**
+             * Follows X or fewer local accounts
+             */
+            "localFollowingLessThanOrEq": string;
+            /**
+             * Follows X or more local accounts
+             */
+            "localFollowingMoreThanOrEq": string;
+            /**
+             * Has X or fewer remote followers
+             */
+            "remoteFollowersLessThanOrEq": string;
+            /**
+             * Has X or more remote followers
+             */
+            "remoteFollowersMoreThanOrEq": string;
+            /**
+             * Follows X or fewer remote accounts
+             */
+            "remoteFollowingLessThanOrEq": string;
+            /**
+             * Follows X or more remote accounts
+             */
+            "remoteFollowingMoreThanOrEq": string;
         };
+        /**
+         * This condition may be incorrect for remote users.
+         */
+        "remoteDataWarning": string;
     };
     "_sensitiveMediaDetection": {
         /**
@@ -7707,6 +8341,10 @@ export interface Locale extends ILocale {
          */
         "builtinThemes": string;
         /**
+         * サーバーのテーマ
+         */
+        "instanceTheme": string;
+        /**
          * そのテーマは既にインストールされています
          */
         "alreadyInstalled": string;
@@ -7824,23 +8462,19 @@ export interface Locale extends ILocale {
              */
             "header": string;
             /**
-             * サイドバーの背景
+             * ナビゲーションバーの背景
              */
             "navBg": string;
             /**
-             * サイドバーの文字
+             * ナビゲーションバーの文字
              */
             "navFg": string;
             /**
-             * サイドバー文字(ホバー)
-             */
-            "navHoverFg": string;
-            /**
-             * サイドバー文字(アクティブ)
+             * ナビゲーションバー文字(アクティブ)
              */
             "navActive": string;
             /**
-             * サイドバーのインジケーター
+             * ナビゲーションバーのインジケーター
              */
             "navIndicator": string;
             /**
@@ -7924,10 +8558,6 @@ export interface Locale extends ILocale {
              */
             "driveFolderBg": string;
             /**
-             * 壁紙のオーバーレイ
-             */
-            "wallpaperOverlay": string;
-            /**
              * バッジ
              */
             "badge": string;
@@ -7935,14 +8565,6 @@ export interface Locale extends ILocale {
              * チャットの背景
              */
             "messageBg": string;
-            /**
-             * アクセント (暗め)
-             */
-            "accentDarken": string;
-            /**
-             * アクセント (明るめ)
-             */
-            "accentLighten": string;
             /**
              * 強調された文字
              */
@@ -7966,6 +8588,10 @@ export interface Locale extends ILocale {
          * リアクション選択時
          */
         "reaction": string;
+        /**
+         * チャットのメッセージ
+         */
+        "chatMessage": string;
     };
     "_soundSettings": {
         /**
@@ -8539,6 +9165,14 @@ export interface Locale extends ILocale {
          */
         "write:report-abuse": string;
         /**
+         * チャットを操作する
+         */
+        "write:chat": string;
+        /**
+         * チャットを閲覧する
+         */
+        "read:chat": string;
+        /**
          * Approve new users
          */
         "write:admin:approve-user": string;
@@ -8551,7 +9185,7 @@ export interface Locale extends ILocale {
          */
         "write:admin:nsfw-user": string;
         /**
-         * Mark users an not NSFW
+         * Mark users as not NSFW
          */
         "write:admin:unnsfw-user": string;
         /**
@@ -8804,6 +9438,10 @@ export interface Locale extends ILocale {
          * 今日誕生日のユーザー
          */
         "birthdayFollowings": string;
+        /**
+         * チャット
+         */
+        "chat": string;
         /**
          * Search
          */
@@ -9064,6 +9702,14 @@ export interface Locale extends ILocale {
          * フォローを承認制にしている場合、フォローリクエストを許可した時に表示されます。
          */
         "followedMessageDescriptionForLockedAccount": string;
+        /**
+         * Update avatar
+         */
+        "updateAvatar": string;
+        /**
+         * Remove avatar
+         */
+        "removeAvatar": string;
         /**
          * Update banner
          */
@@ -9569,6 +10215,10 @@ export interface Locale extends ILocale {
          */
         "roleAssigned": string;
         /**
+         * チャットルームへ招待されました
+         */
+        "chatRoomInvitationReceived": string;
+        /**
          * プッシュ通知の更新をしました
          */
         "emptyPushNotificationMessage": string;
@@ -9620,6 +10270,14 @@ export interface Locale extends ILocale {
          * ログインがありました
          */
         "login": string;
+        /**
+         * アクセストークンが作成されました
+         */
+        "createToken": string;
+        /**
+         * 心当たりがない場合は「{text}」を通じてアクセストークンを削除してください。
+         */
+        "createTokenDescription": ParameterizedString<"text">;
         "_types": {
             /**
              * すべて
@@ -9670,6 +10328,10 @@ export interface Locale extends ILocale {
              */
             "roleAssigned": string;
             /**
+             * チャットルームへ招待された
+             */
+            "chatRoomInvitationReceived": string;
+            /**
              * 実績の獲得
              */
             "achievementEarned": string;
@@ -9681,6 +10343,10 @@ export interface Locale extends ILocale {
              * ログイン
              */
             "login": string;
+            /**
+             * アクセストークンの作成
+             */
+            "createToken": string;
             /**
              * 通知のテスト
              */
@@ -9728,6 +10394,10 @@ export interface Locale extends ILocale {
          * Scheduled Note was posted
          */
         "scheduledNotePosted": string;
+        /**
+         * Import of {x} has been completed
+         */
+        "importOfXCompleted": ParameterizedString<"x">;
     };
     "_deck": {
         /**
@@ -9738,6 +10408,18 @@ export interface Locale extends ILocale {
          * カラムの寄せ
          */
         "columnAlign": string;
+        /**
+         * カラム間のマージン
+         */
+        "columnGap": string;
+        /**
+         * デッキメニューの位置
+         */
+        "deckMenuPosition": string;
+        /**
+         * ナビゲーションバーの位置
+         */
+        "navbarPosition": string;
         /**
          * カラムを追加
          */
@@ -9791,7 +10473,7 @@ export interface Locale extends ILocale {
          */
         "introduction": string;
         /**
-         * 画面の右にある + を押して、いつでもカラムを追加できます。
+         * カラムを追加するには、画面の + をクリックします。
          */
         "introduction2": string;
         /**
@@ -9810,6 +10492,10 @@ export interface Locale extends ILocale {
          * 幅を自動調整
          */
         "flexible": string;
+        /**
+         * プロファイル情報のデバイス間同期を有効にする
+         */
+        "enableSyncBetweenDevicesForProfiles": string;
         "_columns": {
             /**
              * メイン
@@ -9851,6 +10537,10 @@ export interface Locale extends ILocale {
              * ロールタイムライン
              */
             "roleTimeline": string;
+            /**
+             * チャット
+             */
+            "chat": string;
             /**
              * Following
              */
@@ -10219,6 +10909,14 @@ export interface Locale extends ILocale {
          */
         "deleteGalleryPost": string;
         /**
+         * チャットルームを削除
+         */
+        "deleteChatRoom": string;
+        /**
+         * プロキシアカウントの説明を更新
+         */
+        "updateProxyAccountDescription": string;
+        /**
          * Approved
          */
         "approve": string;
@@ -10235,7 +10933,7 @@ export interface Locale extends ILocale {
          */
         "setRemoteInstanceNSFW": string;
         /**
-         * Set remote instance as NSFW
+         * Unset remote instance as NSFW
          */
         "unsetRemoteInstanceNSFW": string;
         /**
@@ -10359,20 +11057,12 @@ export interface Locale extends ILocale {
              * このプラグインをインストールしますか？
              */
             "title": string;
-            /**
-             * プラグイン情報
-             */
-            "metaTitle": string;
         };
         "_theme": {
             /**
              * このテーマをインストールしますか？
              */
             "title": string;
-            /**
-             * テーマ情報
-             */
-            "metaTitle": string;
         };
         "_meta": {
             /**
@@ -11106,11 +11796,11 @@ export interface Locale extends ILocale {
     };
     "_followRequest": {
         /**
-         * 受け取った申請
+         * Received
          */
         "recieved": string;
         /**
-         * 送った申請
+         * Sent
          */
         "sent": string;
     };
@@ -11152,13 +11842,7 @@ export interface Locale extends ILocale {
              */
             "title": string;
             /**
-             * このサーバーと通信することはできましたが、得られたデータが不正なものでした。
-             */
-            "description": string;
-        };
-        "_responseInvalidIdHostNotMatch": {
-            /**
-             * 入力されたURIのドメインと最終的に得られたURIのドメインとが異なります。第三者のサーバーを介してリモートのコンテンツを照会している場合は、発信元のサーバーで取得できるURIを使用して照会し直してください。
+             * このサーバーと通信することはできましたが、得られたデータが不正なものでした。第三者のサーバーを介してリモートのコンテンツを照会している場合は、発信元のサーバーで取得できるURIを使用して照会し直してください。
              */
             "description": string;
         };
@@ -11216,6 +11900,82 @@ export interface Locale extends ILocale {
             };
         };
     };
+    "_bootErrors": {
+        /**
+         * 読み込みに失敗しました
+         */
+        "title": string;
+        /**
+         * 少し待ってからリロードしてもまだ問題が解決されない場合、以下のError IDを添えてサーバー管理者に連絡してください。
+         */
+        "serverError": string;
+        /**
+         * 以下を行うと解決する可能性があります。
+         */
+        "solution": string;
+        /**
+         * ブラウザおよびOSを最新バージョンに更新する
+         */
+        "solution1": string;
+        /**
+         * アドブロッカーを無効にする
+         */
+        "solution2": string;
+        /**
+         * ブラウザのキャッシュをクリアする
+         */
+        "solution3": string;
+        /**
+         * (Tor Browser) dom.webaudio.enabledをtrueに設定する
+         */
+        "solution4": string;
+        /**
+         * その他のオプション
+         */
+        "otherOption": string;
+        /**
+         * クライアント設定とキャッシュを削除
+         */
+        "otherOption1": string;
+        /**
+         * 簡易クライアントを起動
+         */
+        "otherOption2": string;
+        /**
+         * 修復ツールを起動
+         */
+        "otherOption3": string;
+    };
+    "_search": {
+        /**
+         * 全て
+         */
+        "searchScopeAll": string;
+        /**
+         * ローカル
+         */
+        "searchScopeLocal": string;
+        /**
+         * サーバー指定
+         */
+        "searchScopeServer": string;
+        /**
+         * ユーザー指定
+         */
+        "searchScopeUser": string;
+        /**
+         * サーバーのホストを入力してください
+         */
+        "pleaseEnterServerHost": string;
+        /**
+         * ユーザーを選択してください
+         */
+        "pleaseSelectUser": string;
+        /**
+         * 例: misskey.example.com
+         */
+        "serverHostPlaceholder": string;
+    };
     /**
      * Approvals
      */
@@ -11232,6 +11992,14 @@ export interface Locale extends ILocale {
      * Separate with spaces for an AND condition or with line breaks for an OR condition. Using surrounding keywords with slashes will turn them into a regular expression. If you write only the domain name, it will be a backward match.
      */
     "trustedLinkUrlPatternsDescription": string;
+    /**
+     * Link to external site warning exclusion list
+     */
+    "trustedDomainsList": string;
+    /**
+     * Following links to these domains will not show a warning. Write one domain per line.
+     */
+    "trustedDomainsListDescription": string;
     /**
      * Mutuals
      */
@@ -11280,6 +12048,22 @@ export interface Locale extends ILocale {
      * Boosts muted
      */
     "renoteMuted": string;
+    /**
+     * Mute note
+     */
+    "muteNote": string;
+    /**
+     * Unmute note
+     */
+    "unmuteNote": string;
+    /**
+     * {name} said something in a muted post
+     */
+    "userSaysSomethingInMutedNote": ParameterizedString<"name">;
+    /**
+     * {name} said something in a muted thread
+     */
+    "userSaysSomethingInMutedThread": ParameterizedString<"name">;
     /**
      * Mark all media from user as NSFW
      */
@@ -11558,6 +12342,10 @@ export interface Locale extends ILocale {
      */
     "collapseFiles": string;
     /**
+     * Clone
+     */
+    "clone": string;
+    /**
      * Uncollapse CWs on notes
      */
     "uncollapseCW": string;
@@ -11577,6 +12365,10 @@ export interface Locale extends ILocale {
      * Cat friend :3
      */
     "oneko": string;
+    /**
+     * This will irreversibly delete this account. Proceed?
+     */
+    "deleteThisAccountConfirm": string;
     /**
      * Enable Achievements
      */
@@ -11629,6 +12421,10 @@ export interface Locale extends ILocale {
      * Pending follow requests
      */
     "pendingFollowRequests": string;
+    /**
+     * Are you sure you want to cancel your follow request?
+     */
+    "undoFollowRequestConfirm": string;
     /**
      * Show quotes
      */
@@ -11776,6 +12572,14 @@ export interface Locale extends ILocale {
          * Displays content centered.
          */
         "centerDescription": string;
+        /**
+         * Unix Time
+         */
+        "unixtime": string;
+        /**
+         * Displays a timestamp in the viewer's current timezone.
+         */
+        "unixtimeDescription": string;
         /**
          * Code (Inline)
          */
@@ -12213,12 +13017,372 @@ export interface Locale extends ILocale {
      * Applies a content warning to all posts created by this user. If the post already has a CW, then this is appended to the end.
      */
     "mandatoryCWDescription": string;
+    /**
+     * Fetch linked note
+     */
+    "fetchLinkedNote": string;
+    /**
+     * Add "Translate" to note action menu
+     */
+    "showTranslationButtonInNoteFooter": string;
+    /**
+     * Failed to translate note. Please try again later or contact an administrator for assistance.
+     */
+    "translationFailed": string;
     "_processErrors": {
         /**
          * Unable to process quote. This post may be missing context.
          */
         "quoteUnavailable": string;
+        /**
+         * One or more media attachments are unavailable and cannot be shown.
+         */
+        "attachmentFailed": string;
     };
+    /**
+     * Authorized Fetch
+     */
+    "authorizedFetchSection": string;
+    /**
+     * Allow unsigned ActivityPub requests:
+     */
+    "authorizedFetchLabel": string;
+    /**
+     * This setting controls the behavior when a remote instance or user attempts to access your content without verifying their identity. If disabled, any remote user can access your profile and posts - even one who has been blocked or defederated.
+     */
+    "authorizedFetchDescription": string;
+    "_authorizedFetchValue": {
+        /**
+         * Never
+         */
+        "never": string;
+        /**
+         * Always
+         */
+        "always": string;
+        /**
+         * Only for essential metadata
+         */
+        "essential": string;
+        /**
+         * Use staff recommendation
+         */
+        "staff": string;
+    };
+    "_authorizedFetchValueDescription": {
+        /**
+         * Block all unsigned requests. Improves privacy and makes blocks more effective, but is not compatible with some very old or uncommon instance software.
+         */
+        "never": string;
+        /**
+         * Allow all unsigned requests. Provides the greatest compatibility with other instances, but reduces privacy and weakens blocks.
+         */
+        "always": string;
+        /**
+         * Allow some limited unsigned requests. Provides a hybrid between "Never" and "Always" by exposing only the minimum profile metadata that is required for federation with older software.
+         */
+        "essential": string;
+        /**
+         * Use the default value of "{value}" recommended by the instance staff.
+         */
+        "staff": ParameterizedString<"value">;
+    };
+    /**
+     * The configuration property 'checkActivityPubGetSignature' has been deprecated and replaced with the new Authorized Fetch setting. Please remove it from your configuration file.
+     */
+    "authorizedFetchLegacyWarning": string;
+    /**
+     * Deleted
+     */
+    "deleted": string;
+    /**
+     * Enable the proxy account.
+     */
+    "enableProxyAccount": string;
+    /**
+     * If disabled, then the proxy account will not be used. User lists will only include notes from local or followed users.
+     */
+    "enableProxyAccountDescription": string;
+    "_confirmPollEdit": {
+        /**
+         * Are you sure you want to edit this poll
+         */
+        "title": string;
+        /**
+         * Editing this poll will cause it to lose all previous votes
+         */
+        "text": string;
+    };
+    /**
+     * Test patterns
+     */
+    "wordMuteTestLabel": string;
+    /**
+     * Enter some text here to test your word patterns. The matched words, if any, will be displayed below.
+     */
+    "wordMuteTestDescription": string;
+    /**
+     * Test
+     */
+    "wordMuteTestTest": string;
+    /**
+     * Matched words: {words}
+     */
+    "wordMuteTestMatch": ParameterizedString<"words">;
+    /**
+     * No results yet, enter some text and click "Test" to check it.
+     */
+    "wordMuteTestNoResults": string;
+    /**
+     * Text does not match any patterns.
+     */
+    "wordMuteTestNoMatch": string;
+    /**
+     * All word mutes are *case-sensitive* and match on any substring, including part of a longer word or name. You can use regular expressions for more precise control.
+     */
+    "wordMuteWarning": string;
+    /**
+     * Bubble timeline
+     */
+    "bubbleTimeline": string;
+    /**
+     * Choose which instances should be displayed in the bubble.
+     */
+    "bubbleTimelineDescription": string;
+    /**
+     * Note: the bubble timeline is hidden by default, and must be enabled via roles.
+     */
+    "bubbleTimelineMustBeEnabled": string;
+    /**
+     * Users popular on the global network
+     */
+    "popularUsersGlobal": string;
+    /**
+     * Users popular on {name}
+     */
+    "popularUsersLocal": ParameterizedString<"name">;
+    /**
+     * Polls trending on {name}
+     */
+    "pollsOnLocal": ParameterizedString<"name">;
+    /**
+     * Polls trending on the global network
+     */
+    "pollsOnRemote": string;
+    /**
+     * Polls that have ended recently
+     */
+    "pollsExpired": string;
+    /**
+     * Trending polls are disabled on this instance.
+     */
+    "trendingPollsDisabled": string;
+    /**
+     * Please log in to view trending polls.
+     */
+    "trendingPollsDisabledLogIn": string;
+    /**
+     * Silenced
+     */
+    "silenced": string;
+    /**
+     * Total followers
+     */
+    "totalFollowers": string;
+    /**
+     * Total following
+     */
+    "totalFollowing": string;
+    /**
+     * Local followers
+     */
+    "localFollowers": string;
+    /**
+     * Local following
+     */
+    "localFollowing": string;
+    /**
+     * Remote followers
+     */
+    "remoteFollowers": string;
+    /**
+     * Remote following
+     */
+    "remoteFollowing": string;
+    /**
+     * Activity Pub
+     */
+    "activityPub": string;
+    /**
+     * IP
+     */
+    "ip": string;
+    /**
+     * The date is when IP address was first used.
+     */
+    "ipTip": string;
+    /**
+     * Period
+     */
+    "rolePeriod": string;
+    /**
+     * Assigned
+     */
+    "roleAssigned": string;
+    /**
+     * automatic
+     */
+    "roleAutomatic": string;
+    /**
+     * Translation timeout
+     */
+    "translationTimeoutLabel": string;
+    /**
+     * Timeout in milliseconds for translation API requests.
+     */
+    "translationTimeoutCaption": string;
+    /**
+     * Staff notes
+     */
+    "staffNotes": string;
+    /**
+     * Icon of {name}
+     */
+    "instanceIconAlt": ParameterizedString<"name">;
+    /**
+     * Attribution Domains
+     */
+    "attributionDomains": string;
+    /**
+     * A list of domains whose content can be attributed to you on link previews, separated by new-line. Any subdomain will also be valid. The following needs to be on the webpage:
+     */
+    "attributionDomainsDescription": string;
+    /**
+     * Written by {user}
+     */
+    "writtenBy": ParameterizedString<"user">;
+    /**
+     * Following (Pub)
+     */
+    "followingPub": string;
+    /**
+     * Followers (Sub)
+     */
+    "followersSub": string;
+    /**
+     * Well-known resources
+     */
+    "wellKnownResources": string;
+    /**
+     * Last posted: {at}
+     */
+    "lastPosted": ParameterizedString<"at">;
+    /**
+     * NSFW
+     */
+    "nsfw": string;
+    /**
+     * Raw
+     */
+    "raw": string;
+    /**
+     * CW
+     */
+    "cw": string;
+    /**
+     * Media Silenced
+     */
+    "mediaSilenced": string;
+    /**
+     * Bubble
+     */
+    "bubble": string;
+    /**
+     * Verified
+     */
+    "verified": string;
+    /**
+     * Not Verified
+     */
+    "notVerified": string;
+    /**
+     * Hibernated
+     */
+    "hibernated": string;
+    /**
+     * When replying to a post with a Content Warning, automatically use the same CW for the reply.
+     */
+    "keepCwDescription": string;
+    /**
+     * Disabled (do not copy CWs)
+     */
+    "keepCwDisabled": string;
+    /**
+     * Enabled (copy CWs verbatim)
+     */
+    "keepCwEnabled": string;
+    /**
+     * Enabled (copy CW and prepend "RE:")
+     */
+    "keepCwPrependRe": string;
+    /**
+     * Note controls
+     */
+    "noteFooterLabel": string;
+    /**
+     * Packed user data in its raw form. Most of these fields are public and visible to all users.
+     */
+    "rawUserDescription": string;
+    /**
+     * Extended user data in its raw form. These fields are private and can only be accessed by moderators.
+     */
+    "rawInfoDescription": string;
+    /**
+     * ActivityPub user data in its raw form. These fields are public and accessible to other instances.
+     */
+    "rawApDescription": string;
+    /**
+     * Signup Reason
+     */
+    "signupReason": string;
+    "clearCachedFilesOptions": {
+        /**
+         * Delete all cached remote files
+         */
+        "title": string;
+        /**
+         * Only delete files older than:
+         */
+        "olderThan": string;
+        /**
+         * now
+         */
+        "now": string;
+        /**
+         * one week
+         */
+        "oneWeek": string;
+        /**
+         * one month
+         */
+        "oneMonth": string;
+        /**
+         * one year
+         */
+        "oneYear": string;
+        /**
+         * Don't delete files used as avatars&c
+         */
+        "keepFilesInUse": string;
+        /**
+         * this option requires more complicated database queries, you may need to increase the value of db.extra.statement_timeout in the configuration file
+         */
+        "keepFilesInUseDescription": string;
+    };
+    /**
+     * Custom font size
+     */
+    "customFontSize": string;
 }
 declare const locales: {
     [lang: string]: Locale;

@@ -9,6 +9,8 @@ import { MetaService } from '@/core/MetaService.js';
 import type { Config } from '@/config.js';
 import { DI } from '@/di-symbols.js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
+import { instanceUnsignedFetchOptions } from '@/const.js';
+import { SystemAccountService } from '@/core/SystemAccountService.js';
 
 export const meta = {
 	tags: ['meta'],
@@ -264,7 +266,7 @@ export const meta = {
 			},
 			proxyAccountId: {
 				type: 'string',
-				optional: false, nullable: true,
+				optional: false, nullable: false,
 				format: 'id',
 			},
 			email: {
@@ -443,6 +445,10 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			translationTimeout: {
+				type: 'number',
+				optional: false, nullable: false,
+			},
 			deeplAuthKey: {
 				type: 'string',
 				optional: false, nullable: true,
@@ -459,6 +465,14 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			libreTranslateURL: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			libreTranslateKey: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 			defaultDarkTheme: {
 				type: 'string',
 				optional: false, nullable: true,
@@ -466,6 +480,10 @@ export const meta = {
 			defaultLightTheme: {
 				type: 'string',
 				optional: false, nullable: true,
+			},
+			defaultLike: {
+				type: 'string',
+				optional: false, nullable: false,
 			},
 			description: {
 				type: 'string',
@@ -571,6 +589,7 @@ export const meta = {
 			},
 			federation: {
 				type: 'string',
+				enum: ['all', 'specified', 'none'],
 				optional: false, nullable: false,
 			},
 			federationHosts: {
@@ -579,6 +598,37 @@ export const meta = {
 				items: {
 					type: 'string',
 					optional: false, nullable: false,
+				},
+			},
+			hasLegacyAuthFetchSetting: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			allowUnsignedFetch: {
+				type: 'string',
+				enum: instanceUnsignedFetchOptions,
+				optional: false, nullable: false,
+			},
+			enableProxyAccount: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			deliverSuspendedSoftware: {
+				type: 'array',
+				optional: false, nullable: false,
+				items: {
+					type: 'object',
+					optional: false, nullable: false,
+					properties: {
+						software: {
+							type: 'string',
+							optional: false, nullable: false,
+						},
+						versionRange: {
+							type: 'string',
+							optional: false, nullable: false,
+						},
+					},
 				},
 			},
 		},
@@ -599,9 +649,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private config: Config,
 
 		private metaService: MetaService,
+		private systemAccountService: SystemAccountService,
 	) {
 		super(meta, paramDef, async () => {
 			const instance = await this.metaService.fetch(true);
+
+			const proxy = await this.systemAccountService.fetch('proxy');
 
 			return {
 				maintainerName: instance.maintainerName,
@@ -611,6 +664,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				shortName: instance.shortName,
 				uri: this.config.url,
 				description: instance.description,
+				about: instance.about,
 				langs: instance.langs,
 				tosUrl: instance.termsOfServiceUrl,
 				repositoryUrl: instance.repositoryUrl,
@@ -652,7 +706,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				defaultLike: instance.defaultLike,
 				enableEmail: instance.enableEmail,
 				enableServiceWorker: instance.enableServiceWorker,
-				translatorAvailable: instance.deeplAuthKey != null,
+				translatorAvailable: instance.deeplAuthKey != null || instance.libreTranslateURL != null || instance.deeplFreeMode && instance.deeplFreeInstance != null,
 				cacheRemoteFiles: instance.cacheRemoteFiles,
 				cacheRemoteSensitiveFiles: instance.cacheRemoteSensitiveFiles,
 				pinnedUsers: instance.pinnedUsers,
@@ -675,7 +729,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				setSensitiveFlagAutomatically: instance.setSensitiveFlagAutomatically,
 				enableSensitiveMediaDetectionForVideos: instance.enableSensitiveMediaDetectionForVideos,
 				enableBotTrending: instance.enableBotTrending,
-				proxyAccountId: instance.proxyAccountId,
+				proxyAccountId: proxy.id,
 				email: instance.email,
 				smtpSecure: instance.smtpSecure,
 				smtpHost: instance.smtpHost,
@@ -696,10 +750,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				objectStorageUseProxy: instance.objectStorageUseProxy,
 				objectStorageSetPublicRead: instance.objectStorageSetPublicRead,
 				objectStorageS3ForcePathStyle: instance.objectStorageS3ForcePathStyle,
+				translationTimeout: instance.translationTimeout,
 				deeplAuthKey: instance.deeplAuthKey,
 				deeplIsPro: instance.deeplIsPro,
 				deeplFreeMode: instance.deeplFreeMode,
 				deeplFreeInstance: instance.deeplFreeInstance,
+				libreTranslateURL: instance.libreTranslateURL,
+				libreTranslateKey: instance.libreTranslateKey,
 				enableIpLogging: instance.enableIpLogging,
 				enableActiveEmailValidation: instance.enableActiveEmailValidation,
 				enableVerifymailApi: instance.enableVerifymailApi,
@@ -735,6 +792,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				trustedLinkUrlPatterns: instance.trustedLinkUrlPatterns,
 				federation: instance.federation,
 				federationHosts: instance.federationHosts,
+				hasLegacyAuthFetchSetting: config.checkActivityPubGetSignature != null,
+				allowUnsignedFetch: instance.allowUnsignedFetch,
+				enableProxyAccount: instance.enableProxyAccount,
+				deliverSuspendedSoftware: instance.deliverSuspendedSoftware,
 			};
 		});
 	}
