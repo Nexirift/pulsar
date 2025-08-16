@@ -228,19 +228,23 @@ export class StreamingApiServerService implements OnApplicationShutdown {
 					stream.dispose();
 				});
 
-				ws.once('error', (e) => {
-					this.#logger.error(`Unhandled error in Streaming Api: ${renderInlineError(e)}`);
-					ws.terminate();
-				});
-
 				if (dieInstantly !== null) {
 					ws.close(...dieInstantly);
 					return;
 				}
 
+				// Special handler to hard-terminate the connection if it fails during initialization.
+				// Disconnect immediately after because the connection() handler below defines its own error handler.
+				const onWsInitError = (error: unknown) => {
+					this.onWsError(error);
+					ws.terminate();
+				};
+
+				ws.on('error', onWsInitError);
 				this.#wss.emit('connection', ws, request, {
 					stream, user, app,
 				});
+				ws.off('error', onWsInitError);
 			});
 		});
 
