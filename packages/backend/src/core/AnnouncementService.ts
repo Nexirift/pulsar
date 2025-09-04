@@ -73,7 +73,7 @@ export class AnnouncementService {
 	@bindThis
 	public async create(values: Partial<MiAnnouncement>, moderator?: MiUser): Promise<{ raw: MiAnnouncement; packed: Packed<'Announcement'> }> {
 		if (values.display === 'dialog') {
-			await this.assertDialogAnnouncenmentsCountLimit();
+			await this.assertDialogAnnouncementsCountLimit();
 		}
 
 		const announcement = await this.announcementsRepository.insertOne({
@@ -131,7 +131,7 @@ export class AnnouncementService {
 	public async update(announcement: MiAnnouncement, values: Partial<MiAnnouncement>, moderator?: MiUser): Promise<void> {
 		// Check if this operation would produce an active dialog announcement
 		if ((values.display ?? announcement.display) === 'dialog' && (values.isActive ?? announcement.isActive)) {
-			await this.assertDialogAnnouncenmentsCountLimit();
+			await this.assertDialogAnnouncementsCountLimit();
 		}
 
 		await this.announcementsRepository.update(announcement.id, {
@@ -237,7 +237,7 @@ export class AnnouncementService {
 		}
 	}
 
-	private async assertDialogAnnouncenmentsCountLimit(): Promise<void> {
+	private async assertDialogAnnouncementsCountLimit(): Promise<void> {
 		// Check how many active dialog queries already exist, to enforce a limit
 		const dialogCount = await this.announcementsRepository.createQueryBuilder('announcement')
 			.where({
