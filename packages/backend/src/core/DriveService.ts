@@ -154,8 +154,8 @@ export class DriveService {
 	@bindThis
 	private async save(file: MiDriveFile, path: string, name: string, info: FileInfo): Promise<MiDriveFile> {
 		const type = info.type.mime;
-		const hash = info.md5;
-		const size = info.size;
+		let hash = info.md5;
+		let size = info.size;
 
 		// thunbnail, webpublic を必要なら生成
 		const alts = await this.generateAlts(path, type, !file.uri);
@@ -163,6 +163,9 @@ export class DriveService {
 		if (type && type.startsWith('video/')) {
 			try {
 				await this.videoProcessingService.webOptimizeVideo(path, type);
+				const newInfo = await this.fileInfoService.getFileInfo(path);
+				hash = newInfo.md5;
+				size = newInfo.size;
 			} catch (err) {
 				this.registerLogger.warn(`Video optimization failed: ${renderInlineError(err)}`);
 			}
@@ -738,14 +741,14 @@ export class DriveService {
 	@bindThis
 	public async deleteFile(file: MiDriveFile, isExpired = false, deleter?: MiUser) {
 		if (file.storedInternal) {
-			this.internalStorageService.del(file.accessKey!);
+			this.deleteLocalFile(file.accessKey!);
 
 			if (file.thumbnailUrl) {
-				this.internalStorageService.del(file.thumbnailAccessKey!);
+				this.deleteLocalFile(file.thumbnailAccessKey!);
 			}
 
 			if (file.webpublicUrl) {
-				this.internalStorageService.del(file.webpublicAccessKey!);
+				this.deleteLocalFile(file.webpublicAccessKey!);
 			}
 		} else if (!file.isLink) {
 			this.queueService.createDeleteObjectStorageFileJob(file.accessKey!);
@@ -767,14 +770,14 @@ export class DriveService {
 		const promises = [];
 
 		if (file.storedInternal) {
-			promises.push(this.internalStorageService.del(file.accessKey!));
+			promises.push(this.deleteLocalFile(file.accessKey!));
 
 			if (file.thumbnailUrl) {
-				promises.push(this.internalStorageService.del(file.thumbnailAccessKey!));
+				promises.push(this.deleteLocalFile(file.thumbnailAccessKey!));
 			}
 
 			if (file.webpublicUrl) {
-				promises.push(this.internalStorageService.del(file.webpublicAccessKey!));
+				promises.push(this.deleteLocalFile(file.webpublicAccessKey!));
 			}
 		} else if (!file.isLink) {
 			promises.push(this.deleteObjectStorageFile(file.accessKey!));
@@ -855,6 +858,22 @@ export class DriveService {
 				return;
 			} else {
 				throw new Error(`Failed to delete the file from the object storage with the given key: ${key}`, {
+					cause: err,
+				});
+			}
+		}
+	}
+
+	@bindThis
+	public async deleteLocalFile(key: string) {
+		try {
+			await this.internalStorageService.del(key);
+		} catch (err: any) {
+			if (err.code === 'ENOENT') {
+				this.deleteLogger.warn(`The file to delete did not exist: ${key}. Skipping this.`);
+				return;
+			} else {
+				throw new Error(`Failed to delete the file: ${key}`, {
 					cause: err,
 				});
 			}

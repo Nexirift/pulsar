@@ -43,6 +43,11 @@ export class MiMeta {
 	})
 	public description: string | null;
 
+	@Column('text', {
+		nullable: true,
+	})
+	public about: string | null;
+
 	/**
 	 * メンテナの名前
 	 */
@@ -628,8 +633,7 @@ export class MiMeta {
 	})
 	public policies: Record<string, any>;
 
-	@Column('varchar', {
-		length: 280,
+	@Column('text', {
 		array: true,
 		default: '{}',
 	})

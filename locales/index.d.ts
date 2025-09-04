@@ -6005,6 +6005,14 @@ export interface Locale extends ILocale {
          * New
          */
         "new": string;
+        /**
+         * Throw confetti
+         */
+        "confetti": string;
+        /**
+         * If enabled, the announcement will display a confetti effect when viewed.
+         */
+        "confettiDescription": string;
     };
     "_initialAccountSetting": {
         /**
@@ -6398,7 +6406,7 @@ export interface Locale extends ILocale {
          */
         "deliverSuspendedSoftware": string;
         /**
-         * 脆弱性などの理由で、サーバーのソフトウェアの名前及びバージョンの範囲を指定して配信を停止できます。このバージョン情報はサーバーが提供したものであり、信頼性は保証されません。バージョン指定には semver の範囲指定が使用できますが、>= 2024.3.1 と指定すると 2024.3.1-custom.0 のようなカスタムバージョンが含まれないため、>= 2024.3.1-0 のように prerelease の指定を行うことを推奨します。
+         * You can specify a range of names and versions of the server's software to stop delivery for vulnerability or other reasons. This version information is provided by the server and is not guaranteed to be reliable. A semver range specification can be used to specify the version, but specifying >= 2024.3.1 will not include custom versions such as 2024.3.1-custom.0, so it is recommended that a prerelease specification be used, such as >= 2024.3.1-0. Specifying * will match any name or version, even when the server doesn't provide one. You can also provide a regular expression like /^sharkey-/i or /^1-/
          */
         "deliverSuspendedSoftwareDescription": string;
         /**
@@ -6413,6 +6421,14 @@ export interface Locale extends ILocale {
          * E.g. In the sidebar, to visitors and in the "About" page.
          */
         "sidebarLogoUsageExample": string;
+        /**
+         * About instance
+         */
+        "aboutInstance": string;
+        /**
+         * A longer description that will be displayed in the 'Instance Information' page, going in place of the regular instance description. Supports HTML.
+         */
+        "aboutInstanceDescription": string;
     };
     "_accountMigration": {
         /**
@@ -11977,6 +11993,14 @@ export interface Locale extends ILocale {
      */
     "trustedLinkUrlPatternsDescription": string;
     /**
+     * Link to external site warning exclusion list
+     */
+    "trustedDomainsList": string;
+    /**
+     * Following links to these domains will not show a warning. Write one domain per line.
+     */
+    "trustedDomainsListDescription": string;
+    /**
      * Mutuals
      */
     "mutuals": string;
@@ -13355,6 +13379,10 @@ export interface Locale extends ILocale {
          */
         "keepFilesInUseDescription": string;
     };
+    /**
+     * Custom font size
+     */
+    "customFontSize": string;
 }
 declare const locales: {
     [lang: string]: Locale;

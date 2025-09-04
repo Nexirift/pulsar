@@ -566,6 +566,7 @@ export type PagesShowResponse = operations['pages___show']['responses']['200']['
 export type PagesUnlikeRequest = operations['pages___unlike']['requestBody']['content']['application/json'];
 export type PagesUpdateRequest = operations['pages___update']['requestBody']['content']['application/json'];
 export type PingResponse = operations['ping']['responses']['200']['content']['application/json'];
+export type PinnedUsersRequest = operations['pinned-users']['requestBody']['content']['application/json'];
 export type PinnedUsersResponse = operations['pinned-users']['responses']['200']['content']['application/json'];
 export type PromoReadRequest = operations['promo___read']['requestBody']['content']['application/json'];
 export type RenoteMuteCreateRequest = operations['renote-mute___create']['requestBody']['content']['application/json'];

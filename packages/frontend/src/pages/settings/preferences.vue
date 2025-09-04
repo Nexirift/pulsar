@@ -700,7 +700,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 								<option value="1"><span style="font-size: 15px;">Aa</span></option>
 								<option value="2"><span style="font-size: 16px;">Aa</span></option>
 								<option value="3"><span style="font-size: 17px;">Aa</span></option>
+								<option value="custom"><span style="font-size: 14px;">Custom</span></option>
 							</MkRadios>
+						</SearchMarker>
+
+						<SearchMarker :keywords="['font', 'size']">
+							<MkInput v-model="customFontSize" :min="12" :max="48" type="number" :step="1" :manualSave="true" :disabled="fontSize !== 'custom'">
+								<template #label><SearchLabel>{{ i18n.ts.customFontSize }}</SearchLabel></template>
+							</MkInput>
 						</SearchMarker>
 
 						<SearchMarker :keywords="['font', 'system', 'native']">
@@ -826,6 +833,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 									<MkSwitch v-model="warnExternalUrl">
 										<template #label><SearchLabel>{{ i18n.ts.warnExternalUrl }}</SearchLabel></template>
 									</MkSwitch>
+								</MkPreferenceContainer>
+							</SearchMarker>
+
+							<SearchMarker :keywords="['warn', 'external', 'url']">
+								<MkPreferenceContainer k="trustedDomains">
+									<MkTextarea v-model="trustedDomains" :debounce="true">
+										<template #label><SearchLabel>{{ i18n.ts.trustedDomainsList }}</SearchLabel></template>
+										<template #caption>{{ i18n.ts.trustedDomainsListDescription }}</template>
+									</MkTextarea>
 								</MkPreferenceContainer>
 							</SearchMarker>
 
@@ -967,6 +983,7 @@ import FormLink from '@/components/form/link.vue';
 import MkLink from '@/components/MkLink.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkInput from '@/components/MkInput.vue';
+import MkTextarea from '@/components/MkTextarea.vue';
 import { store } from '@/store.js';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
@@ -1071,8 +1088,14 @@ const defaultCW = ref($i.defaultCW);
 const defaultCWPriority = ref($i.defaultCWPriority);
 const lang = prefer.model('lang');
 const fontSize = prefer.model('fontSize');
+const customFontSize = prefer.model('customFontSize');
 const useSystemFont = prefer.model('useSystemFont');
 const cornerRadius = prefer.model('cornerRadius');
+const trustedDomains = prefer.model(
+	'trustedDomains',
+	(domainsList) => domainsList.join('\n'),
+	(domainsString) => domainsString.split('\n').map( d => d.trim() ).filter( x => x.length > 0),
+);
 
 watch([
 	hemisphere,
