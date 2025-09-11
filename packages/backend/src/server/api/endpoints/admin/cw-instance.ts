@@ -35,7 +35,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const instance = await this.federatedInstanceService.fetchOrRegister(ps.host);
 
 			// Collapse empty strings to null
-			const newCW = ps.cw || null;
+			const newCW = ps.cw?.trim() || null;
 			const oldCW = instance.mandatoryCW;
 
 			// Skip if there's nothing to do

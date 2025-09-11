@@ -42,7 +42,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const user = await this.cacheService.findUserById(ps.userId);
 
 			// Collapse empty strings to null
-			const newCW = ps.cw || null;
+			const newCW = ps.cw?.trim() || null;
 			const oldCW = user.mandatoryCW;
 
 			// Skip if there's nothing to do

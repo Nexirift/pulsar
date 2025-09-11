@@ -43,7 +43,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}) as MiNote & { user: MiUser };
 
 			// Collapse empty strings to null
-			const newCW = ps.cw || null;
+			const newCW = ps.cw?.trim() || null;
 			const oldCW = note.mandatoryCW;
 
 			// Skip if there's nothing to do
