@@ -345,10 +345,8 @@ export class NoteVisibilityService {
 		// Don't silence if it's us
 		if (note.userId === user?.id) return false;
 
-		// Don't silence if we're following
-		if (data.userFollowings?.has(note.userId)) return false;
-
-		if (!ignoreSilencedAuthor) {
+		// Don't silence if we're following or ignoring the author
+		if (!data.userFollowings?.has(note.userId) && !ignoreSilencedAuthor) {
 			// Silence if user is silenced
 			if (note.user.isSilenced) return true;
 
