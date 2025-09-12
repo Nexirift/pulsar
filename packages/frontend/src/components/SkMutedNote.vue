@@ -152,6 +152,9 @@ defineExpose({
 	text-align: center;
 	opacity: 0.7;
 	cursor: pointer;
+
+	// Without this, the mute placeholder collapses weirdly when the note is rendered in a flax container.
+	flex: 1;
 }
 
 .muted:hover {
