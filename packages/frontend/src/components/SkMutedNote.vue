@@ -125,7 +125,11 @@ function expand() {
 	emit('expandMute', props.note);
 }
 
-const mute = checkMute(computed(() => props.note), computed(() => props.withHardMute));
+const mute = checkMute(
+	computed(() => props.note),
+	computed(() => props.withHardMute),
+	computed(() => prefer.s.uncollapseCW),
+);
 
 const mutedWords = computed(() => mute.value.softMutedWords?.join(', '));
 const isExpanded = computed(() => props.skipMute || expandNote.value || !mute.value.hasMute);

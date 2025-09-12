@@ -85,18 +85,19 @@ function provideMuteOverrides(overrides: Reactive<MuteOverrides> | null) {
 	provide(muteOverridesSymbol, overrides);
 }
 
-export function checkMute(note: Misskey.entities.Note | ComputedRef<Misskey.entities.Note>, withHardMute?: boolean | ComputedRef<boolean>): ComputedRef<Mute> {
+export function checkMute(note: Misskey.entities.Note | ComputedRef<Misskey.entities.Note>, withHardMute?: boolean | ComputedRef<boolean>, uncollapseCW?: boolean | ComputedRef<boolean>): ComputedRef<Mute> {
 	// inject() can only be used inside script setup, so it MUST be outside the computed block!
 	const overrides = injectMuteOverrides();
 
 	return computed(() => {
 		const _note = unref(note);
 		const _withHardMute = unref(withHardMute) ?? true;
-		return getMutes(_note, _withHardMute, overrides);
+		const _uncollapseCW = unref(uncollapseCW) ?? false;
+		return getMutes(_note, _withHardMute, _uncollapseCW, overrides);
 	});
 }
 
-function getMutes(note: Misskey.entities.Note, withHardMute: boolean, overrides: MuteOverrides | null): Mute {
+function getMutes(note: Misskey.entities.Note, withHardMute: boolean, uncollapseCW: boolean, overrides: MuteOverrides | null): Mute {
 	const override: Partial<Mute> = overrides ? deepAssign(
 		{},
 		note.user.host ? overrides.instance[note.user.host] : undefined,
@@ -116,24 +117,34 @@ function getMutes(note: Misskey.entities.Note, withHardMute: boolean, overrides:
 	const instanceSilenced = override.instanceSilenced ?? (note.user.instance?.isSilenced && !bypassSilence) ?? false;
 	const threadMuted = override.threadMuted ?? (!isMe && note.isMutingThread);
 	const noteMuted = override.noteMuted ?? (!isMe && note.isMutingNote);
-	const noteMandatoryCW = override.noteMandatoryCW !== undefined
-		? override.noteMandatoryCW
-		: (isMe ? null : note.mandatoryCW);
-	const userMandatoryCW = override.userMandatoryCW !== undefined
-		? override.userMandatoryCW
-		: !bypassSilence
-			? note.user.mandatoryCW
-			: null;
-
-	const instanceMandatoryCW = override.instanceMandatoryCW !== undefined
-		? override.instanceMandatoryCW
-		: (!bypassSilence && note.user.instance)
-			? note.user.instance.mandatoryCW
-			: null;
+	const noteMandatoryCW = getNoteMandatoryCW(note, isMe, uncollapseCW, override);
+	const userMandatoryCW = getUserMandatoryCW(note, bypassSilence, uncollapseCW, override);
+	const instanceMandatoryCW = getInstanceMandatoryCW(note, bypassSilence, uncollapseCW, override);
 
 	const hasMute = hardMuted || softMutedWords.length > 0 || sensitiveMuted || userSilenced || instanceSilenced || threadMuted || noteMuted || !!noteMandatoryCW || !!userMandatoryCW || !!instanceMandatoryCW;
 
 	return { hasMute, hardMuted, softMutedWords, sensitiveMuted, userSilenced, instanceSilenced, threadMuted, noteMuted, noteMandatoryCW, userMandatoryCW, instanceMandatoryCW };
+}
+
+function getNoteMandatoryCW(note: Misskey.entities.Note, isMe: boolean, uncollapseCW: boolean, override: Partial<Mute>): string | null {
+	if (override.noteMandatoryCW !== undefined) return override.noteMandatoryCW;
+	if (uncollapseCW) return null;
+	if (isMe) return null;
+	return note.mandatoryCW ?? null;
+}
+
+function getUserMandatoryCW(note: Misskey.entities.Note, bypassSilence: boolean, uncollapseCW: boolean, override: Partial<Mute>): string | null {
+	if (override.userMandatoryCW !== undefined) return override.userMandatoryCW;
+	if (uncollapseCW) return null;
+	if (bypassSilence) return null;
+	return note.user.mandatoryCW ?? null;
+}
+
+function getInstanceMandatoryCW(note: Misskey.entities.Note, bypassSilence: boolean, uncollapseCW: boolean, override: Partial<Mute>): string | null {
+	if (override.instanceMandatoryCW !== undefined) return override.instanceMandatoryCW;
+	if (uncollapseCW) return null;
+	if (bypassSilence) return null;
+	return note.user.instance?.mandatoryCW ?? null;
 }
 
 function isHardMuted(note: Misskey.entities.Note): boolean {
