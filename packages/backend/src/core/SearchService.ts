@@ -70,6 +70,14 @@ const fileTypes = {
 		'audio/mp4',
 		'audio/x-flac',
 		'audio/vnd.wave',
+		'audio/mod',
+		'audio/s3m',
+		'audio/xm',
+		'audio/it',
+		'audio/x-mod',
+		'audio/x-s3m',
+		'audio/x-xm',
+		'audio/x-it',
 	],
 	// Keep in sync with frontend-shared/js/const.ts
 	module: [
