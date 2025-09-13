@@ -177,6 +177,8 @@ flash: "Flash"
 filesRemoved: "Files removed"
 fileImported: "File imported"
 cannotLoadNote: "Failed to load note"
+clickToUnsubscribe: "Please click [OK] to unsubscribe from announcement e-mails."
+unsubscribeError: "There was a problem unsubscribing."
 _flash:
   contentHidden: "Flash Content Hidden"
   poweredByRuffle: "Powered by Ruffle."
