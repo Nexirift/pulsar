@@ -287,7 +287,7 @@ import { boostMenuItems, computeRenoteTooltip } from '@/utility/boost-quote.js';
 import { instance, isEnabledUrlPreview, policies } from '@/instance.js';
 import { getAppearNote } from '@/utility/get-appear-note.js';
 import { prefer } from '@/preferences.js';
-import { getPluginHandlers } from '@/plugin.js';
+import { setupNoteViewInterruptors } from '@/plugin.js';
 import { DI } from '@/di.js';
 import SkMutedNote from '@/components/SkMutedNote.vue';
 import SkNoteTranslation from '@/components/SkNoteTranslation.vue';
@@ -305,26 +305,6 @@ const props = withDefaults(defineProps<{
 const inChannel = inject('inChannel', null);
 
 const note = ref(deepClone(props.note));
-
-// plugin
-const noteViewInterruptors = getPluginHandlers('note_view_interruptor');
-if (noteViewInterruptors.length > 0) {
-	onMounted(async () => {
-		let result: Misskey.entities.Note | null = deepClone(note.value);
-		for (const interruptor of noteViewInterruptors) {
-			try {
-				result = await interruptor.handler(result!) as Misskey.entities.Note | null;
-				if (result === null) {
-					isDeleted.value = true;
-					return;
-				}
-			} catch (err) {
-				console.error(err);
-			}
-		}
-		note.value = result as Misskey.entities.Note;
-	});
-}
 
 const isRenote = Misskey.note.isPureRenote(note.value);
 
@@ -361,6 +341,8 @@ const mergedCW = computed(() => computeMergedCw(appearNote.value));
 const renoteTooltip = computeRenoteTooltip(appearNote);
 
 const { muted, threadMuted, noteMuted } = checkMutes(appearNote);
+
+setupNoteViewInterruptors(note, isDeleted);
 
 watch(() => props.expandAllCws, (expandAllCws) => {
 	if (expandAllCws !== showContent.value) showContent.value = expandAllCws;

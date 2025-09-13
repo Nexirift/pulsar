@@ -180,7 +180,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, inject, onMounted, ref, useTemplateRef, watch, provide } from 'vue';
+import { computed, inject, ref, useTemplateRef, watch, provide } from 'vue';
 import * as mfm from 'mfm-js';
 import * as Misskey from 'misskey-js';
 import { isLink } from '@@/js/is-link.js';
@@ -231,7 +231,7 @@ import { instance, isEnabledUrlPreview, policies } from '@/instance.js';
 import { focusPrev, focusNext } from '@/utility/focus.js';
 import { getAppearNote } from '@/utility/get-appear-note.js';
 import { prefer } from '@/preferences.js';
-import { getPluginHandlers } from '@/plugin.js';
+import { setupNoteViewInterruptors } from '@/plugin.js';
 import { DI } from '@/di.js';
 import { useRouter } from '@/router.js';
 import SkMutedNote from '@/components/SkMutedNote.vue';
@@ -268,26 +268,6 @@ function noteclick(id: string) {
 	if (selection?.toString().length === 0) {
 		router.push(`/notes/${id}`);
 	}
-}
-
-// plugin
-const noteViewInterruptors = getPluginHandlers('note_view_interruptor');
-if (noteViewInterruptors.length > 0) {
-	onMounted(async () => {
-		let result: Misskey.entities.Note | null = deepClone(note.value);
-		for (const interruptor of noteViewInterruptors) {
-			try {
-				result = await interruptor.handler(result!) as Misskey.entities.Note | null;
-				if (result === null) {
-					isDeleted.value = true;
-					return;
-				}
-			} catch (err) {
-				console.error(err);
-			}
-		}
-		note.value = result as Misskey.entities.Note;
-	});
 }
 
 const isRenote = Misskey.note.isPureRenote(note.value);
@@ -393,6 +373,8 @@ const keymap = {
 		callback: () => focusAfter(),
 	},
 } as const satisfies Keymap;
+
+setupNoteViewInterruptors(note, isDeleted);
 
 provide(DI.mfmEmojiReactCallback, (reaction) => {
 	sound.playMisskeySfx('reaction');

@@ -115,6 +115,8 @@ import { useNoteCapture } from '@/use/use-note-capture.js';
 import SkMutedNote from '@/components/SkMutedNote.vue';
 import { instance, policies } from '@/instance';
 import { getAppearNote } from '@/utility/get-appear-note';
+import { setupNoteViewInterruptors } from '@/plugin.js';
+import { deepClone } from '@/utility/clone.js';
 
 const props = withDefaults(defineProps<{
 	note: Misskey.entities.Note;
@@ -129,7 +131,9 @@ const props = withDefaults(defineProps<{
 	onDeleteCallback: undefined,
 });
 
-const appearNote = computed(() => getAppearNote(props.note));
+const note = ref(deepClone(props.note));
+
+const appearNote = computed(() => getAppearNote(note.value));
 
 const canRenote = computed(() => ['public', 'home'].includes(appearNote.value.visibility) || appearNote.value.userId === $i?.id);
 
@@ -158,13 +162,15 @@ const pleaseLoginContext = computed<OpenOnRemoteOptions>(() => ({
 
 const currentClip = inject<Ref<Misskey.entities.Clip> | null>('currentClip', null);
 
+setupNoteViewInterruptors(note, isDeleted);
+
 async function addReplyTo(replyNote: Misskey.entities.Note) {
 	replies.value.unshift(replyNote);
 	appearNote.value.repliesCount += 1;
 }
 
 async function removeReply(id: Misskey.entities.Note['id']) {
-	const replyIdx = replies.value.findIndex(note => note.id === id);
+	const replyIdx = replies.value.findIndex(reply => reply.id === id);
 	if (replyIdx >= 0) {
 		replies.value.splice(replyIdx, 1);
 		appearNote.value.repliesCount -= 1;
@@ -250,11 +256,11 @@ function like(): void {
 	}
 }
 
-function undoReact(note): void {
-	const oldReaction = note.myReaction;
+function undoReact(targetNote: Misskey.entities.Note): void {
+	const oldReaction = targetNote.myReaction;
 	if (!oldReaction) return;
 	misskeyApi('notes/reactions/delete', {
-		noteId: note.id,
+		noteId: targetNote.id,
 	});
 }
 

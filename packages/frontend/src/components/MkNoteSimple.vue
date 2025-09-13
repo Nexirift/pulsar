@@ -36,6 +36,8 @@ import MkCwButton from '@/components/MkCwButton.vue';
 import MkButton from '@/components/MkButton.vue';
 import { i18n } from '@/i18n.js';
 import { prefer } from '@/preferences.js';
+import { setupNoteViewInterruptors } from '@/plugin.js';
+import { deepClone } from '@/utility/clone.js';
 
 const props = defineProps<{
 	note: Misskey.entities.Note & {
@@ -49,7 +51,13 @@ const props = defineProps<{
 const showContent = ref(prefer.s.uncollapseCW);
 const isDeleted = ref(false);
 
-const mergedCW = computed(() => computeMergedCw(props.note));
+const note = ref(deepClone(props.note));
+
+const mergedCW = computed(() => computeMergedCw(note.value));
+
+if (!note.value.isSchedule) {
+	setupNoteViewInterruptors(note, null);
+}
 
 const emit = defineEmits<{
 	(ev: 'editScheduleNote'): void;
@@ -63,7 +71,7 @@ async function deleteScheduleNote() {
 		cancelText: i18n.ts.cancel,
 	});
 	if (canceled) return;
-	await os.apiWithDialog('notes/schedule/delete', { noteId: props.note.id })
+	await os.apiWithDialog('notes/schedule/delete', { noteId: note.value.id })
 		.then(() => {
 			isDeleted.value = true;
 		});

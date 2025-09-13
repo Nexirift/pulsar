@@ -31,6 +31,8 @@ import MkNoteHeader from '@/components/MkNoteHeader.vue';
 import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
 import MkCwButton from '@/components/MkCwButton.vue';
 import { prefer } from '@/preferences.js';
+import { setupNoteViewInterruptors } from '@/plugin.js';
+import { deepClone } from '@/utility/clone.js';
 
 const props = defineProps<{
 	note: Misskey.entities.Note;
@@ -40,7 +42,11 @@ const props = defineProps<{
 
 let showContent = ref(prefer.s.uncollapseCW);
 
-const mergedCW = computed(() => computeMergedCw(props.note));
+const note = ref(deepClone(props.note));
+
+const mergedCW = computed(() => computeMergedCw(note.value));
+
+setupNoteViewInterruptors(note, null);
 
 watch(() => props.expandAllCws, (expandAllCws) => {
 	if (expandAllCws !== showContent.value) showContent.value = expandAllCws;
