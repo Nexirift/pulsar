@@ -111,7 +111,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'),
 				ps.sinceId, ps.untilId)
 				.where('note.id IN (:...noteIds)', { noteIds: noteIds })
-				.orderBy('note.id', 'DESC')
 				.innerJoinAndSelect('note.user', 'user')
 				.leftJoinAndSelect('note.reply', 'reply')
 				.leftJoinAndSelect('note.renote', 'renote')
