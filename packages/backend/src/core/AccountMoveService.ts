@@ -29,6 +29,7 @@ import { AntennaService } from '@/core/AntennaService.js';
 import { CacheService } from '@/core/CacheService.js';
 import { UserListService } from '@/core/UserListService.js';
 import { TimeService } from '@/global/TimeService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 
 @Injectable()
 export class AccountMoveService {
@@ -74,6 +75,7 @@ export class AccountMoveService {
 		private readonly cacheService: CacheService,
 		private readonly userListService: UserListService,
 		private readonly timeService: TimeService,
+		private readonly internalEventService: InternalEventService,
 	) {
 	}
 
@@ -96,7 +98,7 @@ export class AccountMoveService {
 		Object.assign(src, update);
 
 		// Update cache
-		this.globalEventService.publishInternalEvent('localUserUpdated', src);
+		await this.internalEventService.emit('localUserUpdated', { id: src.id });
 
 		const srcPerson = await this.apRendererService.renderPerson(src);
 		const updateAct = this.apRendererService.addContext(this.apRendererService.renderUpdate(srcPerson, src));
