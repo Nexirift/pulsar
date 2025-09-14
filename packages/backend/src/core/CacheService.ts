@@ -356,6 +356,7 @@ export class CacheService implements OnApplicationShutdown {
 			// TODO bulk fetcher
 		});
 
+		this.internalEventService.on('usersUpdated', this.onBulkUserEvent);
 		this.internalEventService.on('userChangeSuspendedState', this.onUserEvent);
 		this.internalEventService.on('userChangeDeletedState', this.onUserEvent);
 		this.internalEventService.on('remoteUserUpdated', this.onUserEvent);
@@ -376,42 +377,87 @@ export class CacheService implements OnApplicationShutdown {
 	}
 
 	@bindThis
+	private async onBulkUserEvent<E extends 'usersUpdated'>(body: InternalEventTypes[E], _: E, isLocal: boolean): Promise<void> {
+		if (body.ids.length === 0) return;
+
+		// Update quantum caches
+		if (isLocal) {
+			// Contains IDs of all lists where this user is a member.
+			const userListMemberships = this.listUserMembershipsCache
+				.entries()
+				.filter(e => body.ids.some(id => e[1].has(id)))
+				.map(e => e[0])
+				.toArray();
+
+			await Promise.all([
+				this.userProfileCache.deleteMany(body.ids),
+				this.userMutingsCache.deleteMany(body.ids),
+				this.userMutedCache.deleteMany(body.ids),
+				this.userBlockingCache.deleteMany(body.ids),
+				this.userBlockedCache.deleteMany(body.ids),
+				this.renoteMutingsCache.deleteMany(body.ids),
+				this.userFollowingsCache.deleteMany(body.ids),
+				this.userFollowersCache.deleteMany(body.ids),
+				this.hibernatedUserCache.deleteMany(body.ids),
+				this.threadMutingsCache.deleteMany(body.ids),
+				this.noteMutingsCache.deleteMany(body.ids),
+				this.userListMembershipsCache.deleteMany(body.ids),
+				this.listUserMembershipsCache.deleteMany(userListMemberships),
+			]);
+		}
+
+		// Update other caches
+		const users = await this.usersRepository.findBy({ id: In(body.ids) });
+		for (const id of body.ids) {
+			const user = users.find(u => u.id === id);
+			this.updateMkUserCaches({ id }, user ?? null);
+		}
+	}
+
+	@bindThis
 	private async onUserEvent<E extends 'userChangeSuspendedState' | 'userChangeDeletedState' | 'remoteUserUpdated' | 'localUserUpdated'>(body: InternalEventTypes[E], _: E, isLocal: boolean): Promise<void> {
+		// Update quantum caches
+		if (isLocal) {
+			// Contains IDs of all lists where this user is a member.
+			const userListMemberships = this.listUserMembershipsCache
+				.entries()
+				.filter(e => e[1].has(body.id))
+				.map(e => e[0])
+				.toArray();
+
+			await Promise.all([
+				this.userProfileCache.delete(body.id),
+				this.userMutingsCache.delete(body.id),
+				this.userBlockingCache.delete(body.id),
+				this.userBlockedCache.delete(body.id),
+				this.renoteMutingsCache.delete(body.id),
+				this.userFollowingsCache.delete(body.id),
+				this.userFollowersCache.delete(body.id),
+				this.hibernatedUserCache.delete(body.id),
+				this.threadMutingsCache.delete(body.id),
+				this.noteMutingsCache.delete(body.id),
+				this.userListMembershipsCache.delete(body.id),
+				this.listUserMembershipsCache.deleteMany(userListMemberships),
+			]);
+		}
+
+		// Update other caches
+		const user = await this.usersRepository.findOneBy({ id: body.id });
+		this.updateMkUserCaches(body, user);
+	}
+
+	// This is here purely to help git line up MK's original code with our changes
+	@bindThis
+	private updateMkUserCaches(body: { id: string }, user: MiUser | null): void {
 		{
 			{
 				{
-					const user = await this.usersRepository.findOneBy({ id: body.id });
 					if (user == null) {
 						this.userByIdCache.delete(body.id);
-						this.localUserByIdCache.delete(body.id);
 						for (const [k, v] of this.uriPersonCache.entries) {
 							if (v.value?.id === body.id) {
 								this.uriPersonCache.delete(k);
 							}
-						}
-
-						// Contains IDs of all lists where this user is a member.
-						const userListMemberships = this.listUserMembershipsCache
-							.entries()
-							.filter(e => e[1].has(body.id))
-							.map(e => e[0])
-							.toArray();
-
-						if (isLocal) {
-							await Promise.all([
-								this.userProfileCache.delete(body.id),
-								this.userMutingsCache.delete(body.id),
-								this.userBlockingCache.delete(body.id),
-								this.userBlockedCache.delete(body.id),
-								this.renoteMutingsCache.delete(body.id),
-								this.userFollowingsCache.delete(body.id),
-								this.userFollowersCache.delete(body.id),
-								this.hibernatedUserCache.delete(body.id),
-								this.threadMutingsCache.delete(body.id),
-								this.noteMutingsCache.delete(body.id),
-								this.userListMembershipsCache.delete(body.id),
-								this.listUserMembershipsCache.deleteMany(userListMemberships),
-							]);
 						}
 					} else {
 						this.userByIdCache.set(user.id, user);
@@ -665,6 +711,7 @@ export class CacheService implements OnApplicationShutdown {
 
 	@bindThis
 	public dispose(): void {
+		this.internalEventService.off('usersUpdated', this.onBulkUserEvent);
 		this.internalEventService.off('userChangeSuspendedState', this.onUserEvent);
 		this.internalEventService.off('userChangeDeletedState', this.onUserEvent);
 		this.internalEventService.off('remoteUserUpdated', this.onUserEvent);
