@@ -136,26 +136,18 @@ export class AccountMoveService {
 	@bindThis
 	public async postMoveProcess(src: MiUser, dst: MiUser): Promise<void> {
 		// Copy blockings and mutings, and update lists
-		try {
-			const results = await Promise.allSettled([
-				this.copyBlocking(src, dst),
-				this.copyMutings(src, dst),
-				this.deleteScheduledNotes(src),
-				this.copyRoles(src, dst),
-				this.updateLists(src, dst),
-				this.antennaService.onMoveAccount(src, dst),
-			]);
-
-			// Log errors, but keep moving
-			for (const result of results) {
-				if (result.status === 'rejected') {
-					this.logger.warn(`Non-fatal exception in migration from ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(result.reason)}`);
-				}
-			}
-		} catch (err) {
-			/* skip if any error happens */
-			this.logger.warn(`Non-fatal exception in migration from ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(err)}`);
-		}
+		await this.copyBlocking(src, dst)
+			.catch(err => this.logger.warn(`Error copying blockings in migration ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(err)}`));
+		await this.copyMutings(src, dst)
+			.catch(err => this.logger.warn(`Error copying mutings in migration ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(err)}`));
+		await this.deleteScheduledNotes(src)
+			.catch(err => this.logger.warn(`Error deleting scheduled notes in migration ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(err)}`));
+		await this.copyRoles(src, dst)
+			.catch(err => this.logger.warn(`Error copying roles in migration ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(err)}`));
+		await this.updateLists(src, dst)
+			.catch(err => this.logger.warn(`Error updating lists in migration ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(err)}`));
+		await this.antennaService.onMoveAccount(src, dst)
+			.catch(err => this.logger.warn(`Error updating antennas in migration ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(err)}`));
 
 		// follow the new account
 		const proxy = await this.systemAccountService.fetch('proxy');
