@@ -5,7 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
-import { In, IsNull, Not } from 'typeorm';
+import { In, IsNull, Not, Brackets, MoreThan } from 'typeorm';
 import type { BlockingsRepository, FollowingsRepository, MutingsRepository, RenoteMutingsRepository, MiUserProfile, UserProfilesRepository, UsersRepository, MiFollowing, NoteThreadMutingsRepository, ChannelFollowingsRepository, UserListMembershipsRepository, UserListFavoritesRepository } from '@/models/_.js';
 import type { MiLocalUser, MiRemoteUser, MiUser } from '@/models/User.js';
 import type { MiUserListMembership } from '@/models/UserListMembership.js';
@@ -119,26 +119,32 @@ export class CacheService implements OnApplicationShutdown {
 		});
 
 		this.userMutingsCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('userMutings', {
-			lifetime: 1000 * 60 * 30, // 30m
+			lifetime: 1000 * 60 * 30, // 3m (workaround for mute expiration)
 			fetcher: (key) => this.mutingsRepository.find({ where: { muterId: key }, select: ['muteeId'] }).then(xs => new Set(xs.map(x => x.muteeId))),
 			bulkFetcher: muterIds => this.mutingsRepository
 				.createQueryBuilder('muting')
 				.select('"muting"."muterId"', 'muterId')
 				.addSelect('array_agg("muting"."muteeId")', 'muteeIds')
 				.where({ muterId: In(muterIds) })
+				.andWhere(new Brackets(qb => qb
+					.orWhere({ expiresAt: IsNull() })
+					.orWhere({ expiresAt: MoreThan(new Date()) })))
 				.groupBy('muting.muterId')
 				.getRawMany<{ muterId: string, muteeIds: string[] }>()
 				.then(ms => ms.map(m => [m.muterId, new Set(m.muteeIds)])),
 		});
 
 		this.userMutedCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('userMuted', {
-			lifetime: 1000 * 60 * 30, // 30m
+			lifetime: 1000 * 60 * 30, // 3m (workaround for mute expiration)
 			fetcher: (key) => this.mutingsRepository.find({ where: { muteeId: key }, select: ['muterId'] }).then(xs => new Set(xs.map(x => x.muterId))),
 			bulkFetcher: muteeIds => this.mutingsRepository
 				.createQueryBuilder('muting')
 				.select('"muting"."muteeId"', 'muteeId')
 				.addSelect('array_agg("muting"."muterId")', 'muterIds')
 				.where({ muteeId: In(muteeIds) })
+				.andWhere(new Brackets(qb => qb
+					.orWhere({ expiresAt: IsNull() })
+					.orWhere({ expiresAt: MoreThan(new Date()) })))
 				.groupBy('muting.muteeId')
 				.getRawMany<{ muteeId: string, muterIds: string[] }>()
 				.then(ms => ms.map(m => [m.muteeId, new Set(m.muterIds)])),
