@@ -323,23 +323,27 @@ export class AccountMoveService {
 		// Set the old account's following and followers counts to 0.
 		// TODO use CollapsedQueueService when merged
 		await this.usersRepository.update({ id: oldAccount.id }, { followersCount: 0, followingCount: 0 });
+		await this.internalEventService.emit('userUpdated', { id: oldAccount.id });
 
 		// Decrease following counts of local followers by 1.
 		// TODO use CollapsedQueueService when merged
 		await this.usersRepository.decrement({ id: In(localFollowerIds) }, 'followingCount', 1);
+		await this.internalEventService.emit('usersUpdated', { ids: localFollowerIds });
 
 		// Decrease follower counts of local followees by 1.
 		const oldFollowings = await this.cacheService.userFollowingsCache.fetch(oldAccount.id);
-		if (oldFollowings.size > 0) {
+		const oldFolloweeIds = Array.from(oldFollowings.keys());
+		if (oldFolloweeIds.length > 0) {
 			// TODO use CollapsedQueueService when merged
-			await this.usersRepository.decrement({ id: In(Array.from(oldFollowings.keys())) }, 'followersCount', 1);
+			await this.usersRepository.decrement({ id: In(oldFolloweeIds) }, 'followersCount', 1);
+			await this.internalEventService.emit('usersUpdated', { ids: oldFolloweeIds });
 		}
 
 		// Update instance stats by decreasing remote followers count by the number of local followers who were following the old account.
 		if (this.meta.enableStatsForFederatedInstances) {
 			if (this.userEntityService.isRemoteUser(oldAccount)) {
 				// TODO use CollapsedQueueService when merged
-				this.federatedInstanceService.fetchOrRegister(oldAccount.host).then(async i => {
+				await this.federatedInstanceService.fetchOrRegister(oldAccount.host).then(async i => {
 					await this.instancesRepository.decrement({ id: i.id }, 'followersCount', localFollowerIds.length);
 					if (this.meta.enableChartsForFederatedInstances) {
 						this.instanceChart.updateFollowers(i.host, false);
