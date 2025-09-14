@@ -119,11 +119,11 @@ export class AccountMoveService {
 
 		// Publish meUpdated event
 		const iObj = await this.userEntityService.pack(src.id, src, { schema: 'MeDetailed', includeSecrets: true });
-		this.globalEventService.publishMainStream(src.id, 'meUpdated', iObj);
+		await this.globalEventService.publishMainStream(src.id, 'meUpdated', iObj);
 
 		// Unfollow after 24 hours
 		const followings = await this.cacheService.userFollowingsCache.fetch(src.id);
-		this.queueService.createDelayedUnfollowJob(Array.from(followings.keys()).map(followeeId => ({
+		await this.queueService.createDelayedUnfollowJob(Array.from(followings.keys()).map(followeeId => ({
 			from: { id: src.id },
 			to: { id: followeeId },
 		})), process.env.NODE_ENV === 'test' ? 10000 : 1000 * 60 * 60 * 24);
@@ -176,7 +176,7 @@ export class AccountMoveService {
 		}
 
 		// Should be queued because this can cause a number of follow per one move.
-		this.queueService.createFollowJob(followJobs);
+		await this.queueService.createFollowJob(followJobs);
 	}
 
 	@bindThis
@@ -193,7 +193,7 @@ export class AccountMoveService {
 			blockJobs.push({ from: { id: blocking.blockerId }, to: { id: dst.id } });
 		}
 		// no need to unblock the old account because it may be still functional
-		this.queueService.createBlockJob(blockJobs);
+		await this.queueService.createBlockJob(blockJobs);
 	}
 
 	@bindThis
@@ -337,7 +337,7 @@ export class AccountMoveService {
 		if (this.meta.enableStatsForFederatedInstances) {
 			if (this.userEntityService.isRemoteUser(oldAccount)) {
 				this.federatedInstanceService.fetchOrRegister(oldAccount.host).then(async i => {
-					this.instancesRepository.decrement({ id: i.id }, 'followersCount', localFollowerIds.length);
+					await this.instancesRepository.decrement({ id: i.id }, 'followersCount', localFollowerIds.length);
 					if (this.meta.enableChartsForFederatedInstances) {
 						this.instanceChart.updateFollowers(i.host, false);
 					}
