@@ -144,14 +144,18 @@ export class ApDbResolverService implements OnApplicationShutdown {
 		await this.apPersonService.updatePerson(user.uri);
 		const newKey = await this.apPersonService.findPublicKeyByUserId(user.id);
 
-		if (newKey) {
-			if (oldKey && newKey.keyPem === oldKey.keyPem) {
+		if (newKey && oldKey) {
+			if (newKey.keyPem === oldKey.keyPem) {
 				this.apLoggerService.logger.debug(`Public key is up-to-date for user ${user.id} (${user.uri})`);
 			} else {
 				this.apLoggerService.logger.info(`Updated public key for user ${user.id} (${user.uri})`);
 			}
+		} else if (newKey) {
+			this.apLoggerService.logger.info(`Registered public key for user ${user.id} (${user.uri})`);
+		} else if (oldKey) {
+			this.apLoggerService.logger.info(`Deleted public key for user ${user.id} (${user.uri})`);
 		} else {
-			this.apLoggerService.logger.warn(`Failed to update public key for user ${user.id} (${user.uri})`);
+			this.apLoggerService.logger.warn(`Could not find any public key for user ${user.id} (${user.uri})`);
 		}
 
 		return newKey ?? oldKey;
