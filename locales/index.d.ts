@@ -13642,35 +13642,27 @@ export interface Locale extends ILocale {
      */
     "newAccount": string;
     /**
-     * Previous accounts
+     * Also known as
      */
-    "previousAccounts": string;
-    /**
-     * Previous account IDs:
-     */
-    "previousAccountIds": string;
-    /**
-     * Previous account URIs:
-     */
-    "previousAccountUris": string;
-    /**
-     * Note: this list is provided by the user and is not verified.
-     */
-    "previousAccountsNotVerified": string;
+    "alsoKnownAs": string;
     /**
      * Migrated at
      */
-    "accountMovedAt": string;
+    "accountMigratedAt": string;
     /**
      * Migrated to
      */
-    "accountMovedTo": string;
+    "accountMigratedTo": string;
+    /**
+     * Migration URI
+     */
+    "accountMigrationUri": string;
     /**
      * Restart account migration
      */
     "restartMigration": string;
     /**
-     * Account migration was last attempted on {date}. If the migration failed or was incomplete, then you may click this button to restart the process.
+     * Account migration was last attempted {date}. If the migration failed or was incomplete, then you may click this button to restart the process.
      */
     "restartMigrationDescription": ParameterizedString<"date">;
     /**

@@ -110,38 +110,39 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #icon><i class="ph-airplane ph-bold ph-lg"></i></template>
 					<template #label>{{ i18n.ts.accountMigration }}</template>
 
-					<FormSection v-if="info.movedTo" first>
-						<template #label>{{ i18n.ts.newAccount }}</template>
+					<div class="_gaps">
+						<FormSection v-if="info.movedTo" first>
+							<template #label>{{ i18n.ts.newAccount }}</template>
 
-						<div style="display: flex; flex-direction: column; gap: 1em;">
-							<MkKeyValue v-if="info.movedAt" oneline>
-								<template #key>{{ i18n.ts.accountMigratedOn }}</template>
-								<template #value><MkTime :time="info.movedAt" :mode="'detail'"/></template>
-							</MkKeyValue>
-							<MkKeyValue oneline>
-								<template #key>{{ i18n.ts.accountMigratedTo }}</template>
-								<template #value>
-									<MkMention v-if="info.movedTo.user" :username="info.movedTo.user.username" :host="info.movedTo.user.host ?? localHost"/>
-									<MkLink v-else :url="info.movedTo.uri"/>
-								</template>
-							</MkKeyValue>
-							<div v-if="iAmAdmin" class="_gaps_s">
-								<MkInfo>{{ i18n.ts.restartMigrationDescription }}</MkInfo>
-								<MkButton inline @click="restartMigration"><i class="ph-airplane-takeoff ph-bold ph-lg"></i> {{ i18n.ts.restartMigration }}</MkButton>
+							<div class="_gaps_s">
+								<MkKeyValue oneline>
+									<template #key>{{ i18n.ts.accountMigrationUri }}</template>
+									<template #value><MkLink :url="info.movedTo.uri">{{ info.movedTo.uri }}</MkLink></template>
+								</MkKeyValue>
+								<MkKeyValue v-if="info.movedAt" oneline>
+									<template #key>{{ i18n.ts.accountMigratedAt }}</template>
+									<template #value><MkTime :time="info.movedAt" :mode="'detail'"/></template>
+								</MkKeyValue>
+								<MkKeyValue v-if="info.movedTo.user" oneline>
+									<template #key>{{ i18n.ts.accountMigratedTo }}</template>
+									<template #value><MkMention :username="info.movedTo.user.username" :host="info.movedTo.user.host ?? localHost"/></template>
+								</MkKeyValue>
 							</div>
-						</div>
-					</FormSection>
+						</FormSection>
 
-					<FormSection v-if="info.alsoKnownAs.length > 0">
-						<template #label>{{ i18n.ts.previousAccounts }}</template>
+						<FormSection v-if="info.alsoKnownAs?.length" first>
+							<template #label>{{ i18n.ts.alsoKnownAs }}</template>
 
-						<ul style="display: flex; flex-direction: column; gap: 1em;">
-							<li v-for="aka of info.alsoKnownAs">
-								<MkMention v-if="aka.user" :username="aka.user.username" :host="aka.user.host ?? localHost"/>
-								<MkLink v-else :url="aka.uri"/>
-							</li>
-						</ul>
-					</FormSection>
+							<ul class="_gaps_s">
+								<li v-for="aka of info.alsoKnownAs" :key="aka.uri">
+									<div style="display: flex; flex-direction: row; gap: 0.75em; align-items: center">
+										<MkMention v-if="aka.user" :username="aka.user.username" :host="aka.user.host ?? localHost"/>
+										<MkLink :url="aka.uri">({{ aka.uri }})</MkLink>
+									</div>
+								</li>
+							</ul>
+						</FormSection>
+					</div>
 				</MkFolder>
 
 				<MkFolder v-if="iAmModerator" :defaultOpen="moderationNote.length > 0" :sticky="false">
@@ -188,6 +189,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<div :class="$style.buttonStrip">
 							<MkButton v-if="user.host != null" inline @click="updateRemoteUser"><i class="ph-cloud-arrow-down ph-bold ph-lg"></i> {{ i18n.ts.updateRemoteUser }}</MkButton>
 							<MkButton v-if="user.host == null" inline accent @click="resetPassword"><i class="ph-password ph-bold ph-lg"></i> {{ i18n.ts.resetPassword }}</MkButton>
+							<MkButton v-if="info.movedTo && iAmAdmin" inline @click="restartMigration"><i class="ph-airplane-takeoff ph-bold ph-lg"></i> {{ i18n.ts.restartMigration }}</MkButton>
 							<MkButton inline accent @click="unsetUserAvatar"><i class="ph-camera-slash ph-bold ph-lg"></i> {{ i18n.ts.unsetUserAvatar }}</MkButton>
 							<MkButton inline accent @click="unsetUserBanner"><i class="ph-image-broken ph-bold ph-lg"></i> {{ i18n.ts.unsetUserBanner }}</MkButton>
 							<MkButton inline danger @click="deleteAllFiles"><i class="ph-trash ph-bold ph-lg"></i> {{ i18n.ts.deleteAllFiles }}</MkButton>
