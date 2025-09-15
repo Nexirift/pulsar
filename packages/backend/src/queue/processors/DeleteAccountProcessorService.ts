@@ -19,7 +19,8 @@ import { ApLogService } from '@/core/ApLogService.js';
 import { ReactionService } from '@/core/ReactionService.js';
 import { QueueService } from '@/core/QueueService.js';
 import { CacheService } from '@/core/CacheService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
+import { QueueLoggerService } from '@/queue/QueueLoggerService.js';
+import * as Acct from '@/misc/acct.js';
 import type * as Bull from 'bullmq';
 import type { DbUserDeleteJobData } from '../types.js';
 
@@ -152,10 +153,14 @@ export class DeleteAccountProcessorService {
 			await this.cacheService.hibernatedUserCache.delete(user.id);
 			await this.cacheService.renoteMutingsCache.delete(user.id);
 			await this.cacheService.userProfileCache.delete(user.id);
-			this.cacheService.userByIdCache.delete(user.id);
-			this.cacheService.localUserByIdCache.delete(user.id);
+			await this.cacheService.userByIdCache.delete(user.id);
+			await this.cacheService.userByAcctCache.delete(Acct.toString({ username: user.usernameLower, host: user.host }));
+			await this.cacheService.userFollowStatsCache.delete(user.id);
 			if (user.token) {
-				this.cacheService.localUserByNativeTokenCache.delete(user.token);
+				await this.cacheService.nativeTokenCache.delete(user.token);
+			}
+			if (user.uri) {
+				await this.cacheService.uriPersonCache.delete(user.uri);
 			}
 
 			await this.followingsRepository.delete({

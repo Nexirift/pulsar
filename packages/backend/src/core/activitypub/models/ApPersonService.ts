@@ -508,7 +508,7 @@ export class ApPersonService implements OnModuleInit {
 		if (user == null) throw new Error(`failed to create user - user is null: ${uri}`);
 
 		// Register to the cache
-		this.cacheService.uriPersonCache.set(user.uri, user);
+		await this.cacheService.uriPersonCache.set(user.uri, user.id);
 
 		// Register public key to the cache.
 		if (publicKey) {
@@ -541,7 +541,7 @@ export class ApPersonService implements OnModuleInit {
 			user = { ...user, ...updates };
 
 			// Register to the cache
-			this.cacheService.uriPersonCache.set(user.uri, user);
+			await this.cacheService.uriPersonCache.set(user.uri, user.id);
 		} catch (err) {
 			// Permanent error implies hidden or inaccessible, which is a normal thing.
 			if (isRetryableError(err)) {
@@ -771,8 +771,6 @@ export class ApPersonService implements OnModuleInit {
 		});
 
 		const updated = { ...exist, ...updates };
-
-		this.cacheService.uriPersonCache.set(uri, updated);
 
 		// 移行処理を行う
 		if (updated.movedAt && (

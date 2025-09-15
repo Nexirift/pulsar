@@ -53,8 +53,8 @@ export class AuthenticateService {
 		}
 
 		if (isNativeUserToken(token)) {
-			const user = await this.cacheService.localUserByNativeTokenCache.fetch(token,
-				() => this.usersRepository.findOneBy({ token }) as Promise<MiLocalUser | null>);
+			const userId = await this.cacheService.nativeTokenCache.fetch(token);
+			const user = userId ? await this.cacheService.findLocalUserById(userId) : null;
 
 			if (user == null) {
 				throw new AuthenticationError('user not found');
