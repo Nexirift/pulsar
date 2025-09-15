@@ -376,6 +376,7 @@ _moderationLogTypes:
   createPromo: "Created a note promo"
   addRelay: "Added a relay"
   removeRelay: "Removed a relay"
+  restartMigration: "Restarted migration for a user"
 
 _mfm:
   uncommonFeature: "This is not a widespread feature, it may not display properly on most other fedi software, including other Misskey forks"

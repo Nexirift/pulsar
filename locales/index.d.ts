@@ -11068,6 +11068,10 @@ export interface Locale extends ILocale {
          * Removed a relay
          */
         "removeRelay": string;
+        /**
+         * Restarted migration for a user
+         */
+        "restartMigration": string;
     };
     "_fileViewer": {
         /**
