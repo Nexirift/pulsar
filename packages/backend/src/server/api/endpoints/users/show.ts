@@ -14,6 +14,7 @@ import { DI } from '@/di-symbols.js';
 import PerUserPvChart from '@/core/chart/charts/per-user-pv.js';
 import { RoleService } from '@/core/RoleService.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
+import { CacheService } from '@/core/CacheService.js';
 import { ApiError } from '../../error.js';
 import { ApiLoggerService } from '../../ApiLoggerService.js';
 import type { FindOptionsWhere } from 'typeorm';
@@ -103,6 +104,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private roleService: RoleService,
 		private perUserPvChart: PerUserPvChart,
 		private apiLoggerService: ApiLoggerService,
+		private readonly cacheService: CacheService,
 	) {
 		super(meta, paramDef, async (ps, me, _1, _2, _3, ip) => {
 			let user;
@@ -115,19 +117,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					return [];
 				}
 
-				const users = await this.usersRepository.findBy(isModerator ? {
-					id: In(ps.userIds),
-				} : {
-					id: In(ps.userIds),
-					isSuspended: false,
-				});
+				const users = await this.cacheService.getUsers(ps.userIds);
 
 				// リクエストされた通りに並べ替え
 				// 順番は保持されるけど数は減ってる可能性がある
 				const _users: MiUser[] = [];
 				for (const id of ps.userIds) {
-					const user = users.find(x => x.id === id);
-					if (user != null) _users.push(user);
+					const user = users.get(id);
+					if (user != null) {
+						if (isModerator || !user.isSuspended) {
+							_users.push(user);
+						}
+					}
 				}
 
 				const _userMap = await this.userEntityService.packMany(_users, me, { schema: ps.detail ? 'UserDetailed' : 'UserLite' })
@@ -140,12 +141,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						this.apiLoggerService.logger.warn(`failed to resolve remote user: ${renderInlineError(err)}`);
 						throw new ApiError(meta.errors.failedToResolveRemoteUser);
 					});
-				} else {
-					const q: FindOptionsWhere<MiUser> = ps.userId != null
-						? { id: ps.userId }
-						: { usernameLower: ps.username!.toLowerCase(), host: IsNull() };
-
-					user = await this.usersRepository.findOneBy(q);
+				} else if (ps.userId != null) {
+					user = await this.cacheService.findUserById(ps.userId);
+				} else if (ps.username) {
+					user = await this.usersRepository.findOneBy({ usernameLower: ps.username.toLowerCase(), host: IsNull() });
 				}
 
 				if (user == null || (!isModerator && user.isSuspended)) {
