@@ -9,6 +9,7 @@ import { IsNull, In, MoreThan, Not } from 'typeorm';
 import { bindThis } from '@/decorators.js';
 import { DI } from '@/di-symbols.js';
 import type { MiLocalUser, MiRemoteUser, MiUser } from '@/models/User.js';
+import { isLocalUser } from '@/models/User.js';
 import type { BlockingsRepository, FollowingsRepository, InstancesRepository, MiMeta, MutingsRepository, UserListMembershipsRepository, UsersRepository, NoteScheduleRepository, MiNoteSchedule } from '@/models/_.js';
 import type { RelationshipJobData, ThinUser } from '@/queue/types.js';
 
@@ -33,6 +34,7 @@ import { InternalEventService } from '@/global/InternalEventService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
 import type { Packed } from '@/misc/json-schema.js';
 import type { Config } from '@/config.js';
 
@@ -89,6 +91,23 @@ export class AccountMoveService {
 		private readonly loggerService: LoggerService,
 	) {
 		this.logger = this.loggerService.getLogger('account-move');
+	}
+
+	@bindThis
+	public async restartMigration(src: MiUser): Promise<void> {
+		if (!src.movedToUri) {
+			throw new IdentifiableError('ddcf173a-00f2-4aa4-ba12-cddd131bacf4', `Can't restart migrated for user ${src.id}: user has not migrated`);
+		}
+
+		const dst = await this.apPersonService.resolvePerson(src.movedToUri);
+		this.logger.info(`Restarting migration from ${src.id} (@${src.usernameLower}@${src.host ?? this.config.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host ?? this.config.host})`);
+
+		if (isLocalUser(src)) {
+			// This calls createMoveJob at the end
+			await this.moveFromLocal(src, dst);
+		} else {
+			await this.queueService.createMoveJob(src, dst);
+		}
 	}
 
 	/**
