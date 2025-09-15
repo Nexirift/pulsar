@@ -496,14 +496,14 @@ function createFetcher(withHint = true) {
 	return () => Promise.all([
 		(withHint && props.userHint) ? props.userHint : misskeyApi('users/show', {
 			userId: props.userId,
-		}),
+		}).catch(() => null),
 		(withHint && props.infoHint) ? props.infoHint : misskeyApi('admin/show-user', {
 			userId: props.userId,
-		}),
+		}).catch(() => null),
 		iAmAdmin
 			? (withHint && props.ipsHint) ? props.ipsHint : misskeyApi('admin/get-user-ips', {
 				userId: props.userId,
-			})
+			}).catch(() => null)
 			: null,
 		iAmAdmin
 			? (withHint && props.apHint) ? props.apHint : misskeyApi('ap/get', {
