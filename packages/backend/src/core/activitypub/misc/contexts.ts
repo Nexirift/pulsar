@@ -588,6 +588,7 @@ const extension_context_definition = {
 	backgroundUrl: 'sharkey:backgroundUrl',
 	listenbrainz: 'sharkey:listenbrainz',
 	enableRss: 'sharkey:enableRss',
+	noindex: 'sharkey:noindex',
 	// vcard
 	vcard: 'http://www.w3.org/2006/vcard/ns#',
 } satisfies Context;
