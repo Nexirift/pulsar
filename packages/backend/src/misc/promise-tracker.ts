@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { coreLogger } from '@/boot/coreLogger.js';
+
+const logger = coreLogger.createSubLogger('background');
 const promiseRefs: Set<WeakRef<Promise<unknown>>> = new Set();
 
 export function trackTask(task: () => Promise<unknown>): void {
@@ -16,7 +19,9 @@ export function trackTask(task: () => Promise<unknown>): void {
 export function trackPromise(promise: Promise<unknown>) {
 	const ref = new WeakRef(promise);
 	promiseRefs.add(ref);
-	promise.finally(() => promiseRefs.delete(ref));
+	promise
+		.catch(err => logger.error('Unhandled error in tracked background task:', { err }))
+		.finally(() => promiseRefs.delete(ref));
 }
 
 export async function allSettled(): Promise<void> {
