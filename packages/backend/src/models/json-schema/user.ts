@@ -313,15 +313,12 @@ export const packedUserDetailedNotMeOnlySchema = {
 			format: 'id',
 			nullable: true, optional: false,
 		},
-		alsoKnownAs: {
-			type: 'array',
+		movedToUri: {
+			type: 'string',
+			format: 'uri',
 			nullable: true, optional: false,
-			items: {
-				type: 'string',
-				format: 'id',
-				nullable: false, optional: false,
-			},
 		},
+		// alsoKnownAs moved to packedUserDetailedNotMeOnly for privacy
 		bannerUrl: {
 			type: 'string',
 			format: 'url',
@@ -813,6 +810,36 @@ export const packedMeDetailedOnlySchema = {
 			type: 'string',
 			enum: userUnsignedFetchOptions,
 			nullable: false, optional: false,
+		},
+		// alsoKnownAs moved from packedUserDetailedNotMeOnly for privacy
+		alsoKnownAs: {
+			type: 'array',
+			nullable: true, optional: false,
+			items: {
+				type: 'string',
+				format: 'id',
+				nullable: false, optional: false,
+			},
+		},
+		skAlsoKnownAs: {
+			type: 'array',
+			nullable: true, optional: false,
+			items: {
+				type: 'object',
+				nullable: false, optional: false,
+				properties: {
+					uri: {
+						type: 'string',
+						format: 'uri',
+						nullable: false, optional: false,
+					},
+					id: {
+						type: 'string',
+						format: 'id',
+						nullable: true, optional: false,
+					},
+				},
+			},
 		},
 	},
 } as const;

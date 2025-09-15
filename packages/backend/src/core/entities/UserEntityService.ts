@@ -410,6 +410,30 @@ export class UserEntityService implements OnModuleInit {
 	}
 
 	@bindThis
+	public async resolveAlsoKnownAs(user: MiUser): Promise<{ uri: string, id: string | null }[] | null> {
+		if (!user.alsoKnownAs) {
+			return null;
+		}
+
+		const alsoKnownAs: { uri: string, id: string | null }[] = [];
+		for (const uri of new Set(user.alsoKnownAs)) {
+			try {
+				const resolved = await this.apPersonService.resolvePerson(uri);
+				alsoKnownAs.push({ uri, id: resolved.id });
+			} catch {
+				// ignore errors - we expect some users to be deleted or unavailable
+				alsoKnownAs.push({ uri, id: null });
+			}
+		}
+
+		if (alsoKnownAs.length < 1) {
+			return null;
+		}
+
+		return alsoKnownAs;
+	}
+
+	@bindThis
 	public getIdenticonUrl(user: MiUser): string {
 		if ((user.host == null || user.host === this.config.host) && user.username.includes('.') && this.meta.iconUrl) { // ローカルのシステムアカウントの場合
 			return this.meta.iconUrl;
@@ -551,6 +575,10 @@ export class UserEntityService implements OnModuleInit {
 		let fetchPoliciesPromise: Promise<RolePolicies> | null = null;
 		const fetchPolicies = () => fetchPoliciesPromise ??= this.roleService.getUserPolicies(user);
 
+		// This has a cache so it's fine to await here
+		const alsoKnownAs = await this.resolveAlsoKnownAs(user);
+		const alsoKnownAsIds = alsoKnownAs?.map(aka => aka.id).filter(id => id != null) ?? null;
+
 		const bypassSilence = isMe || (myFollowings ? myFollowings.has(user.id) : false);
 
 		const packed = {
@@ -617,10 +645,8 @@ export class UserEntityService implements OnModuleInit {
 				url: profile!.url,
 				uri: user.uri,
 				movedTo: user.movedToUri ? Promise.resolve(opts.userIdsByUri?.get(user.movedToUri) ?? this.apPersonService.resolvePerson(user.movedToUri).then(user => user.id).catch(() => null)) : null,
-				alsoKnownAs: user.alsoKnownAs
-					? Promise.all(user.alsoKnownAs.map(uri => Promise.resolve(opts.userIdsByUri?.get(uri) ?? this.apPersonService.fetchPerson(uri).then(user => user?.id).catch(() => null))))
-						.then(xs => xs.length === 0 ? null : xs.filter(x => x != null))
-					: null,
+				movedToUri: user.movedToUri,
+				// alsoKnownAs moved from packedUserDetailedNotMeOnly for privacy
 				bannerUrl: user.bannerId == null ? null : user.bannerUrl,
 				bannerBlurhash: user.bannerId == null ? null : user.bannerBlurhash,
 				backgroundUrl: user.backgroundId == null ? null : user.backgroundUrl,
@@ -711,6 +737,9 @@ export class UserEntityService implements OnModuleInit {
 				defaultCW: profile!.defaultCW,
 				defaultCWPriority: profile!.defaultCWPriority,
 				allowUnsignedFetch: user.allowUnsignedFetch,
+				// alsoKnownAs moved from packedUserDetailedNotMeOnly for privacy
+				alsoKnownAs: alsoKnownAsIds,
+				skAlsoKnownAs: alsoKnownAs,
 			} : {}),
 
 			...(opts.includeSecrets ? {
