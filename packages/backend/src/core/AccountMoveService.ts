@@ -33,6 +33,8 @@ import { InternalEventService } from '@/global/InternalEventService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
+import type { Packed } from '@/misc/json-schema.js';
+import type { Config } from '@/config.js';
 
 @Injectable()
 export class AccountMoveService {
@@ -41,6 +43,9 @@ export class AccountMoveService {
 	constructor(
 		@Inject(DI.meta)
 		private meta: MiMeta,
+
+		@Inject(DI.config)
+		private readonly config: Config,
 
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
@@ -137,17 +142,17 @@ export class AccountMoveService {
 	public async postMoveProcess(src: MiUser, dst: MiUser): Promise<void> {
 		// Copy blockings and mutings, and update lists
 		await this.copyBlocking(src, dst)
-			.catch(err => this.logger.warn(`Error copying blockings in migration ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(err)}`));
+			.catch(err => this.logger.warn(`Error copying blockings in migration ${src.id} (@${src.usernameLower}@${src.host ?? this.config.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host ?? this.config.host}): ${renderInlineError(err)}`));
 		await this.copyMutings(src, dst)
-			.catch(err => this.logger.warn(`Error copying mutings in migration ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(err)}`));
+			.catch(err => this.logger.warn(`Error copying mutings in migration ${src.id} (@${src.usernameLower}@${src.host ?? this.config.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host ?? this.config.host}): ${renderInlineError(err)}`));
 		await this.deleteScheduledNotes(src)
-			.catch(err => this.logger.warn(`Error deleting scheduled notes in migration ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(err)}`));
+			.catch(err => this.logger.warn(`Error deleting scheduled notes in migration ${src.id} (@${src.usernameLower}@${src.host ?? this.config.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host ?? this.config.host}): ${renderInlineError(err)}`));
 		await this.copyRoles(src, dst)
-			.catch(err => this.logger.warn(`Error copying roles in migration ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(err)}`));
+			.catch(err => this.logger.warn(`Error copying roles in migration ${src.id} (@${src.usernameLower}@${src.host ?? this.config.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host ?? this.config.host}): ${renderInlineError(err)}`));
 		await this.updateLists(src, dst)
-			.catch(err => this.logger.warn(`Error updating lists in migration ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(err)}`));
+			.catch(err => this.logger.warn(`Error updating lists in migration ${src.id} (@${src.usernameLower}@${src.host ?? this.config.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host ?? this.config.host}): ${renderInlineError(err)}`));
 		await this.antennaService.onMoveAccount(src, dst)
-			.catch(err => this.logger.warn(`Error updating antennas in migration ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(err)}`));
+			.catch(err => this.logger.warn(`Error updating antennas in migration ${src.id} (@${src.usernameLower}@${src.host ?? this.config.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host ?? this.config.host}): ${renderInlineError(err)}`));
 
 		// follow the new account
 		const proxy = await this.systemAccountService.fetch('proxy');
@@ -164,7 +169,7 @@ export class AccountMoveService {
 			await this.adjustFollowingCounts(followJobs.map(job => job.from.id), src);
 		} catch (err) {
 			/* skip if any error happens */
-			this.logger.warn(`Non-fatal exception in migration from ${src.id} (@${src.usernameLower}@${src.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host}): ${renderInlineError(err)}`);
+			this.logger.warn(`Non-fatal exception in migration from ${src.id} (@${src.usernameLower}@${src.host ?? this.config.host}) to ${dst.id} (@${dst.usernameLower}@${dst.host ?? this.config.host}): ${renderInlineError(err)}`);
 		}
 
 		// Should be queued because this can cause a number of follow per one move.
