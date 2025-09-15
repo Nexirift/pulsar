@@ -13,7 +13,6 @@ import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
 import { DI } from '@/di-symbols.js';
 import PerUserPvChart from '@/core/chart/charts/per-user-pv.js';
 import { RoleService } from '@/core/RoleService.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
 import { CacheService } from '@/core/CacheService.js';
 import { ApiError } from '../../error.js';
 import { ApiLoggerService } from '../../ApiLoggerService.js';
@@ -136,15 +135,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return _users.map(u => _userMap.get(u.id)!);
 			} else {
 				// Lookup user
-				if (typeof ps.host === 'string' && typeof ps.username === 'string') {
-					user = await this.remoteUserResolveService.resolveUser(ps.username, ps.host).catch(err => {
-						this.apiLoggerService.logger.warn(`failed to resolve remote user: ${renderInlineError(err)}`);
-						throw new ApiError(meta.errors.failedToResolveRemoteUser);
-					});
+				if (ps.username) {
+					user = await this.remoteUserResolveService.resolveUser(ps.username, ps.host ?? null).catch(() => null);
 				} else if (ps.userId != null) {
-					user = await this.cacheService.findUserById(ps.userId);
-				} else if (ps.username) {
-					user = await this.usersRepository.findOneBy({ usernameLower: ps.username.toLowerCase(), host: IsNull() });
+					user = await this.cacheService.findUserById(ps.userId).catch(() => null);
+				}
+
+				if (user == null && ps.host != null) {
+					throw new ApiError(meta.errors.failedToResolveRemoteUser);
 				}
 
 				if (user == null || (!isModerator && user.isSuspended)) {
