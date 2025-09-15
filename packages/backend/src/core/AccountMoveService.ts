@@ -119,7 +119,7 @@ export class AccountMoveService {
 
 		// Publish meUpdated event
 		const iObj = await this.userEntityService.pack(src.id, src, { schema: 'MeDetailed', includeSecrets: true });
-		await this.globalEventService.publishMainStream(src.id, 'meUpdated', iObj);
+		this.globalEventService.publishMainStream(src.id, 'meUpdated', iObj);
 
 		// Unfollow after 24 hours
 		const followings = await this.cacheService.userFollowingsCache.fetch(src.id);
