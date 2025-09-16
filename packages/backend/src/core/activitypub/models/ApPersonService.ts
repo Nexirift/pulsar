@@ -306,7 +306,7 @@ export class ApPersonService implements OnModuleInit {
 		if (parsed.local) {
 			userId = parsed.type === 'users' ? parsed.id : null;
 		} else {
-			userId = await this.cacheService.uriPersonCache.fetch(uri);
+			userId = await this.cacheService.uriPersonCache.fetch(uri).catch(() => null);
 		}
 
 		// No match
