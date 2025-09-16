@@ -292,7 +292,7 @@ export class ReactionService implements OnModuleInit {
 			const content = this.apRendererService.addContext(await this.apRendererService.renderLike(record, note));
 			const dm = this.apDeliverManagerService.createDeliverManager(user, content);
 			if (note.userHost !== null) {
-				const reactee = await this.usersRepository.findOneBy({ id: note.userId });
+				const reactee = await this.cacheService.findRemoteUserById(note.userId);
 				dm.addDirectRecipe(reactee as MiRemoteUser);
 			}
 
@@ -357,7 +357,7 @@ export class ReactionService implements OnModuleInit {
 			const content = this.apRendererService.addContext(this.apRendererService.renderUndo(await this.apRendererService.renderLike(exist, note), user));
 			const dm = this.apDeliverManagerService.createDeliverManager(user, content);
 			if (note.userHost !== null) {
-				const reactee = await this.usersRepository.findOneBy({ id: note.userId });
+				const reactee = await this.cacheService.findRemoteUserById(note.userId);
 				dm.addDirectRecipe(reactee as MiRemoteUser);
 			}
 			dm.addFollowersRecipe();
