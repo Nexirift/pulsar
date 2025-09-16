@@ -8,6 +8,7 @@ import { ModuleRef } from '@nestjs/core';
 import { DI } from '@/di-symbols.js';
 import type { EmojisRepository, NoteReactionsRepository, UsersRepository, NotesRepository, MiMeta } from '@/models/_.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { isLocalUser, isRemoteUser } from '@/models/User.js';
 import type { MiRemoteUser, MiUser } from '@/models/User.js';
 import { isLocalUser, isRemoteUser } from '@/models/User.js';
 import type { MiNote } from '@/models/Note.js';
@@ -121,7 +122,7 @@ export class ReactionService implements OnModuleInit {
 	}
 
 	@bindThis
-	public async create(user: { id: MiUser['id']; host: MiUser['host']; isBot: MiUser['isBot'] }, note: MiNote, _reaction?: string | null) {
+	public async create(user: MiUser, note: MiNote, _reaction?: string | null) {
 		// Check blocking
 		if (note.userId !== user.id) {
 			const blocked = await this.userBlockingService.checkBlocked(note.userId, user.id);
@@ -312,7 +313,7 @@ export class ReactionService implements OnModuleInit {
 	}
 
 	@bindThis
-	public async delete(user: { id: MiUser['id']; host: MiUser['host']; isBot: MiUser['isBot']; }, note: MiNote, exist?: MiNoteReaction | null) {
+	public async delete(user: MiUser, note: MiNote, exist?: MiNoteReaction | null) {
 		// if already unreacted
 		exist ??= await this.noteReactionsRepository.findOneBy({
 			noteId: note.id,
