@@ -20,6 +20,7 @@ import { NotificationService } from '@/core/NotificationService.js';
 import PerUserReactionsChart from '@/core/chart/charts/per-user-reactions.js';
 import { emojiRegex } from '@/misc/emoji-regex.js';
 import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerService.js';
+import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { bindThis } from '@/decorators.js';
 import { UtilityService } from '@/core/UtilityService.js';
