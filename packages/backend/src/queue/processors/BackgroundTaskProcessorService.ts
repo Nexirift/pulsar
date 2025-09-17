@@ -28,6 +28,8 @@ import { trackTask } from '@/misc/promise-tracker.js';
 import { UserSuspendService } from '@/core/UserSuspendService.js';
 import { ApLogService } from '@/core/ApLogService.js';
 import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
+import { isRemoteUser } from '@/models/User.js';
+import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 
 @Injectable()
 export class BackgroundTaskProcessorService {
@@ -110,7 +112,7 @@ export class BackgroundTaskProcessorService {
 		const user = await this.cacheService.findOptionalUserById(task.userId);
 		if (!user || user.isDeleted) return `Skipping update-user task: user ${task.userId} has been deleted`;
 		if (user.isSuspended) return `Skipping update-user task: user ${task.userId} is suspended`;
-		if (!user.uri) return `Skipping update-user task: user ${task.userId} is local`;
+		if (!isRemoteUser(user)) return `Skipping update-user task: user ${task.userId} is local`;
 
 		if (user.lastFetchedAt && Date.now() - user.lastFetchedAt.getTime() < 1000 * 60 * 60 * 24) {
 			return `Skipping update-user task: user ${task.userId} was recently updated`;
@@ -124,14 +126,23 @@ export class BackgroundTaskProcessorService {
 		const user = await this.cacheService.findOptionalUserById(task.userId);
 		if (!user || user.isDeleted) return `Skipping update-featured task: user ${task.userId} has been deleted`;
 		if (user.isSuspended) return `Skipping update-featured task: user ${task.userId} is suspended`;
-		if (!user.uri) return `Skipping update-featured task: user ${task.userId} is local`;
+		if (!isRemoteUser(user)) return `Skipping update-featured task: user ${task.userId} is local`;
 		if (!user.featured) return `Skipping update-featured task: user ${task.userId} has no featured collection`;
 
 		if (user.lastFetchedAt && Date.now() - user.lastFetchedAt.getTime() < 1000 * 60 * 60 * 24) {
 			return `Skipping update-featured task: user ${task.userId} was recently updated`;
 		}
 
-		await this.apPersonService.updateFeatured(user);
+		try {
+			await this.apPersonService.updateFeatured(user);
+		} catch (err) {
+			if (err instanceof IdentifiableError) {
+				if (err.id === errorCodes.userIsSuspended) return err.message;
+				if (err.id === errorCodes.userIsDeleted) return err.message;
+				if (err.id === errorCodes.noFeaturedCollection) return err.message;
+			}
+			throw err;
+		}
 		return 'ok';
 	}
 
@@ -139,7 +150,7 @@ export class BackgroundTaskProcessorService {
 		const user = await this.cacheService.findOptionalUserById(task.userId);
 		if (!user || user.isDeleted) return `Skipping update-user-tags task: user ${task.userId} has been deleted`;
 		if (user.isSuspended) return `Skipping update-user-tags task: user ${task.userId} is suspended`;
-		if (!user.uri) return `Skipping update-user-tags task: user ${task.userId} is local`;
+		if (!isRemoteUser(user)) return `Skipping update-user-tags task: user ${task.userId} is local`;
 
 		await this.hashtagService.updateUsertags(user, user.tags);
 		return 'ok';

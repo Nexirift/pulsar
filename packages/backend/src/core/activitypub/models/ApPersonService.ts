@@ -44,7 +44,7 @@ import { TimeService } from '@/global/TimeService.js';
 import { verifyFieldLinks } from '@/misc/verify-field-link.js';
 import { isRetryableError } from '@/misc/is-retryable-error.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
-import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import { QueueService } from '@/core/QueueService.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
 import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
@@ -919,16 +919,30 @@ export class ApPersonService implements OnModuleInit {
 	 */
 	@bindThis
 	public async updateFeaturedLazy(userOrId: MiRemoteUser | MiUser['id']): Promise<void> {
-		const user = await this.resolveUserForFeatured(userOrId);
-		if (!user) return;
+		const userId = typeof(userOrId) === 'object' ? userOrId.id : userOrId;
+		const user = typeof(userOrId) === 'object' ? userOrId : await this.cacheService.findRemoteUserById(userId);
 
-		await this.queueService.createUpdateFeaturedJob(user.id);
+		if (user.isDeleted || user.isSuspended) {
+			this.logger.debug(`Not updating featured for ${userId}: user is deleted`);
+			return;
+		}
+
+		if (!user.featured) {
+			this.logger.debug(`Not updating featured for ${userId}: no featured collection`);
+			return;
+		}
+
+		await this.queueService.createUpdateFeaturedJob(userId);
 	}
 
 	@bindThis
 	public async updateFeatured(userOrId: MiRemoteUser | MiUser['id'], resolver?: Resolver): Promise<void> {
-		const user = await this.resolveUserForFeatured(userOrId);
-		if (!user) return;
+		const userId = typeof(userOrId) === 'object' ? userOrId.id : userOrId;
+		const user = typeof(userOrId) === 'object' ? userOrId : await this.cacheService.findRemoteUserById(userId);
+
+		if (user.isDeleted) throw new IdentifiableError(errorCodes.userIsDeleted, `Can't update featured for ${userId}: user is deleted`);
+		if (user.isSuspended) throw new IdentifiableError(errorCodes.userIsSuspended, `Can't update featured for ${userId}: user is suspended`);
+		if (!user.featured) throw new IdentifiableError(errorCodes.noFeaturedCollection, `Can't update featured for ${userId}: no featured collection`);
 
 		this.logger.info(`Updating featured notes for: ${user.uri}`);
 
