@@ -24,7 +24,6 @@ import type { MiNote } from '@/models/Note.js';
 import { IdService } from '@/core/IdService.js';
 import type { MfmService } from '@/core/MfmService.js';
 import { toArray } from '@/misc/prelude/array.js';
-import type { GlobalEventService } from '@/core/GlobalEventService.js';
 import type { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import type { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataService.js';
 import { MiUserProfile } from '@/models/UserProfile.js';
@@ -47,6 +46,7 @@ import { isRetryableError } from '@/misc/is-retryable-error.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { QueueService } from '@/core/QueueService.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
 import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 import { promiseMap } from '@/misc/promise-map.js';
 import { getApId, getApType, getNullableApId, isActor, isPost, isPropertyValue } from '../type.js';
@@ -74,7 +74,7 @@ export class ApPersonService implements OnModuleInit {
 	private readonly publicKeyByUserIdCache: ManagedQuantumKVCache<MiUserPublickey>;
 
 	private driveFileEntityService: DriveFileEntityService;
-	private globalEventService: GlobalEventService;
+	private idService: IdService;
 	private federatedInstanceService: FederatedInstanceService;
 	private fetchInstanceMetadataService: FetchInstanceMetadataService;
 	private cacheService: CacheService;
@@ -126,6 +126,7 @@ export class ApPersonService implements OnModuleInit {
 		private readonly timeService: TimeService,
 		private readonly queueService: QueueService,
 		private readonly collapsedQueueService: CollapsedQueueService,
+		private readonly internalEventService: InternalEventService,
 
 		apLoggerService: ApLoggerService,
 	) {
@@ -184,7 +185,7 @@ export class ApPersonService implements OnModuleInit {
 	@bindThis
 	onModuleInit(): void {
 		this.driveFileEntityService = this.moduleRef.get('DriveFileEntityService');
-		this.globalEventService = this.moduleRef.get('GlobalEventService');
+		this.idService = this.moduleRef.get('IdService');
 		this.federatedInstanceService = this.moduleRef.get('FederatedInstanceService');
 		this.fetchInstanceMetadataService = this.moduleRef.get('FetchInstanceMetadataService');
 		this.cacheService = this.moduleRef.get('CacheService');
@@ -765,6 +766,9 @@ export class ApPersonService implements OnModuleInit {
 			return `skip: user ${exist.id} is deleted`;
 		}
 
+		// Notify event ASAP
+		await this.internalEventService.emit('remoteUserUpdated', { id: exist.id });
+
 		// Do not use "exist" after this point!!
 		const updated = { ...exist, ...updates };
 
@@ -815,8 +819,6 @@ export class ApPersonService implements OnModuleInit {
 			location: person['vcard:Address'] ?? null,
 			listenbrainz: person.listenbrainz ?? null,
 		});
-
-		this.globalEventService.publishInternalEvent('remoteUserUpdated', { id: updated.id });
 
 		// 該当ユーザーが既にフォロワーになっていた場合はFollowingもアップデートする
 		if (updated.inbox !== person.inbox || updated.sharedInbox !== (person.sharedInbox ?? person.endpoints?.sharedInbox)) {
