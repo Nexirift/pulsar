@@ -591,6 +591,16 @@ export class QueueProcessorService implements OnApplicationShutdown {
 				settings: {
 					backoffStrategy: httpRelatedBackoff,
 				},
+				// Keep a lot of jobs, because this queue moves *fast*!
+				// https://docs.bullmq.io/guide/workers/auto-removal-of-jobs
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 1000,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 1000,
+				},
 			});
 			this.backgroundTaskWorker
 				.on('active', (job) => logger.debug(`active id=${job.id}`))
