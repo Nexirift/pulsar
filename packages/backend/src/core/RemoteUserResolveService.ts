@@ -103,12 +103,6 @@ export class RemoteUserResolveService {
 			return user;
 		}
 
-		// Always mark as updated so we don't get stuck here for missing remote users.
-		// 繋がらないインスタンスに何回も試行するのを防ぐ, 後続の同様処理の連続試行を防ぐ ため 試行前にも更新する
-		await this.usersRepository.update(user.id, {
-			lastFetchedAt: new Date(),
-		});
-
 		try {
 			// Resolve via webfinger
 			const self = await this.resolveSelf(acctLower);
@@ -118,6 +112,12 @@ export class RemoteUserResolveService {
 			await this.apPersonService.updatePerson(self.href);
 		} catch (err) {
 			this.logger.warn(`Could not update user ${acctLower}; will continue with outdated local copy: ${renderInlineError(err)}`);
+		} finally {
+			// Always mark as updated so we don't get stuck here for missing remote users.
+			// 繋がらないインスタンスに何回も試行するのを防ぐ, 後続の同様処理の連続試行を防ぐ ため 試行前にも更新する
+			await this.usersRepository.update(user.id, {
+				lastFetchedAt: new Date(),
+			});
 		}
 
 		// Reload user
