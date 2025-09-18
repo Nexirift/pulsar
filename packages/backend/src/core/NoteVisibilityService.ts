@@ -7,7 +7,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CacheService } from '@/core/CacheService.js';
 import type { MiNote } from '@/models/Note.js';
 import type { MiUser } from '@/models/User.js';
-import { MiInstance } from '@/models/Instance.js';
 import { bindThis } from '@/decorators.js';
 import { Packed } from '@/misc/json-schema.js';
 import { IdService } from '@/core/IdService.js';
@@ -65,7 +64,7 @@ export class NoteVisibilityService {
 	) {}
 
 	@bindThis
-	public async checkNoteVisibilityAsync(note: MiNote | Packed<'Note'>, user: string | PopulatedUser, opts?: { filters?: NoteVisibilityFilters, hint?: Partial<NoteVisibilityData> }): Promise<NoteVisibilityResult> {
+	public async checkNoteVisibilityAsync(note: MiNote | Packed<'Note'>, user: string | PopulatedMe, opts?: { filters?: NoteVisibilityFilters, hint?: Partial<NoteVisibilityData> }): Promise<NoteVisibilityResult> {
 		if (typeof(user) === 'string') {
 			user = await this.cacheService.findUserById(user);
 		}
@@ -76,62 +75,68 @@ export class NoteVisibilityService {
 		return this.checkNoteVisibility(populatedNote, user, { filters: opts?.filters, data: populatedData });
 	}
 
-	private async populateNote(note: Packed<'Note'>, dive?: boolean): Promise<Packed<'Note'>>;
-	private async populateNote(note: MiNote, dive?: boolean): Promise<PopulatedMiNote>;
-	private async populateNote(note: MiNote | Packed<'Note'>, dive?: boolean): Promise<PopulatedNote>;
+	// TODO pass in notes hint
 	private async populateNote(note: MiNote | Packed<'Note'>, dive = true): Promise<PopulatedNote> {
-		// Packed<'Note'> is already fully loaded
-		if (isPackedNote(note)) return note;
+		const userPromise = this.getNoteUser(note);
 
 		// noinspection ES6MissingAwait
 		return await awaitAll({
-			...note,
-			user: this.getNoteUser(note),
+			id: note.id,
+			threadId: note.threadId ?? note.id,
+			createdAt: 'createdAt' in note
+				? new Date(note.createdAt)
+				: this.idService.parse(note.id).date,
+			userId: note.userId,
+			userHost: userPromise.then(u => u.host),
+			user: userPromise,
+			renoteId: note.renoteId ?? null,
 			renote: dive ? this.getNoteRenote(note) : null,
+			replyId: note.replyId ?? null,
 			reply: dive ? this.getNoteReply(note) : null,
+			hasPoll: 'hasPoll' in note ? note.hasPoll : (note.poll != null),
+			mentions: note.mentions ?? [],
+			visibleUserIds: note.visibleUserIds ?? [],
+			visibility: note.visibility,
+			text: note.text,
+			cw: note.cw ?? null,
+			fileIds: note.fileIds ?? [],
 		});
 	}
 
-	private async getNoteUser(note: MiNote): Promise<PopulatedMiNote['user']> {
+	private async getNoteUser(note: MiNote | Packed<'Note'>): Promise<PopulatedUser> {
 		const user = note.user ?? await this.cacheService.findUserById(note.userId);
+		const instance = user.instance ?? (user.host ? await this.federatedInstanceService.fetchOrRegister(user.host) : null);
 		return {
 			...user,
-			instance: user.instance ?? (user.host ? await this.federatedInstanceService.fetchOrRegister(user.host) : null),
+			makeNotesHiddenBefore: user.makeNotesHiddenBefore ?? null,
+			makeNotesFollowersOnlyBefore: user.makeNotesFollowersOnlyBefore ?? null,
+			requireSigninToViewContents: user.requireSigninToViewContents ?? false,
+			instance: instance ? {
+				...instance,
+				host: user.host as string,
+			} : null,
 		};
 	}
 
-	private async getNoteRenote(note: MiNote): Promise<PopulatedMiNote['renote']> {
+	private async getNoteRenote(note: MiNote | Packed<'Note'>): Promise<PopulatedNote | null> {
 		if (!note.renoteId) return null;
 
-		const renote = note.renote ?? await this.notesRepository.findOneOrFail({
-			where: { id: note.renoteId },
-			relations: {
-				user: {
-					instance: true,
-				},
-			},
-		});
+		const renote = note.renote ?? await this.notesRepository.findOneByOrFail({ id: note.renoteId });
 
+		// TODO dive into renote.reply
 		return await this.populateNote(renote, false);
 	}
 
-	private async getNoteReply(note: MiNote): Promise<PopulatedMiNote['reply']> {
+	private async getNoteReply(note: MiNote | Packed<'Note'>): Promise<PopulatedNote | null> {
 		if (!note.replyId) return null;
 
-		const reply = note.reply ?? await this.notesRepository.findOneOrFail({
-			where: { id: note.replyId },
-			relations: {
-				user: {
-					instance: true,
-				},
-			},
-		});
+		const reply = note.reply ?? await this.notesRepository.findOneByOrFail({ id: note.replyId });
 
 		return await this.populateNote(reply, false);
 	}
 
 	@bindThis
-	public async populateData(user: PopulatedUser, hint?: Partial<NoteVisibilityData>): Promise<NoteVisibilityData> {
+	public async populateData(user: PopulatedMe, hint?: Partial<NoteVisibilityData>): Promise<NoteVisibilityData> {
 		// noinspection ES6MissingAwait
 		const [
 			userBlockers,
@@ -163,7 +168,7 @@ export class NoteVisibilityService {
 	}
 
 	@bindThis
-	public checkNoteVisibility(note: PopulatedNote, user: PopulatedUser, opts: { filters?: NoteVisibilityFilters, data: NoteVisibilityData }): NoteVisibilityResult {
+	public checkNoteVisibility(note: PopulatedNote, user: PopulatedMe, opts: { filters?: NoteVisibilityFilters, data: NoteVisibilityData }): NoteVisibilityResult {
 		// Copy note since we mutate it below
 		note = {
 			...note,
@@ -183,7 +188,7 @@ export class NoteVisibilityService {
 		return this.checkNoteVisibilityFor(note, user, opts);
 	}
 
-	private checkNoteVisibilityFor(note: PopulatedNote, user: PopulatedUser, opts: { filters?: NoteVisibilityFilters, data: NoteVisibilityData }): NoteVisibilityResult {
+	private checkNoteVisibilityFor(note: PopulatedNote, user: PopulatedMe, opts: { filters?: NoteVisibilityFilters, data: NoteVisibilityData }): NoteVisibilityResult {
 		const accessible = this.isAccessible(note, user, opts.data);
 		const redact = !accessible || this.shouldRedact(note, user);
 		const silence = this.shouldSilence(note, user, opts.data, opts.filters);
@@ -202,7 +207,7 @@ export class NoteVisibilityService {
 	}
 
 	// Based on NoteEntityService.isVisibleForMe
-	private isAccessible(note: PopulatedNote, user: PopulatedUser, data: NoteVisibilityData): boolean {
+	private isAccessible(note: PopulatedNote, user: PopulatedMe, data: NoteVisibilityData): boolean {
 		// We can always view our own notes
 		if (user?.id === note.userId) return true;
 
@@ -218,18 +223,18 @@ export class NoteVisibilityService {
 		}
 	}
 
-	private isAccessibleDM(note: PopulatedNote, user: PopulatedUser): boolean {
+	private isAccessibleDM(note: PopulatedNote, user: PopulatedMe): boolean {
 		// Must be logged in to view DM
 		if (user == null) return false;
 
 		// Can be visible to me
-		if (note.visibleUserIds?.includes(user.id)) return true;
+		if (note.visibleUserIds.includes(user.id)) return true;
 
 		// Otherwise invisible
 		return false;
 	}
 
-	private isAccessibleFO(note: PopulatedNote, user: PopulatedUser, data: NoteVisibilityData): boolean {
+	private isAccessibleFO(note: PopulatedNote, user: PopulatedMe, data: NoteVisibilityData): boolean {
 		// Must be logged in to view FO
 		if (user == null) return false;
 
@@ -237,10 +242,10 @@ export class NoteVisibilityService {
 		if (note.reply?.userId === user.id) return true;
 
 		// Can mention me
-		if (note.mentions?.includes(user.id)) return true;
+		if (note.mentions.includes(user.id)) return true;
 
 		// Can be visible to me
-		if (note.visibleUserIds?.includes(user.id)) return true;
+		if (note.visibleUserIds.includes(user.id)) return true;
 
 		// Can be followed by me
 		if (data.userFollowings?.has(note.userId)) return true;
@@ -258,9 +263,7 @@ export class NoteVisibilityService {
 		// Make followers-only
 		if (note.user.makeNotesFollowersOnlyBefore && note.visibility !== 'specified' && note.visibility !== 'followers') {
 			const followersOnlyBefore = note.user.makeNotesFollowersOnlyBefore * 1000;
-			const createdAt = 'createdAt' in note
-				? new Date(note.createdAt).getTime()
-				: this.idService.parse(note.id).date.getTime();
+			const createdAt = note.createdAt.valueOf();
 
 			// I don't understand this logic, but I tried to break it out for readability
 			const followersOnlyOpt1 = followersOnlyBefore <= 0 && (Date.now() - createdAt > 0 - followersOnlyBefore);
@@ -280,7 +283,7 @@ export class NoteVisibilityService {
 	}
 
 	// Based on NoteEntityService.hideNote
-	private shouldRedact(note: PopulatedNote, user: PopulatedUser): boolean {
+	private shouldRedact(note: PopulatedNote, user: PopulatedMe): boolean {
 		// Never redact our own notes
 		if (user?.id === note.userId) return false;
 
@@ -290,9 +293,7 @@ export class NoteVisibilityService {
 		// Redact if note has expired
 		if (note.user.makeNotesHiddenBefore) {
 			const hiddenBefore = note.user.makeNotesHiddenBefore * 1000;
-			const createdAt = 'createdAt' in note
-				? new Date(note.createdAt).getTime()
-				: this.idService.parse(note.id).date.getTime();
+			const createdAt = note.createdAt.valueOf();
 
 			// I don't understand this logic, but I tried to break it out for readability
 			const hiddenOpt1 = hiddenBefore <= 0 && (Date.now() - createdAt > 0 - hiddenBefore);
@@ -305,7 +306,7 @@ export class NoteVisibilityService {
 	}
 
 	// Based on inconsistent logic from all around the app
-	private shouldSilence(note: PopulatedNote, user: PopulatedUser, data: NoteVisibilityData, filters: NoteVisibilityFilters | undefined): boolean {
+	private shouldSilence(note: PopulatedNote, user: PopulatedMe, data: NoteVisibilityData, filters: NoteVisibilityFilters | undefined): boolean {
 		if (this.shouldSilenceForMute(note, data)) {
 			return true;
 		}
@@ -323,7 +324,7 @@ export class NoteVisibilityService {
 
 	private shouldSilenceForMute(note: PopulatedNote, data: NoteVisibilityData): boolean {
 		// Silence if we've muted the thread
-		if (data.userMutedThreads?.has(note.threadId ?? note.id)) return true;
+		if (data.userMutedThreads?.has(note.threadId)) return true;
 
 		// Silence if we've muted the note
 		if (data.userMutedNotes?.has(note.id)) return true;
@@ -341,7 +342,7 @@ export class NoteVisibilityService {
 		return false;
 	}
 
-	private shouldSilenceForSilence(note: PopulatedNote, user: PopulatedUser, data: NoteVisibilityData, ignoreSilencedAuthor: boolean): boolean {
+	private shouldSilenceForSilence(note: PopulatedNote, user: PopulatedMe, data: NoteVisibilityData, ignoreSilencedAuthor: boolean): boolean {
 		// Don't silence if it's us
 		if (note.userId === user?.id) return false;
 
@@ -364,7 +365,7 @@ export class NoteVisibilityService {
 		return false;
 	}
 
-	private shouldSilenceForFollowWithoutReplies(note: PopulatedNote, user: PopulatedUser, data: NoteVisibilityData): boolean {
+	private shouldSilenceForFollowWithoutReplies(note: PopulatedNote, user: PopulatedMe, data: NoteVisibilityData): boolean {
 		// Don't silence if it's not a reply
 		if (!note.reply) return false;
 
@@ -395,27 +396,60 @@ export interface NoteVisibilityData {
 	userMutedInstances: Set<string> | null;
 }
 
-export type PopulatedUser = Pick<MiUser, 'id' | 'host'> | null | undefined;
+// This represents the *requesting* user!
+export type PopulatedMe = Pick<MiUser, 'id' | 'host'> | null | undefined;
 
-export type PopulatedNote = PopulatedMiNote | Packed<'Note'>;
+// type PopulatedNote = Flatten<PopulatedObjectNote>;
+// type PopulatedNote = Flatten<Packed<'Note'>, MiNote> & {
+// 	user: PopulatedUser,
+// 	renote?: PopulatedNote | null,
+// 	reply?: PopulatedNote | null,
+// };
+// type PopulatedUser = Flatten<Packed<'UserLite'>, MiUser> & {
+// 	instance?: PopulatedInstance | null,
+// };
+// type PopulatedInstance = Flatten<Packed<'UserLite'>['instance'], MiInstance>;
 
-type PopulatedMiNote = MiNote & {
-	user: MiUser & {
-		instance: MiInstance | null,
-	}
-	renote: PopulatedMiNote | null,
-	reply: PopulatedMiNote | null,
-};
+interface PopulatedNote {
+	id: string;
+	threadId: string;
+	userId: string;
+	userHost: string | null;
+	user: PopulatedUser;
+	renoteId: string | null;
+	renote: PopulatedNote | null;
+	replyId: string | null;
+	reply: PopulatedNote | null;
+	mentions: string[];
+	visibleUserIds: string[];
+	visibility: 'public' | 'followers' | 'home' | 'specified';
+	createdAt: Date;
+	text: string | null;
+	cw: string | null;
+	hasPoll: boolean;
+	fileIds: string[];
+}
+
+interface PopulatedUser {
+	id: string;
+	host: string | null;
+	instance: PopulatedInstance | null;
+	isSilenced: boolean;
+	requireSigninToViewContents: boolean;
+	makeNotesHiddenBefore: number | null;
+	makeNotesFollowersOnlyBefore: number | null;
+}
+
+interface PopulatedInstance {
+	host: string;
+	isSilenced: boolean;
+}
 
 function isPopulatedBoost(note: PopulatedNote): note is PopulatedNote & { renote: PopulatedNote } {
 	return note.renoteId != null
 		&& note.replyId == null
 		&& note.text == null
 		&& note.cw == null
-		&& (note.fileIds == null || note.fileIds.length === 0);
-}
-
-function isPackedNote(note: MiNote | Packed<'Note'>): note is Packed<'Note'> {
-	// Kind of a hack: determine whether it's packed by looking for property that doesn't exist in MiNote
-	return 'isFavorited' in note;
+		&& note.fileIds.length === 0
+		&& !note.hasPoll;
 }
