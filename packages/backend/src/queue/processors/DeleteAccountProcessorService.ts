@@ -328,7 +328,7 @@ export class DeleteAccountProcessorService {
 
 				// Delete replies through the usual service to ensure we get all "cascading notes" logic.
 				for (const reply of replies) {
-					await this.noteDeleteService.delete(reply.user as MiUser, reply);
+					await this.noteDeleteService.delete(reply.user as MiUser, reply, undefined, true);
 				}
 
 				await this.noteEditsRepository.delete({
@@ -345,7 +345,7 @@ export class DeleteAccountProcessorService {
 				// Delete note AP logs
 				const noteUris = notes.map(n => n.uri).filter(u => !!u) as string[];
 				if (noteUris.length > 0) {
-					await this.apLogService.deleteObjectLogsDeferred(noteUris);
+					await this.apLogService.deleteObjectLogs(noteUris);
 				}
 			}
 
@@ -383,10 +383,10 @@ export class DeleteAccountProcessorService {
 
 		{ // Delete actor logs
 			if (user.uri) {
-				await this.apLogService.deleteObjectLogsDeferred(user.uri);
+				await this.apLogService.deleteObjectLogs(user.uri);
 			}
 
-			await this.apLogService.deleteInboxLogsDeferred(user.id);
+			await this.apLogService.deleteInboxLogs(user.id);
 
 			this.logger.info('All AP logs deleted');
 		}
