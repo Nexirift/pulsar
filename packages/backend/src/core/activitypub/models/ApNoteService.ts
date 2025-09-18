@@ -239,15 +239,12 @@ export class ApNoteService {
 		}
 
 		const noteAudience = await this.apAudienceService.parseAudience(actor, note.to, note.cc, resolver);
-		let visibility = noteAudience.visibility;
+		const visibility = noteAudience.visibility;
 		const visibleUsers = noteAudience.visibleUsers;
 
 		// Audience (to, cc) が指定されてなかった場合
 		if (visibility === 'specified' && visibleUsers.length === 0) {
-			if (typeof value === 'string') {	// 入力がstringならばresolverでGETが発生している
-				// こちらから匿名GET出来たものならばpublic
-				visibility = 'public';
-			}
+			throw new IdentifiableError('dc2ad0d1-36bf-41f5-8e4c-a4d265a28387', `failed to create note ${entryUri}: could not resolve any recipients`);
 		}
 
 		const processErrors: string[] = [];
@@ -430,15 +427,12 @@ export class ApNoteService {
 		//#endregion
 
 		const noteAudience = await this.apAudienceService.parseAudience(actor, note.to, note.cc, resolver);
-		let visibility = noteAudience.visibility;
+		const visibility = noteAudience.visibility;
 		const visibleUsers = noteAudience.visibleUsers;
 
 		// Audience (to, cc) が指定されてなかった場合
 		if (visibility === 'specified' && visibleUsers.length === 0) {
-			if (typeof value === 'string') {	// 入力がstringならばresolverでGETが発生している
-				// こちらから匿名GET出来たものならばpublic
-				visibility = 'public';
-			}
+			throw new IdentifiableError('dc2ad0d1-36bf-41f5-8e4c-a4d265a28387', `failed to create note ${entryUri}: could not resolve any recipients`);
 		}
 
 		const processErrors: string[] = [];
