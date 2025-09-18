@@ -303,8 +303,16 @@ export class NoteEditService implements OnApplicationShutdown {
 		}
 
 		if (this.isRenote(data)) {
-			if (data.renote.id === oldnote.id) {
-				throw new IdentifiableError('ea93b7c2-3d6c-4e10-946b-00d50b1a75cb', `edit failed for ${oldnote.id}: cannot renote itself`);
+			// Check for recursion
+			let renoteId: string | null = data.renote.id;
+			while (renoteId) {
+				if (renoteId === oldnote.id) {
+					throw new IdentifiableError('ea93b7c2-3d6c-4e10-946b-00d50b1a75cb', `edit failed for ${oldnote.id}: cannot renote itself`);
+				}
+
+				// TODO create something like threadId but for quotes, that way we don't need full recursion
+				const next = await this.notesRepository.findOne({ where: { id: renoteId }, select: { renoteId: true } });
+				renoteId = next?.renoteId ?? null;
 			}
 
 			switch (data.renote.visibility) {

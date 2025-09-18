@@ -362,10 +362,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					throw new ApiError(meta.errors.cannotReRenote);
 				}
 
-				if (renote.renoteId === ps.editId) {
-					throw new ApiError(meta.errors.cannotQuoteaQuoteOfCurrentPost);
-				}
-
 				// Check blocking
 				if (renote.userId !== me.id) {
 					const blockExist = await this.blockingsRepository.exists({
@@ -483,6 +479,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						throw new ApiError(meta.errors.containsTooManyMentions);
 					} else if (e.id === '1c0ea108-d1e3-4e8e-aa3f-4d2487626153') {
 						throw new ApiError(meta.errors.quoteDisabledForUser);
+					} else if (e.id === 'ea93b7c2-3d6c-4e10-946b-00d50b1a75cb') {
+						throw new ApiError(meta.errors.cannotQuoteaQuoteOfCurrentPost);
 					}
 				}
 				throw e;
