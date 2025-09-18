@@ -76,7 +76,7 @@ export class NoteVisibilityService {
 	}
 
 	// TODO pass in notes hint
-	private async populateNote(note: MiNote | Packed<'Note'>, dive = true): Promise<PopulatedNote> {
+	private async populateNote(note: MiNote | Packed<'Note'>, diveReply = true, diveRenote = true): Promise<PopulatedNote> {
 		const userPromise = this.getNoteUser(note);
 
 		// noinspection ES6MissingAwait
@@ -90,9 +90,9 @@ export class NoteVisibilityService {
 			userHost: userPromise.then(u => u.host),
 			user: userPromise,
 			renoteId: note.renoteId ?? null,
-			renote: dive ? this.getNoteRenote(note) : null,
+			renote: diveRenote ? this.getNoteRenote(note) : null,
 			replyId: note.replyId ?? null,
-			reply: dive ? this.getNoteReply(note) : null,
+			reply: diveReply ? this.getNoteReply(note) : null,
 			hasPoll: 'hasPoll' in note ? note.hasPoll : (note.poll != null),
 			mentions: note.mentions ?? [],
 			visibleUserIds: note.visibleUserIds ?? [],
@@ -123,8 +123,10 @@ export class NoteVisibilityService {
 
 		const renote = note.renote ?? await this.notesRepository.findOneByOrFail({ id: note.renoteId });
 
-		// TODO dive into renote.reply
-		return await this.populateNote(renote, false);
+		// Renote needs to include the reply!
+		// This will dive one more time before landing in getNoteReply, which terminates recursion.
+		// Based on the logic in NoteEntityService.pack()
+		return await this.populateNote(renote, true, false);
 	}
 
 	private async getNoteReply(note: MiNote | Packed<'Note'>): Promise<PopulatedNote | null> {
@@ -132,7 +134,7 @@ export class NoteVisibilityService {
 
 		const reply = note.reply ?? await this.notesRepository.findOneByOrFail({ id: note.replyId });
 
-		return await this.populateNote(reply, false);
+		return await this.populateNote(reply, false, false);
 	}
 
 	@bindThis
