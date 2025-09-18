@@ -8,11 +8,11 @@ import { CacheService } from '@/core/CacheService.js';
 import type { MiNote } from '@/models/Note.js';
 import type { MiUser } from '@/models/User.js';
 import { bindThis } from '@/decorators.js';
-import { Packed } from '@/misc/json-schema.js';
+import type { Packed } from '@/misc/json-schema.js';
 import { IdService } from '@/core/IdService.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
-import type { MiFollowing, NotesRepository } from '@/models/_.js';
+import type { MiFollowing, MiInstance, NotesRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 
 /**
@@ -69,15 +69,15 @@ export class NoteVisibilityService {
 			user = await this.cacheService.findUserById(user);
 		}
 
-		const populatedNote = await this.populateNote(note);
+		const populatedNote = await this.populateNote(note, opts?.hint);
 		const populatedData = await this.populateData(user, opts?.hint ?? {});
 
 		return this.checkNoteVisibility(populatedNote, user, { filters: opts?.filters, data: populatedData });
 	}
 
-	// TODO pass in notes hint
-	private async populateNote(note: MiNote | Packed<'Note'>, diveReply = true, diveRenote = true): Promise<PopulatedNote> {
-		const userPromise = this.getNoteUser(note);
+	@bindThis
+	public async populateNote(note: MiNote | Packed<'Note'>, hint?: NotePopulationData, diveReply = true, diveRenote = true): Promise<PopulatedNote> {
+		const userPromise = this.getNoteUser(note, hint);
 
 		// noinspection ES6MissingAwait
 		return await awaitAll({
@@ -90,9 +90,9 @@ export class NoteVisibilityService {
 			userHost: userPromise.then(u => u.host),
 			user: userPromise,
 			renoteId: note.renoteId ?? null,
-			renote: diveRenote ? this.getNoteRenote(note) : null,
+			renote: diveRenote ? this.getNoteRenote(note, hint) : null,
 			replyId: note.replyId ?? null,
-			reply: diveReply ? this.getNoteReply(note) : null,
+			reply: diveReply ? this.getNoteReply(note, hint) : null,
 			hasPoll: 'hasPoll' in note ? note.hasPoll : (note.poll != null),
 			mentions: note.mentions ?? [],
 			visibleUserIds: note.visibleUserIds ?? [],
@@ -103,9 +103,18 @@ export class NoteVisibilityService {
 		});
 	}
 
-	private async getNoteUser(note: MiNote | Packed<'Note'>): Promise<PopulatedUser> {
-		const user = note.user ?? await this.cacheService.findUserById(note.userId);
-		const instance = user.instance ?? (user.host ? await this.federatedInstanceService.fetchOrRegister(user.host) : null);
+	private async getNoteUser(note: MiNote | Packed<'Note'>, hint?: NotePopulationData): Promise<PopulatedUser> {
+		const user = note.user
+			?? hint?.users?.get(note.userId)
+			?? await this.cacheService.findUserById(note.userId);
+
+		const instance = user.host
+			? (
+				user.instance
+				?? hint?.instances?.get(user.host)
+				?? await this.federatedInstanceService.fetchOrRegister(user.host)
+			) : null;
+
 		return {
 			...user,
 			makeNotesHiddenBefore: user.makeNotesHiddenBefore ?? null,
@@ -118,23 +127,27 @@ export class NoteVisibilityService {
 		};
 	}
 
-	private async getNoteRenote(note: MiNote | Packed<'Note'>): Promise<PopulatedNote | null> {
+	private async getNoteRenote(note: MiNote | Packed<'Note'>, hint?: NotePopulationData): Promise<PopulatedNote | null> {
 		if (!note.renoteId) return null;
 
-		const renote = note.renote ?? await this.notesRepository.findOneByOrFail({ id: note.renoteId });
+		const renote = note.renote
+			?? hint?.notes?.get(note.renoteId)
+			?? await this.notesRepository.findOneByOrFail({ id: note.renoteId });
 
 		// Renote needs to include the reply!
 		// This will dive one more time before landing in getNoteReply, which terminates recursion.
 		// Based on the logic in NoteEntityService.pack()
-		return await this.populateNote(renote, true, false);
+		return await this.populateNote(renote, hint, true, false);
 	}
 
-	private async getNoteReply(note: MiNote | Packed<'Note'>): Promise<PopulatedNote | null> {
+	private async getNoteReply(note: MiNote | Packed<'Note'>, hint?: NotePopulationData): Promise<PopulatedNote | null> {
 		if (!note.replyId) return null;
 
-		const reply = note.reply ?? await this.notesRepository.findOneByOrFail({ id: note.replyId });
+		const reply = note.reply
+			?? hint?.notes?.get(note.replyId)
+			?? await this.notesRepository.findOneByOrFail({ id: note.replyId });
 
-		return await this.populateNote(reply, false, false);
+		return await this.populateNote(reply, hint, false, false);
 	}
 
 	@bindThis
@@ -261,11 +274,11 @@ export class NoteVisibilityService {
 
 	// Based on NoteEntityService.treatVisibility
 	@bindThis
-	public syncVisibility(note: PopulatedNote): void {
+	public syncVisibility(note: PopulatedNote | Packed<'Note'>): void {
 		// Make followers-only
 		if (note.user.makeNotesFollowersOnlyBefore && note.visibility !== 'specified' && note.visibility !== 'followers') {
 			const followersOnlyBefore = note.user.makeNotesFollowersOnlyBefore * 1000;
-			const createdAt = note.createdAt.valueOf();
+			const createdAt = new Date(note.createdAt).valueOf();
 
 			// I don't understand this logic, but I tried to break it out for readability
 			const followersOnlyOpt1 = followersOnlyBefore <= 0 && (Date.now() - createdAt > 0 - followersOnlyBefore);
@@ -388,7 +401,7 @@ export class NoteVisibilityService {
 	}
 }
 
-export interface NoteVisibilityData {
+export interface NoteVisibilityData extends NotePopulationData {
 	userBlockers: Set<string> | null;
 	userFollowings: Map<string, Omit<MiFollowing, 'isFollowerHibernated'>> | null;
 	userMutedThreads: Set<string> | null;
@@ -398,21 +411,16 @@ export interface NoteVisibilityData {
 	userMutedInstances: Set<string> | null;
 }
 
+export interface NotePopulationData {
+	notes?: Map<string, MiNote>;
+	users?: Map<string, MiUser>;
+	instances?: Map<string, MiInstance>;
+}
+
 // This represents the *requesting* user!
 export type PopulatedMe = Pick<MiUser, 'id' | 'host'> | null | undefined;
 
-// type PopulatedNote = Flatten<PopulatedObjectNote>;
-// type PopulatedNote = Flatten<Packed<'Note'>, MiNote> & {
-// 	user: PopulatedUser,
-// 	renote?: PopulatedNote | null,
-// 	reply?: PopulatedNote | null,
-// };
-// type PopulatedUser = Flatten<Packed<'UserLite'>, MiUser> & {
-// 	instance?: PopulatedInstance | null,
-// };
-// type PopulatedInstance = Flatten<Packed<'UserLite'>['instance'], MiInstance>;
-
-interface PopulatedNote {
+export interface PopulatedNote {
 	id: string;
 	threadId: string;
 	userId: string;

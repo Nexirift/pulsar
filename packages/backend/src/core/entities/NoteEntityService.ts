@@ -19,6 +19,7 @@ import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
 import { QueryService } from '@/core/QueryService.js';
 import type { Config } from '@/config.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
+import type { PopulatedNote } from '@/core/NoteVisibilityService.js';
 import type { NoteVisibilityData } from '@/core/NoteVisibilityService.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { CacheService } from '../CacheService.js';
@@ -150,7 +151,7 @@ export class NoteEntityService implements OnModuleInit {
 		const data = await this.noteVisibilityService.populateData(me, hint);
 
 		for (const note of notes) {
-			this.hideNote(note, me, data);
+			await this.hideNoteAsync(note, me, data);
 		}
 	}
 
@@ -159,97 +160,6 @@ export class NoteEntityService implements OnModuleInit {
 		const { redact } = await this.noteVisibilityService.checkNoteVisibilityAsync(packedNote, me, { hint });
 
 		if (redact) {
-			this.redactNoteContents(packedNote);
-		}
-	}
-
-	@bindThis
-	public hideNote(packedNote: Packed<'Note'>, me: Pick<MiUser, 'id' | 'host'> | null, data: NoteVisibilityData): void {
-		// Implementation moved to NoteVisibilityService
-		/*
-		if (meId === packedNote.userId) return;
-
-		// TODO: isVisibleForMe を使うようにしても良さそう(型違うけど)
-		let hide = false;
-
-		if (packedNote.user.requireSigninToViewContents && meId == null) {
-			hide = true;
-		}
-
-		if (!hide) {
-			const hiddenBefore = packedNote.user.makeNotesHiddenBefore;
-			if ((hiddenBefore != null)
-				&& (
-					(hiddenBefore <= 0 && (Date.now() - new Date(packedNote.createdAt).getTime() > 0 - (hiddenBefore * 1000)))
-					|| (hiddenBefore > 0 && (new Date(packedNote.createdAt).getTime() < hiddenBefore * 1000))
-				)
-			) {
-				hide = true;
-			}
-		}
-
-		// visibility が specified かつ自分が指定されていなかったら非表示
-		if (!hide) {
-			if (packedNote.visibility === 'specified') {
-				if (meId == null) {
-					hide = true;
-				} else if (meId === packedNote.userId) {
-					hide = false;
-				} else {
-					// 指定されているかどうか
-					const specified = packedNote.visibleUserIds!.some(id => meId === id);
-
-					if (!specified) {
-						hide = true;
-					}
-				}
-			}
-		}
-
-		// visibility が followers かつ自分が投稿者のフォロワーでなかったら非表示
-		if (!hide) {
-			if (packedNote.visibility === 'followers') {
-				if (meId == null) {
-					hide = true;
-				} else if (meId === packedNote.userId) {
-					hide = false;
-				} else if (packedNote.reply && (meId === packedNote.reply.userId)) {
-					// 自分の投稿に対するリプライ
-					hide = false;
-				} else if (packedNote.mentions && packedNote.mentions.some(id => meId === id)) {
-					// 自分へのメンション
-					hide = false;
-				} else if (packedNote.renote && (meId === packedNote.renote.userId)) {
-					hide = false;
-				} else {
-					const isFollowing = hint?.myFollowing
-						? hint.myFollowing.has(packedNote.userId)
-						: (await this.cacheService.userFollowingsCache.fetch(meId)).has(packedNote.userId);
-
-					hide = !isFollowing;
-				}
-			}
-		}
-
-		// If this is a pure renote (boost), then we should *also* check the boosted note's visibility.
-		// Otherwise we can have empty notes on the timeline, which is not good.
-		// Notes are packed in depth-first order, so we can safely grab the "isHidden" property to avoid duplicated checks.
-		// This is pulled out to ensure that we check both the renote *and* the boosted note.
-		if (packedNote.renote?.isHidden && isPackedPureRenote(packedNote)) {
-			hide = true;
-		}
-
-		if (!hide && meId && packedNote.userId !== meId) {
-			const blockers = hint?.myBlockers ?? await this.cacheService.userBlockedCache.fetch(meId);
-			const isBlocked = blockers.has(packedNote.userId);
-
-			if (isBlocked) hide = true;
-		}
-		*/
-
-		const hide = this.noteVisibilityService.checkNoteVisibility(packedNote, me, { data }).redact;
-
-		if (hide) {
 			this.redactNoteContents(packedNote);
 		}
 	}
