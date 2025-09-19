@@ -988,7 +988,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 			// 自分自身のHTL
 			if (note.userHost == null) {
-				if (note.visibility !== 'specified' || !note.visibleUserIds.some(v => v === user.id)) {
+				if (note.visibility !== 'specified' || !note.visibleUserIds.some(v => v === user.id) || note.userId === user.id) {
 					this.fanoutTimelineService.push(`homeTimeline:${user.id}`, note.id, this.meta.perUserHomeTimelineCacheMax, r);
 					if (note.fileIds.length > 0) {
 						this.fanoutTimelineService.push(`homeTimelineWithFiles:${user.id}`, note.id, this.meta.perUserHomeTimelineCacheMax / 2, r);
