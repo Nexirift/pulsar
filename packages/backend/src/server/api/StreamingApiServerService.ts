@@ -323,8 +323,8 @@ export class StreamingApiServerService implements OnApplicationShutdown {
 		await new Promise<void>((resolve, reject) => {
 			if (this.#wss) {
 				this.#wss.close(err => {
-					if (err) reject(err);
-					else resolve();
+					// according to the documentation, this callback only receives an error if the server was already closed: we can ignore that
+					resolve();
 				});
 			} else {
 				resolve();
