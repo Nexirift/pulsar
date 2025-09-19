@@ -118,7 +118,7 @@ type MinimumUser = {
 	uri: MiUser['uri'];
 };
 
-type Option = {
+export type Option = {
 	createdAt?: Date | null;
 	name?: string | null;
 	text?: string | null;
