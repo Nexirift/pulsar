@@ -7,6 +7,7 @@ settings:
 overrides:
   chokidar: 4.0.3
   lodash: 4.17.21
+  axios: 1.12.2
 
 importers:
 
@@ -165,8 +166,8 @@ importers:
         specifier: 0.43.0
         version: 0.43.0
       axios:
-        specifier: 1.7.4
-        version: 1.7.4
+        specifier: 1.12.2
+        version: 1.12.2(debug@4.4.1)
       bcryptjs:
         specifier: 2.4.3
         version: 2.4.3
@@ -1245,8 +1246,8 @@ importers:
   packages/megalodon:
     dependencies:
       axios:
-        specifier: 1.9.0
-        version: 1.9.0
+        specifier: 1.12.2
+        version: 1.12.2(debug@4.4.1)
       dayjs:
         specifier: 1.11.13
         version: 1.11.13
@@ -5296,17 +5297,8 @@ packages:
   aws4@1.12.0:
     resolution: {integrity: sha512-NmWvPnx0F1SfrQbYwOi7OeaNGokp9XhzNioJ/CSBs8Qa4vxug81mhJEAVZwxXuBmYB5KDRfMq/F3RR0BIU7sWg==}
 
-  axios@0.24.0:
-    resolution: {integrity: sha512-Q6cWsys88HoPgAaFAVUb0WpPk0O8iTeisR9IMqy9G8AbO4NlpVknrnQS03zzF9PGAWgO3cgletO3VjV/P7VztA==}
-
   axios@1.12.2:
     resolution: {integrity: sha512-vMJzPewAlRyOgxV2dU0Cuz2O8zzzx9VYtbJOaBgXFeLc4IV/Eg50n4LowmehOOR61S8ZMpc2K5Sa7g6A4jfkUw==}
-
-  axios@1.7.4:
-    resolution: {integrity: sha512-DukmaFRnY6AzAALSH4J2M3k6PkaC+MfaAGdEERRWcC9q3/TWQwLpHR8ZRLKTdQ3aBDL64EdluRDjJqKw+BPZEw==}
-
-  axios@1.9.0:
-    resolution: {integrity: sha512-re4CqKTJaURpzbLHtIi6XpDv20/CnpXOtjRY5/CU32L8gU8ek9UIivcfvSWvmKEngmVbrUtPpdDwWDWL7DNHvg==}
 
   b4a@1.6.4:
     resolution: {integrity: sha512-fpWrvyVHEKyeEvbKZTVOeZF3VSKKWtJxFIxX/jaVPf+cLbGUSitjb49pHLqPV2BUNNZ0LcoeEGfE/YCpyDYHIw==}
@@ -16271,29 +16263,7 @@ snapshots:
   aws4@1.12.0:
     optional: true
 
-  axios@0.24.0:
-    dependencies:
-      follow-redirects: 1.15.9(debug@4.4.1)
-    transitivePeerDependencies:
-      - debug
-
   axios@1.12.2(debug@4.4.1):
-    dependencies:
-      follow-redirects: 1.15.9(debug@4.4.1)
-      form-data: 4.0.4
-      proxy-from-env: 1.1.0
-    transitivePeerDependencies:
-      - debug
-
-  axios@1.7.4:
-    dependencies:
-      follow-redirects: 1.15.9(debug@4.4.1)
-      form-data: 4.0.4
-      proxy-from-env: 1.1.0
-    transitivePeerDependencies:
-      - debug
-
-  axios@1.9.0:
     dependencies:
       follow-redirects: 1.15.9(debug@4.4.1)
       form-data: 4.0.4
@@ -17268,7 +17238,7 @@ snapshots:
   deep-email-validator@0.1.21:
     dependencies:
       '@types/disposable-email-domains': 1.0.2
-      axios: 0.24.0
+      axios: 1.12.2(debug@4.4.1)
       disposable-email-domains: 1.0.62
       mailcheck: 1.1.1
     transitivePeerDependencies:
