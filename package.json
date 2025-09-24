@@ -6,7 +6,7 @@
 		"type": "git",
 		"url": "https://activitypub.software/TransFem-org/Sharkey.git"
 	},
-	"packageManager": "pnpm@10.15.1",
+	"packageManager": "pnpm@10.16.0",
 	"workspaces": [
 		"packages/frontend-shared",
 		"packages/frontend",
@@ -57,28 +57,28 @@
 		"js-yaml": "4.1.0"
 	},
 	"optionalDependencies": {
-		"cypress": "14.3.2"
+		"cypress": "14.5.4"
 	},
 	"devDependencies": {
 		"@misskey-dev/eslint-plugin": "2.1.0",
-		"@types/node": "22.15.2",
-		"@typescript-eslint/eslint-plugin": "8.31.0",
-		"@typescript-eslint/parser": "8.31.0",
+		"@types/node": "22.18.1",
+		"@typescript-eslint/eslint-plugin": "8.42.0",
+		"@typescript-eslint/parser": "8.42.0",
 		"cross-env": "7.0.3",
-		"cssnano": "7.0.6",
-		"esbuild": "0.25.3",
-		"eslint": "9.25.1",
-		"execa": "9.5.2",
+		"cssnano": "7.1.1",
+		"esbuild": "0.25.9",
+		"eslint": "9.35.0",
+		"execa": "9.6.0",
 		"fast-glob": "3.3.3",
-		"glob": "11.0.2",
-		"globals": "16.1.0",
+		"glob": "11.0.3",
+		"globals": "16.3.0",
 		"ncp": "2.0.0",
-		"pnpm": "10.15.1",
+		"pnpm": "10.16.0",
 		"ignore-walk": "7.0.0",
-		"postcss": "8.5.3",
-		"start-server-and-test": "2.0.11",
+		"postcss": "8.5.6",
+		"start-server-and-test": "2.1.0",
 		"tar": "7.4.3",
-		"terser": "5.39.0",
-		"typescript": "5.8.3"
+		"terser": "5.44.0",
+		"typescript": "5.9.2"
 	}
 }
