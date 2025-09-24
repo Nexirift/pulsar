@@ -8,6 +8,7 @@ variables:
   # https://docs.gitlab.com/user/application_security/sast/gitlab_advanced_sast
   GITLAB_ADVANCED_SAST_ENABLED: 'true'
 
+  # https://docs.gitlab.com/user/application_security/sast/#vulnerability-filters
   # https://stackoverflow.com/a/71111784
   SAST_EXCLUDED_PATHS: 'spec,test,test-d,test-federation,test-server,tests,tmp,cypress,coverage,node_modules,build,built,built-js,*.min.js,megalodon/lib,libopenmpt'
 
