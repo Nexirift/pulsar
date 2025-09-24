@@ -4,6 +4,10 @@ include:
   - template: Jobs/Container-Scanning.latest.gitlab-ci.yml
   - template: Jobs/SAST.latest.gitlab-ci.yml
   - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
+  # https://docs.gitlab.com/user/application_security/dependency_scanning/experiment_libbehave_dependency/
+  - component: $CI_SERVER_FQDN/security-products/experiments/libbehave/libbehave@v0.1.0
+    inputs:
+      stage: test
 
 variables:
   # https://docs.gitlab.com/user/application_security/sast/gitlab_advanced_sast
