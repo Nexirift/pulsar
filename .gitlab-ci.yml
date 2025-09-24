@@ -180,7 +180,7 @@ variables:
 
 dependency_scanning:
   tags:
-    ARCH: amd64
+    - ARCH: amd64
 
 # https://docs.gitlab.com/user/application_security/container_scanning/#scanning-archives-built-in-a-previous-job
 # https://docs.gitlab.com/user/application_security/detect/security_configuration/#error-chosen-stage-test-does-not-exist
@@ -195,19 +195,19 @@ container_scanning:
     - if: $CI_PIPELINE_SOURCE != 'push' || ($CI_COMMIT_BRANCH != 'develop' && $CI_COMMIT_BRANCH != 'stable' && $CI_COMMIT_TAG != '')
       when: never
   tags:
-    ARCH: amd64
+    - ARCH: amd64
 
 sast:
   tags:
-    ARCH: amd64
+    - ARCH: amd64
 
 gitlab-advanced-sast:
   tags:
-    ARCH: amd64
+    - ARCH: amd64
 
 secret_detection:
   tags:
-    ARCH: amd64
+    - ARCH: amd64
 
 libbehave-experiment:
   # https://gitlab.com/gitlab-org/security-products/demos/experiments/libbehave/npm-demo/-/blob/add_dependencies/.gitlab-ci.yml?ref_type=heads#L6
@@ -215,4 +215,4 @@ libbehave-experiment:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
   tags:
-    ARCH: amd64
+    - ARCH: amd64
