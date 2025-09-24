@@ -145,7 +145,7 @@ include:
   - template: Jobs/SAST.latest.gitlab-ci.yml
   - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
   # https://docs.gitlab.com/user/application_security/dependency_scanning/experiment_libbehave_dependency/
-  - component: $CI_SERVER_FQDN/TransFem-org/libbehave/libbehave@v0.2.2
+  - component: $CI_SERVER_FQDN/TransFem-org/libbehave/libbehave@v0.2.4
 
 variables:
   # https://docs.gitlab.com/user/application_security/sast/gitlab_advanced_sast
@@ -197,9 +197,6 @@ secret_detection:
     - amd64
 
 libbehave-experiment:
-  # https://gitlab.com/gitlab-org/security-products/demos/experiments/libbehave/npm-demo/-/blob/add_dependencies/.gitlab-ci.yml?ref_type=heads#L6
-  # https://stackoverflow.com/a/70360201
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
   tags:
     - amd64
+
