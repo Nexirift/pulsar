@@ -8,10 +8,17 @@
 		"allowJs": true,
 		"checkJs": true
 	},
+	"include": [
+		"./**/*.js"
+	],
 	"exclude": [
 		"node_modules",
-		"jspm_packages",
-		"tmp",
-		"temp"
+		"./built",
+		"./jspm_packages",
+		"./tmp",
+		"./temp",
+		"./test",
+		"./test-federation",
+		"./test-server"
 	]
 }

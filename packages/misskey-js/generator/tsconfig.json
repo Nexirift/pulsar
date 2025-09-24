@@ -15,8 +15,10 @@
 		]
 	},
 	"include": [
-		"src/**/*.ts",
-		"built/**/*.ts"
+		"./src/**/*.ts",
 	],
-	"exclude": []
+	"exclude": [
+		"node_modules",
+		"./built"
+	]
 }
