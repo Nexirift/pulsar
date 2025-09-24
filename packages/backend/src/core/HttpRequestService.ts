@@ -73,7 +73,7 @@ export function validateSocketConnect(allowedPrivateNetworks: PrivateNetwork[] |
 
 declare module 'node:http' {
 	interface Agent {
-		createConnection(options: net.NetConnectOpts, callback?: (err: unknown, stream: net.Socket) => void): net.Socket;
+		createConnection(options: net.NetConnectOpts, callback?: (err: Error | null, stream: net.Socket) => void): net.Socket;
 	}
 }
 
@@ -86,7 +86,7 @@ class HttpRequestServiceAgent extends http.Agent {
 	}
 
 	@bindThis
-	public createConnection(options: net.NetConnectOpts, callback?: (err: unknown, stream: net.Socket) => void): net.Socket {
+	public createConnection(options: net.NetConnectOpts, callback?: (err: Error | null, stream: net.Socket) => void): net.Socket {
 		const socket = super.createConnection(options, callback)
 			.on('connect', () => {
 				if (process.env.NODE_ENV === 'production') {
@@ -106,7 +106,7 @@ class HttpsRequestServiceAgent extends https.Agent {
 	}
 
 	@bindThis
-	public createConnection(options: net.NetConnectOpts, callback?: (err: unknown, stream: net.Socket) => void): net.Socket {
+	public createConnection(options: net.NetConnectOpts, callback?: (err: Error | null, stream: net.Socket) => void): net.Socket {
 		const socket = super.createConnection(options, callback)
 			.on('connect', () => {
 				if (process.env.NODE_ENV === 'production') {

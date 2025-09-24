@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
-		"lib": ["dom", "ES2022"],
-		"target": "ES2022",
+		"lib": ["dom", "ESNext"],
+		"target": "ESNext",
 		"types": ["cypress", "node"],
 		"incremental": true,
 		"skipLibCheck": true,

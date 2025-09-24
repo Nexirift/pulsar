@@ -196,7 +196,7 @@ export async function uploadFile(
 	body.append('name', filename);
 
 	return await fetch(`https://${host}/api/drive/files/create`, { method: 'POST', body })
-		.then(async res => await res.json());
+		.then(async res => await res.json() as Misskey.entities.DriveFile);
 }
 
 export async function addCustomEmoji(

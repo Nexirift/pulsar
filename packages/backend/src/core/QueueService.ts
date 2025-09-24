@@ -896,7 +896,7 @@ export class QueueService implements OnModuleInit {
 	@bindThis
 	public async queueRetryJob(queueType: typeof QUEUE_TYPES[number], jobId: string) {
 		const queue = this.getQueue(queueType);
-		const job: Bull.Job | null = await queue.getJob(jobId);
+		const job: Bull.Job | undefined = await queue.getJob(jobId);
 		if (job) {
 			if (job.finishedOn != null) {
 				await job.retry();
@@ -909,7 +909,7 @@ export class QueueService implements OnModuleInit {
 	@bindThis
 	public async queueRemoveJob(queueType: typeof QUEUE_TYPES[number], jobId: string) {
 		const queue = this.getQueue(queueType);
-		const job: Bull.Job | null = await queue.getJob(jobId);
+		const job: Bull.Job | undefined = await queue.getJob(jobId);
 		if (job) {
 			await job.remove();
 		}
@@ -943,7 +943,7 @@ export class QueueService implements OnModuleInit {
 	@bindThis
 	public async queueGetJob(queueType: typeof QUEUE_TYPES[number], jobId: string) {
 		const queue = this.getQueue(queueType);
-		const job: Bull.Job | null = await queue.getJob(jobId);
+		const job: Bull.Job | undefined = await queue.getJob(jobId);
 		if (job) {
 			return this.packJobData(job);
 		} else {
