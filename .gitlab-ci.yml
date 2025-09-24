@@ -5,7 +5,7 @@ include:
   - template: Jobs/SAST.latest.gitlab-ci.yml
   - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
   # https://docs.gitlab.com/user/application_security/dependency_scanning/experiment_libbehave_dependency/
-  - component: $CI_SERVER_FQDN/security-products/experiments/libbehave/libbehave@v0.1.0
+  - component: $CI_SERVER_FQDN/TransFem-org/libbehave/libbehave@v0.1.0
     inputs:
       stage: test
 
