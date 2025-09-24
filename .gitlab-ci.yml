@@ -1,6 +1,7 @@
 # https://docs.gitlab.com/user/application_security/sast/
 include:
   - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.latest.gitlab-ci.yml
   - template: Jobs/SAST.latest.gitlab-ci.yml
   - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
 
@@ -20,6 +21,14 @@ variables:
 
   # https://docs.gitlab.com/user/application_security/detect/security_configuration/#use-security-scanning-tools-with-merge-request-pipelines
   AST_ENABLE_MR_PIPELINES: 'true'
+
+# https://docs.gitlab.com/user/application_security/container_scanning/#scanning-archives-built-in-a-previous-job
+# https://docs.gitlab.com/user/application_security/detect/security_configuration/#error-chosen-stage-test-does-not-exist
+container_scanning:
+  variables:
+    CS_IMAGE: ${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_TAG}
+    AST_ENABLE_MR_PIPELINES: 'false'
+  stage: deploy
 
 stages:
   - test
