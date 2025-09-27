@@ -573,6 +573,8 @@ export class CacheService implements OnApplicationShutdown {
 		this.userFollowingsCache.clear();
 		this.userFollowStatsCache.clear();
 		this.translationsCache.clear();
+		this.userFollowingChannelsCache.clear();
+		this.federatedInstanceCache.clear();
 	}
 
 	@bindThis
@@ -598,6 +600,8 @@ export class CacheService implements OnApplicationShutdown {
 		this.userFollowingsCache.dispose();
 		this.userFollowersCache.dispose();
 		this.hibernatedUserCache.dispose();
+		this.userFollowStatsCache.dispose();
+		this.translationsCache.dispose();
 	}
 
 	@bindThis
