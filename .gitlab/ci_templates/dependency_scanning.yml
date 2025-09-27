@@ -2,7 +2,7 @@
 include:
   - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
 
-dependency_scanning:
+dependency-scanning:
   stage: test
 
   # SAST tools only support x64
