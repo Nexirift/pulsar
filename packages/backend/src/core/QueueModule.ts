@@ -157,6 +157,7 @@ export class QueueModule implements OnApplicationShutdown {
 		this.logger.info('Queue module disposed.');
 	}
 
+	@bindThis
 	async onApplicationShutdown(signal: string): Promise<void> {
 		await this.dispose();
 	}

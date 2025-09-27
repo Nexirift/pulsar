@@ -142,6 +142,7 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 		this.logger = this.apLoggerService.logger;
 	}
 
+	@bindThis
 	onApplicationShutdown(): void {
 		this.dispose();
 	}

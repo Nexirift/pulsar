@@ -198,6 +198,7 @@ export class GlobalModule implements OnApplicationShutdown {
 		this.logger.info('Global module disposed.');
 	}
 
+	@bindThis
 	async onApplicationShutdown(signal: string): Promise<void> {
 		await this.dispose();
 	}
