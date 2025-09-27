@@ -234,8 +234,8 @@ container_scanning:
 dependency-scanning:
   <<: *sast_common
 
-sast:
-  <<: *sast_common
+#sast:
+#  <<: *sast_common
 
 gitlab-advanced-sast:
   <<: *sast_common
