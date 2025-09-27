@@ -3,6 +3,24 @@ stages:
   - test
   - deploy
 
+variables:
+  # https://docs.gitlab.com/user/application_security/sast/gitlab_advanced_sast
+  GITLAB_ADVANCED_SAST_ENABLED: 'true'
+
+  # https://docs.gitlab.com/user/application_security/sast/#vulnerability-filters
+  # https://stackoverflow.com/a/71111784
+  SAST_EXCLUDED_PATHS: 'spec,test,test-d,test-federation,test-server,tests,tmp,cypress,coverage,node_modules,build,built,built-js,*.min.js,megalodon/lib,libopenmpt'
+  DS_EXCLUDED_PATHS: 'spec,test,test-d,test-federation,test-server,tests,tmp,cypress,coverage,node_modules,build,built,built-js,*.min.js,megalodon/lib,libopenmpt,packages/*/src' # save time: skip source directories
+
+  # https://docs.gitlab.com/user/application_security/dependency_scanning/migration_guide_to_sbom_based_scans/
+  DS_ENFORCE_NEW_ANALYZER: 'true'
+  DS_MAX_DEPTH: -1
+  # https://docs.gitlab.com/user/application_security/dependency_scanning/static_reachability/
+  DS_STATIC_REACHABILITY_ENABLED: true
+
+  # https://docs.gitlab.com/user/application_security/detect/security_configuration/#use-security-scanning-tools-with-merge-request-pipelines
+  AST_ENABLE_MR_PIPELINES: 'true'
+
 .common: &common
   # "only" has been removed, so we use rules.
   # This runs in MR pipelines *or* push to develop/stable
@@ -32,24 +50,6 @@ include:
     rules: *common-rules
   - local: '.gitlab/ci_templates/lib_behave.yml'
     rules: *common-rules
-
-variables:
-  # https://docs.gitlab.com/user/application_security/sast/gitlab_advanced_sast
-  GITLAB_ADVANCED_SAST_ENABLED: 'true'
-
-  # https://docs.gitlab.com/user/application_security/sast/#vulnerability-filters
-  # https://stackoverflow.com/a/71111784
-  SAST_EXCLUDED_PATHS: 'spec,test,test-d,test-federation,test-server,tests,tmp,cypress,coverage,node_modules,build,built,built-js,*.min.js,megalodon/lib,libopenmpt'
-  DS_EXCLUDED_PATHS: 'spec,test,test-d,test-federation,test-server,tests,tmp,cypress,coverage,node_modules,build,built,built-js,*.min.js,megalodon/lib,libopenmpt,packages/*/src' # save time: skip source directories
-
-  # https://docs.gitlab.com/user/application_security/dependency_scanning/migration_guide_to_sbom_based_scans/
-  DS_ENFORCE_NEW_ANALYZER: 'true'
-  DS_MAX_DEPTH: -1
-  # https://docs.gitlab.com/user/application_security/dependency_scanning/static_reachability/
-  DS_STATIC_REACHABILITY_ENABLED: true
-
-  # https://docs.gitlab.com/user/application_security/detect/security_configuration/#use-security-scanning-tools-with-merge-request-pipelines
-  AST_ENABLE_MR_PIPELINES: 'true'
 
 # Cache node_modules and share build artifacts for the pipeline.
 # This shares the same cache definition, but it's the only place that actually *pushes* to the cache.
