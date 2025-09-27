@@ -1,14 +1,13 @@
 # https://docs.gitlab.com/user/application_security/sast/
 include:
   # https://docs.gitlab.com/user/application_security/dependency_scanning/experiment_libbehave_dependency/
-  - component: $CI_SERVER_FQDN/TransFem-org/libbehave/libbehave@v0.3.1
+  - component: $CI_SERVER_FQDN/TransFem-org/libbehave/libbehave@v0.4.0
     inputs:
       include-lang: 'js'
+      stage: test
 
 
-libbehave-experiment:
-  stage: test
-
+.libbehave-experiment:
   # SAST tools only support x64
   tags:
     - amd64
