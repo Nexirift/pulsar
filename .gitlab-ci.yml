@@ -143,8 +143,10 @@ frontend_tests:
         --filter=frontend \
         --filter=frontend-embed \
         --filter=frontend-shared \
-        --filter=megalogon \
-        --filter=misskey-js
+        --filter=misskey-js \
+        --filter=misskey-bubble-game \
+        --filter=misskey-reversi \
+        --filter=misskey-sw
     - pnpm run test --filter=frontend --filter=misskey-js
 
 get_image_tag:
