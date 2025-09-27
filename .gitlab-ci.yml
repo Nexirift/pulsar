@@ -218,7 +218,6 @@ merge_image_manifests:
         --target ${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_TAG}
 
 .sast_common: &sast_common
-  <<: *common
   stage: test
   # SAST tools only support x64
   tags:
