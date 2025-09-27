@@ -134,6 +134,19 @@ backend_tests:
         --filter=misskey-js
     - pnpm run migrate
     - pnpm run test --filter=backend
+  # Same as common, but MRs are only run if they modify the backend.
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'stable')
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      changes:
+        - 'packages/backend/**/*'
+        - 'packages/megalodon/**/*'
+        - 'packages/misskey-js/**/*'
+        - 'packages/*' # single-star is intention - we don't want to recurse!
+        - 'scripts/**/*'
+        - 'eslint/**/*'
+        - 'chart/**/*'
+        - '.config/**/*'
 
 frontend_tests:
   <<: *test_common
@@ -148,6 +161,25 @@ frontend_tests:
         --filter=misskey-reversi \
         --filter=sw
     - pnpm run test --filter=frontend --filter=misskey-js
+  # Same as common, but MRs are only run if they modify the frontend.
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'stable')
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      changes:
+        - 'packages/frontend/**/*'
+        - 'packages/frontend-embed/**/*'
+        - 'packages/frontend-shared/**/*'
+        - 'packages/misskey-js/**/*'
+        - 'packages/misskey-bubble-game/**/*'
+        - 'packages/misskey-reversi/**/*'
+        - 'packages/sw/**/*'
+        - 'packages/*' # single-star is intention - we don't want to recurse!
+        - 'scripts/**/*'
+        - 'eslint/**/*'
+        - 'locales/**/*'
+        - 'sharkey-locales/**/*'
+        - 'cypress/**/*'
+        - 'assets/**/*'
 
 get_image_tag:
   <<: *deploy_common
