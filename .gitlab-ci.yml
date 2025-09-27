@@ -3,14 +3,36 @@ stages:
   - test
   - deploy
 
+.common: &common
+  # "only" has been removed, so we use rules.
+  # This runs in MR pipelines *or* push to develop/stable
+  rules: &common-rules
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'stable')
+
+.deploy_common: &deploy_common
+  stage: deploy
+  # Only run when pushing to stable, develop, or tags
+  rules: &deploy-rules
+    - if: $CI_PIPELINE_SOURCE != 'push'
+      when: never
+    - if: $CI_COMMIT_BRANCH == 'develop'
+    - if: $CI_COMMIT_BRANCH == 'stable'
+    - if: $CI_COMMIT_TAG
+
 # https://docs.gitlab.com/user/application_security/sast/
 include:
   - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
+    rules: *common-rules
   - template: Jobs/Container-Scanning.latest.gitlab-ci.yml
+    rules: *deploy-rules
   - template: Jobs/SAST.latest.gitlab-ci.yml
+    rules: *common-rules
   - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
+    rules: *common-rules
   # https://docs.gitlab.com/user/application_security/dependency_scanning/experiment_libbehave_dependency/
   - component: $CI_SERVER_FQDN/TransFem-org/libbehave/libbehave@v0.2.4
+    rules: *common-rules
 
 variables:
   # https://docs.gitlab.com/user/application_security/sast/gitlab_advanced_sast
@@ -29,13 +51,6 @@ variables:
 
   # https://docs.gitlab.com/user/application_security/detect/security_configuration/#use-security-scanning-tools-with-merge-request-pipelines
   AST_ENABLE_MR_PIPELINES: 'true'
-
-.common: &common
-  # "only" has been removed, so we use rules.
-  # This runs in MR pipelines *or* push to develop/stable
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-    - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'stable')
 
 # Cache node_modules and share build artifacts for the pipeline.
 # This shares the same cache definition, but it's the only place that actually *pushes* to the cache.
@@ -133,16 +148,6 @@ frontend_tests:
         --filter=misskey-js
     - pnpm run test --filter=frontend --filter=misskey-js
 
-.deploy_common: &deploy_common
-  stage: deploy
-  # Only run when pushing to stable, develop, or tags
-  rules:
-    - if: $CI_PIPELINE_SOURCE != 'push'
-      when: never
-    - if: $CI_COMMIT_BRANCH == 'develop'
-    - if: $CI_COMMIT_BRANCH == 'stable'
-    - if: $CI_COMMIT_TAG
-
 get_image_tag:
   <<: *deploy_common
   image:
@@ -218,24 +223,27 @@ merge_image_manifests:
   # SAST tools only support x64
   tags:
     - amd64
+  # Don't wait for the build stage to complete, since we don't use it.
+  # https://docs.gitlab.com/ci/yaml/#needs
+  needs: []
 
 # https://docs.gitlab.com/user/application_security/container_scanning/#scanning-archives-built-in-a-previous-job
 # https://docs.gitlab.com/user/application_security/detect/security_configuration/#error-chosen-stage-test-does-not-exist
 container_scanning:
   <<: *sast_common
-  <<: *deploy_common
+  stage: deploy
   variables:
     AST_ENABLE_MR_PIPELINES: 'false'
-    CS_IMAGE: ${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_TAG}
+    CS_IMAGE: "${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_TAG}"
   needs:
     - job: merge_image_manifests
       artifacts: true
 
-dependency-scanning:
+dependency_scanning:
   <<: *sast_common
 
-#sast:
-#  <<: *sast_common
+sast:
+  <<: *sast_common
 
 gitlab-advanced-sast:
   <<: *sast_common
