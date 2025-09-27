@@ -146,7 +146,7 @@ frontend_tests:
         --filter=misskey-js \
         --filter=misskey-bubble-game \
         --filter=misskey-reversi \
-        --filter=misskey-sw
+        --filter=sw
     - pnpm run test --filter=frontend --filter=misskey-js
 
 get_image_tag:
