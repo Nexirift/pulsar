@@ -12,12 +12,20 @@ include:
   # https://docs.gitlab.com/user/application_security/dependency_scanning/experiment_libbehave_dependency/
   - component: $CI_SERVER_FQDN/TransFem-org/libbehave/libbehave@v0.2.4
 
+.common: &common
+  # "only" has been removed, so we use rules.
+  # This runs in MR pipelines *or* push to develop/stable
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'stable')
+
 # Cache node_modules and share build artifacts for the pipeline.
 # This shares the same cache definition, but it's the only place that actually *pushes* to the cache.
 # https://docs.gitlab.com/ci/caching/
 # https://github.com/pnpm/pnpm/issues/1174#issuecomment-996719439
 # https://github.com/pnpm/pnpm/issues/1174#issuecomment-1641267133
 build: &build
+  <<: *common
   stage: build
   image:
     name: docker.io/node:22
@@ -74,13 +82,9 @@ build: &build
         - packages/misskey-reversi/built/
       policy: pull-push
       when: on_success
-  # "only" has been removed, so we use rules.
-  # This runs in MR pipelines *or* push to develop/stable
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-    - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'stable')
 
 .test_common: &test_common
+  <<: *common
   <<: *build
   stage: test
   script: []
@@ -204,6 +208,7 @@ merge_image_manifests:
         --target ${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_TAG}
 
 .sast_common: &sast_common
+  <<: *common
   stage: test
   # SAST tools only support x64
   tags:
