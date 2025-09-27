@@ -97,8 +97,10 @@ lint:
 backend_tests:
   <<: *test_common
   services:
-    - postgres:15
-    - redis
+    - name: postgres:15
+      pull_policy: if-not-present
+    - name: redis
+      pull_policy: if-not-present
   script:
     - >-
       pnpm run build \
