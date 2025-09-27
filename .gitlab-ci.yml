@@ -64,8 +64,7 @@ build: &build
       key: "$CI_COMMIT_REF_SLUG"
       paths:
         - 'built/'
-        - '/packages/*/built/'
-        - 'packages/backend/test_federation/built/'
+        - 'packages/*/built/'
         - 'packages/megalodon/lib/'
       policy: pull-push
       when: on_success
