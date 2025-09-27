@@ -91,7 +91,6 @@ build: &build
   <<: *common
   <<: *build
   stage: test
-  script: []
   cache:
     -
       <<: *cache-pnpm
