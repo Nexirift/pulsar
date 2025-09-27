@@ -8,6 +8,8 @@ import * as Redis from 'ioredis';
 import { DataSource } from 'typeorm';
 import { MeiliSearch } from 'meilisearch';
 import { MiMeta } from '@/models/Meta.js';
+import { bindThis } from '@/decorators.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 import { DI } from './di-symbols.js';
 import { Config, loadConfig } from './config.js';
 import { createPostgresDataSource } from './postgres.js';
@@ -189,17 +191,25 @@ export class GlobalModule implements OnApplicationShutdown {
 		// And then disconnect from DB
 		this.logger.info('Disconnected from data sources...');
 		await this.db.destroy();
-		this.redisClient.disconnect();
-		this.redisForPub.disconnect();
-		this.redisForSub.disconnect();
-		this.redisForTimelines.disconnect();
-		this.redisForReactions.disconnect();
-		this.redisForRateLimit.disconnect();
+		this.safeDisconnect(this.redisClient);
+		this.safeDisconnect(this.redisForPub);
+		this.safeDisconnect(this.redisForSub);
+		this.safeDisconnect(this.redisForTimelines);
+		this.safeDisconnect(this.redisForReactions);
+		this.safeDisconnect(this.redisForRateLimit);
 		this.logger.info('Global module disposed.');
 	}
 
 	@bindThis
 	async onApplicationShutdown(signal: string): Promise<void> {
 		await this.dispose();
+	}
+
+	private safeDisconnect(redis: { disconnect(): void }): void {
+		try {
+			redis.disconnect();
+		} catch (err) {
+			this.logger.error(`Unhandled error disconnecting redis: ${renderInlineError(err)}`);
+		}
 	}
 }
