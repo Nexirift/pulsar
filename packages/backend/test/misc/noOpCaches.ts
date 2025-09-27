@@ -6,7 +6,7 @@
 import * as Redis from 'ioredis';
 import { Inject } from '@nestjs/common';
 import { FakeInternalEventService } from './FakeInternalEventService.js';
-import type { BlockingsRepository, FollowingsRepository, MiUser, MutingsRepository, NoteThreadMutingsRepository, RenoteMutingsRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
+import type { BlockingsRepository, FollowingsRepository, MiUser, MutingsRepository, NoteThreadMutingsRepository, RenoteMutingsRepository, UserProfilesRepository, UsersRepository, ChannelFollowingsRepository, InstancesRepository } from '@/models/_.js';
 import type { MiLocalUser } from '@/models/User.js';
 import { MemoryKVCache, MemorySingleCache, RedisKVCache, RedisSingleCache } from '@/misc/cache.js';
 import { QuantumKVCache, QuantumKVOpts } from '@/misc/QuantumKVCache.js';
@@ -14,6 +14,8 @@ import { CacheService, FollowStats } from '@/core/CacheService.js';
 import { DI } from '@/di-symbols.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
+import { UtilityService } from '@/core/UtilityService.js';
+import { IdService } from '@/core/IdService.js';
 
 export function noOpRedis() {
 	return {
@@ -53,8 +55,20 @@ export class NoOpCacheService extends CacheService {
 		@Inject(DI.noteThreadMutingsRepository)
 		noteThreadMutingsRepository: NoteThreadMutingsRepository,
 
+		@Inject(DI.channelFollowingsRepository)
+		channelFollowingsRepository: ChannelFollowingsRepository,
+
+		@Inject(DI.instancesRepository)
+		instancesRepository: InstancesRepository,
+
 		@Inject(UserEntityService)
 		userEntityService: UserEntityService,
+
+		@Inject(UtilityService)
+		utilityService: UtilityService,
+
+		@Inject(IdService)
+		idService: IdService,
 	) {
 		const fakeRedis = noOpRedis();
 		const fakeInternalEventService = new FakeInternalEventService();
@@ -69,8 +83,12 @@ export class NoOpCacheService extends CacheService {
 			renoteMutingsRepository,
 			followingsRepository,
 			noteThreadMutingsRepository,
+			channelFollowingsRepository,
+			instancesRepository,
 			userEntityService,
 			fakeInternalEventService,
+			utilityService,
+			idService,
 		);
 
 		this.fakeRedis = fakeRedis;
@@ -93,6 +111,7 @@ export class NoOpCacheService extends CacheService {
 		this.hibernatedUserCache = NoOpQuantumKVCache.copy(this.hibernatedUserCache, fakeInternalEventService);
 		this.userFollowStatsCache = new NoOpMemoryKVCache<FollowStats>();
 		this.translationsCache = NoOpRedisKVCache.copy(this.translationsCache, fakeRedis);
+		this.userFollowingChannelsCache = NoOpQuantumKVCache.copy(this.userFollowingChannelsCache, fakeInternalEventService);
 	}
 }
 

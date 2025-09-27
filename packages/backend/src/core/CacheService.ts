@@ -5,8 +5,8 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
-import { In, IsNull } from 'typeorm';
-import type { BlockingsRepository, FollowingsRepository, MutingsRepository, RenoteMutingsRepository, MiUserProfile, UserProfilesRepository, UsersRepository, MiNote, MiFollowing, NoteThreadMutingsRepository } from '@/models/_.js';
+import { In, IsNull, Not } from 'typeorm';
+import type { BlockingsRepository, FollowingsRepository, MutingsRepository, RenoteMutingsRepository, MiUserProfile, UserProfilesRepository, UsersRepository, MiNote, MiFollowing, NoteThreadMutingsRepository, ChannelFollowingsRepository, MiInstance, InstancesRepository } from '@/models/_.js';
 import { MemoryKVCache, RedisKVCache } from '@/misc/cache.js';
 import { QuantumKVCache } from '@/misc/QuantumKVCache.js';
 import type { MiLocalUser, MiRemoteUser, MiUser } from '@/models/User.js';
@@ -15,6 +15,10 @@ import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
 import type { InternalEventTypes } from '@/core/GlobalEventService.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { UtilityService } from '@/core/UtilityService.js';
+import { IdService } from '@/core/IdService.js';
+import { diffArraysSimple } from '@/misc/diff-arrays.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 
 export interface FollowStats {
@@ -53,6 +57,8 @@ export class CacheService implements OnApplicationShutdown {
 	public hibernatedUserCache: QuantumKVCache<boolean>;
 	protected userFollowStatsCache = new MemoryKVCache<FollowStats>(1000 * 60 * 10); // 10 minutes
 	protected translationsCache: RedisKVCache<CachedTranslationEntity>;
+	public userFollowingChannelsCache: QuantumKVCache<Set<string>>;
+	public federatedInstanceCache: QuantumKVCache<MiInstance>;
 
 	constructor(
 		@Inject(DI.redis)
@@ -82,8 +88,16 @@ export class CacheService implements OnApplicationShutdown {
 		@Inject(DI.noteThreadMutingsRepository)
 		private readonly noteThreadMutingsRepository: NoteThreadMutingsRepository,
 
+		@Inject(DI.channelFollowingsRepository)
+		private readonly channelFollowingsRepository: ChannelFollowingsRepository,
+
+		@Inject(DI.instancesRepository)
+		private readonly instancesRepository: InstancesRepository,
+
 		private userEntityService: UserEntityService,
 		private readonly internalEventService: InternalEventService,
+		private readonly utilityService: UtilityService,
+		private readonly idService: IdService,
 	) {
 		//this.onMessage = this.onMessage.bind(this);
 
@@ -271,7 +285,46 @@ export class CacheService implements OnApplicationShutdown {
 			memoryCacheLifetime: 1000 * 60, // 1 minute
 		});
 
-		// NOTE: チャンネルのフォロー状況キャッシュはChannelFollowingServiceで行っている
+		this.userFollowingChannelsCache = new QuantumKVCache<Set<string>>(this.internalEventService, 'userFollowingChannels', {
+			lifetime: 1000 * 60 * 30, // 30m
+			fetcher: (key) => this.channelFollowingsRepository.find({
+				where: { followerId: key },
+				select: ['followeeId'],
+			}).then(xs => new Set(xs.map(x => x.followeeId))),
+			// TODO bulk fetcher
+		});
+
+		this.federatedInstanceCache = new QuantumKVCache(this.internalEventService, 'federatedInstance', {
+			lifetime: 1000 * 60 * 3, // 3 minutes
+			fetcher: async key => {
+				const host = this.utilityService.toPuny(key);
+				let instance = await this.instancesRepository.findOneBy({ host });
+				if (instance == null) {
+					await this.instancesRepository.createQueryBuilder('instance')
+						.insert()
+						.values({
+							id: this.idService.gen(),
+							host,
+							firstRetrievedAt: new Date(),
+							isBlocked: this.utilityService.isBlockedHost(host),
+							isSilenced: this.utilityService.isSilencedHost(host),
+							isMediaSilenced: this.utilityService.isMediaSilencedHost(host),
+							isAllowListed: this.utilityService.isAllowListedHost(host),
+							isBubbled: this.utilityService.isBubbledHost(host),
+						})
+						.orIgnore()
+						.execute();
+
+					instance = await this.instancesRepository.findOneByOrFail({ host });
+				}
+				return instance;
+			},
+			bulkFetcher: async keys => {
+				const hosts = keys.map(key => this.utilityService.toPuny(key));
+				const instances = await this.instancesRepository.findBy({ host: In(hosts) });
+				return instances.map(i => [i.host, i]);
+			},
+		});
 
 		this.internalEventService.on('userChangeSuspendedState', this.onUserEvent);
 		this.internalEventService.on('userChangeDeletedState', this.onUserEvent);
@@ -280,6 +333,10 @@ export class CacheService implements OnApplicationShutdown {
 		this.internalEventService.on('userTokenRegenerated', this.onTokenEvent);
 		this.internalEventService.on('follow', this.onFollowEvent);
 		this.internalEventService.on('unfollow', this.onFollowEvent);
+		// For these, only listen to local events because quantum cache handles the sync.
+		this.internalEventService.on('followChannel', this.onChannelEvent, { ignoreRemote: true });
+		this.internalEventService.on('unfollowChannel', this.onChannelEvent, { ignoreRemote: true });
+		this.internalEventService.on('metaUpdated', this.onMetaEvent, { ignoreRemote: true });
 	}
 
 	@bindThis
@@ -343,6 +400,7 @@ export class CacheService implements OnApplicationShutdown {
 	@bindThis
 	private async onFollowEvent<E extends 'follow' | 'unfollow'>(body: InternalEventTypes[E], type: E): Promise<void> {
 		{
+			// TODO should we filter for local/remote events?
 			switch (type) {
 				case 'follow': {
 					const follower = this.userByIdCache.get(body.followerId);
@@ -371,6 +429,29 @@ export class CacheService implements OnApplicationShutdown {
 					break;
 				}
 			}
+		}
+	}
+
+	@bindThis
+	private async onChannelEvent<E extends 'followChannel' | 'unfollowChannel'>(body: InternalEventTypes[E]): Promise<void> {
+		await this.userFollowingChannelsCache.delete(body.userId);
+	}
+
+	@bindThis
+	private async onMetaEvent<E extends 'metaUpdated'>(body: InternalEventTypes[E]): Promise<void> {
+		const { before, after } = body;
+		const changed = (
+			diffArraysSimple(before?.blockedHosts, after.blockedHosts) ||
+			diffArraysSimple(before?.silencedHosts, after.silencedHosts) ||
+			diffArraysSimple(before?.mediaSilencedHosts, after.mediaSilencedHosts) ||
+			diffArraysSimple(before?.federationHosts, after.federationHosts) ||
+			diffArraysSimple(before?.bubbleInstances, after.bubbleInstances)
+		);
+
+		if (changed) {
+			// We have to clear the whole thing, otherwise subdomains won't be synced.
+			// This gets fired in *each* process so don't do anything to trigger cache notifications!
+			this.federatedInstanceCache.clear();
 		}
 	}
 
@@ -586,6 +667,10 @@ export class CacheService implements OnApplicationShutdown {
 		this.internalEventService.off('userTokenRegenerated', this.onTokenEvent);
 		this.internalEventService.off('follow', this.onFollowEvent);
 		this.internalEventService.off('unfollow', this.onFollowEvent);
+		this.internalEventService.off('followChannel', this.onChannelEvent);
+		this.internalEventService.off('unfollowChannel', this.onChannelEvent);
+		this.internalEventService.off('metaUpdated', this.onMetaEvent);
+
 		this.userByIdCache.dispose();
 		this.localUserByNativeTokenCache.dispose();
 		this.localUserByIdCache.dispose();
@@ -602,6 +687,8 @@ export class CacheService implements OnApplicationShutdown {
 		this.hibernatedUserCache.dispose();
 		this.userFollowStatsCache.dispose();
 		this.translationsCache.dispose();
+		this.userFollowingChannelsCache.dispose();
+		this.federatedInstanceCache.dispose();
 	}
 
 	@bindThis
