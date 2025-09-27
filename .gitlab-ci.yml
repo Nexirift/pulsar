@@ -85,6 +85,7 @@ build: &build
       key:
         files:
           - 'pnpm-lock.yaml'
+          - 'pnpm-workspace.yaml'
       paths:
         - '.pnpm-store/'
         - 'node_modules/'
