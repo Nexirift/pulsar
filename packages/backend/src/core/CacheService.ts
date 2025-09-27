@@ -277,7 +277,6 @@ export class CacheService implements OnApplicationShutdown {
 		this.internalEventService.on('userChangeDeletedState', this.onUserEvent);
 		this.internalEventService.on('remoteUserUpdated', this.onUserEvent);
 		this.internalEventService.on('localUserUpdated', this.onUserEvent);
-		this.internalEventService.on('userChangeSuspendedState', this.onUserEvent);
 		this.internalEventService.on('userTokenRegenerated', this.onTokenEvent);
 		this.internalEventService.on('follow', this.onFollowEvent);
 		this.internalEventService.on('unfollow', this.onFollowEvent);
@@ -582,7 +581,6 @@ export class CacheService implements OnApplicationShutdown {
 		this.internalEventService.off('userChangeDeletedState', this.onUserEvent);
 		this.internalEventService.off('remoteUserUpdated', this.onUserEvent);
 		this.internalEventService.off('localUserUpdated', this.onUserEvent);
-		this.internalEventService.off('userChangeSuspendedState', this.onUserEvent);
 		this.internalEventService.off('userTokenRegenerated', this.onTokenEvent);
 		this.internalEventService.off('follow', this.onFollowEvent);
 		this.internalEventService.off('unfollow', this.onFollowEvent);
