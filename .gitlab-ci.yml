@@ -12,14 +12,6 @@ include:
   # https://docs.gitlab.com/user/application_security/dependency_scanning/experiment_libbehave_dependency/
   - component: $CI_SERVER_FQDN/TransFem-org/libbehave/libbehave@v0.2.4
 
-# https://docs.gitlab.com/ci/yaml/#default
-default:
-  # "only" has been removed, so we use rules.
-  # This runs in MR pipelines *or* push to develop/stable
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-    - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'stable')
-
 # Cache node_modules and share build artifacts for the pipeline.
 # This shares the same cache definition, but it's the only place that actually *pushes* to the cache.
 # https://docs.gitlab.com/ci/caching/
@@ -27,6 +19,7 @@ default:
 # https://github.com/pnpm/pnpm/issues/1174#issuecomment-1641267133
 build: &build
   stage: build
+  image: docker.io/node:22
   variables:
     POSTGRES_PASSWORD: 'ci'
     COREPACK_DEFAULT_TO_LATEST: '0'
@@ -78,7 +71,11 @@ build: &build
         - packages/misskey-reversi/built/
       policy: push-pull
       when: on_success
-  image: docker.io/node:22
+  # "only" has been removed, so we use rules.
+  # This runs in MR pipelines *or* push to develop/stable
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'stable')
 
 .test_common: &test_common
   <<: *build
