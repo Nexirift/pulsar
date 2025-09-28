@@ -424,10 +424,10 @@ export class DriveService {
 		if (this.meta.objectStorageSetPublicRead) params.ACL = 'public-read';
 
 		try {
-			if (this.bunnyService.usingBunnyCDN(this.meta)) {
-				await this.bunnyService.upload(this.meta, key, stream);
+			if (this.bunnyService.usingBunnyCDN()) {
+				await this.bunnyService.upload(key, stream);
 			} else {
-				const result = await this.s3Service.upload(this.meta, params);
+				const result = await this.s3Service.upload(params);
 				if ('Bucket' in result) { // CompleteMultipartUploadCommandOutput
 					this.registerLogger.debug(`Uploaded: ${result.Bucket}/${result.Key} => ${result.Location}`);
 				} else { // AbortMultipartUploadCommandOutput
@@ -843,15 +843,17 @@ export class DriveService {
 	@bindThis
 	public async deleteObjectStorageFile(key: string) {
 		try {
+			if (this.bunnyService.usingBunnyCDN()) {
+				await this.bunnyService.delete(key);
+				return;
+			}
+
 			const param = {
 				Bucket: this.meta.objectStorageBucket,
 				Key: key,
 			} as DeleteObjectCommandInput;
-			if (this.bunnyService.usingBunnyCDN(this.meta)) {
-				await this.bunnyService.delete(this.meta, key);
-			} else {
-				await this.s3Service.delete(this.meta, param);
-			}
+
+			await this.s3Service.delete(param);
 		} catch (err: any) {
 			if (err.name === 'NoSuchKey') {
 				this.deleteLogger.warn(`The object storage had no such key to delete: ${key}. Skipping this.`);
