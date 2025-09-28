@@ -4,20 +4,26 @@
  */
 
 import * as assert from 'assert';
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 
 import { CoreModule } from '@/core/CoreModule.js';
 import { ReactionService } from '@/core/ReactionService.js';
 import { GlobalModule } from '@/GlobalModule.js';
 
 describe('ReactionService', () => {
+	let app: TestingModule;
 	let reactionService: ReactionService;
 
 	beforeAll(async () => {
-		const app = await Test.createTestingModule({
+		app = await Test.createTestingModule({
 			imports: [GlobalModule, CoreModule],
 		}).compile();
+		app.enableShutdownHooks();
 		reactionService = app.get<ReactionService>(ReactionService);
+	});
+
+	afterAll(async () => {
+		await app.close();
 	});
 
 	describe('normalize', () => {

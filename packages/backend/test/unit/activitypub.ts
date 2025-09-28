@@ -6,7 +6,7 @@ process.env.NODE_ENV = 'test';
 
 import * as assert from 'assert';
 import { generateKeyPair } from 'crypto';
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 import { jest } from '@jest/globals';
 
 import { NoOpCacheService } from '../misc/noOpCaches.js';
@@ -94,6 +94,7 @@ async function createRandomRemoteUser(
 }
 
 describe('ActivityPub', () => {
+	let app: TestingModule;
 	let userProfilesRepository: UserProfilesRepository;
 	let imageService: ApImageService;
 	let noteService: ApNoteService;
@@ -147,7 +148,7 @@ describe('ActivityPub', () => {
 	}
 
 	beforeAll(async () => {
-		const app = await Test.createTestingModule({
+		app = await Test.createTestingModule({
 			imports: [GlobalModule, CoreModule],
 		})
 			.overrideProvider(DownloadService).useValue({
@@ -185,6 +186,10 @@ describe('ActivityPub', () => {
 
 	beforeEach(() => {
 		resolver.clear();
+	});
+
+	afterAll(async () => {
+		await app.close();
 	});
 
 	describe('Parse minimum object', () => {

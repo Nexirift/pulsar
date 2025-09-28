@@ -5,20 +5,26 @@
 
 import * as assert from 'assert';
 import * as mfm from 'mfm-js';
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 
 import { CoreModule } from '@/core/CoreModule.js';
 import { MfmService } from '@/core/MfmService.js';
 import { GlobalModule } from '@/GlobalModule.js';
 
 describe('MfmService', () => {
+	let app: TestingModule;
 	let mfmService: MfmService;
 
 	beforeAll(async () => {
-		const app = await Test.createTestingModule({
+		app = await Test.createTestingModule({
 			imports: [GlobalModule, CoreModule],
 		}).compile();
+		app.enableShutdownHooks();
 		mfmService = app.get<MfmService>(MfmService);
+	});
+
+	afterAll(async () => {
+		await app.close();
 	});
 
 	describe('toHtml', () => {

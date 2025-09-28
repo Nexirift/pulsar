@@ -117,6 +117,7 @@ describe('UserSearchService', () => {
 			})
 			.compile();
 
+		app.enableShutdownHooks();
 		await app.init();
 
 		instancesRepository = app.get<InstancesRepository>(DI.instancesRepository);

@@ -108,6 +108,7 @@ describe('SigninWithPasskeyApiService', () => {
 				return new Mock();
 			}
 		}).compile();
+		app.enableShutdownHooks();
 		passkeyApiService = app.get<SigninWithPasskeyApiService>(SigninWithPasskeyApiService);
 		usersRepository = app.get<UsersRepository>(DI.usersRepository);
 		userProfilesRepository = app.get<UserProfilesRepository>(DI.userProfilesRepository);

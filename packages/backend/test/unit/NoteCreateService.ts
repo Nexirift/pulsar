@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 
 import { CoreModule } from '@/core/CoreModule.js';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
@@ -13,13 +13,19 @@ import { IPoll } from '@/models/Poll.js';
 import { MiDriveFile } from '@/models/DriveFile.js';
 
 describe('NoteCreateService', () => {
+	let app: TestingModule;
 	let noteCreateService: NoteCreateService;
 
 	beforeAll(async () => {
-		const app = await Test.createTestingModule({
+		app = await Test.createTestingModule({
 			imports: [GlobalModule, CoreModule],
 		}).compile();
+		app.enableShutdownHooks();
 		noteCreateService = app.get<NoteCreateService>(NoteCreateService);
+	});
+
+	afterAll(async () => {
+		await app.close();
 	});
 
 	describe('is-renote', () => {

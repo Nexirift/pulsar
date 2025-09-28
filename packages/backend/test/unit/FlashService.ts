@@ -71,6 +71,7 @@ describe('FlashService', () => {
 				IdService,
 			],
 		}).compile();
+		app.enableShutdownHooks();
 
 		service = app.get(FlashService);
 

@@ -52,6 +52,10 @@ describe('CustomEmojiService', () => {
 		await app.get<DataSource>(DI.db).query("set session time zone 'UTC'");
 	});
 
+	afterAll(async () => {
+		await app.close();
+	});
+
 	describe('fetchEmojis', () => {
 		async function insert(data: Partial<MiEmoji>[]) {
 			for (const d of data) {

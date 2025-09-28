@@ -4,7 +4,7 @@
  */
 
 import * as assert from 'assert';
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 
 import { CoreModule } from '@/core/CoreModule.js';
 import { ApMfmService } from '@/core/activitypub/ApMfmService.js';
@@ -12,13 +12,19 @@ import { GlobalModule } from '@/GlobalModule.js';
 import { MiNote } from '@/models/Note.js';
 
 describe('ApMfmService', () => {
+	let app: TestingModule;
 	let apMfmService: ApMfmService;
 
 	beforeAll(async () => {
-		const app = await Test.createTestingModule({
+		app = await Test.createTestingModule({
 			imports: [GlobalModule, CoreModule],
 		}).compile();
+		app.enableShutdownHooks();
 		apMfmService = app.get<ApMfmService>(ApMfmService);
+	});
+
+	afterAll(async () => {
+		await app.close();
 	});
 
 	describe('getNoteHtml', () => {

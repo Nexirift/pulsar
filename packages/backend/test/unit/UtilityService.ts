@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 import { jest } from '@jest/globals';
 
 import { CoreModule } from '@/core/CoreModule.js';
@@ -12,19 +12,26 @@ import type { SoftwareSuspension } from '@/models/Meta.js';
 import type { MiInstance } from '@/models/Instance.js';
 
 describe('UtilityService', () => {
+	let app: TestingModule;
 	let utilityService: UtilityService;
 	let meta: jest.Mocked<MiMeta>;
 
 	beforeAll(async () => {
-		const app = await Test.createTestingModule({
+		app = await Test.createTestingModule({
 			imports: [GlobalModule, CoreModule],
 			providers: [MetaService],
 		})
 			.overrideProvider(MetaService).useValue({ fetch: jest.fn() })
 			.compile();
 
+		app.enableShutdownHooks();
+
 		utilityService = app.get<UtilityService>(UtilityService);
 		meta = app.get<MiMeta>(DI.meta) as jest.Mocked<MiMeta>;
+	});
+
+	afterAll(async () => {
+		await app.close();
 	});
 
 	describe('punyHost', () => {
