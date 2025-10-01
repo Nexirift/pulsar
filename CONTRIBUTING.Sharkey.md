@@ -465,3 +465,6 @@ following apply:
   together. Using `MemorySingleCache` or `RedisSingleCache` could
   provide a cleaner implementation without resorting to hacks like a
   fixed key.
+
+- It's necessary to use `null` as a data value.
+  `QuantumKVCache` does not allow null values, and thus another option should be chosen.
