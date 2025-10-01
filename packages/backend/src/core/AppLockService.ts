@@ -4,7 +4,7 @@
  */
 
 import { promisify } from 'node:util';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import redisLock from 'redis-lock';
 import * as Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
@@ -16,13 +16,17 @@ import { bindThis } from '@/decorators.js';
 const retryDelay = 100;
 
 @Injectable()
-export class AppLockService {
+export class AppLockService implements OnModuleInit {
 	private lock: (key: string, timeout?: number, _?: (() => Promise<void>) | undefined) => Promise<() => void>;
 
 	constructor(
 		@Inject(DI.redis)
 		private redisClient: Redis.Redis,
 	) {
+	}
+
+	@bindThis
+	async onModuleInit() {
 		this.lock = promisify(redisLock(this.redisClient, retryDelay));
 	}
 
