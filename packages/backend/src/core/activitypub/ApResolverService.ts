@@ -30,7 +30,7 @@ import { ApRequestService } from './ApRequestService.js';
 import type { IObject, ApObject, IAnonymousObject } from './type.js';
 
 export class Resolver {
-	private history: Set<string>;
+	protected readonly history: Set<string>;
 	private user?: MiLocalUser;
 	private logger: Logger;
 
@@ -52,7 +52,7 @@ export class Resolver {
 		private readonly apLogService: ApLogService,
 		private readonly apUtilityService: ApUtilityService,
 		private readonly cacheService: CacheService,
-		private recursionLimit = 256,
+		protected readonly recursionLimit = 256,
 	) {
 		this.history = new Set();
 		this.logger = this.loggerService.getLogger('ap-resolve');

@@ -26,6 +26,8 @@ import { fromTuple } from '@/misc/from-tuple.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
 import { bindThis } from '@/decorators.js';
 import { Resolver } from '@/core/activitypub/ApResolverService.js';
+import { DI } from '@/di-symbols.js';
+import { IdentifiableError } from '@/misc/identifiable-error.js';
 
 type MockResponse = {
 	type: string;
@@ -66,6 +68,7 @@ export class MockResolver extends Resolver {
 	}
 
 	public clear(): void {
+		this.history.clear();
 		this.#responseMap.clear();
 		this.#remoteGetTrials.length = 0;
 	}
@@ -80,6 +83,15 @@ export class MockResolver extends Resolver {
 	public async resolve(value: string | IObject | [string | IObject]): Promise<IObject> {
 		value = fromTuple(value);
 		if (typeof value !== 'string') return value;
+
+		// Check history - copied from Resolver._resolve
+		if (this.history.has(value)) {
+			throw new IdentifiableError('0dc86cf6-7cd6-4e56-b1e6-5903d62d7ea5', `failed to resolve ${value}: recursive resolution blocked`);
+		}
+		if (this.history.size > this.recursionLimit) {
+			throw new IdentifiableError('d592da9f-822f-4d91-83d7-4ceefabcf3d2', `failed to resolve ${value}: hit recursion limit`);
+		}
+		this.history.add(value);
 
 		this.#remoteGetTrials.push(value);
 		const r = this.#responseMap.get(value);
