@@ -14,6 +14,7 @@ import { CacheService } from '@/core/CacheService.js';
 import { isNativeUserToken } from '@/misc/token.js';
 import { bindThis } from '@/decorators.js';
 import { attachCallerId } from '@/misc/attach-caller-id.js';
+import { CacheManagementService, type ManagedMemoryKVCache } from '@/core/CacheManagementService.js';
 
 export class AuthenticationError extends Error {
 	constructor(message: string) {
@@ -23,8 +24,8 @@ export class AuthenticationError extends Error {
 }
 
 @Injectable()
-export class AuthenticateService implements OnApplicationShutdown {
-	private appCache: MemoryKVCache<MiApp>;
+export class AuthenticateService {
+	private readonly appCache: ManagedMemoryKVCache<MiApp>;
 
 	constructor(
 		@Inject(DI.usersRepository)
@@ -37,8 +38,9 @@ export class AuthenticateService implements OnApplicationShutdown {
 		private appsRepository: AppsRepository,
 
 		private cacheService: CacheService,
+		cacheManagementService: CacheManagementService,
 	) {
-		this.appCache = new MemoryKVCache<MiApp>(1000 * 60 * 60 * 24 * 7); // 1w
+		this.appCache = cacheManagementService.createMemoryKVCache<MiApp>(1000 * 60 * 60 * 24); // 1d
 	}
 
 	@bindThis
@@ -96,15 +98,5 @@ export class AuthenticateService implements OnApplicationShutdown {
 				return [user, accessToken];
 			}
 		}
-	}
-
-	@bindThis
-	public dispose(): void {
-		this.appCache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }
