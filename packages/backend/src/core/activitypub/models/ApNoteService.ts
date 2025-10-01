@@ -203,7 +203,7 @@ export class ApNoteService implements OnModuleInit {
 		const uri = getOneApId(note.attributedTo);
 
 		// ローカルで投稿者を検索し、もし凍結されていたらスキップ
-		// eslint-disable-next-line no-param-reassign
+
 		actor ??= await this.apPersonService.fetchPerson(uri) as MiRemoteUser | undefined;
 		if (actor && actor.isSuspended) {
 			throw new IdentifiableError('85ab9bd7-3a41-4530-959d-f07073900109', `failed to create note ${entryUri}: actor ${uri} has been suspended`);
@@ -235,7 +235,6 @@ export class ApNoteService implements OnModuleInit {
 		}
 		//#endregion
 
-		// eslint-disable-next-line no-param-reassign
 		actor ??= await this.apPersonService.resolvePerson(uri, resolver) as MiRemoteUser;
 
 		// 解決した投稿者が凍結されていたらスキップ
