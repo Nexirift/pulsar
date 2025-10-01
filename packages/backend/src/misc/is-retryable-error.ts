@@ -7,9 +7,9 @@ import { AbortError, FetchError } from 'node-fetch';
 import { UnrecoverableError } from 'bullmq';
 import { StatusError } from '@/misc/status-error.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { CaptchaError, captchaErrorCodes } from '@/core/CaptchaService.js';
+import { CaptchaError, captchaErrorCodes } from '@/misc/captcha-error.js';
 import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
-import { ConflictError } from '@/server/SkRateLimiterService.js';
+import { ConflictError } from '@/misc/errors/ConflictError.js';
 
 /**
  * Returns false if the provided value represents a "permanent" error that cannot be retried.

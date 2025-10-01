@@ -8,6 +8,7 @@ import Redis from 'ioredis';
 import type { TimeService } from '@/core/TimeService.js';
 import type { EnvService } from '@/core/EnvService.js';
 import { BucketRateLimit, LegacyRateLimit, LimitInfo, RateLimit, hasMinLimit, isLegacyRateLimit, Keyed, hasMaxLimit, disabledLimitInfo, MaxLegacyLimit, MinLegacyLimit } from '@/misc/rate-limit-utils.js';
+import { ConflictError } from '@/misc/errors/ConflictError.js';
 import { DI } from '@/di-symbols.js';
 import { MemoryKVCache } from '@/misc/cache.js';
 import type { MiUser } from '@/models/_.js';
@@ -388,8 +389,6 @@ type RedisCommand = [command: string, ...args: unknown[]];
 function createLimitKey(limit: ParsedLimit, actor: string, value: string): string {
 	return `rl_${actor}_${limit.key}_${value}`;
 }
-
-export class ConflictError extends Error {}
 
 interface LimitCounter {
 	timestamp: number;
