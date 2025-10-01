@@ -94,6 +94,7 @@ export class UserFollowingService implements OnModuleInit {
 		this.logger = loggerService.getLogger('following/create');
 	}
 
+	@bindThis
 	onModuleInit() {
 		this.userBlockingService = this.moduleRef.get('UserBlockingService');
 	}

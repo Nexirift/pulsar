@@ -120,6 +120,7 @@ export class ApPersonService implements OnModuleInit, OnApplicationShutdown {
 	) {
 	}
 
+	@bindThis
 	onModuleInit(): void {
 		this.utilityService = this.moduleRef.get('UtilityService');
 		this.userEntityService = this.moduleRef.get('UserEntityService');

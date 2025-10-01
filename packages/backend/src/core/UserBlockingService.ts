@@ -53,6 +53,7 @@ export class UserBlockingService implements OnModuleInit {
 		this.logger = this.loggerService.getLogger('user-block');
 	}
 
+	@bindThis
 	onModuleInit() {
 		this.userFollowingService = this.moduleRef.get('UserFollowingService');
 	}

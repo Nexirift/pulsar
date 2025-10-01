@@ -38,6 +38,7 @@ export class NoteReactionEntityService implements OnModuleInit {
 	) {
 	}
 
+	@bindThis
 	onModuleInit() {
 		this.userEntityService = this.moduleRef.get('UserEntityService');
 		this.noteEntityService = this.moduleRef.get('NoteEntityService');

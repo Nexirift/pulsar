@@ -48,6 +48,7 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 	) {
 	}
 
+	@bindThis
 	async onModuleInit() {
 		this.notificationService = this.moduleRef.get(NotificationService.name);
 	}
