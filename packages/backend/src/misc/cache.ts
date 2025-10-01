@@ -180,6 +180,11 @@ export class RedisSingleCache<T> {
 		await this.redisClient.del(`singlecache:${this.name}`);
 	}
 
+	@bindThis
+	public clear(): void {
+		this.memoryCache.delete();
+	}
+
 	/**
 	 * キャッシュがあればそれを返し、無ければfetcherを呼び出して結果をキャッシュ&返します
 	 * This awaits the call to Redis to ensure that the write succeeded, which is important for a few reasons:
@@ -208,6 +213,12 @@ export class RedisSingleCache<T> {
 
 		// TODO: イベント発行して他プロセスのメモリキャッシュも更新できるようにする
 	}
+
+	@bindThis
+	public dispose(): void {
+		this.clear();
+	}
+}
 }
 
 // TODO: メモリ節約のためあまり参照されないキーを定期的に削除できるようにする？
@@ -378,6 +389,11 @@ export class MemorySingleCache<T> {
 		this.cachedAt = null;
 	}
 
+	@bindThis
+	public clear() {
+		this.delete();
+	}
+
 	/**
 	 * キャッシュがあればそれを返し、無ければfetcherを呼び出して結果をキャッシュ&返します
 	 * optional: キャッシュが存在してもvalidatorでfalseを返すとキャッシュ無効扱いにします
@@ -428,5 +444,10 @@ export class MemorySingleCache<T> {
 			this.set(value);
 		}
 		return value;
+	}
+
+	@bindThis
+	public dispose() {
+		this.clear();
 	}
 }
