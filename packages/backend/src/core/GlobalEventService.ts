@@ -20,12 +20,12 @@ import type { MiPage } from '@/models/Page.js';
 import type { MiWebhook } from '@/models/Webhook.js';
 import type { MiSystemWebhook } from '@/models/SystemWebhook.js';
 import type { MiMeta } from '@/models/Meta.js';
-import { MiAvatarDecoration, MiChatMessage, MiChatRoom, MiReversiGame, MiRole, MiRoleAssignment } from '@/models/_.js';
+import type { MiAvatarDecoration, MiChatMessage, MiChatRoom, MiReversiGame, MiRole, MiRoleAssignment } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { bindThis } from '@/decorators.js';
-import { Serialized } from '@/types.js';
+import type { Serialized } from '@/types.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 import type Emitter from 'strict-event-emitter-types';
@@ -262,11 +262,15 @@ export interface InternalEventTypes {
 	metaUpdated: { before?: MiMeta; after: MiMeta; };
 	followChannel: { userId: MiUser['id']; channelId: MiChannel['id']; };
 	unfollowChannel: { userId: MiUser['id']; channelId: MiChannel['id']; };
-	updateUserProfile: MiUserProfile;
+	updateUserProfile: { userId: MiUserProfile['userId'] };
 	mute: { muterId: MiUser['id']; muteeId: MiUser['id']; };
 	unmute: { muterId: MiUser['id']; muteeId: MiUser['id']; };
 	userListMemberAdded: { userListId: MiUserList['id']; memberId: MiUser['id']; };
+	userListMemberUpdated: { userListId: MiUserList['id']; memberId: MiUser['id']; };
 	userListMemberRemoved: { userListId: MiUserList['id']; memberId: MiUser['id']; };
+	userListMemberBulkAdded: { userListIds: MiUserList['id'][]; memberId: MiUser['id']; };
+	userListMemberBulkUpdated: { userListIds: MiUserList['id'][]; memberId: MiUser['id']; };
+	userListMemberBulkRemoved: { userListIds: MiUserList['id'][]; memberId: MiUser['id']; };
 	quantumCacheUpdated: { name: string, keys: string[] };
 }
 
@@ -405,8 +409,8 @@ export class GlobalEventService {
 	}
 
 	@bindThis
-	public publishUserListStream<K extends keyof UserListEventTypes>(listId: MiUserList['id'], type: K, value?: UserListEventTypes[K]): void {
-		this.publish(`userListStream:${listId}`, type, typeof value === 'undefined' ? null : value);
+	public async publishUserListStream<K extends keyof UserListEventTypes>(listId: MiUserList['id'], type: K, value?: UserListEventTypes[K]): Promise<void> {
+		await this.publish(`userListStream:${listId}`, type, typeof value === 'undefined' ? null : value);
 	}
 
 	@bindThis

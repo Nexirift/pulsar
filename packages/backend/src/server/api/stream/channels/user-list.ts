@@ -19,8 +19,6 @@ class UserListChannel extends Channel {
 	public static requireCredential = true as const;
 	public static kind = 'read:account';
 	private listId: string;
-	private membershipsMap: Record<string, Pick<MiUserListMembership, 'withReplies'> | undefined> = {};
-	private listUsersClock: NodeJS.Timeout;
 	private withFiles: boolean;
 	private withRenotes: boolean;
 
@@ -57,27 +55,6 @@ class UserListChannel extends Channel {
 		this.subscriber?.on(`userListStream:${this.listId}`, this.send);
 
 		this.subscriber?.on('notesStream', this.onNote);
-
-		this.updateListUsers();
-		this.listUsersClock = setInterval(this.updateListUsers, 5000);
-	}
-
-	@bindThis
-	private async updateListUsers() {
-		const memberships = await this.userListMembershipsRepository.find({
-			where: {
-				userListId: this.listId,
-			},
-			select: ['userId'],
-		});
-
-		const membershipsMap: Record<string, Pick<MiUserListMembership, 'withReplies'> | undefined> = {};
-		for (const membership of memberships) {
-			membershipsMap[membership.userId] = {
-				withReplies: membership.withReplies,
-			};
-		}
-		this.membershipsMap = membershipsMap;
 	}
 
 	@bindThis
@@ -87,9 +64,10 @@ class UserListChannel extends Channel {
 
 		if (this.withFiles && (note.fileIds == null || note.fileIds.length === 0)) return;
 
-		if (!Object.hasOwn(this.membershipsMap, note.userId)) return;
+		const memberships = await this.cacheService.listUserMembershipsCache.fetch(this.listId);
+		if (!memberships.has(note.userId)) return;
 
-		const { accessible, silence } = await this.checkNoteVisibility(note, { includeReplies: true });
+		const { accessible, silence } = await this.checkNoteVisibility(note, { includeReplies: true, listContext: this.listId });
 		if (!accessible || silence) return;
 		if (!this.withRenotes && isPackedPureRenote(note)) return;
 
@@ -102,8 +80,6 @@ class UserListChannel extends Channel {
 		// Unsubscribe events
 		this.subscriber?.off(`userListStream:${this.listId}`, this.send);
 		this.subscriber?.off('notesStream', this.onNote);
-
-		clearInterval(this.listUsersClock);
 	}
 }
 

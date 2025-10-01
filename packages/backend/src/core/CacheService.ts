@@ -6,18 +6,20 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
 import { In, IsNull, Not } from 'typeorm';
-import type { BlockingsRepository, FollowingsRepository, MutingsRepository, RenoteMutingsRepository, MiUserProfile, UserProfilesRepository, UsersRepository, MiNote, MiFollowing, NoteThreadMutingsRepository, ChannelFollowingsRepository, MiInstance, InstancesRepository } from '@/models/_.js';
-import { MemoryKVCache, RedisKVCache } from '@/misc/cache.js';
-import { QuantumKVCache } from '@/misc/QuantumKVCache.js';
+import type { BlockingsRepository, FollowingsRepository, MutingsRepository, RenoteMutingsRepository, MiUserProfile, UserProfilesRepository, UsersRepository, MiFollowing, NoteThreadMutingsRepository, ChannelFollowingsRepository, UserListMembershipsRepository } from '@/models/_.js';
 import type { MiLocalUser, MiRemoteUser, MiUser } from '@/models/User.js';
+import type { MiUserListMembership } from '@/models/UserListMembership.js';
+import { isLocalUser, isRemoteUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import type { InternalEventTypes } from '@/core/GlobalEventService.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import { IdService } from '@/core/IdService.js';
-import { diffArraysSimple } from '@/misc/diff-arrays.js';
+import {
+	CacheManagementService,
+	type ManagedMemoryKVCache,
+	type ManagedQuantumKVCache,
+} from '@/core/CacheManagementService.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 
 export interface FollowStats {
@@ -27,37 +29,26 @@ export interface FollowStats {
 	remoteFollowers: number;
 }
 
-export interface CachedTranslation {
-	sourceLang: string | undefined;
-	text: string | undefined;
-}
-
-export interface CachedTranslationEntity {
-	l?: string;
-	t?: string;
-	u?: number;
-}
-
 @Injectable()
 export class CacheService implements OnApplicationShutdown {
-	public userByIdCache: MemoryKVCache<MiUser>;
-	public localUserByNativeTokenCache: MemoryKVCache<MiLocalUser | null>;
-	public localUserByIdCache: MemoryKVCache<MiLocalUser>;
-	public uriPersonCache: MemoryKVCache<MiUser | null>;
-	public userProfileCache: QuantumKVCache<MiUserProfile>;
-	public userMutingsCache: QuantumKVCache<Set<string>>;
-	public userBlockingCache: QuantumKVCache<Set<string>>;
-	public userBlockedCache: QuantumKVCache<Set<string>>; // NOTE: 「被」Blockキャッシュ
-	public renoteMutingsCache: QuantumKVCache<Set<string>>;
-	public threadMutingsCache: QuantumKVCache<Set<string>>;
-	public noteMutingsCache: QuantumKVCache<Set<string>>;
-	public userFollowingsCache: QuantumKVCache<Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>;
-	public userFollowersCache: QuantumKVCache<Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>;
-	public hibernatedUserCache: QuantumKVCache<boolean>;
-	protected userFollowStatsCache = new MemoryKVCache<FollowStats>(1000 * 60 * 10); // 10 minutes
-	protected translationsCache: RedisKVCache<CachedTranslationEntity>;
-	public userFollowingChannelsCache: QuantumKVCache<Set<string>>;
-	public federatedInstanceCache: QuantumKVCache<MiInstance>;
+	public readonly userByIdCache: ManagedMemoryKVCache<MiUser>;
+	public readonly localUserByNativeTokenCache: ManagedMemoryKVCache<MiLocalUser | null>;
+	public readonly localUserByIdCache: ManagedMemoryKVCache<MiLocalUser>;
+	public readonly uriPersonCache: ManagedMemoryKVCache<MiUser | null>;
+	public readonly userProfileCache: ManagedQuantumKVCache<MiUserProfile>;
+	public readonly userMutingsCache: ManagedQuantumKVCache<Set<string>>;
+	public readonly userBlockingCache: ManagedQuantumKVCache<Set<string>>;
+	public readonly userBlockedCache: ManagedQuantumKVCache<Set<string>>; // NOTE: 「被」Blockキャッシュ
+	public readonly userListMembershipsCache: ManagedQuantumKVCache<Map<string, MiUserListMembership>>;
+	public readonly listUserMembershipsCache: ManagedQuantumKVCache<Map<string, MiUserListMembership>>;
+	public readonly renoteMutingsCache: ManagedQuantumKVCache<Set<string>>;
+	public readonly threadMutingsCache: ManagedQuantumKVCache<Set<string>>;
+	public readonly noteMutingsCache: ManagedQuantumKVCache<Set<string>>;
+	public readonly userFollowingsCache: ManagedQuantumKVCache<Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>;
+	public readonly userFollowersCache: ManagedQuantumKVCache<Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>;
+	public readonly hibernatedUserCache: ManagedQuantumKVCache<boolean>;
+	public readonly userFollowStatsCache: ManagedMemoryKVCache<FollowStats>;
+	public readonly userFollowingChannelsCache: ManagedQuantumKVCache<Set<string>>;
 
 	constructor(
 		@Inject(DI.redis)
@@ -90,27 +81,26 @@ export class CacheService implements OnApplicationShutdown {
 		@Inject(DI.channelFollowingsRepository)
 		private readonly channelFollowingsRepository: ChannelFollowingsRepository,
 
-		@Inject(DI.instancesRepository)
-		private readonly instancesRepository: InstancesRepository,
+		@Inject(DI.userListMembershipsRepository)
+		private readonly userListMembershipsRepository: UserListMembershipsRepository,
 
 		private readonly internalEventService: InternalEventService,
-		private readonly utilityService: UtilityService,
-		private readonly idService: IdService,
+		private readonly cacheManagementService: CacheManagementService,
 	) {
 		//this.onMessage = this.onMessage.bind(this);
 
-		this.userByIdCache = new MemoryKVCache<MiUser>(1000 * 60 * 5); // 5m
-		this.localUserByNativeTokenCache = new MemoryKVCache<MiLocalUser | null>(1000 * 60 * 5); // 5m
-		this.localUserByIdCache = new MemoryKVCache<MiLocalUser>(1000 * 60 * 5); // 5m
-		this.uriPersonCache = new MemoryKVCache<MiUser | null>(1000 * 60 * 5); // 5m
+		this.userByIdCache = this.cacheManagementService.createMemoryKVCache<MiUser>(1000 * 60 * 5); // 5m
+		this.localUserByNativeTokenCache = this.cacheManagementService.createMemoryKVCache<MiLocalUser | null>(1000 * 60 * 5); // 5m
+		this.localUserByIdCache = this.cacheManagementService.createMemoryKVCache<MiLocalUser>(1000 * 60 * 5); // 5m
+		this.uriPersonCache = this.cacheManagementService.createMemoryKVCache<MiUser | null>(1000 * 60 * 5); // 5m
 
-		this.userProfileCache = new QuantumKVCache(this.internalEventService, 'userProfile', {
+		this.userProfileCache = this.cacheManagementService.createQuantumKVCache('userProfile', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: (key) => this.userProfilesRepository.findOneByOrFail({ userId: key }),
+			fetcher: (key) => this.userProfilesRepository.findOneBy({ userId: key }),
 			bulkFetcher: userIds => this.userProfilesRepository.findBy({ userId: In(userIds) }).then(ps => ps.map(p => [p.userId, p])),
 		});
 
-		this.userMutingsCache = new QuantumKVCache<Set<string>>(this.internalEventService, 'userMutings', {
+		this.userMutingsCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('userMutings', {
 			lifetime: 1000 * 60 * 30, // 30m
 			fetcher: (key) => this.mutingsRepository.find({ where: { muterId: key }, select: ['muteeId'] }).then(xs => new Set(xs.map(x => x.muteeId))),
 			bulkFetcher: muterIds => this.mutingsRepository
@@ -123,7 +113,7 @@ export class CacheService implements OnApplicationShutdown {
 				.then(ms => ms.map(m => [m.muterId, new Set(m.muteeIds)])),
 		});
 
-		this.userBlockingCache = new QuantumKVCache<Set<string>>(this.internalEventService, 'userBlocking', {
+		this.userBlockingCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('userBlocking', {
 			lifetime: 1000 * 60 * 30, // 30m
 			fetcher: (key) => this.blockingsRepository.find({ where: { blockerId: key }, select: ['blockeeId'] }).then(xs => new Set(xs.map(x => x.blockeeId))),
 			bulkFetcher: blockerIds => this.blockingsRepository
@@ -136,7 +126,7 @@ export class CacheService implements OnApplicationShutdown {
 				.then(ms => ms.map(m => [m.blockerId, new Set(m.blockeeIds)])),
 		});
 
-		this.userBlockedCache = new QuantumKVCache<Set<string>>(this.internalEventService, 'userBlocked', {
+		this.userBlockedCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('userBlocked', {
 			lifetime: 1000 * 60 * 30, // 30m
 			fetcher: (key) => this.blockingsRepository.find({ where: { blockeeId: key }, select: ['blockerId'] }).then(xs => new Set(xs.map(x => x.blockerId))),
 			bulkFetcher: blockeeIds => this.blockingsRepository
@@ -149,7 +139,41 @@ export class CacheService implements OnApplicationShutdown {
 				.then(ms => ms.map(m => [m.blockeeId, new Set(m.blockerIds)])),
 		});
 
-		this.renoteMutingsCache = new QuantumKVCache<Set<string>>(this.internalEventService, 'renoteMutings', {
+		this.userListMembershipsCache = this.cacheManagementService.createQuantumKVCache<Map<string, MiUserListMembership>>('userListMemberships', {
+			lifetime: 1000 * 60 * 30, // 30m
+			fetcher: async userId => await this.userListMembershipsRepository.findBy({ userId }).then(ms => new Map(ms.map(m => [m.id, m]))),
+			bulkFetcher: async userIds => await this.userListMembershipsRepository
+				.findBy({ userId: In(userIds) })
+				.then(ms => ms
+					.reduce((groups, m) => {
+						let listsForUser = groups.get(m.userId);
+						if (!listsForUser) {
+							listsForUser = new Map();
+							groups.set(m.userId, listsForUser);
+						}
+						listsForUser.set(m.userListId, m);
+						return groups;
+					}, new Map<string, Map<string, MiUserListMembership>>)),
+		});
+
+		this.listUserMembershipsCache = this.cacheManagementService.createQuantumKVCache<Map<string, MiUserListMembership>>('listUserMemberships', {
+			lifetime: 1000 * 60 * 30, // 30m
+			fetcher: async userListId => await this.userListMembershipsRepository.findBy({ userListId }).then(ms => new Map(ms.map(m => [m.id, m]))),
+			bulkFetcher: async userListIds => await this.userListMembershipsRepository
+				.findBy({ userListId: In(userListIds) })
+				.then(ms => ms
+					.reduce((groups, m) => {
+						let usersForList = groups.get(m.userListId);
+						if (!usersForList) {
+							usersForList = new Map();
+							groups.set(m.userListId, usersForList);
+						}
+						usersForList.set(m.userId, m);
+						return groups;
+					}, new Map<string, Map<string, MiUserListMembership>>)),
+		});
+
+		this.renoteMutingsCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('renoteMutings', {
 			lifetime: 1000 * 60 * 30, // 30m
 			fetcher: (key) => this.renoteMutingsRepository.find({ where: { muterId: key }, select: ['muteeId'] }).then(xs => new Set(xs.map(x => x.muteeId))),
 			bulkFetcher: muterIds => this.renoteMutingsRepository
@@ -162,7 +186,7 @@ export class CacheService implements OnApplicationShutdown {
 				.then(ms => ms.map(m => [m.muterId, new Set(m.muteeIds)])),
 		});
 
-		this.threadMutingsCache = new QuantumKVCache<Set<string>>(this.internalEventService, 'threadMutings', {
+		this.threadMutingsCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('threadMutings', {
 			lifetime: 1000 * 60 * 30, // 30m
 			fetcher: muterId => this.noteThreadMutingsRepository
 				.find({ where: { userId: muterId, isPostMute: false }, select: { threadId: true } })
@@ -177,7 +201,7 @@ export class CacheService implements OnApplicationShutdown {
 				.then(ms => ms.map(m => [m.userId, new Set(m.threadIds)])),
 		});
 
-		this.noteMutingsCache = new QuantumKVCache<Set<string>>(this.internalEventService, 'noteMutings', {
+		this.noteMutingsCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('noteMutings', {
 			lifetime: 1000 * 60 * 30, // 30m
 			fetcher: muterId => this.noteThreadMutingsRepository
 				.find({ where: { userId: muterId, isPostMute: true }, select: { threadId: true } })
@@ -192,7 +216,7 @@ export class CacheService implements OnApplicationShutdown {
 				.then(ms => ms.map(m => [m.userId, new Set(m.threadIds)])),
 		});
 
-		this.userFollowingsCache = new QuantumKVCache<Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>(this.internalEventService, 'userFollowings', {
+		this.userFollowingsCache = this.cacheManagementService.createQuantumKVCache<Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>('userFollowings', {
 			lifetime: 1000 * 60 * 30, // 30m
 			fetcher: (key) => this.followingsRepository.findBy({ followerId: key }).then(xs => new Map(xs.map(f => [f.followeeId, f]))),
 			bulkFetcher: followerIds => this.followingsRepository
@@ -209,7 +233,7 @@ export class CacheService implements OnApplicationShutdown {
 					}, new Map<string, Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>)),
 		});
 
-		this.userFollowersCache = new QuantumKVCache<Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>(this.internalEventService, 'userFollowers', {
+		this.userFollowersCache = this.cacheManagementService.createQuantumKVCache<Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>('userFollowers', {
 			lifetime: 1000 * 60 * 30, // 30m
 			fetcher: followeeId => this.followingsRepository.findBy({ followeeId: followeeId }).then(xs => new Map(xs.map(x => [x.followerId, x]))),
 			bulkFetcher: followeeIds => this.followingsRepository
@@ -226,14 +250,14 @@ export class CacheService implements OnApplicationShutdown {
 					}, new Map<string, Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>)),
 		});
 
-		this.hibernatedUserCache = new QuantumKVCache<boolean>(this.internalEventService, 'hibernatedUsers', {
+		this.hibernatedUserCache = this.cacheManagementService.createQuantumKVCache<boolean>('hibernatedUsers', {
 			lifetime: 1000 * 60 * 30, // 30m
 			fetcher: async userId => {
-				const { isHibernated } = await this.usersRepository.findOneOrFail({
+				const result = await this.usersRepository.findOne({
 					where: { id: userId },
 					select: { isHibernated: true },
 				});
-				return isHibernated;
+				return result?.isHibernated;
 			},
 			bulkFetcher: async userIds => {
 				const results = await this.usersRepository.find({
@@ -278,50 +302,15 @@ export class CacheService implements OnApplicationShutdown {
 			},
 		});
 
-		this.translationsCache = new RedisKVCache<CachedTranslationEntity>(this.redisClient, 'translations', {
-			lifetime: 1000 * 60 * 60 * 24 * 7, // 1 week,
-			memoryCacheLifetime: 1000 * 60, // 1 minute
-		});
+		this.userFollowStatsCache = this.cacheManagementService.createMemoryKVCache<FollowStats>(1000 * 60 * 10); // 10 minutes
 
-		this.userFollowingChannelsCache = new QuantumKVCache<Set<string>>(this.internalEventService, 'userFollowingChannels', {
+		this.userFollowingChannelsCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('userFollowingChannels', {
 			lifetime: 1000 * 60 * 30, // 30m
 			fetcher: (key) => this.channelFollowingsRepository.find({
 				where: { followerId: key },
 				select: ['followeeId'],
 			}).then(xs => new Set(xs.map(x => x.followeeId))),
 			// TODO bulk fetcher
-		});
-
-		this.federatedInstanceCache = new QuantumKVCache(this.internalEventService, 'federatedInstance', {
-			lifetime: 1000 * 60 * 3, // 3 minutes
-			fetcher: async key => {
-				const host = this.utilityService.toPuny(key);
-				let instance = await this.instancesRepository.findOneBy({ host });
-				if (instance == null) {
-					await this.instancesRepository.createQueryBuilder('instance')
-						.insert()
-						.values({
-							id: this.idService.gen(),
-							host,
-							firstRetrievedAt: new Date(),
-							isBlocked: this.utilityService.isBlockedHost(host),
-							isSilenced: this.utilityService.isSilencedHost(host),
-							isMediaSilenced: this.utilityService.isMediaSilencedHost(host),
-							isAllowListed: this.utilityService.isAllowListedHost(host),
-							isBubbled: this.utilityService.isBubbledHost(host),
-						})
-						.orIgnore()
-						.execute();
-
-					instance = await this.instancesRepository.findOneByOrFail({ host });
-				}
-				return instance;
-			},
-			bulkFetcher: async keys => {
-				const hosts = keys.map(key => this.utilityService.toPuny(key));
-				const instances = await this.instancesRepository.findBy({ host: In(hosts) });
-				return instances.map(i => [i.host, i]);
-			},
 		});
 
 		this.internalEventService.on('userChangeSuspendedState', this.onUserEvent);
@@ -334,7 +323,13 @@ export class CacheService implements OnApplicationShutdown {
 		// For these, only listen to local events because quantum cache handles the sync.
 		this.internalEventService.on('followChannel', this.onChannelEvent, { ignoreRemote: true });
 		this.internalEventService.on('unfollowChannel', this.onChannelEvent, { ignoreRemote: true });
-		this.internalEventService.on('metaUpdated', this.onMetaEvent, { ignoreRemote: true });
+		this.internalEventService.on('updateUserProfile', this.onProfileEvent, { ignoreRemote: true });
+		this.internalEventService.on('userListMemberAdded', this.onListMemberEvent, { ignoreRemote: true });
+		this.internalEventService.on('userListMemberUpdated', this.onListMemberEvent, { ignoreRemote: true });
+		this.internalEventService.on('userListMemberRemoved', this.onListMemberEvent, { ignoreRemote: true });
+		this.internalEventService.on('userListMemberBulkAdded', this.onListMemberEvent, { ignoreRemote: true });
+		this.internalEventService.on('userListMemberBulkUpdated', this.onListMemberEvent, { ignoreRemote: true });
+		this.internalEventService.on('userListMemberBulkRemoved', this.onListMemberEvent, { ignoreRemote: true });
 	}
 
 	@bindThis
@@ -351,6 +346,14 @@ export class CacheService implements OnApplicationShutdown {
 								this.uriPersonCache.delete(k);
 							}
 						}
+
+						// Contains IDs of all lists where this user is a member.
+						const userListMemberships = this.listUserMembershipsCache
+							.entries()
+							.filter(e => e[1].has(body.id))
+							.map(e => e[0])
+							.toArray();
+
 						if (isLocal) {
 							await Promise.all([
 								this.userProfileCache.delete(body.id),
@@ -363,6 +366,8 @@ export class CacheService implements OnApplicationShutdown {
 								this.hibernatedUserCache.delete(body.id),
 								this.threadMutingsCache.delete(body.id),
 								this.noteMutingsCache.delete(body.id),
+								this.userListMembershipsCache.delete(body.id),
+								this.listUserMembershipsCache.deleteMany(userListMemberships),
 							]);
 						}
 					} else {
@@ -436,21 +441,17 @@ export class CacheService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async onMetaEvent<E extends 'metaUpdated'>(body: InternalEventTypes[E]): Promise<void> {
-		const { before, after } = body;
-		const changed = (
-			diffArraysSimple(before?.blockedHosts, after.blockedHosts) ||
-			diffArraysSimple(before?.silencedHosts, after.silencedHosts) ||
-			diffArraysSimple(before?.mediaSilencedHosts, after.mediaSilencedHosts) ||
-			diffArraysSimple(before?.federationHosts, after.federationHosts) ||
-			diffArraysSimple(before?.bubbleInstances, after.bubbleInstances)
-		);
+	private async onProfileEvent<E extends 'updateUserProfile'>(body: InternalEventTypes[E]): Promise<void> {
+		await this.userProfileCache.delete(body.userId);
+	}
 
-		if (changed) {
-			// We have to clear the whole thing, otherwise subdomains won't be synced.
-			// This gets fired in *each* process so don't do anything to trigger cache notifications!
-			this.federatedInstanceCache.clear();
-		}
+	@bindThis
+	private async onListMemberEvent<E extends 'userListMemberAdded' | 'userListMemberUpdated' | 'userListMemberRemoved' | 'userListMemberBulkAdded' | 'userListMemberBulkUpdated' | 'userListMemberBulkRemoved'>(body: InternalEventTypes[E]): Promise<void> {
+		const userListIds = 'userListIds' in body ? body.userListIds : [body.userListId];
+		await Promise.all([
+			this.userListMembershipsCache.delete(body.memberId),
+			this.listUserMembershipsCache.deleteMany(userListIds),
+		]);
 	}
 
 	@bindThis
@@ -524,34 +525,6 @@ export class CacheService implements OnApplicationShutdown {
 			}
 
 			return stats;
-		});
-	}
-
-	@bindThis
-	public async getCachedTranslation(note: MiNote, targetLang: string): Promise<CachedTranslation | null> {
-		const cacheKey = `${note.id}@${targetLang}`;
-
-		// Use cached translation, if present and up-to-date
-		const cached = await this.translationsCache.get(cacheKey);
-		if (cached && cached.u === note.updatedAt?.valueOf()) {
-			return {
-				sourceLang: cached.l,
-				text: cached.t,
-			};
-		}
-
-		// No cache entry :(
-		return null;
-	}
-
-	@bindThis
-	public async setCachedTranslation(note: MiNote, targetLang: string, translation: CachedTranslation): Promise<void> {
-		const cacheKey = `${note.id}@${targetLang}`;
-
-		await this.translationsCache.set(cacheKey, {
-			l: translation.sourceLang,
-			t: translation.text,
-			u: note.updatedAt?.valueOf(),
 		});
 	}
 
@@ -640,20 +613,7 @@ export class CacheService implements OnApplicationShutdown {
 
 	@bindThis
 	public clear(): void {
-		this.userByIdCache.clear();
-		this.localUserByNativeTokenCache.clear();
-		this.localUserByIdCache.clear();
-		this.uriPersonCache.clear();
-		this.userProfileCache.clear();
-		this.userMutingsCache.clear();
-		this.userBlockingCache.clear();
-		this.userBlockedCache.clear();
-		this.renoteMutingsCache.clear();
-		this.userFollowingsCache.clear();
-		this.userFollowStatsCache.clear();
-		this.translationsCache.clear();
-		this.userFollowingChannelsCache.clear();
-		this.federatedInstanceCache.clear();
+		this.cacheManagementService.clear();
 	}
 
 	@bindThis
@@ -667,30 +627,17 @@ export class CacheService implements OnApplicationShutdown {
 		this.internalEventService.off('unfollow', this.onFollowEvent);
 		this.internalEventService.off('followChannel', this.onChannelEvent);
 		this.internalEventService.off('unfollowChannel', this.onChannelEvent);
-		this.internalEventService.off('metaUpdated', this.onMetaEvent);
-
-		this.userByIdCache.dispose();
-		this.localUserByNativeTokenCache.dispose();
-		this.localUserByIdCache.dispose();
-		this.uriPersonCache.dispose();
-		this.userProfileCache.dispose();
-		this.userMutingsCache.dispose();
-		this.userBlockingCache.dispose();
-		this.userBlockedCache.dispose();
-		this.renoteMutingsCache.dispose();
-		this.threadMutingsCache.dispose();
-		this.noteMutingsCache.dispose();
-		this.userFollowingsCache.dispose();
-		this.userFollowersCache.dispose();
-		this.hibernatedUserCache.dispose();
-		this.userFollowStatsCache.dispose();
-		this.translationsCache.dispose();
-		this.userFollowingChannelsCache.dispose();
-		this.federatedInstanceCache.dispose();
+		this.internalEventService.off('updateUserProfile', this.onProfileEvent);
+		this.internalEventService.off('userListMemberAdded', this.onListMemberEvent);
+		this.internalEventService.off('userListMemberUpdated', this.onListMemberEvent);
+		this.internalEventService.off('userListMemberRemoved', this.onListMemberEvent);
+		this.internalEventService.off('userListMemberBulkAdded', this.onListMemberEvent);
+		this.internalEventService.off('userListMemberBulkUpdated', this.onListMemberEvent);
+		this.internalEventService.off('userListMemberBulkRemoved', this.onListMemberEvent);
 	}
 
 	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
+	public onApplicationShutdown(): void {
 		this.dispose();
 	}
 }

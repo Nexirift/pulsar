@@ -26,8 +26,6 @@ import type { DeliverJobData } from '../types.js';
 @Injectable()
 export class DeliverProcessorService {
 	private logger: Logger;
-	private suspendedHostsCache: MemorySingleCache<MiInstance[]>;
-	private latest: string | null;
 
 	constructor(
 		@Inject(DI.meta)
@@ -46,7 +44,6 @@ export class DeliverProcessorService {
 		private queueLoggerService: QueueLoggerService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('deliver');
-		this.suspendedHostsCache = new MemorySingleCache<MiInstance[]>(1000 * 60 * 60); // 1h
 	}
 
 	@bindThis
@@ -57,25 +54,15 @@ export class DeliverProcessorService {
 			return 'skip (blocked)';
 		}
 
-		// isSuspendedなら中断
-		let suspendedHosts = this.suspendedHostsCache.get();
-		if (suspendedHosts == null) {
-			suspendedHosts = await this.instancesRepository.find({
-				where: {
-					suspensionState: Not('none'),
-				},
-			});
-			this.suspendedHostsCache.set(suspendedHosts);
-		}
-		if (suspendedHosts.map(x => x.host).includes(this.utilityService.toPuny(host))) {
+		const i = await this.federatedInstanceService.federatedInstanceCache.fetch(host);
+		if (i.suspensionState !== 'none') {
 			return 'skip (suspended)';
 		}
 
-		const i = await (this.meta.enableStatsForFederatedInstances
-			? this.federatedInstanceService.fetchOrRegister(host)
-			: this.federatedInstanceService.fetch(host));
+		// Make sure info is up-to-date.
+		await this.fetchInstanceMetadataService.fetchInstanceMetadata(i);
 
-		// suspend server by software
+		// suspend server by software.
 		if (i != null && this.utilityService.isDeliverSuspendedSoftware(i)) {
 			return 'skip (software suspended)';
 		}
@@ -95,10 +82,6 @@ export class DeliverProcessorService {
 						isNotResponding: false,
 						notRespondingSince: null,
 					});
-				}
-
-				if (this.meta.enableStatsForFederatedInstances) {
-					this.fetchInstanceMetadataService.fetchInstanceMetadata(i);
 				}
 
 				if (this.meta.enableChartsForFederatedInstances) {

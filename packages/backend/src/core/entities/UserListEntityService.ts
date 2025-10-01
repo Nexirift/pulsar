@@ -11,6 +11,7 @@ import type { } from '@/models/Blocking.js';
 import type { MiUserList } from '@/models/UserList.js';
 import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
+import { CacheService } from '@/core/CacheService.js';
 import { UserEntityService } from './UserEntityService.js';
 
 @Injectable()
@@ -24,6 +25,7 @@ export class UserListEntityService {
 
 		private userEntityService: UserEntityService,
 		private idService: IdService,
+		private readonly cacheService: CacheService,
 	) {
 	}
 
@@ -31,17 +33,18 @@ export class UserListEntityService {
 	public async pack(
 		src: MiUserList['id'] | MiUserList,
 	): Promise<Packed<'UserList'>> {
-		const userList = typeof src === 'object' ? src : await this.userListsRepository.findOneByOrFail({ id: src });
+		const srcId = typeof(src) === 'object' ? src.id : src;
 
-		const users = await this.userListMembershipsRepository.findBy({
-			userListId: userList.id,
-		});
+		const [userList, users] = await Promise.all([
+			typeof src === 'object' ? src : await this.userListsRepository.findOneByOrFail({ id: src }),
+			this.cacheService.listUserMembershipsCache.fetch(srcId),
+		]);
 
 		return {
 			id: userList.id,
 			createdAt: this.idService.parse(userList.id).date.toISOString(),
 			name: userList.name,
-			userIds: users.map(x => x.userId),
+			userIds: users.keys().toArray(),
 			isPublic: userList.isPublic,
 		};
 	}
