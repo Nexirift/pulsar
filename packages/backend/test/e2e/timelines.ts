@@ -36,6 +36,10 @@ describe('Timelines', () => {
 		redisForTimelines = new Redis(loadConfig().redisForTimelines);
 	});
 
+	afterAll(() => {
+		redisForTimelines.disconnect();
+	});
+
 	describe('Home TL', () => {
 		test.concurrent('自分の visibility: followers なノートが含まれる', async () => {
 			const [alice] = await Promise.all([signup()]);
