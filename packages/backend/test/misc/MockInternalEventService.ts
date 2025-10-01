@@ -3,11 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { Injectable } from '@nestjs/common';
 import type { Listener, ListenerProps } from '@/core/InternalEventService.js';
 import type Redis from 'ioredis';
 import type { GlobalEventService, InternalEventTypes } from '@/core/GlobalEventService.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
 import { bindThis } from '@/decorators.js';
+import type { Config } from '@/config.js';
+import { MockRedis } from './MockRedis.js';
 
 type FakeCall<K extends keyof InternalEventService> = [K, Parameters<InternalEventService[K]>];
 type FakeListener<K extends keyof InternalEventTypes> = [K, Listener<K>, ListenerProps];
@@ -17,7 +20,8 @@ type FakeListener<K extends keyof InternalEventTypes> = [K, Listener<K>, Listene
  * There is no redis connection, and metadata is tracked in the public _calls and _listeners arrays.
  * The on/off/emit methods are fully functional and can be called in tests to invoke any registered listeners.
  */
-export class FakeInternalEventService extends InternalEventService {
+@Injectable()
+export class MockInternalEventService extends InternalEventService {
 	/**
 	 * List of calls to public methods, in chronological order.
 	 */
@@ -45,11 +49,11 @@ export class FakeInternalEventService extends InternalEventService {
 		await this.emit(type, value, false);
 	}
 
-	constructor() {
-		super(
-			{ on: () => {} } as unknown as Redis.Redis,
-			{} as unknown as GlobalEventService,
-		);
+	constructor(
+		config?: Pick<Config, 'host'>,
+	) {
+		const redis = new MockRedis();
+		super(redis, redis, config ?? { host: 'example.com' });
 	}
 
 	@bindThis
