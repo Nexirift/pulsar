@@ -11,7 +11,6 @@ import { MemoryKVCache, RedisKVCache } from '@/misc/cache.js';
 import { QuantumKVCache } from '@/misc/QuantumKVCache.js';
 import type { MiLocalUser, MiRemoteUser, MiUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { bindThis } from '@/decorators.js';
 import type { InternalEventTypes } from '@/core/GlobalEventService.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
@@ -94,7 +93,6 @@ export class CacheService implements OnApplicationShutdown {
 		@Inject(DI.instancesRepository)
 		private readonly instancesRepository: InstancesRepository,
 
-		private userEntityService: UserEntityService,
 		private readonly internalEventService: InternalEventService,
 		private readonly utilityService: UtilityService,
 		private readonly idService: IdService,
@@ -374,7 +372,7 @@ export class CacheService implements OnApplicationShutdown {
 								this.uriPersonCache.set(k, user);
 							}
 						}
-						if (this.userEntityService.isLocalUser(user)) {
+						if (isLocalUser(user)) {
 							this.localUserByNativeTokenCache.set(user.token!, user);
 							this.localUserByIdCache.set(user.id, user);
 						}
