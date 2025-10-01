@@ -19,6 +19,7 @@ import type Logger from '@/logger.js';
 import * as Acct from '@/misc/acct.js';
 import { genIdenticon } from '@/misc/gen-identicon.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
+import { CustomEmojiService, encodeEmojiKey } from '@/core/CustomEmojiService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
@@ -71,6 +72,7 @@ export class ServerService implements OnApplicationShutdown {
 		private globalEventService: GlobalEventService,
 		private loggerService: LoggerService,
 		private oauth2ProviderService: OAuth2ProviderService,
+		private readonly customEmojiService: CustomEmojiService,
 	) {
 		this.logger = this.loggerService.getLogger('server', 'gray');
 	}
@@ -171,14 +173,15 @@ export class ServerService implements OnApplicationShutdown {
 				return;
 			}
 
-			const name = pathChunks.shift();
+			const name = pathChunks.shift() as string;
 			const host = pathChunks.pop();
 
-			const emoji = await this.emojisRepository.findOneBy({
+			const emojiKey = encodeEmojiKey({
 				// `@.` is the spec of ReactionService.decodeReaction
-				host: (host === undefined || host === '.') ? IsNull() : host,
+				host: (host === undefined || host === '.') ? null : host,
 				name: name,
 			});
+			const emoji = await this.customEmojiService.emojisByKeyCache.fetchMaybe(emojiKey);
 
 			reply.header('Content-Security-Policy', 'default-src \'none\'; style-src \'unsafe-inline\'');
 

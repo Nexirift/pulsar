@@ -820,7 +820,7 @@ export class ChatService {
 			reaction = normalizeEmojiString(reaction_);
 		} else {
 			const name = custom[1];
-			const emoji = (await this.customEmojiService.localEmojisCache.fetch()).get(name);
+			const emoji = await this.customEmojiService.emojisByKeyCache.fetchMaybe(name);
 
 			if (emoji == null) {
 				throw new Error('no such emoji');

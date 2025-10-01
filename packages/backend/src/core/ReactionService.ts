@@ -23,7 +23,7 @@ import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { bindThis } from '@/decorators.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { UserBlockingService } from '@/core/UserBlockingService.js';
-import { CustomEmojiService } from '@/core/CustomEmojiService.js';
+import { CustomEmojiService, encodeEmojiKey } from '@/core/CustomEmojiService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { FeaturedService } from '@/core/FeaturedService.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
@@ -144,12 +144,8 @@ export class ReactionService {
 				const reacterHost = this.utilityService.toPunyNullable(user.host);
 
 				const name = custom[1];
-				const emoji = reacterHost == null
-					? (await this.customEmojiService.localEmojisCache.fetch()).get(name)
-					: await this.emojisRepository.findOneBy({
-						host: reacterHost,
-						name,
-					});
+				const emojiKey = encodeEmojiKey({ name, host: reacterHost });
+				const emoji = await this.customEmojiService.emojisByKeyCache.fetchMaybe(emojiKey);
 
 				if (emoji) {
 					if (emoji.roleIdsThatCanBeUsedThisEmojiAsReaction.length === 0 || (await this.roleService.getUserRoles(user.id)).some(r => emoji.roleIdsThatCanBeUsedThisEmojiAsReaction.includes(r.id))) {
@@ -256,15 +252,9 @@ export class ReactionService {
 		// カスタム絵文字リアクションだったら絵文字情報も送る
 		const decodedReaction = this.decodeReaction(reaction);
 
-		const customEmoji = decodedReaction.name == null ? null : decodedReaction.host == null
-			? (await this.customEmojiService.localEmojisCache.fetch()).get(decodedReaction.name)
-			: await this.emojisRepository.findOne(
-				{
-					where: {
-						name: decodedReaction.name,
-						host: decodedReaction.host,
-					},
-				});
+		const customEmojiKey = decodedReaction.name == null ? null : encodeEmojiKey({ name: decodedReaction.name, host: decodedReaction.host ?? null });
+		const customEmoji = customEmojiKey == null ? null :
+			await this.customEmojiService.emojisByKeyCache.fetchMaybe(customEmojiKey);
 
 		this.globalEventService.publishNoteStream(note.id, 'reacted', {
 			reaction: decodedReaction.reaction,

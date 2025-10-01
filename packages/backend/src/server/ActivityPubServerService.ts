@@ -36,6 +36,7 @@ import { IActivity, IAnnounce, ICreate } from '@/core/activitypub/type.js';
 import { isPureRenote, isQuote, isRenote } from '@/misc/is-renote.js';
 import * as Acct from '@/misc/acct.js';
 import { CacheService } from '@/core/CacheService.js';
+import { CustomEmojiService, encodeEmojiKey } from '@/core/CustomEmojiService.js';
 import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginOptions, FastifyBodyParser } from 'fastify';
 import type { FindOptionsWhere } from 'typeorm';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
@@ -89,6 +90,7 @@ export class ActivityPubServerService {
 		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
 		private loggerService: LoggerService,
 		private readonly cacheService: CacheService,
+		private readonly customEmojiService: CustomEmojiService,
 	) {
 		//this.createServer = this.createServer.bind(this);
 		this.logger = this.loggerService.getLogger('apserv', 'pink');
@@ -1037,10 +1039,8 @@ export class ActivityPubServerService {
 			const { reject } = await this.checkAuthorizedFetch(request, reply);
 			if (reject) return;
 
-			const emoji = await this.emojisRepository.findOneBy({
-				host: IsNull(),
-				name: request.params.emoji,
-			});
+			const emojiKey = encodeEmojiKey({ name: request.params.emoji, host: null });
+			const emoji = await this.customEmojiService.emojisByKeyCache.fetchMaybe(emojiKey);
 
 			if (emoji == null || emoji.localOnly) {
 				reply.code(404);
@@ -1048,7 +1048,7 @@ export class ActivityPubServerService {
 			}
 
 			this.setResponseType(request, reply);
-			return (this.apRendererService.addContext(await this.apRendererService.renderEmoji(emoji)));
+			return (this.apRendererService.addContext(this.apRendererService.renderEmoji(emoji)));
 		});
 
 		// like

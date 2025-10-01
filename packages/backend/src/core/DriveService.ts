@@ -739,7 +739,7 @@ export class DriveService {
 	}
 
 	@bindThis
-	public async deleteFile(file: MiDriveFile, isExpired = false, deleter?: MiUser) {
+	public async deleteFile(file: MiDriveFile, isExpired = false, deleter?: { id: string }) {
 		if (file.storedInternal) {
 			this.deleteLocalFile(file.accessKey!);
 
@@ -766,7 +766,7 @@ export class DriveService {
 	}
 
 	@bindThis
-	public async deleteFileSync(file: MiDriveFile, isExpired = false, deleter?: MiUser) {
+	public async deleteFileSync(file: MiDriveFile, isExpired = false, deleter?: { id: string }) {
 		const promises = [];
 
 		if (file.storedInternal) {
@@ -797,7 +797,7 @@ export class DriveService {
 	}
 
 	@bindThis
-	private async deletePostProcess(file: MiDriveFile, isExpired = false, deleter?: MiUser) {
+	private async deletePostProcess(file: MiDriveFile, isExpired = false, deleter?: { id: string }) {
 		// リモートファイル期限切れ削除後は直リンクにする
 		if (isExpired && file.userHost !== null && file.uri != null) {
 			this.driveFilesRepository.update(file.id, {

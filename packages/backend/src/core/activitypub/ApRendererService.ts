@@ -359,7 +359,7 @@ export class ApRendererService {
 
 		if (reaction.startsWith(':')) {
 			const name = reaction.replaceAll(':', '');
-			const emoji = (await this.customEmojiService.localEmojisCache.fetch()).get(name);
+			const emoji = await this.customEmojiService.emojisByKeyCache.fetchMaybe(name);
 
 			if (emoji && !emoji.localOnly) object.tag = [this.renderEmoji(emoji)];
 		}
@@ -948,12 +948,10 @@ export class ApRendererService {
 	}
 
 	@bindThis
-	private async getEmojis(names: string[]): Promise<MiEmoji[]> {
+	private async getEmojis(names: string[]): Promise<readonly MiEmoji[]> {
 		if (names.length === 0) return [];
 
-		const allEmojis = await this.customEmojiService.localEmojisCache.fetch();
-		const emojis = names.map(name => allEmojis.get(name)).filter(x => x != null);
-
-		return emojis;
+		const emojis = await this.customEmojiService.emojisByKeyCache.fetchMany(names);
+		return emojis.values;
 	}
 }

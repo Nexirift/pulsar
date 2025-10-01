@@ -31,7 +31,9 @@ import { renderInlineError } from '@/misc/render-inline-error.js';
 import { extractMediaFromHtml } from '@/core/activitypub/misc/extract-media-from-html.js';
 import { extractMediaFromMfm } from '@/core/activitypub/misc/extract-media-from-mfm.js';
 import { getContentByType } from '@/core/activitypub/misc/get-content-by-type.js';
-import { getOneApId, getApId, validPost, isEmoji, getApType, isApObject, isDocument, IApDocument, isLink } from '../type.js';
+import { CustomEmojiService, encodeEmojiKey, isValidEmojiName } from '@/core/CustomEmojiService.js';
+import { fromTuple } from '@/misc/from-tuple.js';
+import { getOneApId, getApId, isEmoji, getApType, isApObject, isDocument, IApDocument, isLink, isQuestion, getNullableApId, isPost } from '../type.js';
 import { ApLoggerService } from '../ApLoggerService.js';
 import { ApMfmService } from '../ApMfmService.js';
 import { ApDbResolverService } from '../ApDbResolverService.js';
@@ -44,7 +46,7 @@ import { ApMentionService } from './ApMentionService.js';
 import { ApQuestionService } from './ApQuestionService.js';
 import { ApImageService } from './ApImageService.js';
 import type { Resolver } from '../ApResolverService.js';
-import type { IObject, IPost } from '../type.js';
+import type { IObject, IPost, IApEmoji } from '../type.js';
 
 @Injectable()
 export class ApNoteService {
@@ -89,6 +91,7 @@ export class ApNoteService {
 		private apDbResolverService: ApDbResolverService,
 		private apLoggerService: ApLoggerService,
 		private readonly apUtilityService: ApUtilityService,
+		private readonly customEmojiService: CustomEmojiService,
 	) {
 		this.logger = this.apLoggerService.logger;
 	}
@@ -563,26 +566,32 @@ export class ApNoteService {
 		// eslint-disable-next-line no-param-reassign
 		host = this.utilityService.toPuny(host);
 
-		const eomjiTags = toArray(tags).filter(isEmoji);
+		const eomjiTags: (IApEmoji & { name: string })[] = toArray(tags)
+			.filter(tag => isEmoji(tag))
+			.map(tag => ({
+				...tag,
+				name: tag.name.replaceAll(':', ''),
+			}))
+			.filter(tag => isValidEmojiName(tag.name));
 
-		const existingEmojis = await this.emojisRepository.findBy({
-			host,
-			name: In(eomjiTags.map(tag => tag.name.replaceAll(':', ''))),
-		});
+		const emojiKeys = eomjiTags.map(tag => encodeEmojiKey({ name: tag.name, host }));
+		const existingEmojis = await this.customEmojiService.emojisByKeyCache.fetchMany(emojiKeys);
 
 		return await Promise.all(eomjiTags.map(async tag => {
-			const name = tag.name.replaceAll(':', '');
+			const name = tag.name;
 			tag.icon = toSingle(tag.icon);
 
-			const exists = existingEmojis.find(x => x.name === name);
+			const exists = existingEmojis.values.find(x => x.name === name);
 
 			if (exists) {
 				if ((exists.updatedAt == null)
-					|| (tag.id != null && exists.uri == null)
-					|| (new Date(tag.updated) > exists.updatedAt)
+					|| (tag.id != null && exists.uri == null) // TODO should we check for ID changes?
+					|| (new Date(tag.updated) > exists.updatedAt) // TODO make sure tag.updated actually exists
 					|| (tag.icon.url !== exists.originalUrl)
+					// TODO check for license changes
+					// TODO check for sensitive changes
 				) {
-					await this.emojisRepository.update({
+					return await this.customEmojiService.updateEmoji({
 						host,
 						name,
 					}, {
@@ -593,18 +602,12 @@ export class ApNoteService {
 						// _misskey_license が存在しなければ `null`
 						license: (tag._misskey_license?.freeText ?? null),
 					});
-
-					const emoji = await this.emojisRepository.findOneBy({ host, name });
-					if (emoji == null) throw new Error(`emoji update failed: ${name}:${host}`);
-					return emoji;
 				}
 
 				return exists;
 			}
 
-			this.logger.info(`register emoji host=${host}, name=${name}`);
-
-			return await this.emojisRepository.insertOne({
+			return await this.customEmojiService.createEmoji({
 				id: this.idService.gen(),
 				host,
 				name,
@@ -613,8 +616,10 @@ export class ApNoteService {
 				publicUrl: tag.icon.url,
 				updatedAt: new Date(),
 				aliases: [],
+				localOnly: false,
+				isSensitive: tag.sensitive === true,
 				// _misskey_license が存在しなければ `null`
-				license: (tag._misskey_license?.freeText ?? null)
+				license: (tag._misskey_license?.freeText ?? null),
 			});
 		}));
 	}
