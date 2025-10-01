@@ -830,12 +830,7 @@ export class NoteEditService implements OnApplicationShutdown {
 			// eslint-disable-next-line prefer-const
 			let [followings, userListMemberships] = await Promise.all([
 				this.cacheService.getNonHibernatedFollowers(user.id),
-				this.userListMembershipsRepository.find({
-					where: {
-						userId: user.id,
-					},
-					select: ['userListId', 'userListUserId', 'withReplies'],
-				}),
+				this.cacheService.userListMembershipsCache.fetch(user.id).then(ms => ms.values().toArray()),
 			]);
 
 			if (note.visibility === 'followers') {
