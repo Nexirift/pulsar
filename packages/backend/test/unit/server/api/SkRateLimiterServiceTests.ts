@@ -3,30 +3,27 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { GodOfTimeService } from '../../../misc/GodOfTimeService.js';
 import type Redis from 'ioredis';
 import type { MiUser } from '@/models/User.js';
 import type { RolePolicies, RoleService } from '@/core/RoleService.js';
+import type { Config } from '@/config.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
 import { BucketRateLimit, Keyed, LegacyRateLimit } from '@/misc/rate-limit-utils.js';
-
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { CacheManagementService } from '@/core/CacheManagementService.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
 
 describe(SkRateLimiterService, () => {
-	let mockTimeService: { now: number, date: Date } = null!;
-	let mockRedis: Array<(command: [string, ...unknown[]]) => [Error | null, unknown] | null> = null!;
-	let mockRedisExec: (batch: [string, ...unknown[]][]) => Promise<[Error | null, unknown][] | null> = null!;
-	let mockEnvironment: Record<string, string | undefined> = null!;
-	let serviceUnderTest: () => SkRateLimiterService = null!;
-	let mockDefaultUserPolicies: Partial<RolePolicies> = null!;
-	let mockUserPolicies: Record<string, Partial<RolePolicies>> = null!;
+	let mockTimeService: GodOfTimeService;
+	let mockRedis: Array<(command: [string, ...unknown[]]) => [Error | null, unknown] | null>;
+	let mockRedisExec: (batch: [string, ...unknown[]][]) => Promise<[Error | null, unknown][] | null>;
+	let mockEnvironment: Record<string, string | undefined>;
+	let serviceUnderTest: () => SkRateLimiterService;
+	let mockDefaultUserPolicies: Partial<RolePolicies>;
+	let mockUserPolicies: Record<string, Partial<RolePolicies>>;
 
 	beforeEach(() => {
-		mockTimeService = {
-			now: 0,
-			get date() {
-				return new Date(mockTimeService.now);
-			},
-		};
+		mockTimeService = new GodOfTimeService();
 
 		function callMockRedis(command: [string, ...unknown[]]) {
 			const handlerResults = mockRedis.map(handler => handler(command));
@@ -62,9 +59,10 @@ describe(SkRateLimiterService, () => {
 					},
 				};
 			},
-			reset() {
-				return Promise.resolve();
-			},
+			reset: () => Promise.resolve(),
+			publish: () => Promise.resolve(),
+			on() {},
+			off() {},
 		} as unknown as Redis.Redis;
 
 		mockEnvironment = Object.create(process.env);
@@ -82,9 +80,13 @@ describe(SkRateLimiterService, () => {
 			},
 		} as unknown as RoleService;
 
+		const fakeConfig = { host: 'example.com' } as unknown as Config;
+		const internalEventService = new InternalEventService(mockRedisClient, mockRedisClient, fakeConfig);
+		const cacheManagementService = new CacheManagementService(mockRedisClient, mockTimeService, internalEventService);
+
 		let service: SkRateLimiterService | undefined = undefined;
 		serviceUnderTest = () => {
-			return service ??= new SkRateLimiterService(mockTimeService, mockRedisClient, mockRoleService, mockEnvService);
+			return service ??= new SkRateLimiterService(mockRedisClient, mockRoleService, mockTimeService, mockEnvService, cacheManagementService);
 		};
 	});
 
