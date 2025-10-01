@@ -13,10 +13,12 @@ import { bindThis } from '@/decorators.js';
 import { MemorySingleCache } from '@/misc/cache.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { CacheManagementService, type ManagedMemorySingleCache } from '@/core/CacheManagementService.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
 
 @Injectable()
 export class AvatarDecorationService implements OnApplicationShutdown {
-	public cache: MemorySingleCache<MiAvatarDecoration[]>;
+	public cache: ManagedMemorySingleCache<MiAvatarDecoration[]>;
 
 	constructor(
 		@Inject(DI.redisForSub)
@@ -28,29 +30,19 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 		private idService: IdService,
 		private moderationLogService: ModerationLogService,
 		private globalEventService: GlobalEventService,
+		private readonly internalEventService: InternalEventService,
+		cacheManagementService: CacheManagementService,
 	) {
-		this.cache = new MemorySingleCache<MiAvatarDecoration[]>(1000 * 60 * 30); // 30s
+		this.cache = cacheManagementService.createMemorySingleCache<MiAvatarDecoration[]>(1000 * 60 * 30); // 30s
 
-		this.redisForSub.on('message', this.onMessage);
+		this.internalEventService.on('avatarDecorationCreated', this.onAvatarEvent);
+		this.internalEventService.on('avatarDecorationUpdated', this.onAvatarEvent);
+		this.internalEventService.on('avatarDecorationDeleted', this.onAvatarEvent);
 	}
 
 	@bindThis
-	private async onMessage(_: string, data: string): Promise<void> {
-		const obj = JSON.parse(data);
-
-		if (obj.channel === 'internal') {
-			const { type, body } = obj.message as GlobalEvents['internal']['payload'];
-			switch (type) {
-				case 'avatarDecorationCreated':
-				case 'avatarDecorationUpdated':
-				case 'avatarDecorationDeleted': {
-					this.cache.delete();
-					break;
-				}
-				default:
-					break;
-			}
-		}
+	private onAvatarEvent(): void {
+		this.cache.delete();
 	}
 
 	@bindThis
@@ -60,7 +52,7 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 			...options,
 		});
 
-		this.globalEventService.publishInternalEvent('avatarDecorationCreated', created);
+		await this.internalEventService.emit('avatarDecorationCreated', created);
 
 		if (moderator) {
 			this.moderationLogService.log(moderator, 'createAvatarDecoration', {
@@ -83,7 +75,7 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 		});
 
 		const updated = await this.avatarDecorationsRepository.findOneByOrFail({ id: avatarDecoration.id });
-		this.globalEventService.publishInternalEvent('avatarDecorationUpdated', updated);
+		await this.internalEventService.emit('avatarDecorationUpdated', updated);
 
 		if (moderator) {
 			this.moderationLogService.log(moderator, 'updateAvatarDecoration', {
@@ -99,7 +91,7 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 		const avatarDecoration = await this.avatarDecorationsRepository.findOneByOrFail({ id });
 
 		await this.avatarDecorationsRepository.delete({ id: avatarDecoration.id });
-		this.globalEventService.publishInternalEvent('avatarDecorationDeleted', avatarDecoration);
+		await this.internalEventService.emit('avatarDecorationDeleted', avatarDecoration);
 
 		if (moderator) {
 			this.moderationLogService.log(moderator, 'deleteAvatarDecoration', {
@@ -119,7 +111,9 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 
 	@bindThis
 	public dispose(): void {
-		this.redisForSub.off('message', this.onMessage);
+		this.internalEventService.off('avatarDecorationCreated', this.onAvatarEvent);
+		this.internalEventService.off('avatarDecorationUpdated', this.onAvatarEvent);
+		this.internalEventService.off('avatarDecorationDeleted', this.onAvatarEvent);
 	}
 
 	@bindThis
