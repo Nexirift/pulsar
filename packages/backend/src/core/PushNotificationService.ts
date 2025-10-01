@@ -12,8 +12,7 @@ import type { Packed } from '@/misc/json-schema.js';
 import { getNoteSummary } from '@/misc/get-note-summary.js';
 import type { MiMeta, MiSwSubscription, SwSubscriptionsRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
-import { QuantumKVCache } from '@/misc/QuantumKVCache.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { CacheManagementService, type ManagedQuantumKVCache } from '@/core/CacheManagementService.js';
 
 // Defined also packages/sw/types.ts#L13
 type PushNotificationsTypes = {
@@ -48,8 +47,8 @@ function truncateBody<T extends keyof PushNotificationsTypes>(type: T, body: Pus
 }
 
 @Injectable()
-export class PushNotificationService implements OnApplicationShutdown {
-	private subscriptionsCache: QuantumKVCache<MiSwSubscription[]>;
+export class PushNotificationService {
+	private readonly subscriptionsCache: ManagedQuantumKVCache<MiSwSubscription[]>;
 
 	constructor(
 		@Inject(DI.config)
@@ -63,9 +62,9 @@ export class PushNotificationService implements OnApplicationShutdown {
 
 		@Inject(DI.swSubscriptionsRepository)
 		private swSubscriptionsRepository: SwSubscriptionsRepository,
-		private readonly internalEventService: InternalEventService,
+		cacheManagementService: CacheManagementService,
 	) {
-		this.subscriptionsCache = new QuantumKVCache<MiSwSubscription[]>(this.internalEventService, 'userSwSubscriptions', {
+		this.subscriptionsCache = cacheManagementService.createQuantumKVCache<MiSwSubscription[]>('userSwSubscriptions', {
 			lifetime: 1000 * 60 * 60 * 1, // 1h
 			fetcher: (key) => this.swSubscriptionsRepository.findBy({ userId: key }),
 		});
@@ -124,15 +123,5 @@ export class PushNotificationService implements OnApplicationShutdown {
 	@bindThis
 	public async refreshCache(userId: string): Promise<void> {
 		await this.subscriptionsCache.refresh(userId);
-	}
-
-	@bindThis
-	public dispose(): void {
-		this.subscriptionsCache.dispose();
-	}
-
-	@bindThis
-	public onApplicationShutdown(signal?: string | undefined): void {
-		this.dispose();
 	}
 }
