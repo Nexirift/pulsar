@@ -18,6 +18,7 @@ import { FlashService } from '@/core/FlashService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
 import { ApLogService } from '@/core/ApLogService.js';
 import { UpdateInstanceQueue } from '@/core/UpdateInstanceQueue.js';
+import { InstanceStatsService } from '@/core/InstanceStatsService.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import { AccountMoveService } from './AccountMoveService.js';
 import { AccountUpdateService } from './AccountUpdateService.js';
@@ -396,6 +397,7 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		ChatService,
 		RegistryApiService,
 		ReversiService,
+		InstanceStatsService,
 		NoteVisibilityService,
 
 		ChartLoggerService,
@@ -550,6 +552,7 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		$ChatService,
 		$RegistryApiService,
 		$ReversiService,
+		$InstanceStatsService,
 		$NoteVisibilityService,
 
 		$ChartLoggerService,
@@ -706,6 +709,7 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		ChatService,
 		RegistryApiService,
 		ReversiService,
+		InstanceStatsService,
 		NoteVisibilityService,
 
 		FederationChart,
@@ -858,6 +862,7 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		$ChatService,
 		$RegistryApiService,
 		$ReversiService,
+		$InstanceStatsService,
 		$NoteVisibilityService,
 
 		$FederationChart,
