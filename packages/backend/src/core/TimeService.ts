@@ -6,6 +6,8 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
 
+const timerTokenSymbol = Symbol('timerToken');
+
 /**
  * Provides abstractions to access the current time.
  * Exists for unit testing purposes, so that tests can "simulate" any given time for consistency.
@@ -28,15 +30,51 @@ export abstract class TimeService<TTimer extends Timer = Timer> implements OnApp
 		return new Date(this.now);
 	}
 
+	public startTimer(callback: () => void, delay: number, opts?: TimerOpts): TimerHandle;
+	public startTimer<T>(callback: (value: T) => void, delay: number, opts: TimerOpts | undefined, value: T): TimerHandle;
 	@bindThis
-	public startTimer(callback: () => void, delay: number, opts?: { repeated?: boolean }): symbol {
+	public startTimer<T = undefined>(callback: (value: T) => void, delay: number, opts?: TimerOpts, value?: T): TimerHandle {
 		const timerId = Symbol();
 		const repeating = opts?.repeated ?? false;
 
-		const timer = this.startNativeTimer(timerId, repeating, callback, delay);
+		const timer = this.startNativeTimer(timerId, repeating, () => {
+			callback(value as T); // overloads ensure it can't be null
+		}, delay);
 		this.timers.set(timerId, timer);
 
 		return timerId;
+	}
+
+	public startPromiseTimer(delay: number): PromiseTimerHandle;
+	public startPromiseTimer<T>(delay: number, value: T, opts?: PromiseTimerOpts): PromiseTimerHandle<T>;
+	@bindThis
+	public startPromiseTimer<T = undefined>(delay: number, value?: T, opts?: PromiseTimerOpts): PromiseTimerHandle<T> {
+		const timerId = Symbol();
+		const abortController = new AbortController();
+		const abortSignal = opts?.signal ? AbortSignal.any([abortController.signal, opts.signal]) : abortController.signal;
+
+		const handlePromise = new Promise<T>((resolve, reject) => {
+			// Connect AbortSignal
+			abortSignal.throwIfAborted();
+			abortSignal.addEventListener('abort', () => reject(abortSignal.reason));
+
+			// Start the underlying timer
+			this.startTimer<T>(resolve, delay, undefined, value as T); // overloads ensure it can't be null
+		});
+
+		// Make sure we dispose the real handle if promise rejects!
+		handlePromise.catch(() => {
+			this.stopTimer(timerId);
+		});
+
+		// Populate and return the handle.
+		return Object.assign(handlePromise, {
+			[timerTokenSymbol]: timerId,
+
+			abort: (reason: Error) => {
+				abortController.abort(reason);
+			},
+		});
 	}
 
 	protected abstract startNativeTimer(timerId: symbol, repeating: boolean, callback: () => void, delay: number): TTimer;
@@ -47,7 +85,8 @@ export abstract class TimeService<TTimer extends Timer = Timer> implements OnApp
 	 * Safe to call with invalid or expired IDs.
 	 */
 	@bindThis
-	public stopTimer(id: symbol): boolean {
+	public stopTimer(handle: TimerHandle | PromiseTimerHandle): boolean {
+		const id = typeof(handle) === 'object' ? handle[timerTokenSymbol] : handle;
 		const reg = this.timers.get(id);
 		if (!reg) return false;
 
@@ -83,6 +122,21 @@ export interface Timer {
 	repeating: boolean;
 	delay: number;
 	callback: () => void;
+}
+
+export interface TimerOpts {
+	repeated?: boolean;
+}
+
+export type TimerHandle = symbol;
+
+export interface PromiseTimerOpts {
+	signal?: AbortSignal;
+}
+
+export interface PromiseTimerHandle<T = void> extends PromiseLike<T> {
+	readonly [timerTokenSymbol]: symbol;
+	abort(error?: Error): void;
 }
 
 /**
