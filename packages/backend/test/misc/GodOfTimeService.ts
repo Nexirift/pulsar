@@ -17,15 +17,8 @@ import { TimeService, Timer } from '@/core/TimeService.js';
 export class GodOfTimeService extends TimeService<GodsOwnTimer> {
 	private _now = 0;
 
-	constructor(opts?: { start?: { at: number } | 'now' }) {
+	constructor() {
 		super();
-
-		// Jump to the correct start time
-		if (opts?.start === 'now') {
-			this.resetToNow();
-		} else if (opts?.start?.at) {
-			this.resetTo(opts.start.at);
-		}
 	}
 
 	/**

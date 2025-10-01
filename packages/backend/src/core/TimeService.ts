@@ -10,8 +10,11 @@ import { bindThis } from '@/decorators.js';
  * Provides abstractions to access the current time.
  * Exists for unit testing purposes, so that tests can "simulate" any given time for consistency.
  */
+@Injectable()
 export abstract class TimeService<TTimer extends Timer = Timer> implements OnApplicationShutdown {
 	protected readonly timers = new Map<symbol, TTimer>();
+
+	protected constructor() {}
 
 	/**
 	 * Returns Date.now()
@@ -89,6 +92,10 @@ export interface Timer {
 export class NativeTimeService extends TimeService<NativeTimer> implements OnApplicationShutdown {
 	public get now(): number {
 		return Date.now();
+	}
+
+	public constructor() {
+		super();
 	}
 
 	protected startNativeTimer(timerId: symbol, repeating: boolean, callback: () => void, delay: number): NativeTimer {
