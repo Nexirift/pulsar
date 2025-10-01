@@ -53,6 +53,7 @@ describe('UserEntityService', () => {
 				userId: user.id,
 			});
 
+			cacheManagementService.clear();
 			return user;
 		}
 
@@ -63,6 +64,7 @@ describe('UserEntityService', () => {
 				targetUserId: target.id,
 				memo,
 			});
+			cacheManagementService.clear();
 		}
 
 		async function follow(follower: MiUser, followee: MiUser) {
@@ -71,6 +73,7 @@ describe('UserEntityService', () => {
 				followerId: follower.id,
 				followeeId: followee.id,
 			});
+			cacheManagementService.clear();
 		}
 
 		async function requestFollow(requester: MiUser, requestee: MiUser) {
@@ -79,6 +82,7 @@ describe('UserEntityService', () => {
 				followerId: requester.id,
 				followeeId: requestee.id,
 			});
+			cacheManagementService.clear();
 		}
 
 		async function block(blocker: MiUser, blockee: MiUser) {
@@ -87,6 +91,7 @@ describe('UserEntityService', () => {
 				blockerId: blocker.id,
 				blockeeId: blockee.id,
 			});
+			cacheManagementService.clear();
 		}
 
 		async function mute(mutant: MiUser, mutee: MiUser) {
@@ -95,6 +100,7 @@ describe('UserEntityService', () => {
 				muterId: mutant.id,
 				muteeId: mutee.id,
 			});
+			cacheManagementService.clear();
 		}
 
 		async function muteRenote(mutant: MiUser, mutee: MiUser) {
@@ -103,6 +109,7 @@ describe('UserEntityService', () => {
 				muterId: mutant.id,
 				muteeId: mutee.id,
 			});
+			cacheManagementService.clear();
 		}
 
 		function randomIntRange(weight = 10) {
