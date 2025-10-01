@@ -6,8 +6,8 @@
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import Redis from 'ioredis';
 import { DI } from '@/di-symbols.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
 import type { GlobalEvents, InternalEventTypes } from '@/core/GlobalEventService.js';
+import type { Config } from '@/config.js';
 import { bindThis } from '@/decorators.js';
 
 export type Listener<K extends keyof InternalEventTypes> = (value: InternalEventTypes[K], key: K, isLocal: boolean) => void | Promise<void>;
@@ -25,7 +25,11 @@ export class InternalEventService implements OnApplicationShutdown {
 		@Inject(DI.redisForSub)
 		private readonly redisForSub: Redis.Redis,
 
-		private readonly globalEventService: GlobalEventService,
+		@Inject(DI.redis)
+		private readonly redisForPub: Redis.Redis,
+
+		@Inject(DI.config)
+		private readonly config: Pick<Config, 'host'>,
 	) {
 		this.redisForSub.on('message', this.onMessage);
 	}
@@ -50,7 +54,10 @@ export class InternalEventService implements OnApplicationShutdown {
 	@bindThis
 	public async emit<K extends keyof InternalEventTypes>(type: K, value: InternalEventTypes[K]): Promise<void> {
 		await this.emitInternal(type, value, true);
-		await this.globalEventService.publishInternalEventAsync(type, { ...value, _pid: process.pid });
+		await this.redisForPub.publish(this.config.host, JSON.stringify({
+			channel: 'internal',
+			message: { type: type, body: value },
+		}));
 	}
 
 	@bindThis

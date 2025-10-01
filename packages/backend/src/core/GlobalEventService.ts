@@ -26,6 +26,8 @@ import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { bindThis } from '@/decorators.js';
 import { Serialized } from '@/types.js';
+import { InternalEventService } from '@/core/InternalEventService.js';
+import { trackPromise } from '@/misc/promise-tracker.js';
 import type Emitter from 'strict-event-emitter-types';
 import type { EventEmitter } from 'events';
 
@@ -350,6 +352,8 @@ export class GlobalEventService {
 
 		@Inject(DI.redisForPub)
 		private redisForPub: Redis.Redis,
+
+		private readonly internalEventService: InternalEventService,
 	) {
 	}
 
@@ -365,14 +369,16 @@ export class GlobalEventService {
 		}));
 	}
 
+	/** @deprecated use InternalEventService instead */
 	@bindThis
-	public publishInternalEvent<K extends keyof InternalEventTypes>(type: K, value?: InternalEventTypes[K]): void {
-		this.publish('internal', type, typeof value === 'undefined' ? null : value);
+	public publishInternalEvent<K extends keyof InternalEventTypes>(type: K, value: InternalEventTypes[K]): void {
+		trackPromise(this.internalEventService.emit(type, value));
 	}
 
+	/** @deprecated use InternalEventService instead */
 	@bindThis
-	public async publishInternalEventAsync<K extends keyof InternalEventTypes>(type: K, value?: InternalEventTypes[K]): Promise<void> {
-		await this.publish('internal', type, typeof value === 'undefined' ? null : value);
+	public async publishInternalEventAsync<K extends keyof InternalEventTypes>(type: K, value: InternalEventTypes[K]): Promise<void> {
+		await this.internalEventService.emit(type, value);
 	}
 
 	@bindThis
