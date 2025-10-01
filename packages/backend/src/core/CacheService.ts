@@ -460,21 +460,25 @@ export class CacheService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async findLocalUserById(userId: MiUser['id']): Promise<MiLocalUser | null> {
-		return await this.localUserByIdCache.fetchMaybe(userId, async () => {
-			return await this.usersRepository.findOneBy({ id: userId, host: IsNull() }) as MiLocalUser | null ?? undefined;
-		}) ?? null;
+	public async findLocalUserById(userId: MiUser['id']): Promise<MiLocalUser> {
+		const user = await this.findUserById(userId);
+
+		if (!isLocalUser(user)) {
+			throw new IdentifiableError('aeac1339-2550-4521-a8e3-781f06d98656', 'User is not local');
+		}
+
+		return user;
 	}
 
 	@bindThis
-	public async findRemoteUserById(userId: MiUser['id']): Promise<MiRemoteUser | null> {
+	public async findRemoteUserById(userId: MiUser['id']): Promise<MiRemoteUser> {
 		const user = await this.findUserById(userId);
 
-		if (user.host == null) {
-			return null;
+		if (!isRemoteUser(user)) {
+			throw new IdentifiableError('aeac1339-2550-4521-a8e3-781f06d98656', 'User is not remote');
 		}
 
-		return user as MiRemoteUser;
+		return user;
 	}
 
 	@bindThis

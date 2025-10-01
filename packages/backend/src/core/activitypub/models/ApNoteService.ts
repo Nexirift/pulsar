@@ -9,7 +9,7 @@ import { UnrecoverableError } from 'bullmq';
 import promiseLimit from 'promise-limit';
 import { ModuleRef } from '@nestjs/core';
 import { DI } from '@/di-symbols.js';
-import type { PollsRepository, EmojisRepository, NotesRepository, MiMeta } from '@/models/_.js';
+import type { UsersRepository, PollsRepository, EmojisRepository, NotesRepository, MiMeta } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import type { MiRemoteUser } from '@/models/User.js';
 import type { MiNote } from '@/models/Note.js';
@@ -33,8 +33,7 @@ import { extractMediaFromHtml } from '@/core/activitypub/misc/extract-media-from
 import { extractMediaFromMfm } from '@/core/activitypub/misc/extract-media-from-mfm.js';
 import { getContentByType } from '@/core/activitypub/misc/get-content-by-type.js';
 import { CustomEmojiService, encodeEmojiKey, isValidEmojiName } from '@/core/CustomEmojiService.js';
-import { fromTuple } from '@/misc/from-tuple.js';
-import { getOneApId, getApId, isEmoji, getApType, isApObject, isDocument, IApDocument, isLink, isQuestion, getNullableApId, isPost } from '../type.js';
+import { getOneApId, getApId, validPost, isEmoji, getApType, isApObject, isDocument, IApDocument, isLink } from '../type.js';
 import { ApLoggerService } from '../ApLoggerService.js';
 import { ApMfmService } from '../ApMfmService.js';
 import { ApDbResolverService } from '../ApDbResolverService.js';
@@ -62,6 +61,9 @@ export class ApNoteService implements OnModuleInit {
 
 		@Inject(DI.meta)
 		private meta: MiMeta,
+
+		@Inject(DI.usersRepository)
+		private usersRepository: UsersRepository,
 
 		@Inject(DI.pollsRepository)
 		private pollsRepository: PollsRepository,
