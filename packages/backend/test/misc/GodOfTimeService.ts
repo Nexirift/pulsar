@@ -1,0 +1,95 @@
+/*
+ * SPDX-FileCopyrightText: hazelnoot and other Sharkey contributors
+ * SPDX-License-Identifier: AGPL-3.0-only
+ */
+
+import { Injectable } from '@nestjs/common';
+import { TimeService, Timer } from '@/core/TimeService.js';
+
+/**
+ * Fake implementation of TimeService that allows manual control of time.
+ * When this service is used, the flow of time is fully stopped.
+ *
+ * Test cases can manually adjust the "now" parameter to move time forwards and backwards.
+ * When moving forward, timers (interval and timeout) will automatically fire as appropriate.
+ */
+@Injectable()
+export class GodOfTimeService extends TimeService<GodsOwnTimer> {
+	private _now = 0;
+
+	constructor(opts?: { start?: { at: number } | 'now' }) {
+		super();
+
+		// Jump to the correct start time
+		if (opts?.start === 'now') {
+			this.resetToNow();
+		} else if (opts?.start?.at) {
+			this.resetTo(opts.start.at);
+		}
+	}
+
+	/**
+	 * Get or set the current time, in milliseconds since the unix epoch.
+	 */
+	public get now() {
+		return this._now;
+	}
+	public set now(value: number) {
+		// Moving backwards is allowed, for now.
+		if (value > this._now) {
+			// Fire all expiring timers in chronological order.
+			const expiringTimers = this.timers
+				.values()
+				.filter(t => t.expiresAt >= value)
+				.toArray()
+				.sort((a, b) => a.expiresAt - b.expiresAt);
+
+			// Since we sorted the list, this will progressively increase "now" as we handle later and later events.
+			for (const timer of expiringTimers) {
+				// When the timer fires, "now" should equal the time that was originally waited for.
+				this._now = timer.expiresAt;
+
+				// Cleanup first in case timer throws an exception.
+				this.timers.delete(timer.timerId);
+				timer.callback();
+			}
+		}
+
+		// Bump up to the final target value
+		this._now = value;
+	}
+
+	/**
+	 * Clears all timers and resets to time=0.
+	 */
+	public reset() {
+		this.resetTo(0);
+	}
+	/**
+	 * Clears all timers and resets to the real-world time.
+	 */
+	public resetToNow() {
+		this.resetTo(Date.now());
+	}
+
+	/**
+	 * Clears all timers and resets to a given time.
+	 */
+	public resetTo(to: number) {
+		this.timers.clear();
+		this.now = to;
+	}
+
+	protected startNativeTimer(timerId: symbol, repeating: boolean, callback: () => void, delay: number): GodsOwnTimer {
+		const expiresAt = this.now + delay;
+		return { timerId, repeating, delay, expiresAt, callback };
+	}
+
+	protected stopNativeTimer(): void {
+		// no-op - fake timers have no side effects to clean up
+	}
+}
+
+export interface GodsOwnTimer extends Timer {
+	expiresAt: number;
+}
