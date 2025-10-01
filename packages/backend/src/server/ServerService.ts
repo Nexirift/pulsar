@@ -40,7 +40,7 @@ const _dirname = fileURLToPath(new URL('.', import.meta.url));
 @Injectable()
 export class ServerService implements OnApplicationShutdown {
 	private logger: Logger;
-	#fastify: FastifyInstance;
+	#fastify?: FastifyInstance;
 
 	constructor(
 		@Inject(DI.config)
@@ -316,7 +316,7 @@ export class ServerService implements OnApplicationShutdown {
 		await this.streamingApiServerService.detach();
 
 		this.logger.info('Disconnecting HTTP clients....;');
-		await this.#fastify.close();
+		await this.#fastify?.close();
 
 		this.logger.info('Server disposed.');
 	}
@@ -325,6 +325,9 @@ export class ServerService implements OnApplicationShutdown {
 	 * Get the Fastify instance for testing.
 	 */
 	public get fastify(): FastifyInstance {
+		if (!this.#fastify) {
+			throw new Error('Cannot get fastify before starting server');
+		}
 		return this.#fastify;
 	}
 
