@@ -111,7 +111,7 @@ export class QuantumKVCache<T> implements Iterable<[key: string, value: T]> {
 
 	/**
 	 * Creates or updates a value in the cache, and erases any stale caches across the cluster.
-	 * Fires an onSet event after the cache has been updated in all processes.
+	 * Fires an onChanged event after the cache has been updated in all processes.
 	 * Skips if the value is unchanged.
 	 */
 	@bindThis
@@ -131,7 +131,7 @@ export class QuantumKVCache<T> implements Iterable<[key: string, value: T]> {
 
 	/**
 	 * Creates or updates multiple value in the cache, and erases any stale caches across the cluster.
-	 * Fires an onSet for each changed item event after the cache has been updated in all processes.
+	 * Fires an onChanged for each changed item event after the cache has been updated in all processes.
 	 * Skips if all values are unchanged.
 	 */
 	@bindThis
@@ -156,7 +156,7 @@ export class QuantumKVCache<T> implements Iterable<[key: string, value: T]> {
 
 	/**
 	 * Adds a value to the local memory cache without notifying other process.
-	 * Neither a Redis event nor onSet callback will be fired, as the value has not actually changed.
+	 * Neither a Redis event nor onChanged callback will be fired, as the value has not actually changed.
 	 * This should only be used when the value is known to be current, like after fetching from the database.
 	 */
 	@bindThis
@@ -166,7 +166,7 @@ export class QuantumKVCache<T> implements Iterable<[key: string, value: T]> {
 
 	/**
 	 * Adds multiple values to the local memory cache without notifying other process.
-	 * Neither a Redis event nor onSet callback will be fired, as the value has not actually changed.
+	 * Neither a Redis event nor onChanged callback will be fired, as the value has not actually changed.
 	 * This should only be used when the value is known to be current, like after fetching from the database.
 	 */
 	@bindThis
@@ -200,7 +200,7 @@ export class QuantumKVCache<T> implements Iterable<[key: string, value: T]> {
 
 	/**
 	 * Gets or fetches a value from the cache.
-	 * Fires an onSet event, but does not emit an update event to other processes.
+	 * Fires an onChanged event, but does not emit an update event to other processes.
 	 */
 	@bindThis
 	public async fetch(key: string): Promise<T> {
@@ -218,7 +218,8 @@ export class QuantumKVCache<T> implements Iterable<[key: string, value: T]> {
 
 	/**
 	 * Gets or fetches multiple values from the cache.
-	 * Fires onSet events, but does not emit any update events to other processes.
+	 * Missing / unmapped values are excluded from the response.
+	 * Fires onChanged event, but does not emit any update events to other processes.
 	 */
 	@bindThis
 	public async fetchMany(keys: Iterable<string>): Promise<[key: string, value: T][]> {
@@ -263,7 +264,7 @@ export class QuantumKVCache<T> implements Iterable<[key: string, value: T]> {
 
 	/**
 	 * Deletes a value from the cache, and erases any stale caches across the cluster.
-	 * Fires an onDelete event after the cache has been updated in all processes.
+	 * Fires an onChanged event after the cache has been updated in all processes.
 	 */
 	@bindThis
 	public async delete(key: string): Promise<void> {
@@ -277,7 +278,7 @@ export class QuantumKVCache<T> implements Iterable<[key: string, value: T]> {
 	}
 	/**
 	 * Deletes multiple values from the cache, and erases any stale caches across the cluster.
-	 * Fires an onDelete event for each key after the cache has been updated in all processes.
+	 * Fires an onChanged event for each key after the cache has been updated in all processes.
 	 * Skips if the input is empty.
 	 */
 	@bindThis
@@ -302,7 +303,7 @@ export class QuantumKVCache<T> implements Iterable<[key: string, value: T]> {
 
 	/**
 	 * Refreshes the value of a key from the fetcher, and erases any stale caches across the cluster.
-	 * Fires an onSet event after the cache has been updated in all processes.
+	 * Fires an onChanged event after the cache has been updated in all processes.
 	 */
 	@bindThis
 	public async refresh(key: string): Promise<T> {
