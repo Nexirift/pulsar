@@ -10,7 +10,7 @@
 		"inlineSources": true,
 		"allowJs": true,
 		"checkJs": true,
-		"outDir": "./temp/built/",
+		"outDir": "./built/",
 		"strict": true,
 		"strictFunctionTypes": true,
 		"strictNullChecks": true,

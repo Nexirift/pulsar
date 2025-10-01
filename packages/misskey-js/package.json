@@ -4,13 +4,13 @@
 	"version": "2025.5.2-dev",
 	"description": "Misskey SDK for JavaScript",
 	"license": "MIT",
-	"main": "./built/index.js",
-	"types": "./built/index.d.ts",
+	"main": "./built/src/index.js",
+	"types": "./built/src/index.d.ts",
 	"scripts": {
 		"clean": "node scripts/clean.mjs",
 		"build": "tsc -b && node scripts/post-build.mjs",
 		"rebuild": "pnpm clean && pnpm build",
-		"tsd": "tsd --types \"./temp/built/src/index.d.ts\" --files \"./temp/built/test-d/**/*.ts\"",
+		"tsd": "tsd --types \"./built/src/index.d.ts\" --files \"./built/test-d/**/*.ts\"",
 		"api": "pnpm api-extractor run --local --verbose",
 		"api-prod": "pnpm api-extractor run --verbose",
 		"eslint": "eslint --quiet \"{src,test,test-d,scripts}/**/*.{js,jsx,ts,tsx,vue}\" --cache",
@@ -32,20 +32,16 @@
 		"@types/node": "22.18.1",
 		"@typescript-eslint/eslint-plugin": "8.44.1",
 		"@typescript-eslint/parser": "8.44.1",
-		"esbuild": "0.25.10",
-		"execa": "9.6.0",
-		"glob": "11.0.3",
 		"jest": "30.1.3",
 		"jest-fetch-mock": "3.0.3",
 		"jest-websocket-mock": "2.5.0",
 		"mock-socket": "9.3.1",
 		"ncp": "2.0.0",
-		"nodemon": "3.1.10",
 		"tsd": "0.33.0",
 		"typescript": "5.9.2"
 	},
 	"files": [
-		"built"
+		"built/src"
 	],
 	"dependencies": {
 		"eventemitter3": "5.0.1",
