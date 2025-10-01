@@ -32,6 +32,8 @@ describe('/drive/files/create', () => {
 		module = await Test.createTestingModule({
 			imports: [GlobalModule, CoreModule, ServerModule],
 		}).compile();
+
+		await module.init();
 		module.enableShutdownHooks();
 
 		const serverService = module.get<ServerService>(ServerService);

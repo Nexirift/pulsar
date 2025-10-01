@@ -37,6 +37,8 @@ describe('S3Service', () => {
 		})
 			.overrideProvider(InternalEventService).useClass(FakeInternalEventService)
 			.compile();
+
+		await app.init();
 		app.enableShutdownHooks();
 	});
 

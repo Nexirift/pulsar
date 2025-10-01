@@ -45,6 +45,7 @@ describe('CaptchaService', () => {
 			],
 		}).compile();
 
+		await app.init();
 		app.enableShutdownHooks();
 
 		service = app.get(CaptchaService);

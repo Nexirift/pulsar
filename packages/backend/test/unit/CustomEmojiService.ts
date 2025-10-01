@@ -44,6 +44,8 @@ describe('CustomEmojiService', () => {
 				],
 			})
 			.compile();
+
+		await app.init();
 		app.enableShutdownHooks();
 
 		service = app.get<CustomEmojiService>(CustomEmojiService);

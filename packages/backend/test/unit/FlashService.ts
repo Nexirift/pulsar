@@ -9,7 +9,9 @@ import { FlashService } from '@/core/FlashService.js';
 import { IdService } from '@/core/IdService.js';
 import { FlashsRepository, MiFlash, MiUser, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
+import { CacheManagementService } from '@/core/CacheManagementService.js';
 import { GlobalModule } from '@/GlobalModule.js';
+import { CoreModule } from '@/core/CoreModule.js';
 
 describe('FlashService', () => {
 	let app: TestingModule;
@@ -21,6 +23,7 @@ describe('FlashService', () => {
 	let usersRepository: UsersRepository;
 	let userProfilesRepository: UserProfilesRepository;
 	let idService: IdService;
+	let cacheManagementService: CacheManagementService;
 
 	// --------------------------------------------------------------------------------------
 
@@ -61,16 +64,15 @@ describe('FlashService', () => {
 
 	// --------------------------------------------------------------------------------------
 
-	beforeEach(async () => {
+	beforeAll(async () => {
 		app = await Test.createTestingModule({
 			imports: [
 				GlobalModule,
-			],
-			providers: [
-				FlashService,
-				IdService,
+				CoreModule,
 			],
 		}).compile();
+
+		await app.init();
 		app.enableShutdownHooks();
 
 		service = app.get(FlashService);
@@ -79,7 +81,14 @@ describe('FlashService', () => {
 		usersRepository = app.get(DI.usersRepository);
 		userProfilesRepository = app.get(DI.userProfilesRepository);
 		idService = app.get(IdService);
+		cacheManagementService = app.get(CacheManagementService);
+	});
 
+	afterAll(async () => {
+		await app.close();
+	});
+
+	beforeEach(async () => {
 		root = await createUser({ username: 'root', usernameLower: 'root' });
 		alice = await createUser({ username: 'alice', usernameLower: 'alice' });
 		bob = await createUser({ username: 'bob', usernameLower: 'bob' });
@@ -89,10 +98,7 @@ describe('FlashService', () => {
 		await usersRepository.delete({});
 		await userProfilesRepository.delete({});
 		await flashsRepository.delete({});
-	});
-
-	afterAll(async () => {
-		await app.close();
+		cacheManagementService.clear();
 	});
 
 	// --------------------------------------------------------------------------------------

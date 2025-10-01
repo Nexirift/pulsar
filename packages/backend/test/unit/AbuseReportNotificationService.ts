@@ -149,6 +149,9 @@ describe('AbuseReportNotificationService', () => {
 			})
 			.compile();
 
+		await app.init();
+		app.enableShutdownHooks();
+
 		usersRepository = app.get(DI.usersRepository);
 		userProfilesRepository = app.get(DI.userProfilesRepository);
 		systemWebhooksRepository = app.get(DI.systemWebhooksRepository);
@@ -159,8 +162,10 @@ describe('AbuseReportNotificationService', () => {
 		roleService = app.get(RoleService) as jest.Mocked<RoleService>;
 		emailService = app.get<EmailService>(EmailService) as jest.Mocked<EmailService>;
 		webhookService = app.get<SystemWebhookService>(SystemWebhookService) as jest.Mocked<SystemWebhookService>;
+	});
 
-		app.enableShutdownHooks();
+	afterAll(async () => {
+		await app.close();
 	});
 
 	beforeEach(async () => {
@@ -183,10 +188,6 @@ describe('AbuseReportNotificationService', () => {
 		await userProfilesRepository.delete({});
 		await systemWebhooksRepository.delete({});
 		await abuseReportNotificationRecipientRepository.delete({});
-	});
-
-	afterAll(async () => {
-		await app.close();
 	});
 
 	// --------------------------------------------------------------------------------------
