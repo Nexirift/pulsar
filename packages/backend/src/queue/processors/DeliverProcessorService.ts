@@ -19,6 +19,7 @@ import ApRequestChart from '@/core/chart/charts/ap-request.js';
 import FederationChart from '@/core/chart/charts/federation.js';
 import { StatusError } from '@/misc/status-error.js';
 import { UtilityService } from '@/core/UtilityService.js';
+import { TimeService } from '@/core/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type { DeliverJobData } from '../types.js';
@@ -42,6 +43,7 @@ export class DeliverProcessorService {
 		private apRequestChart: ApRequestChart,
 		private federationChart: FederationChart,
 		private queueLoggerService: QueueLoggerService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('deliver');
 	}
@@ -99,11 +101,11 @@ export class DeliverProcessorService {
 				if (!i.isNotResponding) {
 					this.federatedInstanceService.update(i.id, {
 						isNotResponding: true,
-						notRespondingSince: new Date(),
+						notRespondingSince: this.timeService.date,
 					});
 				} else if (i.notRespondingSince) {
 					// 1週間以上不通ならサスペンド
-					if (i.suspensionState === 'none' && i.notRespondingSince.getTime() <= Date.now() - 1000 * 60 * 60 * 24 * 7) {
+					if (i.suspensionState === 'none' && i.notRespondingSince.getTime() <= this.timeService.now - 1000 * 60 * 60 * 24 * 7) {
 						this.federatedInstanceService.update(i.id, {
 							suspensionState: 'autoSuspendedForNotResponding',
 						});
@@ -112,7 +114,7 @@ export class DeliverProcessorService {
 					// isNotRespondingがtrueでnotRespondingSinceがnullの場合はnotRespondingSinceをセット
 					// notRespondingSinceは新たな機能なので、それ以前のデータにはnotRespondingSinceがない場合がある
 					this.federatedInstanceService.update(i.id, {
-						notRespondingSince: new Date(),
+						notRespondingSince: this.timeService.date,
 					});
 				}
 

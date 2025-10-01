@@ -362,7 +362,7 @@ export class CustomEmojiService {
 		await this.bulkUpdateEmojis(ids, async emojis => {
 			for (const emoji of emojis) {
 				await this.emojisRepository.update(emoji.id, {
-					updatedAt: new Date(),
+					updatedAt: this.timeService.date,
 					aliases: [...new Set(emoji.aliases.concat(aliases))],
 				});
 			}
@@ -374,7 +374,7 @@ export class CustomEmojiService {
 		await this.emojisRepository.update({
 			id: In(ids),
 		}, {
-			updatedAt: new Date(),
+			updatedAt: this.timeService.date,
 			aliases: aliases,
 		});
 
@@ -386,7 +386,7 @@ export class CustomEmojiService {
 		await this.bulkUpdateEmojis(ids, async emojis => {
 			for (const emoji of emojis) {
 				await this.emojisRepository.update(emoji.id, {
-					updatedAt: new Date(),
+					updatedAt: this.timeService.date,
 					aliases: emoji.aliases.filter(x => !aliases.includes(x)),
 				});
 			}
@@ -398,7 +398,7 @@ export class CustomEmojiService {
 		await this.emojisRepository.update({
 			id: In(ids),
 		}, {
-			updatedAt: new Date(),
+			updatedAt: this.timeService.date,
 			category: category,
 		});
 
@@ -410,7 +410,7 @@ export class CustomEmojiService {
 		await this.emojisRepository.update({
 			id: In(ids),
 		}, {
-			updatedAt: new Date(),
+			updatedAt: this.timeService.date,
 			license: license,
 		});
 

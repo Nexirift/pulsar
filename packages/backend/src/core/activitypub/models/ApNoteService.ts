@@ -33,6 +33,7 @@ import { extractMediaFromHtml } from '@/core/activitypub/misc/extract-media-from
 import { extractMediaFromMfm } from '@/core/activitypub/misc/extract-media-from-mfm.js';
 import { getContentByType } from '@/core/activitypub/misc/get-content-by-type.js';
 import { CustomEmojiService, encodeEmojiKey, isValidEmojiName } from '@/core/CustomEmojiService.js';
+import { TimeService } from '@/core/TimeService.js';
 import { getOneApId, getApId, validPost, isEmoji, getApType, isApObject, isDocument, IApDocument, isLink } from '../type.js';
 import { ApLoggerService } from '../ApLoggerService.js';
 import { ApMfmService } from '../ApMfmService.js';
@@ -91,6 +92,7 @@ export class ApNoteService implements OnModuleInit {
 		private apLoggerService: ApLoggerService,
 		private readonly apUtilityService: ApUtilityService,
 		private readonly customEmojiService: CustomEmojiService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.apLoggerService.logger;
 	}
@@ -291,7 +293,7 @@ export class ApNoteService implements OnModuleInit {
 			const poll = await this.pollsRepository.findOneByOrFail({ noteId: reply.id });
 
 			const tryCreateVote = async (name: string, index: number): Promise<null> => {
-				if (poll.expiresAt && Date.now() > new Date(poll.expiresAt).getTime()) {
+				if (poll.expiresAt && this.timeService.now > new Date(poll.expiresAt).getTime()) {
 					this.logger.warn(`vote to expired poll from AP: actor=${actor.username}@${actor.host}, note=${note.id}, choice=${name}`);
 				} else if (index >= 0) {
 					this.logger.info(`vote from AP: actor=${actor.username}@${actor.host}, note=${note.id}, choice=${name}`);
@@ -470,7 +472,7 @@ export class ApNoteService implements OnModuleInit {
 			const poll = await this.pollsRepository.findOneByOrFail({ noteId: reply.id });
 
 			const tryCreateVote = async (name: string, index: number): Promise<null> => {
-				if (poll.expiresAt && Date.now() > new Date(poll.expiresAt).getTime()) {
+				if (poll.expiresAt && this.timeService.now > new Date(poll.expiresAt).getTime()) {
 					this.logger.warn(`vote to expired poll from AP: actor=${actor.username}@${actor.host}, note=${note.id}, choice=${name}`);
 				} else if (index >= 0) {
 					this.logger.info(`vote from AP: actor=${actor.username}@${actor.host}, note=${note.id}, choice=${name}`);
@@ -601,7 +603,7 @@ export class ApNoteService implements OnModuleInit {
 						uri: tag.id,
 						originalUrl: tag.icon.url,
 						publicUrl: tag.icon.url,
-						updatedAt: new Date(),
+						updatedAt: this.timeService.date,
 						// _misskey_license が存在しなければ `null`
 						license: (tag._misskey_license?.freeText ?? null),
 					});
@@ -617,7 +619,7 @@ export class ApNoteService implements OnModuleInit {
 				uri: tag.id,
 				originalUrl: tag.icon.url,
 				publicUrl: tag.icon.url,
-				updatedAt: new Date(),
+				updatedAt: this.timeService.date,
 				aliases: [],
 				localOnly: false,
 				isSensitive: tag.sensitive === true,

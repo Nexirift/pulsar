@@ -19,6 +19,7 @@ import { bindThis } from '@/decorators.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { IdService } from '@/core/IdService.js';
+import { TimeService } from '@/core/TimeService.js';
 import type { NotificationService } from '@/core/NotificationService.js';
 import { Serialized } from '@/types.js';
 import { ReversiGameEntityService } from './entities/ReversiGameEntityService.js';
@@ -43,6 +44,7 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 		private globalEventService: GlobalEventService,
 		private reversiGameEntityService: ReversiGameEntityService,
 		private idService: IdService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -99,8 +101,8 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 			// 既にマッチしている対局が無いか探す(3分以内)
 			const games = await this.reversiGamesRepository.find({
 				where: [
-					{ id: MoreThan(this.idService.gen(Date.now() - 1000 * 60 * 3)), user1Id: me.id, user2Id: targetUser.id, isStarted: false },
-					{ id: MoreThan(this.idService.gen(Date.now() - 1000 * 60 * 3)), user1Id: targetUser.id, user2Id: me.id, isStarted: false },
+					{ id: MoreThan(this.idService.gen(this.timeService.now - 1000 * 60 * 3)), user1Id: me.id, user2Id: targetUser.id, isStarted: false },
+					{ id: MoreThan(this.idService.gen(this.timeService.now - 1000 * 60 * 3)), user1Id: targetUser.id, user2Id: me.id, isStarted: false },
 				],
 				relations: ['user1', 'user2'],
 				order: { id: 'DESC' },
@@ -113,7 +115,7 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 		//#region 相手から既に招待されてないか確認
 		const invitations = await this.redisClient.zrange(
 			`reversi:matchSpecific:${me.id}`,
-			Date.now() - INVITATION_TIMEOUT_MS,
+			this.timeService.now - INVITATION_TIMEOUT_MS,
 			'+inf',
 			'BYSCORE');
 
@@ -129,7 +131,7 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 		//#endregion
 
 		const redisPipeline = this.redisClient.pipeline();
-		redisPipeline.zadd(`reversi:matchSpecific:${targetUser.id}`, Date.now(), me.id);
+		redisPipeline.zadd(`reversi:matchSpecific:${targetUser.id}`, this.timeService.now, me.id);
 		redisPipeline.expire(`reversi:matchSpecific:${targetUser.id}`, 120, 'NX');
 		await redisPipeline.exec();
 
@@ -146,8 +148,8 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 			// 既にマッチしている対局が無いか探す(3分以内)
 			const games = await this.reversiGamesRepository.find({
 				where: [
-					{ id: MoreThan(this.idService.gen(Date.now() - 1000 * 60 * 3)), user1Id: me.id, isStarted: false },
-					{ id: MoreThan(this.idService.gen(Date.now() - 1000 * 60 * 3)), user2Id: me.id, isStarted: false },
+					{ id: MoreThan(this.idService.gen(this.timeService.now - 1000 * 60 * 3)), user1Id: me.id, isStarted: false },
+					{ id: MoreThan(this.idService.gen(this.timeService.now - 1000 * 60 * 3)), user2Id: me.id, isStarted: false },
 				],
 				relations: ['user1', 'user2'],
 				order: { id: 'DESC' },
@@ -160,7 +162,7 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 		//#region まず自分宛ての招待を探す
 		const invitations = await this.redisClient.zrange(
 			`reversi:matchSpecific:${me.id}`,
-			Date.now() - INVITATION_TIMEOUT_MS,
+			this.timeService.now - INVITATION_TIMEOUT_MS,
 			'+inf',
 			'BYSCORE');
 
@@ -201,9 +203,9 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 		} else {
 			const redisPipeline = this.redisClient.pipeline();
 			if (options.noIrregularRules) {
-				redisPipeline.zadd('reversi:matchAny', Date.now(), me.id + ':noIrregularRules');
+				redisPipeline.zadd('reversi:matchAny', this.timeService.now, me.id + ':noIrregularRules');
 			} else {
-				redisPipeline.zadd('reversi:matchAny', Date.now(), me.id);
+				redisPipeline.zadd('reversi:matchAny', this.timeService.now, me.id);
 			}
 			redisPipeline.expire('reversi:matchAny', 15, 'NX');
 			await redisPipeline.exec();
@@ -224,7 +226,7 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 	@bindThis
 	public async cleanOutdatedGames() {
 		await this.reversiGamesRepository.delete({
-			id: LessThan(this.idService.gen(Date.now() - 1000 * 60 * 10)),
+			id: LessThan(this.idService.gen(this.timeService.now - 1000 * 60 * 10)),
 			isStarted: false,
 		});
 	}
@@ -269,7 +271,7 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 
 		if (isBothReady) {
 			// 3秒後、両者readyならゲーム開始
-			setTimeout(async () => {
+			this.timeService.startTimer(async () => {
 				const freshGame = await this.get(game.id);
 				if (freshGame == null || freshGame.isStarted || freshGame.isEnded) return;
 				if (!freshGame.user1Ready || !freshGame.user2Ready) return;
@@ -323,7 +325,7 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 		const updatedGame = await this.reversiGamesRepository.createQueryBuilder().update()
 			.set({
 				...this.getBakeProps(game),
-				startedAt: new Date(),
+				startedAt: this.timeService.date,
 				isStarted: true,
 				black: bw,
 				map: game.map,
@@ -368,7 +370,7 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 			.set({
 				...this.getBakeProps(game),
 				isEnded: true,
-				endedAt: new Date(),
+				endedAt: this.timeService.date,
 				winnerId: winnerId,
 				surrenderedUserId: reason === 'surrender' ? (winnerId === game.user1Id ? game.user2Id : game.user1Id) : null,
 				timeoutUserId: reason === 'timeout' ? (winnerId === game.user1Id ? game.user2Id : game.user1Id) : null,
@@ -392,7 +394,7 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 	public async getInvitations(user: MiUser): Promise<MiUser['id'][]> {
 		const invitations = await this.redisClient.zrange(
 			`reversi:matchSpecific:${user.id}`,
-			Date.now() - INVITATION_TIMEOUT_MS,
+			this.timeService.now - INVITATION_TIMEOUT_MS,
 			'+inf',
 			'BYSCORE');
 		return invitations;
@@ -475,7 +477,7 @@ export class ReversiService implements OnApplicationShutdown, OnModuleInit {
 		const logs = Reversi.Serializer.deserializeLogs(game.logs);
 
 		const log = {
-			time: Date.now(),
+			time: this.timeService.now,
 			player: myColor,
 			operation: 'put',
 			pos,

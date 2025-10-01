@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import { default as convertColor } from 'color-convert';
 import { format as dateFormat } from 'date-fns';
 import { bindThis } from '@/decorators.js';
+import { TimeService, NativeTimeService } from '@/core/TimeService.js';
 import { envOption } from './env.js';
 import type { KEYWORD } from 'color-convert/conversions.js';
 
@@ -26,6 +27,8 @@ export type DataObject = Record<string, unknown> | (object & { length?: never; }
 export type Console = Pick<typeof global.console, 'error' | 'warn' | 'info' | 'log' | 'debug'>;
 export const nativeConsole: Console = global.console;
 
+const fallbackTimeService = new NativeTimeService();
+
 const levelFuncs = {
 	error: 'error',
 	warning: 'warn',
@@ -39,6 +42,7 @@ export default class Logger {
 	private context: Context;
 	private parentLogger: Logger | null = null;
 	public readonly verbose: boolean;
+	private readonly timeService: TimeService;
 
 	/**
 	 * Where to send the actual log strings.
@@ -46,18 +50,19 @@ export default class Logger {
 	 */
 	private readonly console: Console;
 
-	constructor(context: string, color?: KEYWORD, verbose?: boolean, console?: Console) {
+	constructor(context: string, color?: KEYWORD, verbose?: boolean, console?: Console, timeService?: TimeService) {
 		this.context = {
 			name: context,
 			color: color,
 		};
 		this.verbose = verbose ?? envOption.verbose;
 		this.console = console ?? nativeConsole;
+		this.timeService = timeService ?? fallbackTimeService;
 	}
 
 	@bindThis
 	public createSubLogger(context: string, color?: KEYWORD): Logger {
-		const logger = new Logger(context, color, this.verbose);
+		const logger = new Logger(context, color, this.verbose, this.console, this.timeService);
 		logger.parentLogger = this;
 		return logger;
 	}
@@ -71,7 +76,7 @@ export default class Logger {
 			return;
 		}
 
-		const time = dateFormat(new Date(), 'HH:mm:ss');
+		const time = dateFormat(this.timeService.date, 'HH:mm:ss');
 		const worker = cluster.isPrimary ? '*' : cluster.worker!.id;
 		const l =
 			level === 'error' ? important ? chalk.bgRed.white('ERR ') : chalk.red('ERR ') :

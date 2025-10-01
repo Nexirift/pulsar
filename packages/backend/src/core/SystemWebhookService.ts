@@ -20,6 +20,7 @@ import { AbuseReportResolveType } from '@/models/AbuseUserReport.js';
 import { ModeratorInactivityRemainingTime } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
 import { CacheManagementService, type ManagedMemorySingleCache } from '@/core/CacheManagementService.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
+import { TimeService } from '@/core/TimeService.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 
 export type AbuseReportPayload = {
@@ -64,6 +65,7 @@ export class SystemWebhookService implements OnApplicationShutdown {
 		private moderationLogService: ModerationLogService,
 		private globalEventService: GlobalEventService,
 		private readonly internalEventService: InternalEventService,
+		private readonly timeService: TimeService,
 
 		cacheManagementService: CacheManagementService,
 	) {
@@ -156,7 +158,7 @@ export class SystemWebhookService implements OnApplicationShutdown {
 	): Promise<MiSystemWebhook> {
 		const beforeEntity = await this.systemWebhooksRepository.findOneByOrFail({ id: params.id });
 		await this.systemWebhooksRepository.update(beforeEntity.id, {
-			updatedAt: new Date(),
+			updatedAt: this.timeService.date,
 			isActive: params.isActive,
 			name: params.name,
 			on: params.on,

@@ -57,6 +57,7 @@ import { handleRequestRedirectToOmitSearch } from '@/misc/fastify-hook-handlers.
 import { bindThis } from '@/decorators.js';
 import { FlashEntityService } from '@/core/entities/FlashEntityService.js';
 import { RoleService } from '@/core/RoleService.js';
+import { TimeService } from '@/core/TimeService.js';
 import { ReversiGameEntityService } from '@/core/entities/ReversiGameEntityService.js';
 import { AnnouncementEntityService } from '@/core/entities/AnnouncementEntityService.js';
 import { FeedService } from './FeedService.js';
@@ -130,6 +131,7 @@ export class ClientServerService {
 		private feedService: FeedService,
 		private roleService: RoleService,
 		private clientLoggerService: ClientLoggerService,
+		private readonly timeService: TimeService,
 
 		@Inject('queue:system') public systemQueue: SystemQueue,
 		@Inject('queue:endedPollNotification') public endedPollNotificationQueue: EndedPollNotificationQueue,
@@ -216,7 +218,7 @@ export class ClientServerService {
 			instanceUrl: this.config.url,
 			randomMOTD: this.config.customMOTD ? this.config.customMOTD[Math.floor(Math.random() * this.config.customMOTD.length)] : undefined,
 			metaJson: htmlSafeJsonStringify(await this.metaEntityService.packDetailed(meta)),
-			now: Date.now(),
+			now: this.timeService.now,
 		};
 	}
 

@@ -16,6 +16,7 @@ import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import type { Antenna } from '@/server/api/endpoints/i/import-antennas.js';
 import { ApRequestCreator } from '@/core/activitypub/ApRequestService.js';
+import { TimeService } from '@/core/TimeService.js';
 import type { SystemWebhookPayload } from '@/core/SystemWebhookService.js';
 import type { MiNote } from '@/models/Note.js';
 import { type UserWebhookPayload } from './UserWebhookService.js';
@@ -71,6 +72,8 @@ export class QueueService implements OnModuleInit {
 		@Inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
 		@Inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
 		@Inject('queue:scheduleNotePost') public ScheduleNotePostQueue: ScheduleNotePostQueue,
+
+		private readonly timeService: TimeService,
 	) {}
 
 	@bindThis
@@ -791,7 +794,7 @@ export class QueueService implements OnModuleInit {
 			userId: webhook.userId,
 			to: webhook.url,
 			secret: webhook.secret,
-			createdAt: Date.now(),
+			createdAt: this.timeService.now,
 			eventId: randomUUID(),
 		};
 
@@ -828,7 +831,7 @@ export class QueueService implements OnModuleInit {
 			webhookId: webhook.id,
 			to: webhook.url,
 			secret: webhook.secret,
-			createdAt: Date.now(),
+			createdAt: this.timeService.now,
 			eventId: randomUUID(),
 		};
 

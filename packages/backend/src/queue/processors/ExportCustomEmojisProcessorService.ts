@@ -17,6 +17,7 @@ import { DriveService } from '@/core/DriveService.js';
 import { createTemp, createTempDir } from '@/misc/create-temp.js';
 import { DownloadService } from '@/core/DownloadService.js';
 import { NotificationService } from '@/core/NotificationService.js';
+import { TimeService } from '@/core/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
@@ -39,6 +40,7 @@ export class ExportCustomEmojisProcessorService {
 		private downloadService: DownloadService,
 		private queueLoggerService: QueueLoggerService,
 		private notificationService: NotificationService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('export-custom-emojis');
 	}
@@ -133,7 +135,7 @@ export class ExportCustomEmojisProcessorService {
 			archiveStream.on('close', async () => {
 				this.logger.debug(`Exported to: ${archivePath}`);
 
-				const fileName = 'custom-emojis-' + dateFormat(new Date(), 'yyyy-MM-dd-HH-mm-ss') + '.zip';
+				const fileName = 'custom-emojis-' + dateFormat(this.timeService.date, 'yyyy-MM-dd-HH-mm-ss') + '.zip';
 				const driveFile = await this.driveService.addFile({ user, path: archivePath, name: fileName, force: true });
 
 				this.logger.debug(`Exported to: ${driveFile.id}`);

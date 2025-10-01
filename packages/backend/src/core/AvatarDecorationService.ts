@@ -15,6 +15,7 @@ import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { CacheManagementService, type ManagedMemorySingleCache } from '@/core/CacheManagementService.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
+import { TimeService } from '@/core/TimeService.js';
 
 @Injectable()
 export class AvatarDecorationService implements OnApplicationShutdown {
@@ -31,6 +32,8 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 		private moderationLogService: ModerationLogService,
 		private globalEventService: GlobalEventService,
 		private readonly internalEventService: InternalEventService,
+		private readonly timeService: TimeService,
+
 		cacheManagementService: CacheManagementService,
 	) {
 		this.cache = cacheManagementService.createMemorySingleCache<MiAvatarDecoration[]>(1000 * 60 * 30); // 30s
@@ -68,7 +71,7 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 	public async update(id: MiAvatarDecoration['id'], params: Partial<MiAvatarDecoration>, moderator?: MiUser): Promise<void> {
 		const avatarDecoration = await this.avatarDecorationsRepository.findOneByOrFail({ id });
 
-		const date = new Date();
+		const date = this.timeService.date;
 		await this.avatarDecorationsRepository.update(avatarDecoration.id, {
 			updatedAt: date,
 			...params,

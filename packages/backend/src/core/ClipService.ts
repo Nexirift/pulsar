@@ -12,6 +12,7 @@ import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js
 import { RoleService } from '@/core/RoleService.js';
 import { IdService } from '@/core/IdService.js';
 import type { MiLocalUser } from '@/models/User.js';
+import { TimeService } from '@/core/TimeService.js';
 
 @Injectable()
 export class ClipService {
@@ -33,6 +34,7 @@ export class ClipService {
 
 		private roleService: RoleService,
 		private idService: IdService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -125,7 +127,7 @@ export class ClipService {
 		}
 
 		this.clipsRepository.update(clip.id, {
-			lastClippedAt: new Date(),
+			lastClippedAt: this.timeService.date,
 		});
 
 		this.notesRepository.increment({ id: noteId }, 'clippedCount', 1);

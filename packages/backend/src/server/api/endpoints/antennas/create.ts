@@ -11,6 +11,7 @@ import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { AntennaEntityService } from '@/core/entities/AntennaEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
+import { TimeService } from '@/core/TimeService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -97,6 +98,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private roleService: RoleService,
 		private idService: IdService,
 		private globalEventService: GlobalEventService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.keywords.flat().every(x => x === '') && ps.excludeKeywords.flat().every(x => x === '')) {
@@ -123,7 +125,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}
 			}
 
-			const now = new Date();
+			const now = this.timeService.date;
 
 			const antenna = await this.antennasRepository.insertOne({
 				id: this.idService.gen(now.getTime()),

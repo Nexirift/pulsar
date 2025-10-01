@@ -16,6 +16,7 @@ import { CacheManagementService, type ManagedQuantumKVCache } from '@/core/Cache
 import { InternalEventService } from '@/core/InternalEventService.js';
 import { diffArraysSimple } from '@/misc/diff-arrays.js';
 import { bindThis } from '@/decorators.js';
+import { TimeService } from '@/core/TimeService.js';
 import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 @Injectable()
@@ -32,6 +33,7 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 		private utilityService: UtilityService,
 		private idService: IdService,
 		private readonly internalEventService: InternalEventService,
+		private readonly timeService: TimeService,
 
 		cacheManagementService: CacheManagementService,
 	) {
@@ -47,7 +49,7 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 						.values({
 							id: this.idService.gen(),
 							host,
-							firstRetrievedAt: new Date(),
+							firstRetrievedAt: this.timeService.date,
 							isBlocked: this.utilityService.isBlockedHost(host),
 							isSilenced: this.utilityService.isSilencedHost(host),
 							isMediaSilenced: this.utilityService.isMediaSilencedHost(host),
@@ -87,7 +89,7 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 				.values({
 					id: this.idService.gen(),
 					host,
-					firstRetrievedAt: new Date(),
+					firstRetrievedAt: this.timeService.date,
 					isBlocked: this.utilityService.isBlockedHost(host),
 					isSilenced: this.utilityService.isSilencedHost(host),
 					isMediaSilenced: this.utilityService.isMediaSilencedHost(host),

@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import Xev from 'xev';
 import * as Bull from 'bullmq';
 import { QueueService } from '@/core/QueueService.js';
+import { TimeService, type TimerHandle } from '@/core/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
@@ -31,7 +32,7 @@ const interval = 10000;
 
 @Injectable()
 export class QueueStatsService implements OnApplicationShutdown {
-	private intervalId?: NodeJS.Timeout;
+	private intervalId?: TimerHandle;
 	private activeDeliverJobs = 0;
 	private activeInboxJobs = 0;
 
@@ -45,6 +46,7 @@ export class QueueStatsService implements OnApplicationShutdown {
 		private config: Config,
 
 		private queueService: QueueService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -114,13 +116,13 @@ export class QueueStatsService implements OnApplicationShutdown {
 
 		tick();
 
-		this.intervalId = setInterval(tick, interval);
+		this.intervalId = this.timeService.startTimer(tick, interval, { repeated: true });
 	}
 
 	@bindThis
 	public async stop() {
 		if (this.intervalId) {
-			clearInterval(this.intervalId);
+			this.timeService.stopTimer(this.intervalId);
 		}
 
 		this.log = undefined;

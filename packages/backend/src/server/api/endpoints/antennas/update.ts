@@ -8,6 +8,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import type { AntennasRepository, UserListsRepository } from '@/models/_.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { AntennaEntityService } from '@/core/entities/AntennaEntityService.js';
+import { TimeService } from '@/core/TimeService.js';
 import { DI } from '@/di-symbols.js';
 import { ApiError } from '../../error.js';
 
@@ -94,6 +95,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private antennaEntityService: AntennaEntityService,
 		private globalEventService: GlobalEventService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.keywords && ps.excludeKeywords) {
@@ -138,7 +140,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				withFile: ps.withFile,
 				excludeNotesInSensitiveChannel: ps.excludeNotesInSensitiveChannel,
 				isActive: true,
-				lastUsedAt: new Date(),
+				lastUsedAt: this.timeService.date,
 			});
 
 			this.globalEventService.publishInternalEvent('antennaUpdated', await this.antennasRepository.findOneByOrFail({ id: antenna.id }));

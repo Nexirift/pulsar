@@ -11,6 +11,7 @@ import { QueryService } from '@/core/QueryService.js';
 import { DI } from '@/di-symbols.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { IdService } from '@/core/IdService.js';
+import { TimeService } from '@/core/TimeService.js';
 import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
@@ -77,6 +78,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private fanoutTimelineService: FanoutTimelineService,
 		private globalEventService: GlobalEventService,
 		private readonly activeUsersChart: ActiveUsersChart,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
@@ -95,7 +97,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const needPublishEvent = !antenna.isActive;
 
 			antenna.isActive = true;
-			antenna.lastUsedAt = new Date();
+			antenna.lastUsedAt = this.timeService.date;
 			trackPromise(this.antennasRepository.update(antenna.id, antenna));
 
 			if (needPublishEvent) {

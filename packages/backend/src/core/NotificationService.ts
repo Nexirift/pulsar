@@ -22,6 +22,7 @@ import type { Config } from '@/config.js';
 import { UserListService } from '@/core/UserListService.js';
 import { FilterUnionByProperty, groupedNotificationTypes, obsoleteNotificationTypes } from '@/types.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
+import { TimeService } from '@/core/TimeService.js';
 
 @Injectable()
 export class NotificationService implements OnApplicationShutdown {
@@ -43,6 +44,7 @@ export class NotificationService implements OnApplicationShutdown {
 		private pushNotificationService: PushNotificationService,
 		private cacheService: CacheService,
 		private userListService: UserListService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -146,7 +148,7 @@ export class NotificationService implements OnApplicationShutdown {
 			}
 		}
 
-		const createdAt = new Date();
+		const createdAt = this.timeService.date;
 		let notification: FilterUnionByProperty<MiNotification, 'type', T>;
 		let redisId: string;
 
@@ -187,7 +189,7 @@ export class NotificationService implements OnApplicationShutdown {
 		// 2秒経っても(今回作成した)通知が既読にならなかったら「未読の通知がありますよ」イベントを発行する
 		// テスト通知の場合は即時発行
 		const interval = notification.type === 'test' ? 0 : 2000;
-		setTimeout(interval, 'unread notification', { signal: this.#shutdownController.signal }).then(async () => {
+		this.timeService.startPromiseTimer(interval, 'unread notification', { signal: this.#shutdownController.signal }).then(async () => {
 			const latestReadNotificationId = await this.redisClient.get(`latestReadNotification:${notifieeId}`);
 			if (latestReadNotificationId && (latestReadNotificationId >= redisId)) return;
 

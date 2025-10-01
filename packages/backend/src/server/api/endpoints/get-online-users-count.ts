@@ -9,6 +9,7 @@ import { USER_ONLINE_THRESHOLD } from '@/const.js';
 import type { UsersRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
+import { TimeService } from '@/core/TimeService.js';
 
 export const meta = {
 	tags: ['meta'],
@@ -45,10 +46,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	constructor(
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async () => {
 			const count = await this.usersRepository.countBy({
-				lastActiveDate: MoreThan(new Date(Date.now() - USER_ONLINE_THRESHOLD)),
+				lastActiveDate: MoreThan(new Date(this.timeService.now - USER_ONLINE_THRESHOLD)),
 			});
 
 			return {

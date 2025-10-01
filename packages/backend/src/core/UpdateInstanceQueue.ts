@@ -8,6 +8,7 @@ import { CollapsedQueue } from '@/misc/collapsed-queue.js';
 import { bindThis } from '@/decorators.js';
 import { MiNote } from '@/models/Note.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
+import { TimeService } from '@/core/TimeService.js';
 
 type UpdateInstanceJob = {
 	latestRequestReceivedAt: Date,
@@ -19,8 +20,9 @@ type UpdateInstanceJob = {
 export class UpdateInstanceQueue extends CollapsedQueue<MiNote['id'], UpdateInstanceJob> implements OnApplicationShutdown {
 	constructor(
 		private readonly federatedInstanceService: FederatedInstanceService,
+		timeService: TimeService,
 	) {
-		super(process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, (id, job) => this.collapseUpdateInstanceJobs(id, job), (id, job) => this.performUpdateInstance(id, job));
+		super(timeService, process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, (id, job) => this.collapseUpdateInstanceJobs(id, job), (id, job) => this.performUpdateInstance(id, job));
 	}
 
 	@bindThis
@@ -38,7 +40,7 @@ export class UpdateInstanceQueue extends CollapsedQueue<MiNote['id'], UpdateInst
 	@bindThis
 	private async performUpdateInstance(id: string, job: UpdateInstanceJob) {
 		await this.federatedInstanceService.update(id, {
-			latestRequestReceivedAt: new Date(),
+			latestRequestReceivedAt: this.timeService.date,
 			isNotResponding: false,
 			// もしサーバーが死んでるために配信が止まっていた場合には自動的に復活させてあげる
 			suspensionState: job.shouldUnsuspend ? 'none' : undefined,

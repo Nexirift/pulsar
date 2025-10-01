@@ -26,7 +26,8 @@ import { isQuote, isRenote } from '@/misc/is-renote.js';
 import { LatestNoteService } from '@/core/LatestNoteService.js';
 import { ApLogService } from '@/core/ApLogService.js';
 import type Logger from '@/logger.js';
-import { LoggerService } from './LoggerService.js';
+import { TimeService } from '@/core/TimeService.js';
+import { LoggerService } from '@/core/LoggerService.js';
 
 @Injectable()
 export class NoteDeleteService {
@@ -60,6 +61,8 @@ export class NoteDeleteService {
 		private instanceChart: InstanceChart,
 		private latestNoteService: LatestNoteService,
 		private readonly apLogService: ApLogService,
+		private readonly timeService: TimeService,
+
 		loggerService: LoggerService,
 	) {
 		this.logger = loggerService.getLogger('note-delete-service');
@@ -71,7 +74,7 @@ export class NoteDeleteService {
 	 * @param note 投稿
 	 */
 	async delete(user: { id: MiUser['id']; uri: MiUser['uri']; host: MiUser['host']; isBot: MiUser['isBot']; }, note: MiNote, quiet = false, deleter?: MiUser) {
-		const deletedAt = new Date();
+		const deletedAt = this.timeService.date;
 		const cascadingNotes = await this.findCascadingNotes(note);
 
 		if (note.replyId) {
@@ -127,7 +130,7 @@ export class NoteDeleteService {
 				// Decrement notes count (user)
 				this.decNotesCountOfUser(user);
 			} else {
-				this.usersRepository.update({ id: user.id }, { updatedAt: new Date() });
+				this.usersRepository.update({ id: user.id }, { updatedAt: this.timeService.date });
 			}
 
 			if (this.meta.enableStatsForFederatedInstances) {
@@ -179,7 +182,7 @@ export class NoteDeleteService {
 	private decNotesCountOfUser(user: { id: MiUser['id']; }) {
 		this.usersRepository.createQueryBuilder().update()
 			.set({
-				updatedAt: new Date(),
+				updatedAt: this.timeService.date,
 				notesCount: () => '"notesCount" - 1',
 			})
 			.where('id = :id', { id: user.id })

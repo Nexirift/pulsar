@@ -7,6 +7,7 @@ import { Injectable } from '@nestjs/common';
 
 import { bindThis } from '@/decorators.js';
 import { ChartLoggerService } from '@/core/chart/ChartLoggerService.js';
+import { TimeService, type TimerHandle } from '@/core/TimeService.js';
 import Logger from '@/logger.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import FederationChart from './charts/federation.js';
@@ -26,7 +27,7 @@ import type { OnApplicationShutdown } from '@nestjs/common';
 @Injectable()
 export class ChartManagementService implements OnApplicationShutdown {
 	private charts;
-	private saveIntervalId: NodeJS.Timeout;
+	private saveIntervalId: TimerHandle;
 	private readonly logger: Logger;
 
 	constructor(
@@ -42,6 +43,8 @@ export class ChartManagementService implements OnApplicationShutdown {
 		private perUserFollowingChart: PerUserFollowingChart,
 		private perUserDriveChart: PerUserDriveChart,
 		private apRequestChart: ApRequestChart,
+		private readonly timeService: TimeService,
+
 		chartLoggerService: ChartLoggerService,
 	) {
 		this.charts = [
@@ -64,17 +67,17 @@ export class ChartManagementService implements OnApplicationShutdown {
 	@bindThis
 	public async start() {
 		// 20分おきにメモリ情報をDBに書き込み
-		this.saveIntervalId = setInterval(async () => {
+		this.saveIntervalId = this.timeService.startTimer(async () => {
 			for (const chart of this.charts) {
 				await chart.save();
 			}
 			this.logger.info('All charts saved');
-		}, 1000 * 60 * 20);
+		}, 1000 * 60 * 20, { repeated: true });
 	}
 
 	@bindThis
 	public async dispose(): Promise<void> {
-		clearInterval(this.saveIntervalId);
+		this.timeService.stopTimer(this.saveIntervalId);
 		if (process.env.NODE_ENV !== 'test') {
 			this.logger.info('Saving charts for shutdown...');
 			for (const chart of this.charts) {

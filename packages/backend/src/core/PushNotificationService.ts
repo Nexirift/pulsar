@@ -13,6 +13,7 @@ import { getNoteSummary } from '@/misc/get-note-summary.js';
 import type { MiMeta, MiSwSubscription, SwSubscriptionsRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { CacheManagementService, type ManagedQuantumKVCache } from '@/core/CacheManagementService.js';
+import { TimeService } from '@/core/TimeService.js';
 
 // Defined also packages/sw/types.ts#L13
 type PushNotificationsTypes = {
@@ -62,6 +63,9 @@ export class PushNotificationService {
 
 		@Inject(DI.swSubscriptionsRepository)
 		private swSubscriptionsRepository: SwSubscriptionsRepository,
+
+		private readonly timeService: TimeService,
+
 		cacheManagementService: CacheManagementService,
 	) {
 		this.subscriptionsCache = cacheManagementService.createQuantumKVCache<MiSwSubscription[]>('userSwSubscriptions', {
@@ -98,7 +102,7 @@ export class PushNotificationService {
 				type,
 				body: (type === 'notification' || type === 'unreadAntennaNote') ? truncateBody(type, body) : body,
 				userId,
-				dateTime: Date.now(),
+				dateTime: this.timeService.now,
 			}), {
 				proxy: this.config.proxy,
 			}).catch((err: any) => {

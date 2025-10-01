@@ -16,6 +16,7 @@ import { ILink, WebfingerService } from '@/core/WebfingerService.js';
 import { RemoteLoggerService } from '@/core/RemoteLoggerService.js';
 import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
+import { TimeService } from '@/core/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 
@@ -35,6 +36,7 @@ export class RemoteUserResolveService {
 		private remoteLoggerService: RemoteLoggerService,
 		private apDbResolverService: ApDbResolverService,
 		private apPersonService: ApPersonService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.remoteLoggerService.logger.createSubLogger('resolve-user');
 	}
@@ -81,10 +83,10 @@ export class RemoteUserResolveService {
 		}
 
 		// ユーザー情報が古い場合は、WebFingerからやりなおして返す
-		if (user.lastFetchedAt == null || Date.now() - user.lastFetchedAt.getTime() > 1000 * 60 * 60 * 24) {
+		if (user.lastFetchedAt == null || this.timeService.now - user.lastFetchedAt.getTime() > 1000 * 60 * 60 * 24) {
 			// 繋がらないインスタンスに何回も試行するのを防ぐ, 後続の同様処理の連続試行を防ぐ ため 試行前にも更新する
 			await this.usersRepository.update(user.id, {
-				lastFetchedAt: new Date(),
+				lastFetchedAt: this.timeService.date,
 			});
 
 			const self = await this.resolveSelf(acctLower);

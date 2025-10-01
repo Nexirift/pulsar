@@ -35,6 +35,7 @@ import { UtilityService } from '@/core/UtilityService.js';
 import { CacheService } from '@/core/CacheService.js';
 import { isPureRenote, isQuote, isRenote } from '@/misc/is-renote.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
+import { TimeService } from '@/core/TimeService.js';
 import { JsonLdService } from './JsonLdService.js';
 import { ApMfmService } from './ApMfmService.js';
 import { CONTEXT } from './misc/contexts.js';
@@ -80,6 +81,7 @@ export class ApRendererService {
 		private readonly queryService: QueryService,
 		private readonly cacheService: CacheService,
 		private readonly federatedInstanceService: FederatedInstanceService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -174,7 +176,7 @@ export class ApRendererService {
 			type: 'Delete',
 			actor: this.userEntityService.genLocalUserUri(user.id),
 			object,
-			published: new Date().toISOString(),
+			published: this.timeService.date.toISOString(),
 		};
 	}
 
@@ -196,7 +198,7 @@ export class ApRendererService {
 			id: `${this.config.url}/emojis/${emoji.name}`,
 			type: 'Emoji',
 			name: `:${emoji.name}:`,
-			updated: emoji.updatedAt != null ? emoji.updatedAt.toISOString() : new Date().toISOString(),
+			updated: emoji.updatedAt != null ? emoji.updatedAt.toISOString() : this.timeService.date.toISOString(),
 			icon: {
 				type: 'Image',
 				mediaType: emoji.type ?? 'image/png',
@@ -534,7 +536,7 @@ export class ApRendererService {
 
 		const asPoll = poll ? {
 			type: 'Question',
-			[poll.expiresAt && poll.expiresAt < new Date() ? 'closed' : 'endTime']: poll.expiresAt,
+			[poll.expiresAt && poll.expiresAt < this.timeService.date ? 'closed' : 'endTime']: poll.expiresAt,
 			[poll.multiple ? 'anyOf' : 'oneOf']: poll.choices.map((text, i) => ({
 				type: 'Note',
 				name: text,
@@ -755,21 +757,21 @@ export class ApRendererService {
 			...(id ? { id } : {}),
 			actor: this.userEntityService.genLocalUserUri(user.id),
 			object,
-			published: new Date().toISOString(),
+			published: this.timeService.date.toISOString(),
 		};
 	}
 
 	@bindThis
 	public renderUpdate(object: IObject, user: { id: MiUser['id'] }): IUpdate {
 		// Deterministic activity IDs to allow de-duplication by remote instances
-		const updatedAt = object.updated ? new Date(object.updated).getTime() : Date.now();
+		const updatedAt = object.updated ? new Date(object.updated).getTime() : this.timeService.now;
 		return {
 			id: `${this.config.url}/users/${user.id}#updates/${updatedAt}`,
 			actor: this.userEntityService.genLocalUserUri(user.id),
 			type: 'Update',
 			to: ['https://www.w3.org/ns/activitystreams#Public'],
 			object,
-			published: new Date().toISOString(),
+			published: this.timeService.date.toISOString(),
 		};
 	}
 
@@ -780,7 +782,7 @@ export class ApRendererService {
 			actor: this.userEntityService.genLocalUserUri(user.id),
 			type: 'Create',
 			to: [pollOwner.uri],
-			published: new Date().toISOString(),
+			published: this.timeService.date.toISOString(),
 			object: {
 				id: `${this.config.url}/users/${user.id}#votes/${vote.id}`,
 				type: 'Note',

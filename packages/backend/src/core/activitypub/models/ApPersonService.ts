@@ -41,6 +41,7 @@ import type { AccountMoveService } from '@/core/AccountMoveService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
 import { AppLockService } from '@/core/AppLockService.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
+import { TimeService } from '@/core/TimeService.js';
 import { verifyFieldLinks } from '@/misc/verify-field-link.js';
 import { isRetryableError } from '@/misc/is-retryable-error.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
@@ -116,6 +117,7 @@ export class ApPersonService implements OnModuleInit {
 		private readonly utilityService: UtilityService,
 		private readonly apUtilityService: ApUtilityService,
 		private readonly idService: IdService,
+		private readonly timeService: TimeService,
 
 		apLoggerService: ApLoggerService,
 	) {
@@ -419,13 +421,13 @@ export class ApPersonService implements OnModuleInit {
 					avatarId: null,
 					bannerId: null,
 					backgroundId: null,
-					lastFetchedAt: new Date(),
+					lastFetchedAt: this.timeService.date,
 					name: truncate(person.name, nameLength),
 					noindex: (person as any).noindex ?? false,
 					enableRss: person.enableRss === true,
 					isLocked: person.manuallyApprovesFollowers,
 					movedToUri: person.movedTo,
-					movedAt: person.movedTo ? new Date() : null,
+					movedAt: person.movedTo ? this.timeService.date : null,
 					alsoKnownAs: person.alsoKnownAs,
 					// We use "!== false" to handle incorrect types, missing / null values, and "default to true" logic.
 					hideOnlineStatus: person.hideOnlineStatus !== false,
@@ -634,7 +636,7 @@ export class ApPersonService implements OnModuleInit {
 		const verifiedLinks = await verifyFieldLinks(fields, profileUrls, this.httpRequestService);
 
 		const updates = {
-			lastFetchedAt: new Date(),
+			lastFetchedAt: this.timeService.date,
 			inbox: person.inbox,
 			sharedInbox: person.sharedInbox ?? person.endpoints?.sharedInbox ?? null,
 			followersUri: person.followers ? getApId(person.followers) : undefined,
@@ -688,7 +690,7 @@ export class ApPersonService implements OnModuleInit {
 			return false;
 		})();
 
-		if (moving) updates.movedAt = new Date();
+		if (moving) updates.movedAt = this.timeService.date;
 
 		// Update user
 		if (!(await this.usersRepository.update({ id: exist.id, isDeleted: false }, updates)).affected) {
@@ -894,7 +896,7 @@ export class ApPersonService implements OnModuleInit {
 			for (const note of featuredNotes.filter(x => x != null)) {
 				td -= 1000;
 				transactionalEntityManager.insert(MiUserNotePining, {
-					id: this.idService.gen(Date.now() + td),
+					id: this.idService.gen(this.timeService.now + td),
 					userId: user.id,
 					noteId: note.id,
 				});

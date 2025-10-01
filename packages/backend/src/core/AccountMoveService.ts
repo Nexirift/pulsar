@@ -28,6 +28,7 @@ import { RoleService } from '@/core/RoleService.js';
 import { AntennaService } from '@/core/AntennaService.js';
 import { CacheService } from '@/core/CacheService.js';
 import { UserListService } from '@/core/UserListService.js';
+import { TimeService } from '@/core/TimeService.js';
 
 @Injectable()
 export class AccountMoveService {
@@ -72,6 +73,7 @@ export class AccountMoveService {
 		private antennaService: AntennaService,
 		private readonly cacheService: CacheService,
 		private readonly userListService: UserListService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -89,7 +91,7 @@ export class AccountMoveService {
 		const update = {} as Partial<MiLocalUser>;
 		update.alsoKnownAs = src.alsoKnownAs?.includes(dstUri) ? src.alsoKnownAs : src.alsoKnownAs?.concat([dstUri]) ?? [dstUri];
 		update.movedToUri = dstUri;
-		update.movedAt = new Date();
+		update.movedAt = this.timeService.date;
 		await this.usersRepository.update(src.id, update);
 		Object.assign(src, update);
 
@@ -181,7 +183,7 @@ export class AccountMoveService {
 		// Insert new mutings with the same values except mutee
 		const oldMutings = await this.mutingsRepository.findBy([
 			{ muteeId: src.id, expiresAt: IsNull() },
-			{ muteeId: src.id, expiresAt: MoreThan(new Date()) },
+			{ muteeId: src.id, expiresAt: MoreThan(this.timeService.date) },
 		]);
 		if (oldMutings.length === 0) return;
 
@@ -348,7 +350,7 @@ export class AccountMoveService {
 		let resultUser: MiLocalUser | MiRemoteUser | null = null;
 
 		if (this.userEntityService.isRemoteUser(dst)) {
-			if (Date.now() - (dst.lastFetchedAt?.getTime() ?? 0) > 10 * 1000) {
+			if (this.timeService.now - (dst.lastFetchedAt?.getTime() ?? 0) > 10 * 1000) {
 				await this.apPersonService.updatePerson(dst.uri);
 			}
 			dst = await this.apPersonService.fetchPerson(dst.uri) ?? dst;
@@ -364,7 +366,7 @@ export class AccountMoveService {
 				if (!src) continue; // oldAccountを探してもこのサーバーに存在しない場合はフォロー関係もないということなのでスルー
 
 				if (this.userEntityService.isRemoteUser(dst)) {
-					if (Date.now() - (src.lastFetchedAt?.getTime() ?? 0) > 10 * 1000) {
+					if (this.timeService.now - (src.lastFetchedAt?.getTime() ?? 0) > 10 * 1000) {
 						await this.apPersonService.updatePerson(srcUri);
 					}
 

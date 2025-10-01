@@ -14,6 +14,7 @@ import type { Packed } from '@/misc/json-schema.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { CacheService } from '@/core/CacheService.js';
 import { IdService } from '@/core/IdService.js';
+import { TimeService } from '@/core/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
 import { DI } from '@/di-symbols.js';
@@ -70,6 +71,7 @@ export class NoteVisibilityService {
 		private readonly cacheService: CacheService,
 		private readonly idService: IdService,
 		private readonly federatedInstanceService: FederatedInstanceService,
+		private readonly timeService: TimeService,
 	) {}
 
 	@bindThis
@@ -293,7 +295,7 @@ export class NoteVisibilityService {
 			const createdAt = new Date(note.createdAt).valueOf();
 
 			// I don't understand this logic, but I tried to break it out for readability
-			const followersOnlyOpt1 = followersOnlyBefore <= 0 && (Date.now() - createdAt > 0 - followersOnlyBefore);
+			const followersOnlyOpt1 = followersOnlyBefore <= 0 && (this.timeService.now - createdAt > 0 - followersOnlyBefore);
 			const followersOnlyOpt2 = followersOnlyBefore > 0 && (createdAt < followersOnlyBefore);
 			if (followersOnlyOpt1 || followersOnlyOpt2) {
 				note.visibility = 'followers';
@@ -323,7 +325,7 @@ export class NoteVisibilityService {
 			const createdAt = note.createdAt.valueOf();
 
 			// I don't understand this logic, but I tried to break it out for readability
-			const hiddenOpt1 = hiddenBefore <= 0 && (Date.now() - createdAt > 0 - hiddenBefore);
+			const hiddenOpt1 = hiddenBefore <= 0 && (this.timeService.now - createdAt > 0 - hiddenBefore);
 			const hiddenOpt2 = hiddenBefore > 0 && (createdAt < hiddenBefore);
 			if (hiddenOpt1 || hiddenOpt2) return true;
 		}

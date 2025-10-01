@@ -15,6 +15,7 @@ import { isNativeUserToken } from '@/misc/token.js';
 import { bindThis } from '@/decorators.js';
 import { attachCallerId } from '@/misc/attach-caller-id.js';
 import { CacheManagementService, type ManagedMemoryKVCache } from '@/core/CacheManagementService.js';
+import { TimeService } from '@/core/TimeService.js';
 
 export class AuthenticationError extends Error {
 	constructor(message: string) {
@@ -38,6 +39,8 @@ export class AuthenticateService {
 		private appsRepository: AppsRepository,
 
 		private cacheService: CacheService,
+		private readonly timeService: TimeService,
+
 		cacheManagementService: CacheManagementService,
 	) {
 		this.appCache = cacheManagementService.createMemoryKVCache<MiApp>(1000 * 60 * 60 * 24); // 1d
@@ -75,7 +78,7 @@ export class AuthenticateService {
 			}
 
 			this.accessTokensRepository.update(accessToken.id, {
-				lastUsedAt: new Date(),
+				lastUsedAt: this.timeService.date,
 			});
 
 			// Loaded by relation above

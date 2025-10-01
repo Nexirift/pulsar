@@ -15,6 +15,7 @@ import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { DI } from '@/di-symbols.js';
 import { UserBlockingService } from '@/core/UserBlockingService.js';
+import { TimeService } from '@/core/TimeService.js';
 import { ApiError } from '../../../error.js';
 
 export const meta = {
@@ -101,9 +102,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private apRendererService: ApRendererService,
 		private globalEventService: GlobalEventService,
 		private userBlockingService: UserBlockingService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const createdAt = new Date();
+			const createdAt = this.timeService.date;
 
 			// Get votee
 			const note = await this.getterService.getNote(ps.noteId).catch(err => {

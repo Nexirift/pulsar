@@ -15,6 +15,7 @@ import type { HashtagsRepository, MiMeta } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
 import { FeaturedService } from '@/core/FeaturedService.js';
 import { UtilityService } from '@/core/UtilityService.js';
+import { TimeService } from '@/core/TimeService.js';
 
 @Injectable()
 export class HashtagService {
@@ -31,6 +32,7 @@ export class HashtagService {
 		private featuredService: FeaturedService,
 		private idService: IdService,
 		private utilityService: UtilityService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -165,7 +167,7 @@ export class HashtagService {
 		if (this.utilityService.isKeyWordIncluded(hashtag, this.meta.sensitiveWords)) return;
 
 		// YYYYMMDDHHmm (10分間隔)
-		const now = new Date();
+		const now = this.timeService.date;
 		now.setMinutes(Math.floor(now.getMinutes() / 10) * 10, 0, 0);
 		const window = `${now.getUTCFullYear()}${(now.getUTCMonth() + 1).toString().padStart(2, '0')}${now.getUTCDate().toString().padStart(2, '0')}${now.getUTCHours().toString().padStart(2, '0')}${now.getUTCMinutes().toString().padStart(2, '0')}`;
 
@@ -196,7 +198,7 @@ export class HashtagService {
 
 	@bindThis
 	public async getChart(hashtag: string, range: number): Promise<number[]> {
-		const now = new Date();
+		const now = this.timeService.date;
 		now.setMinutes(Math.floor(now.getMinutes() / 10) * 10, 0, 0);
 
 		const redisPipeline = this.redisClient.pipeline();
@@ -216,7 +218,7 @@ export class HashtagService {
 
 	@bindThis
 	public async getCharts(hashtags: string[], range: number): Promise<Record<string, number[]>> {
-		const now = new Date();
+		const now = this.timeService.date;
 		now.setMinutes(Math.floor(now.getMinutes() / 10) * 10, 0, 0);
 
 		const redisPipeline = this.redisClient.pipeline();

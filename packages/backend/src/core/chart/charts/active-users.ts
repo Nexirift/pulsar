@@ -54,12 +54,12 @@ export default class ActiveUsersChart extends Chart<typeof schema> { // eslint-d
 		const createdAt = this.idService.parse(user.id).date;
 		await this.commit({
 			'read': [user.id],
-			'registeredWithinWeek': (Date.now() - createdAt.getTime() < week) ? [user.id] : [],
-			'registeredWithinMonth': (Date.now() - createdAt.getTime() < month) ? [user.id] : [],
-			'registeredWithinYear': (Date.now() - createdAt.getTime() < year) ? [user.id] : [],
-			'registeredOutsideWeek': (Date.now() - createdAt.getTime() > week) ? [user.id] : [],
-			'registeredOutsideMonth': (Date.now() - createdAt.getTime() > month) ? [user.id] : [],
-			'registeredOutsideYear': (Date.now() - createdAt.getTime() > year) ? [user.id] : [],
+			'registeredWithinWeek': (this.timeService.now - createdAt.getTime() < week) ? [user.id] : [],
+			'registeredWithinMonth': (this.timeService.now - createdAt.getTime() < month) ? [user.id] : [],
+			'registeredWithinYear': (this.timeService.now - createdAt.getTime() < year) ? [user.id] : [],
+			'registeredOutsideWeek': (this.timeService.now - createdAt.getTime() > week) ? [user.id] : [],
+			'registeredOutsideMonth': (this.timeService.now - createdAt.getTime() > month) ? [user.id] : [],
+			'registeredOutsideYear': (this.timeService.now - createdAt.getTime() > year) ? [user.id] : [],
 		});
 	}
 

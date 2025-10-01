@@ -11,6 +11,7 @@ import { bindThis } from '@/decorators.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { CacheService } from '@/core/CacheService.js';
+import { TimeService } from '@/core/TimeService.js';
 
 @Injectable()
 export class UserService {
@@ -22,6 +23,7 @@ export class UserService {
 		private systemWebhookService: SystemWebhookService,
 		private userEntityService: UserEntityService,
 		private readonly cacheService: CacheService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -30,7 +32,7 @@ export class UserService {
 		if (user.isHibernated) {
 			const result = await this.usersRepository.createQueryBuilder().update()
 				.set({
-					lastActiveDate: new Date(),
+					lastActiveDate: this.timeService.date,
 				})
 				.where('id = :id', { id: user.id })
 				.returning('*')
@@ -54,7 +56,7 @@ export class UserService {
 			}
 		} else {
 			this.usersRepository.update(user.id, {
-				lastActiveDate: new Date(),
+				lastActiveDate: this.timeService.date,
 			});
 		}
 	}

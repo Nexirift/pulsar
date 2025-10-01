@@ -10,6 +10,7 @@ import type { Config } from '@/config.js';
 import Logger, { type Console } from '@/logger.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
+import { NativeTimeService, TimeService } from '@/core/TimeService.js';
 
 /**
  * Mocked implementation of LoggerService.
@@ -35,9 +36,10 @@ export class MockLoggerService extends LoggerService {
 	 */
 	public verbose: boolean;
 
-	constructor(config?: Config) {
+	constructor(config?: Config, timeService?: TimeService) {
 		config ??= { logging: { verbose: false } } as Config;
-		super(config);
+		timeService ??= new NativeTimeService();
+		super(config, timeService);
 	}
 
 	/**

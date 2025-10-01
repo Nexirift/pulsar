@@ -57,6 +57,7 @@ import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { LatestNoteService } from '@/core/LatestNoteService.js';
 import { CollapsedQueue } from '@/misc/collapsed-queue.js';
 import { CacheService } from '@/core/CacheService.js';
+import { TimeService } from '@/core/TimeService.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import { isPureRenote } from '@/misc/is-renote.js';
 
@@ -224,9 +225,10 @@ export class NoteCreateService implements OnApplicationShutdown {
 		private userBlockingService: UserBlockingService,
 		private cacheService: CacheService,
 		private latestNoteService: LatestNoteService,
+		private readonly timeService: TimeService,
 		private readonly noteVisibilityService: NoteVisibilityService,
 	) {
-		this.updateNotesCountQueue = new CollapsedQueue(process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseNotesCount, this.performUpdateNotesCount);
+		this.updateNotesCountQueue = new CollapsedQueue(this.timeService, process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseNotesCount, this.performUpdateNotesCount);
 	}
 
 	@bindThis
@@ -253,7 +255,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			data.channel = await this.channelsRepository.findOneBy({ id: data.reply.channelId });
 		}
 
-		if (data.createdAt == null) data.createdAt = new Date();
+		if (data.createdAt == null) data.createdAt = this.timeService.date;
 		if (data.visibility == null) data.visibility = 'public';
 		if (data.localOnly == null) data.localOnly = false;
 		if (data.channel != null) data.visibility = 'public';
@@ -613,7 +615,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			// Increment notes count (user)
 			this.incNotesCountOfUser(user);
 		} else {
-			this.usersRepository.update({ id: user.id }, { updatedAt: new Date() });
+			this.usersRepository.update({ id: user.id }, { updatedAt: this.timeService.date });
 		}
 
 		this.pushToTl(note, user);
@@ -657,7 +659,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		}
 
 		if (data.poll && data.poll.expiresAt) {
-			const delay = data.poll.expiresAt.getTime() - Date.now();
+			const delay = data.poll.expiresAt.getTime() - this.timeService.now;
 			this.queueService.endedPollNotificationQueue.add(note.id, {
 				noteId: note.id,
 			}, {
@@ -791,7 +793,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		if (data.channel) {
 			this.channelsRepository.increment({ id: data.channel.id }, 'notesCount', 1);
 			this.channelsRepository.update(data.channel.id, {
-				lastNotedAt: new Date(),
+				lastNotedAt: this.timeService.date,
 			});
 
 			this.notesRepository.countBy({
@@ -838,7 +840,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			.execute();
 
 		// 30%の確率、3日以内に投稿されたノートの場合ハイライト用ランキング更新
-		if (user.isExplorable && Math.random() < 0.3 && (Date.now() - this.idService.parse(renote.id).date.getTime()) < 1000 * 60 * 60 * 24 * 3) {
+		if (user.isExplorable && Math.random() < 0.3 && (this.timeService.now - this.idService.parse(renote.id).date.getTime()) < 1000 * 60 * 60 * 24 * 3) {
 			const policies = await this.roleService.getUserPolicies(user);
 			if (policies.canTrend) {
 				if (renote.channelId != null) {
@@ -905,7 +907,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 	private incNotesCountOfUser(user: { id: MiUser['id']; }) {
 		this.usersRepository.createQueryBuilder().update()
 			.set({
-				updatedAt: new Date(),
+				updatedAt: this.timeService.date,
 				notesCount: () => '"notesCount" + 1',
 			})
 			.where('id = :id', { id: user.id })
@@ -1064,7 +1066,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		const hibernatedUsers = await this.usersRepository.find({
 			where: {
 				id: In(samples.map(x => x.followerId)),
-				lastActiveDate: LessThan(new Date(Date.now() - (1000 * 60 * 60 * 24 * 50))),
+				lastActiveDate: LessThan(new Date(this.timeService.now - (1000 * 60 * 60 * 24 * 50))),
 			},
 			select: ['id'],
 		});

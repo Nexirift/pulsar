@@ -32,6 +32,7 @@ import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
 import { PER_NOTE_REACTION_USER_PAIR_CACHE_MAX } from '@/const.js';
 import { CacheService } from '@/core/CacheService.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
+import { TimeService } from '@/core/TimeService.js';
 import type { DataSource } from 'typeorm';
 
 const FALLBACK = '\u2764';
@@ -108,6 +109,7 @@ export class ReactionService implements OnModuleInit {
 		private perUserReactionsChart: PerUserReactionsChart,
 		private readonly cacheService: CacheService,
 		private readonly noteVisibilityService: NoteVisibilityService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -222,13 +224,13 @@ export class ReactionService implements OnModuleInit {
 				.execute();
 		}
 
-		this.usersRepository.update({ id: user.id }, { updatedAt: new Date() });
+		this.usersRepository.update({ id: user.id }, { updatedAt: this.timeService.date });
 
 		// 30%の確率、セルフではない、3日以内に投稿されたノートの場合ハイライト用ランキング更新
 		if (
 			Math.random() < 0.3 &&
 			note.userId !== user.id &&
-			(Date.now() - this.idService.parse(note.id).date.getTime()) < 1000 * 60 * 60 * 24 * 3
+			(this.timeService.now - this.idService.parse(note.id).date.getTime()) < 1000 * 60 * 60 * 24 * 3
 		) {
 			const author = await this.cacheService.findUserById(note.userId);
 			if (author.isExplorable) {
@@ -338,7 +340,7 @@ export class ReactionService implements OnModuleInit {
 				.execute();
 		}
 
-		this.usersRepository.update({ id: user.id }, { updatedAt: new Date() });
+		this.usersRepository.update({ id: user.id }, { updatedAt: this.timeService.date });
 
 		this.globalEventService.publishNoteStream(note.id, 'unreacted', {
 			reaction: this.decodeReaction(exist.reaction).reaction,

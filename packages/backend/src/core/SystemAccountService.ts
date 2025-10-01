@@ -22,6 +22,7 @@ import { genRsaKeyPair } from '@/misc/gen-key-pair.js';
 import { CacheManagementService, type ManagedMemoryKVCache } from '@/core/CacheManagementService.js';
 import { CacheService } from '@/core/CacheService.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
+import { TimeService } from '@/core/TimeService.js';
 
 export const SYSTEM_ACCOUNT_TYPES = ['actor', 'relay', 'proxy'] as const;
 
@@ -51,6 +52,8 @@ export class SystemAccountService implements OnApplicationShutdown {
 		private idService: IdService,
 		private readonly cacheService: CacheService,
 		private readonly internalEventService: InternalEventService,
+		private readonly timeService: TimeService,
+
 		cacheManagementService: CacheManagementService,
 	) {
 		this.cache = cacheManagementService.createMemoryKVCache<string>(1000 * 60 * 10); // 10m
@@ -173,7 +176,7 @@ export class SystemAccountService implements OnApplicationShutdown {
 			});
 
 			await transactionalEntityManager.insert(MiUsedUsername, {
-				createdAt: new Date(),
+				createdAt: this.timeService.date,
 				username: extra.username.toLowerCase(),
 			});
 
