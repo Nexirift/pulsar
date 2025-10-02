@@ -84,6 +84,26 @@ export default [
 					"selector": "NewExpression[callee.name='Date'][arguments.length=0]",
 					"message": "new Date() is restricted. Use TimeService.date instead."
 				},
+				{
+					"selector": "NewExpression[callee.name='MemoryKVCache']",
+					"message": "Cache constructor will produce an unmanaged instance. Use CacheManagementService.createMemoryKVCache() instead."
+				},
+				{
+					"selector": "NewExpression[callee.name='MemorySingleCache']",
+					"message": "Cache constructor will produce an unmanaged instance. Use CacheManagementService.createMemorySingleCache() instead."
+				},
+				{
+					"selector": "NewExpression[callee.name='RedisKVCache']",
+					"message": "Cache constructor will produce an unmanaged instance. Use CacheManagementService.createRedisKVCache() instead."
+				},
+				{
+					"selector": "NewExpression[callee.name='RedisSingleCache']",
+					"message": "Cache constructor will produce an unmanaged instance. Use CacheManagementService.createRedisSingleCache() instead."
+				},
+				{
+					"selector": "NewExpression[callee.name='QuantumKVCache']",
+					"message": "Cache constructor will produce an unmanaged instance. Use CacheManagementService.createQuantumKVCache() instead."
+				},
 			],
 		},
 	},
