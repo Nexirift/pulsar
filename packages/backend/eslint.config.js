@@ -64,6 +64,10 @@ export default [
 					name: 'setInterval',
 					message: 'Use TimeService.startTimer instead.',
 					checkGlobalObject: true,
+				}, {
+					name: 'console',
+					message: 'Use a Logger instance instead.',
+					checkGlobalObject: true,
 				}
 			],
 			'no-restricted-properties': [
