@@ -158,12 +158,10 @@ import { ApPersonService } from './activitypub/models/ApPersonService.js';
 import { ApQuestionService } from './activitypub/models/ApQuestionService.js';
 import { QueueModule } from './QueueModule.js';
 import { QueueService } from './QueueService.js';
-import { LoggerService } from './LoggerService.js';
 import { SponsorsService } from './SponsorsService.js';
 import type { Provider } from '@nestjs/common';
 
 //#region 文字列ベースでのinjection用(循環参照対応のため)
-const $LoggerService: Provider = { provide: 'LoggerService', useExisting: LoggerService };
 const $AbuseReportService: Provider = { provide: 'AbuseReportService', useExisting: AbuseReportService };
 const $AbuseReportNotificationService: Provider = { provide: 'AbuseReportNotificationService', useExisting: AbuseReportNotificationService };
 const $AccountMoveService: Provider = { provide: 'AccountMoveService', useExisting: AccountMoveService };
@@ -322,7 +320,6 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		QueueModule,
 	],
 	providers: [
-		LoggerService,
 		AbuseReportService,
 		AbuseReportNotificationService,
 		AccountMoveService,
@@ -478,7 +475,6 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		SponsorsService,
 
 		//#region 文字列ベースでのinjection用(循環参照対応のため)
-		$LoggerService,
 		$AbuseReportService,
 		$AbuseReportNotificationService,
 		$AccountMoveService,
@@ -634,7 +630,6 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 	],
 	exports: [
 		QueueModule,
-		LoggerService,
 		AbuseReportService,
 		AbuseReportNotificationService,
 		AccountMoveService,
@@ -789,7 +784,6 @@ const $SponsorsService: Provider = { provide: 'SponsorsService', useExisting: Sp
 		SponsorsService,
 
 		//#region 文字列ベースでのinjection用(循環参照対応のため)
-		$LoggerService,
 		$AbuseReportService,
 		$AbuseReportNotificationService,
 		$AccountMoveService,

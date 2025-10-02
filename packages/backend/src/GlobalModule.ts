@@ -14,6 +14,7 @@ import { TimeService, NativeTimeService } from '@/core/TimeService.js';
 import { EnvService } from '@/core/EnvService.js';
 import { CacheManagementService } from '@/core/CacheManagementService.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
+import { LoggerService } from '@/core/LoggerService.js';
 import { DI } from './di-symbols.js';
 import { Config, loadConfig } from './config.js';
 import { createPostgresDataSource } from './postgres.js';
@@ -176,12 +177,13 @@ const $TimeService: Provider[] = [
 	{ provide: 'TimeService', useExisting: TimeService },
 ];
 const $EnvService: Provider[] = [EnvService, { provide: 'EnvService', useExisting: EnvService }];
+const $LoggerService: Provider[] = [LoggerService, { provide: 'LoggerService', useExisting: LoggerService }];
 
 @Global()
 @Module({
 	imports: [RepositoryModule],
-	providers: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit, $CacheManagementService, $InternalEventService, $TimeService, $EnvService].flat(),
-	exports: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit, $CacheManagementService, $InternalEventService, $TimeService, $EnvService, RepositoryModule].flat(),
+	providers: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit, $CacheManagementService, $InternalEventService, $TimeService, $EnvService, $LoggerService].flat(),
+	exports: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit, $CacheManagementService, $InternalEventService, $TimeService, $EnvService, $LoggerService, RepositoryModule].flat(),
 })
 export class GlobalModule implements OnApplicationShutdown {
 	private readonly logger = new Logger('global');
