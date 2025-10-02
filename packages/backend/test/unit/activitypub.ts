@@ -11,6 +11,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { jest } from '@jest/globals';
 import { MockApResolverService } from '../misc/MockApResolverService.js';
 import { MockConsole } from '../misc/MockConsole.js';
+import { ImmediateApPersonService, ImmediateFetchInstanceMetadataService } from '../misc/immediateBackgroundTasks.js';
 import type { Config } from '@/config.js';
 import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import { ApImageService } from '@/core/activitypub/models/ApImageService.js';
@@ -25,6 +26,7 @@ import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { ApResolverService } from '@/core/activitypub/ApResolverService.js';
+import { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataService.js';
 import type { IActor, IApDocument, ICollection, IObject, IPost } from '@/core/activitypub/type.js';
 import { MiMeta, MiNote, MiUser, MiUserKeypair, UserNotePiningsRepository, UserProfilesRepository, UserPublickeysRepository, UserKeypairsRepository, UsersRepository, NotesRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
@@ -164,6 +166,8 @@ describe('ActivityPub', () => {
 			.overrideProvider(DI.meta).useValue(meta)
 			.overrideProvider(ApResolverService).useClass(MockApResolverService)
 			.overrideProvider(DI.console).useClass(MockConsole)
+			.overrideProvider(FetchInstanceMetadataService).useClass(ImmediateFetchInstanceMetadataService)
+			.overrideProvider(ApPersonService).useClass(ImmediateApPersonService)
 			.compile();
 
 		await app.init();
