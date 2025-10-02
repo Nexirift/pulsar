@@ -16,7 +16,7 @@ import {
 import { QuantumKVCache, type QuantumKVOpts } from '@/misc/QuantumKVCache.js';
 import { bindThis } from '@/decorators.js';
 import { DI } from '@/di-symbols.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService, type TimerHandle } from '@/core/TimeService.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
 
 // This is the one place that's *supposed* to new() up caches.
@@ -28,8 +28,10 @@ export type ManagedRedisKVCache<T> = Managed<RedisKVCache<T>>;
 export type ManagedRedisSingleCache<T> = Managed<RedisSingleCache<T>>;
 export type ManagedQuantumKVCache<T> = Managed<QuantumKVCache<T>>;
 
-export type Managed<T> = Omit<T, 'dispose' | 'onApplicationShutdown'>;
-export type Manager = { dispose(): void, clear(): void };
+export type Managed<T> = Omit<T, 'dispose' | 'onApplicationShutdown' | 'gc'>;
+export type Manager = { dispose(): void, clear(): void, gc(): void };
+
+export const GC_INTERVAL = 1000 * 60 * 3; // 3m
 
 /**
  * Creates and "manages" instances of any standard cache type.
@@ -38,6 +40,7 @@ export type Manager = { dispose(): void, clear(): void };
 @Injectable()
 export class CacheManagementService implements OnApplicationShutdown {
 	private readonly managedCaches = new Set<Manager>();
+	private gcTimer?: TimerHandle | null;
 
 	constructor(
 		@Inject(DI.redis)
@@ -87,18 +90,32 @@ export class CacheManagementService implements OnApplicationShutdown {
 
 	protected manageCache<T extends Manager>(cache: T): Managed<T> {
 		this.managedCaches.add(cache);
+		this.startGcTimer();
 		return cache;
 	}
 
 	@bindThis
+	public gc(): void {
+		this.resetGcTimer(() => {
+			// TODO callAll()
+			for (const manager of this.managedCaches) {
+				manager.gc();
+			}
+		});
+	}
+
+	@bindThis
 	public clear(): void {
-		for (const manager of this.managedCaches) {
-			manager.clear();
-		}
+		this.resetGcTimer(() => {
+			for (const manager of this.managedCaches) {
+				manager.clear();
+			}
+		});
 	}
 
 	@bindThis
 	public async dispose(): Promise<void> {
+		this.stopGcTimer();
 		for (const manager of this.managedCaches) {
 			manager.dispose();
 		}
@@ -108,5 +125,33 @@ export class CacheManagementService implements OnApplicationShutdown {
 	@bindThis
 	public async onApplicationShutdown(): Promise<void> {
 		await this.dispose();
+	}
+
+	@bindThis
+	private startGcTimer() {
+		// Only start it once, and don't *re* start since this gets called repeatedly.
+		this.gcTimer ??= this.timeService.startTimer(this.gc, GC_INTERVAL, { repeated: true });
+	}
+
+	@bindThis
+	private stopGcTimer() {
+		// Only stop it once, then clear the value so it can be restarted later.
+		if (this.gcTimer != null) {
+			this.timeService.stopTimer(this.gcTimer);
+			this.gcTimer = null;
+		}
+	}
+
+	@bindThis
+	private resetGcTimer(onBlank?: () => void): void {
+		this.stopGcTimer();
+
+		try {
+			if (onBlank) {
+				onBlank();
+			}
+		} finally {
+			this.startGcTimer();
+		}
 	}
 }

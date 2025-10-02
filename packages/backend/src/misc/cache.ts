@@ -5,10 +5,7 @@
 
 import * as Redis from 'ioredis';
 import { bindThis } from '@/decorators.js';
-import { TimeService, NativeTimeService } from '@/core/TimeService.js';
-
-// This matches the default DI implementation, but as a shared instance to avoid wasting memory.
-const defaultTimeService: TimeService = new NativeTimeService();
+import { TimeService } from '@/core/TimeService.js';
 
 export interface RedisCacheServices extends MemoryCacheServices {
 	readonly redisClient: Redis.Redis
@@ -195,6 +192,11 @@ export class RedisSingleCache<T> {
 	}
 
 	@bindThis
+	public gc(): void {
+		this.memoryCache.gc();
+	}
+
+	@bindThis
 	public async delete(): Promise<void> {
 		this.memoryCache.delete();
 		await this.redisClient.del(`singlecache:${this.name}`);
@@ -242,22 +244,20 @@ export class RedisSingleCache<T> {
 }
 
 export interface MemoryCacheServices {
-	readonly timeService?: TimeService;
+	readonly timeService: TimeService;
 }
 
 // TODO: メモリ節約のためあまり参照されないキーを定期的に削除できるようにする？
 
 export class MemoryKVCache<T> {
 	private readonly cache = new Map<string, { date: number; value: T; }>();
-	private readonly gcIntervalHandle: symbol;
 	private readonly timeService: TimeService;
 
 	constructor(
 		private readonly lifetime: number,
-		services?: MemoryCacheServices,
+		services: MemoryCacheServices,
 	) {
-		this.timeService = services?.timeService ?? defaultTimeService;
-		this.gcIntervalHandle = this.timeService.startTimer(() => this.gc(), 1000 * 60 * 3, { repeated: true }); // 3m
+		this.timeService = services.timeService;
 	}
 
 	@bindThis
@@ -375,7 +375,6 @@ export class MemoryKVCache<T> {
 	@bindThis
 	public dispose(): void {
 		this.clear();
-		this.timeService.stopTimer(this.gcIntervalHandle);
 	}
 
 	public get size() {
@@ -394,9 +393,9 @@ export class MemorySingleCache<T> {
 
 	constructor(
 		private lifetime: number,
-		services?: MemoryCacheServices,
+		services: MemoryCacheServices,
 	) {
-		this.timeService = services?.timeService ?? defaultTimeService;
+		this.timeService = services.timeService;
 	}
 
 	@bindThis
@@ -406,13 +405,24 @@ export class MemorySingleCache<T> {
 	}
 
 	@bindThis
-	public get(): T | undefined {
-		if (this.cachedAt == null) return undefined;
-		if ((this.timeService.now - this.cachedAt) > this.lifetime) {
-			this.value = undefined;
-			this.cachedAt = null;
-			return undefined;
+	public gc(): void {
+		// Check if we have a valid, non-expired value.
+		// This is a little convoluted but protects against edge cases and invalid states.
+		if (this.value !== undefined && this.cachedAt != null) {
+			const age = this.timeService.now - this.cachedAt;
+			if (Number.isSafeInteger(age) && age <= this.lifetime) {
+				return;
+			}
 		}
+
+		// If we get here, then it's expired or otherwise invalid.
+		// Whatever the case, we should clear everything back to zeros.
+		this.delete();
+	}
+
+	@bindThis
+	public get(): T | undefined {
+		this.gc();
 		return this.value;
 	}
 

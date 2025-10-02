@@ -6,34 +6,46 @@
 import { jest } from '@jest/globals';
 import { MockRedis } from '../../misc/MockRedis.js';
 import { GodOfTimeService } from '../../misc/GodOfTimeService.js';
-import { CacheManagementService, type Manager } from '@/core/CacheManagementService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { MockInternalEventService } from '../../misc/MockInternalEventService.js';
+import { CacheManagementService, type Manager, GC_INTERVAL } from '@/core/CacheManagementService.js';
 import { MemoryKVCache } from '@/misc/cache.js';
 
 describe(CacheManagementService, () => {
 	let timeService: GodOfTimeService;
 	let redisClient: MockRedis;
-	let internalEventService: InternalEventService;
+	let internalEventService: MockInternalEventService;
 
 	let serviceUnderTest: CacheManagementService;
 	let internalsUnderTest: { managedCaches: Set<Manager> };
 
-	beforeEach(() => {
+	beforeAll(() => {
 		timeService = new GodOfTimeService();
-		timeService.resetToNow();
 		redisClient = new MockRedis(timeService);
-		internalEventService = new InternalEventService(redisClient, redisClient, { host: 'example.com' });
+		internalEventService = new MockInternalEventService( { host: 'example.com' });
+	});
+
+	afterAll(() => {
+		internalEventService.dispose();
+		redisClient.disconnect();
+	});
+
+	beforeEach(() => {
+		timeService.resetToNow();
+		redisClient.mockReset();
+		internalEventService.mockReset();
 
 		serviceUnderTest = new CacheManagementService(redisClient, timeService, internalEventService);
 		internalsUnderTest = { managedCaches: Reflect.get(serviceUnderTest, 'managedCaches') };
 	});
 
 	afterEach(() => {
-		timeService.reset();
 		serviceUnderTest.dispose();
-		internalEventService.dispose();
-		redisClient.disconnect();
 	});
+
+	function createCache(): MemoryKVCache<string> {
+		// Cast to allow access to managed functions, for spying purposes.
+		return serviceUnderTest.createMemoryKVCache<string>(Infinity) as MemoryKVCache<string>;
+	}
 
 	describe('createMemoryKVCache', () => testCreate('createMemoryKVCache', Infinity));
 	describe('createMemorySingleCache', () => testCreate('createMemorySingleCache', Infinity));
@@ -41,9 +53,19 @@ describe(CacheManagementService, () => {
 	describe('createRedisSingleCache', () => testCreate('createRedisSingleCache', 'single', { lifetime: Infinity, memoryCacheLifetime: Infinity }));
 	describe('createQuantumKVCache', () => testCreate('createQuantumKVCache', 'quantum', { lifetime: Infinity, fetcher: () => { throw new Error('not implement'); } }));
 
-	describe('clear', () => testClear('clear', false));
-	describe('dispose', () => testClear('dispose', true));
-	describe('onApplicationShutdown', () => testClear('onApplicationShutdown', true));
+	describe('clear', () => {
+		testClear('clear', false);
+		testGC('clear', false, true, false);
+	});
+	describe('dispose', () => {
+		testClear('dispose', true);
+		testGC('dispose', false, false, true);
+	});
+	describe('onApplicationShutdown', () => {
+		testClear('onApplicationShutdown', true);
+		testGC('onApplicationShutdown', false, false, true);
+	});
+	describe('gc', () => testGC('gc', true, true, false));
 
 	function testCreate<Func extends 'createMemoryKVCache' | 'createMemorySingleCache' | 'createRedisKVCache' | 'createRedisSingleCache' | 'createQuantumKVCache', Value>(func: Func, ...args: Parameters<CacheManagementService[Func]>) {
 		// @ts-expect-error TypeScript bug: https://github.com/microsoft/TypeScript/issues/57322
@@ -60,15 +82,22 @@ describe(CacheManagementService, () => {
 
 			expect(internalsUnderTest.managedCaches).toContain(cache);
 		});
+
+		it('should start GC timer', () => {
+			const cache = act();
+			const gc = jest.spyOn(cache as unknown as { gc(): void }, 'gc');
+
+			timeService.tick({ milliseconds: GC_INTERVAL * 3 });
+
+			expect(gc).toHaveBeenCalledTimes(3);
+		});
 	}
 
 	function testClear(func: 'clear' | 'dispose' | 'onApplicationShutdown', shouldDispose: boolean) {
-		function act() {
-			serviceUnderTest[func]();
-		}
+		const act = () => serviceUnderTest[func]();
 
 		it('should clear managed caches', () => {
-			const cache = serviceUnderTest.createMemoryKVCache<string>(Infinity);
+			const cache = createCache();
 			const clear = jest.spyOn(cache, 'clear');
 
 			act();
@@ -77,8 +106,8 @@ describe(CacheManagementService, () => {
 		});
 
 		it(`should${shouldDispose ? ' ' : ' not '}dispose managed caches`, () => {
-			const cache = serviceUnderTest.createMemoryKVCache<string>(Infinity);
-			const dispose = jest.spyOn(cache as MemoryKVCache<string>, 'dispose');
+			const cache = createCache();
+			const dispose = jest.spyOn(cache, 'dispose');
 
 			act();
 
@@ -94,7 +123,7 @@ describe(CacheManagementService, () => {
 		});
 
 		it('should be callable multiple times', () => {
-			const cache = serviceUnderTest.createMemoryKVCache<string>(Infinity);
+			const cache = createCache();
 			const clear = jest.spyOn(cache, 'clear');
 
 			act();
@@ -106,7 +135,7 @@ describe(CacheManagementService, () => {
 		});
 
 		it(`should${shouldDispose ? ' ' : ' not '}deref caches`, () => {
-			const cache = serviceUnderTest.createMemoryKVCache<string>(Infinity);
+			const cache = createCache();
 
 			act();
 
@@ -118,7 +147,7 @@ describe(CacheManagementService, () => {
 		});
 
 		it(`should${shouldDispose ? ' ' : ' not '}reset cache list`, () => {
-			serviceUnderTest.createMemoryKVCache<string>(Infinity);
+			createCache();
 
 			act();
 
@@ -127,6 +156,45 @@ describe(CacheManagementService, () => {
 			} else {
 				expect(internalsUnderTest.managedCaches.size).not.toBe(0);
 			}
+		});
+	}
+
+	function testGC(func: 'clear' | 'dispose' | 'onApplicationShutdown' | 'gc', shouldFire: boolean, shouldReset: boolean, shouldStop: boolean) {
+		const expectedCalls =
+			shouldStop
+				? shouldFire
+					? 1
+					: 0
+				: shouldFire
+					? shouldReset
+						? 2
+						: 3
+					: shouldReset
+						? 1
+						: 2
+		;
+
+		const testName = 'should ' + [
+			shouldFire ? 'trigger' : 'not trigger',
+			shouldReset ? 'reset' : 'not reset',
+			shouldStop ? 'and stop' : 'and not stop',
+		].join(', ') + ' GC';
+
+		const arrange = () => jest.spyOn(createCache(), 'gc');
+		const act = () => {
+			timeService.tick({ milliseconds: GC_INTERVAL - 1 });
+			serviceUnderTest[func]();
+			timeService.tick({ milliseconds: 1 });
+			timeService.tick({ milliseconds: GC_INTERVAL });
+		};
+		const assert = (spy: ReturnType<typeof arrange>) => {
+			expect(spy).toHaveBeenCalledTimes(expectedCalls);
+		};
+
+		it(testName, () => {
+			const spy = arrange();
+			act();
+			assert(spy);
 		});
 	}
 });
