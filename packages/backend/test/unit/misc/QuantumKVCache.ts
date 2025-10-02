@@ -201,7 +201,7 @@ describe(QuantumKVCache, () => {
 		const cache = makeCache<string>({ name: 'fake' });
 		await cache.set('foo', 'bar');
 
-		await fakeInternalEventService._emitRedis('quantumCacheUpdated', { name: 'fake', keys: ['foo'] });
+		await fakeInternalEventService.mockEmit('quantumCacheUpdated', { name: 'fake', keys: ['foo'] });
 
 		const result = cache.has('foo');
 		expect(result).toBe(false);
@@ -214,7 +214,7 @@ describe(QuantumKVCache, () => {
 			onChanged: fakeOnChanged,
 		});
 
-		await fakeInternalEventService._emitRedis('quantumCacheUpdated', { name: 'fake', keys: ['foo'] });
+		await fakeInternalEventService.mockEmit('quantumCacheUpdated', { name: 'fake', keys: ['foo'] });
 
 		expect(fakeOnChanged).toHaveBeenCalledWith(['foo'], cache);
 	});
@@ -223,7 +223,7 @@ describe(QuantumKVCache, () => {
 		const cache = makeCache<string>({ name: 'fake' });
 		await cache.set('foo', 'bar');
 
-		await fakeInternalEventService._emitRedis('quantumCacheUpdated', { name: 'fake', keys: ['foo'] });
+		await fakeInternalEventService.mockEmit('quantumCacheUpdated', { name: 'fake', keys: ['foo'] });
 
 		const result = cache.has('foo');
 		expect(result).toBe(false);
@@ -237,7 +237,7 @@ describe(QuantumKVCache, () => {
 		});
 		await cache.set('foo', 'bar');
 
-		await fakeInternalEventService._emitRedis('quantumCacheUpdated', { name: 'fake', keys: ['foo'] });
+		await fakeInternalEventService.mockEmit('quantumCacheUpdated', { name: 'fake', keys: ['foo'] });
 
 		expect(fakeOnChanged).toHaveBeenCalledWith(['foo'], cache);
 	});
@@ -303,7 +303,7 @@ describe(QuantumKVCache, () => {
 
 			await cache.set('foo', 'bar');
 			fakeOnChanged.mockClear();
-			fakeInternalEventService._reset();
+			fakeInternalEventService.mockReset();
 
 			await cache.setMany([['foo', 'bar'], ['alpha', 'omega']]);
 

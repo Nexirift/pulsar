@@ -4,13 +4,12 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { MockRedis } from './MockRedis.js';
 import type { Listener, ListenerProps } from '@/core/InternalEventService.js';
-import type Redis from 'ioredis';
-import type { GlobalEventService, InternalEventTypes } from '@/core/GlobalEventService.js';
+import type { InternalEventTypes } from '@/core/GlobalEventService.js';
+import type { Config } from '@/config.js';
 import { InternalEventService } from '@/core/InternalEventService.js';
 import { bindThis } from '@/decorators.js';
-import type { Config } from '@/config.js';
-import { MockRedis } from './MockRedis.js';
 
 type FakeCall<K extends keyof InternalEventService> = [K, Parameters<InternalEventService[K]>];
 type FakeListener<K extends keyof InternalEventTypes> = [K, Listener<K>, ListenerProps];
@@ -36,7 +35,7 @@ export class MockInternalEventService extends InternalEventService {
 	 * Resets the mock.
 	 * Clears all listeners and tracked calls.
 	 */
-	public _reset() {
+	public mockReset() {
 		this._calls = [];
 		this._listeners = [];
 	}
@@ -45,7 +44,7 @@ export class MockInternalEventService extends InternalEventService {
 	 * Simulates a remote event sent from another process in the cluster via redis.
 	 */
 	@bindThis
-	public async _emitRedis<K extends keyof InternalEventTypes>(type: K, value: InternalEventTypes[K]): Promise<void> {
+	public async mockEmit<K extends keyof InternalEventTypes>(type: K, value: InternalEventTypes[K]): Promise<void> {
 		await this.emit(type, value, false);
 	}
 
