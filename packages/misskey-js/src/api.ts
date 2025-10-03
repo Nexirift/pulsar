@@ -64,7 +64,7 @@ export class APIClient {
 		return ep in endpointReqTypes;
 	}
 
-	public request<E extends keyof Endpoints, P extends Endpoints[E]['req']>(
+	public request<E extends keyof Endpoints, P extends Endpoints[E]['req'] & object>(
 		endpoint: E,
 		params: P = {} as P,
 		credential?: string | null,

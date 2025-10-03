@@ -2,8 +2,10 @@ import assert from 'assert';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import { OpenAPIV3_1 } from 'openapi-types';
 import { toPascal } from 'ts-case-convert';
-import OpenAPIParser from '@readme/openapi-parser';
-import openapiTS, { OpenAPI3, OperationObject, PathItemObject } from 'openapi-typescript';
+import * as OpenAPIParser from '@readme/openapi-parser';
+import openapiTS, { astToString, OpenAPI3, OperationObject, PathItemObject } from 'openapi-typescript';
+import ts from 'typescript';
+import { createConfig } from '@redocly/openapi-core';
 
 async function generateBaseTypes(
 	openApiDocs: OpenAPIV3_1.Document,
@@ -20,6 +22,10 @@ async function generateBaseTypes(
 		lines.push(`/* eslint ${lint}: 0 */`);
 	}
 	lines.push('');
+
+	// https://openapi-ts.dev/node#transform-posttransform
+	const BLOB = ts.factory.createTypeReferenceNode(ts.factory.createIdentifier('Blob'));
+	const NULL = ts.factory.createLiteralTypeNode(ts.factory.createNull());
 
 	// NOTE: Align `operationId` of GET and POST to avoid duplication of type definitions
 	const openApi = JSON.parse(await readFile(openApiJsonPath, 'utf8')) as OpenAPI3;
@@ -43,15 +49,54 @@ async function generateBaseTypes(
 		};
 	}
 
+	// Turn off redocly so it doesn't complain about our schema.
+	// https://openapi-ts.dev/node#redoc-config
+	const redocly = await createConfig({
+		extends: [],
+		rules: {},
+	});
+	// redocly.getRulesForSpecVersion ??= () => [];
+
 	const generatedTypes = await openapiTS(openApi, {
+		redocly,
 		exportType: true,
 		transform(schemaObject) {
 			if ('format' in schemaObject && schemaObject.format === 'binary') {
-				return schemaObject.nullable ? 'Blob | null' : 'Blob';
+				return schemaObject.nullable ? ts.factory.createUnionTypeNode([BLOB, NULL]) : BLOB;
 			}
 		},
 	});
-	lines.push(generatedTypes);
+
+	// Remove duplicate operations.
+	// Our schema depends on having get/post both point to the same object, but redocly doesn't collapse them like the previous implementation did.
+	for (let i = 0; i < generatedTypes.length; i++) {
+		const node = generatedTypes[i];
+		if (!ts.isInterfaceDeclaration(node) || node.name.text !== 'operations') {
+			continue;
+		}
+
+		const seenNames = new Set<string>();
+		const newMembers = ts.visitNodes(node.members, member => {
+			if (ts.isPropertySignature(member) && 'text' in member.name) {
+				if (seenNames.has(member.name.text)) {
+					return [];
+				} else {
+					seenNames.add(member.name.text);
+				}
+			}
+
+			return member;
+		}, ts.isTypeElement);
+
+		// Replace the node with a copy containing new members array
+		const newOperations: ts.InterfaceDeclaration = {
+			...node,
+			members: newMembers,
+		};
+		generatedTypes[i] = newOperations;
+	}
+
+	lines.push(astToString(generatedTypes));
 	lines.push('');
 
 	await writeFile(typeFileName, lines.join('\n'));
