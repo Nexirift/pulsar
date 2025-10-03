@@ -562,7 +562,7 @@ export class ApNoteService implements OnModuleInit {
 			const createFrom = haveSameAuthority ? value : uri;
 			return await this.createNote(createFrom, undefined, options.resolver, true);
 		} finally {
-			unlock();
+			await unlock();
 		}
 	}
 

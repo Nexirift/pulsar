@@ -16,6 +16,7 @@ import type Logger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
 import { MiRepository, miRepository } from '@/models/_.js';
 import type { DataSource, Repository } from 'typeorm';
+import type { Lock } from 'redis-lock';
 
 const COLUMN_PREFIX = '___' as const;
 const UNIQUE_TEMP_COLUMN_PREFIX = 'unique_temp___' as const;
@@ -258,11 +259,11 @@ export default abstract class Chart<T extends Schema> {
 		};
 	}
 
-	private lock: (key: string) => Promise<() => void>;
+	private lock: Lock;
 
 	constructor(
 		db: DataSource,
-		lock: (key: string) => Promise<() => void>,
+		lock: Lock,
 		logger: Logger,
 		name: string,
 		schema: T,
@@ -400,7 +401,7 @@ export default abstract class Chart<T extends Schema> {
 
 			return log;
 		} finally {
-			unlock();
+			await unlock();
 		}
 	}
 

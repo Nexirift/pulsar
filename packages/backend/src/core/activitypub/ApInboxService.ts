@@ -399,7 +399,7 @@ export class ApInboxService {
 				uri,
 			});
 		} finally {
-			unlock();
+			await unlock();
 		}
 	}
 
@@ -549,7 +549,7 @@ export class ApInboxService {
 			await this.apNoteService.createNote(note, actor, resolver, silent);
 			return 'ok';
 		} finally {
-			unlock();
+			await unlock();
 		}
 	}
 
@@ -634,7 +634,7 @@ export class ApInboxService {
 			await this.noteDeleteService.delete(actor, note);
 			return 'ok: note deleted';
 		} finally {
-			unlock();
+			await unlock();
 		}
 	}
 

@@ -829,7 +829,7 @@ export class ApPersonService implements OnModuleInit {
 			const createFrom = haveSameAuthority ? value : uri;
 			return await this._createPerson(createFrom, resolver);
 		} finally {
-			unlock();
+			await unlock();
 		}
 	}
 
