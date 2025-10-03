@@ -38,14 +38,14 @@ export function convertSchemaToOpenApiSchema(schema: Schema, type: 'param' | 're
 
 	if (type === 'res' && schema.ref && (!schema.selfRef || includeSelfRef)) {
 		const $ref = `#/components/schemas/${schema.ref}`;
+		// https://stackoverflow.com/a/23737104
 		if (schema.nullable || schema.optional) {
-			res.allOf = [{ $ref }];
+			res.oneOf = [{ $ref }, { type: 'null' }];
 		} else {
 			res.$ref = $ref;
 		}
-	}
-
-	if (schema.nullable) {
+		delete res.type;
+	} else if (schema.nullable) {
 		if (Array.isArray(schema.type) && !schema.type.includes('null')) {
 			res.type.push('null');
 		} else if (typeof schema.type === 'string') {
