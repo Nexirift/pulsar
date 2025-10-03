@@ -115,12 +115,10 @@ describe('AnnouncementService', () => {
 	});
 
 	afterEach(async () => {
-		await Promise.all([
-			app.get(DI.metasRepository).deleteAll(),
-			usersRepository.deleteAll(),
-			announcementsRepository.deleteAll(),
-			announcementReadsRepository.deleteAll(),
-		]);
+		await app.get(DI.metasRepository).deleteAll();
+		await usersRepository.deleteAll();
+		await announcementsRepository.deleteAll();
+		await announcementReadsRepository.deleteAll();
 		moderationLogService.log.mockReset();
 		globalEventService.publishMainStream.mockReset();
 		globalEventService.publishBroadcastStream.mockReset();
