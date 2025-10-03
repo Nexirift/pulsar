@@ -187,7 +187,7 @@ export async function uploadFile(
 	path = '../../test/resources/192.jpg',
 ): Promise<Misskey.entities.DriveFile> {
 	const filename = path.split('/').pop() ?? 'untitled';
-	const blob = new Blob([await readFile(join(__dirname, path))] as BlobPart[]);
+	const blob = new Blob([await readFile(join(__dirname, path)) as Buffer<ArrayBuffer>]);
 
 	const body = new FormData();
 	body.append('i', user.i);

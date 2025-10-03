@@ -7,8 +7,8 @@ process.env.NODE_ENV = 'test';
 
 import { describe, test, expect } from '@jest/globals';
 import { loadConfig } from '@/config.js';
-import { getValidator } from '../../../../../test/prelude/get-api-validator.js';
-import { paramDef } from './create.js';
+import { getValidator } from '../../../../../../test/prelude/get-api-validator.js';
+import { paramDef } from '@/server/api/endpoints/notes/create.js';
 
 const config = loadConfig();
 
