@@ -25,8 +25,8 @@ describe('ReversiGame', () => {
 		const response2 = await api('reversi/match', { userId: alice.id }, bob);
 		assert.strictEqual(response2.status, 200);
 		assert.notStrictEqual(response2.body, null);
-		const body = response2.body as misskey.entities.ReversiMatchResponse;
-		assert.strictEqual(body?.user1.id, alice.id);
+		const body = response2.body as NonNullable<misskey.entities.ReversiMatchResponse>;
+		assert.strictEqual(body.user1.id, alice.id);
 		assert.strictEqual(body.user2.id, bob.id);
 	});
 });
