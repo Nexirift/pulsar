@@ -15,7 +15,7 @@ export default [
 	},
 	...pluginVue.configs['flat/recommended'],
 	{
-		files: ['{src,test,js,@types}/**/*.{ts,vue}'],
+		files: ['{src,test,js,@types}/**/*.{ts,vue}', 'vue-shims.d.ts'],
 		plugins: { sharkey: { rules: { locale: localeRule } } },
 		languageOptions: {
 			globals: {
@@ -41,7 +41,7 @@ export default [
 			parserOptions: {
 				extraFileExtensions: ['.vue'],
 				parser: tsParser,
-				project: ['./tsconfig.json'],
+				project: ['./tsconfig.vue.json'],
 				sourceType: 'module',
 				tsconfigRootDir: import.meta.dirname,
 			},
@@ -99,13 +99,27 @@ export default [
 		},
 	},
 	{
+		files: ['*.js', '*.ts'],
+		languageOptions: {
+			parserOptions: {
+				parser: tsParser,
+				project: ['./tsconfig.scripts.json'],
+				sourceType: 'module',
+				tsconfigRootDir: import.meta.dirname,
+			},
+		},
+		rules: {
+			'import/no-default-export': 'off',
+		},
+	},
+	{
 		ignores: [
-			"**/lib/",
-			"**/temp/",
-			"**/built/",
-			"**/coverage/",
-			"**/node_modules/",
-			"*.*",
-		]
+			'**/lib/',
+			'**/temp/',
+			'**/built/',
+			'**/coverage/',
+			'**/node_modules/',
+			'vue-shims.d.ts'
+		],
 	},
 ];

@@ -1,13 +1,14 @@
 import path from 'path';
 import pluginVue from '@vitejs/plugin-vue';
 import { type UserConfig, defineConfig } from 'vite';
+import { pluginReplaceIcons } from 'frontend-shared/util/vite.replaceIcons.js';
 import { localesVersion } from '../../locales/version.js';
-
 import locales from '../../locales/index.js';
-import meta from '../../package.json';
+import meta from '../../package.json' with { type: 'json' };
 import packageInfo from './package.json' with { type: 'json' };
+import tsconfigVue from './tsconfig.vue.json' with { type: 'json' };
 import pluginJson5 from './vite.json5.js';
-import { pluginReplaceIcons } from '../frontend/vite.replaceIcons.js';
+import type { TsconfigRaw } from 'esbuild';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.json5', '.svg', '.sass', '.scss', '.css', '.vue'];
 
@@ -85,13 +86,13 @@ export function getConfig(): UserConfig {
 				'@/': __dirname + '/src/',
 				'@@/': __dirname + '/../frontend-shared/',
 				'/client-assets/': __dirname + '/assets/',
-				'/static-assets/': __dirname + '/../backend/assets/'
+				'/static-assets/': __dirname + '/../backend/assets/',
 			},
 		},
 
 		css: {
 			modules: {
-				generateScopedName(name, filename, _css): string {
+				generateScopedName(name, filename): string {
 					const id = (path.relative(__dirname, filename.split('?')[0]) + '-' + name).replace(/[\\\/\.\?&=]/g, '-').replace(/(src-|vue-)/g, '');
 					const shortId = id.replace(/^(components(-global)?|widgets|ui(-_common_)?)-/, '');
 					return shortId + '-' + toBase62(hash(id)).substring(0, 4);
@@ -99,6 +100,7 @@ export function getConfig(): UserConfig {
 			},
 			preprocessorOptions: {
 				scss: {
+					// @ts-expect-error not sure why this happens
 					api: 'modern-compiler',
 				},
 			},
@@ -113,6 +115,12 @@ export function getConfig(): UserConfig {
 			_PERF_PREFIX_: JSON.stringify('Misskey:'),
 			__VUE_OPTIONS_API__: false,
 			__VUE_PROD_DEVTOOLS__: false,
+		},
+
+		esbuild: {
+			// https://github.com/vitejs/vite/discussions/8483#discussioncomment-14485974
+			// https://esbuild.github.io/api/#tsconfig-raw
+			tsconfigRaw: tsconfigVue as TsconfigRaw,
 		},
 
 		build: {
@@ -163,6 +171,6 @@ export function getConfig(): UserConfig {
 	};
 }
 
-const config = defineConfig(({ command, mode }) => getConfig());
+const config = defineConfig(() => getConfig());
 
 export default config;
