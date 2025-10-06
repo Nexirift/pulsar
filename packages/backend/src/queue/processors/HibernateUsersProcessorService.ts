@@ -10,6 +10,7 @@ import type Logger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { CacheService } from '@/core/CacheService.js';
+import { TimeService } from '@/core/TimeService.js';
 import type { FollowingsRepository, UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 
@@ -25,6 +26,7 @@ export class HibernateUsersProcessorService {
 		private readonly followingsRepository: FollowingsRepository,
 
 		private readonly cacheService: CacheService,
+		private readonly timeService: TimeService,
 
 		queueLoggerService: QueueLoggerService,
 	) {
@@ -37,7 +39,7 @@ export class HibernateUsersProcessorService {
 			let totalHibernated = 0;
 
 			// Any users last active *before* this date should be hibernated
-			const hibernationThreshold = new Date(Date.now() - (1000 * 60 * 60 * 24 * 50));
+			const hibernationThreshold = new Date(this.timeService.now - (1000 * 60 * 60 * 24 * 50));
 
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 			while (true) {
