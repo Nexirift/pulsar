@@ -4,6 +4,7 @@
 	"compilerOptions": {
 		"noImplicitAny": false,
 		"allowImportingTsExtensions": true,
+		"noEmit": true
 	},
 	"include": [
 		"jest.*",

@@ -3,17 +3,14 @@
 	"extends": "../shared/tsconfig.node.json",
 	"compilerOptions": {
 		"noImplicitAny": false,
-		"typeRoots": [
-			"./node_modules/@types",
-			"./node_modules",
-			"./src/@types"
-		]
+		"noEmit": true
 	},
 	"include": [
 		"*.ts",
 		"*.js"
 	],
 	"exclude": [
-		"node_modules"
+		"node_modules",
+		"built"
 	]
 }
