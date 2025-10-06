@@ -6,11 +6,11 @@ export default [
 	...sharedConfig,
 	{
 		ignores: [
-			"**/lib/",
-			"**/temp/",
-			"**/built/",
-			"**/coverage/",
-			"**/node_modules/",
+			'**/lib/',
+			'**/temp/',
+			'**/built/',
+			'**/coverage/',
+			'**/node_modules/',
 		],
 	},
 	{
