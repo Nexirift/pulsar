@@ -33,15 +33,56 @@ export interface FollowStats {
 
 @Injectable()
 export class CacheService implements OnApplicationShutdown {
+	/**
+	 * Maps user IDs (key) to MiUser instances (value).
+	 * This is the ONLY source for cached MiUser entities!
+	 */
 	public readonly userByIdCache: ManagedQuantumKVCache<MiUser>;
-	public readonly nativeTokenCache: ManagedQuantumKVCache<string>; // Token -> UserId
-	public readonly userByAcctCache: ManagedQuantumKVCache<string>; // Acct -> UserId
+
+	/**
+	 * Maps native tokens (key) to user IDs (value).
+	 */
+	public readonly nativeTokenCache: ManagedQuantumKVCache<string>;
+
+	/**
+	 * Maps acct handles (key) to user IDs (value).
+	 */
+	public readonly userByAcctCache: ManagedQuantumKVCache<string>;
+
+	/**
+	 * Maps user IDs (key) to MiUserProfile instances (value).
+	 * This is the ONLY source for cached MiUserProfile entities!
+	 */
 	public readonly userProfileCache: ManagedQuantumKVCache<MiUserProfile>;
+
+	/**
+	 * Maps user IDs (key) to the set of user IDs (value) muted by that user.
+	 */
 	public readonly userMutingsCache: ManagedQuantumKVCache<Set<string>>;
+
+	/**
+	 * Maps user IDs (key) to the set of user IDs (value) muting that user.
+	 */
 	public readonly userMutedCache: ManagedQuantumKVCache<Set<string>>;
+
+	/**
+	 * Maps user IDs (key) to the set of user IDs (value) blocked by that user.
+	 */
 	public readonly userBlockingCache: ManagedQuantumKVCache<Set<string>>;
-	public readonly userBlockedCache: ManagedQuantumKVCache<Set<string>>; // NOTE: 「被」Blockキャッシュ
+
+	/**
+	 * Maps user IDs (key) to the set of user IDs (value) blocking that user.
+	 */
+	public readonly userBlockedCache: ManagedQuantumKVCache<Set<string>>;
+
+	/**
+	 * Maps user IDs (key) to the map of list ID / MiUserListMembership instances (value) for all lists containing this user.
+	 */
 	public readonly userListMembershipsCache: ManagedQuantumKVCache<Map<string, MiUserListMembership>>;
+
+	/**
+	 * Maps list IDs (key) to the map of user ID / MiUserListMembership instances (value) for all users in this list.
+	 */
 	public readonly listUserMembershipsCache: ManagedQuantumKVCache<Map<string, MiUserListMembership>>;
 
 	/**
@@ -58,12 +99,40 @@ export class CacheService implements OnApplicationShutdown {
 	 * Maps user IDs (key) to the set of user IDs (value) who's renotes are muted by that user.
 	 */
 	public readonly renoteMutingsCache: ManagedQuantumKVCache<Set<string>>;
+
+	/**
+	 * Maps user IDs (key) to the set of thread IDs (value) muted by that user.
+	 */
 	public readonly threadMutingsCache: ManagedQuantumKVCache<Set<string>>;
+
+	/**
+	 * Maps user IDs (key) to the set of note IDs (value) muted by that user.
+	 */
 	public readonly noteMutingsCache: ManagedQuantumKVCache<Set<string>>;
+
+	/**
+	 * Maps user IDs (key) to the map of user ID / MiFollowing instances (value) followed by that user.
+	 */
 	public readonly userFollowingsCache: ManagedQuantumKVCache<Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>;
+
+	/**
+	 * Maps user IDs (key) to the map of user ID / MiFollowing instances (value) following that user.
+	 */
 	public readonly userFollowersCache: ManagedQuantumKVCache<Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>;
+
+	/**
+	 * Maps user IDs (key) to hibernation state (value).
+	 */
 	public readonly hibernatedUserCache: ManagedQuantumKVCache<boolean>;
+
+	/**
+	 * Maps user IDs (key) to follow statistics (value).
+	 */
 	public readonly userFollowStatsCache: ManagedMemoryKVCache<FollowStats>;
+
+	/**
+	 * Maps user IDs (key) to the set of cahnnel IDs (value) followed by that user.
+	 */
 	public readonly userFollowingChannelsCache: ManagedQuantumKVCache<Set<string>>;
 
 	constructor(
