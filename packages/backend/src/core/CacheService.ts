@@ -702,6 +702,20 @@ export class CacheService implements OnApplicationShutdown {
 	}
 
 	@bindThis
+	public async findLocalUserByNativeToken(token: string): Promise<MiLocalUser> {
+		const id = await this.nativeTokenCache.fetch(token);
+		return await this.findLocalUserById(id);
+	}
+
+	@bindThis
+	public async findOptionalLocalUserByNativeToken(token: string): Promise<MiLocalUser | undefined> {
+		const id = await this.nativeTokenCache.fetchMaybe(token);
+		if (id == null) return undefined;
+
+		return await this.findOptionalLocalUserById(id);
+	}
+
+	@bindThis
 	public async findRemoteUserById(userId: MiUser['id']): Promise<MiRemoteUser> {
 		const user = await this.findUserById(userId);
 

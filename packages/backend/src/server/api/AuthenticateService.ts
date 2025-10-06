@@ -53,8 +53,7 @@ export class AuthenticateService {
 		}
 
 		if (isNativeUserToken(token)) {
-			const userId = await this.cacheService.nativeTokenCache.fetch(token);
-			const user = userId ? await this.cacheService.findLocalUserById(userId) : null;
+			const user = await this.cacheService.findOptionalLocalUserByNativeToken(token);
 
 			if (user == null) {
 				throw new AuthenticationError('user not found');
