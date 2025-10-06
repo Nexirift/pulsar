@@ -870,9 +870,9 @@ declare module '../api.js' {
     /**
      * No description provided.
      * 
-     * **Credential required**: *Yes* / **Permission**: *read:admin:roles*
+     * **Credential required**: *Yes* / **Permission**: *write:admin:restart-migration*
      */
-    request<E extends 'admin/roles/annotate-condition', P extends Endpoints[E]['req']>(
+    request<E extends 'admin/restart-migration', P extends Endpoints[E]['req']>(
       endpoint: E,
       params: P,
       credential?: string | null,

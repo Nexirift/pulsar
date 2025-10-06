@@ -100,6 +100,8 @@ import type {
 	AdminResetPasswordRequest,
 	AdminResetPasswordResponse,
 	AdminResolveAbuseUserReportRequest,
+	AdminRestartMigrationRequest,
+	AdminRestartMigrationResponse,
 	AdminRolesAnnotateConditionRequest,
 	AdminRolesAnnotateConditionResponse,
 	AdminRolesAssignRequest,
@@ -750,6 +752,7 @@ export type Endpoints = {
 	'admin/relays/remove': { req: AdminRelaysRemoveRequest; res: EmptyResponse };
 	'admin/reset-password': { req: AdminResetPasswordRequest; res: AdminResetPasswordResponse };
 	'admin/resolve-abuse-user-report': { req: AdminResolveAbuseUserReportRequest; res: EmptyResponse };
+	'admin/restart-migration': { req: AdminRestartMigrationRequest; res: AdminRestartMigrationResponse };
 	'admin/roles/annotate-condition': { req: AdminRolesAnnotateConditionRequest; res: AdminRolesAnnotateConditionResponse };
 	'admin/roles/assign': { req: AdminRolesAssignRequest; res: EmptyResponse };
 	'admin/roles/clone': { req: AdminRolesCloneRequest; res: AdminRolesCloneResponse };
