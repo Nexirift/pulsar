@@ -1,9 +1,0 @@
-{
-	"$schema": "https://json.schemastore.org/tsconfig",
-	"files": [],
-	// WebStorm only reads one tsconfig per directory, so this tricks it into loading both.
-	"references": [
-		{ "path":  "./tsconfig.gen.json" },
-		{ "path":  "./tsconfig.vue.json" }
-	]
-}

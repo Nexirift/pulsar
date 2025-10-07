@@ -15,9 +15,14 @@ export default [
 	},
 	...pluginVue.configs['flat/recommended'],
 	{
-		files: ['{src,test,js,@types}/**/*.{ts,vue}'],
+		files: ['{src,test,js,@types}/**/*.{ts,vue}', '.storybook/**/*.ts', '.storybook/**/*.tsx', '.storybook/**/*.js', '.storybook/**/*.jsx'],
 		ignores: [
 			'*.*',
+			'.storybook/changes.ts',
+			'.storybook/main.ts',
+			'.storybook/generate.tsx',
+			'.storybook/preload-locale.ts',
+			'.storybook/preload-theme.ts',
 		],
 		plugins: { sharkey: { rules: { locale: localeRule } } },
 		languageOptions: {
@@ -46,7 +51,7 @@ export default [
 			parserOptions: {
 				extraFileExtensions: ['.vue'],
 				parser: tsParser,
-				project: ['./tsconfig.vue.json'],
+				project: ['tsconfig.vue.json'],
 				sourceType: 'module',
 				tsconfigRootDir: import.meta.dirname,
 			},
@@ -174,36 +179,30 @@ export default [
 		},
 	},
 	{
+		files: ['.storybook/**/*.ts', '.storybook/**/*.tsx', '.storybook/**/*.js', '.storybook/**/*.jsx'],
+		rules: {
+			'import/no-default-export': 'off',
+			'no-restricted-globals': 'off',
+		},
+	},
+	{
 		files: [
-			".storybook/changes.ts",
-			".storybook/generate.tsx",
-			".storybook/preload-locale.ts",
-			".storybook/preload-theme.ts"
+			'.storybook/changes.ts',
+			'.storybook/main.ts',
+			'.storybook/generate.tsx',
+			'.storybook/preload-locale.ts',
+			'.storybook/preload-theme.ts',
 		],
 		languageOptions: {
 			parserOptions: {
 				parser: tsParser,
-				project: ['.storybook/tsconfig.gen.json'],
+				project: ['tsconfig.storybook.json'],
 				sourceType: 'module',
 				tsconfigRootDir: import.meta.dirname,
 			},
 		},
-	},
-	{
-		files: ['.storybook/**/*.ts', '.storybook/**/*.tsx', '.storybook/**/*.js', '.storybook/**/*.jsx'],
-		ignores: [
-			".storybook/changes.ts",
-			".storybook/generate.tsx",
-			".storybook/preload-locale.ts",
-			".storybook/preload-theme.ts"
-		],
-		languageOptions: {
-			parserOptions: {
-				parser: tsParser,
-				project: ['.storybook/tsconfig.vue.json'],
-				sourceType: 'module',
-				tsconfigRootDir: import.meta.dirname,
-			},
+		rules: {
+			'import/no-default-export': 'off',
 		},
 	},
 	{
@@ -233,15 +232,15 @@ export default [
 	},
 	{
 		ignores: [
-			'**/lib/',
-			'**/temp/',
-			'**/built/',
-			'**/coverage/',
-			'**/node_modules/',
-			'**/libopenmpt/',
-			'**/storybook-static/',
+			'**/lib',
+			'**/temp',
+			'**/built',
+			'**/coverage',
+			'**/node_modules',
+			'**/libopenmpt',
+			'**/storybook-static',
 			'vue-shims.d.ts',
-			'assets/'
+			'assets',
 		],
 	},
 ];

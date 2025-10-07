@@ -220,6 +220,11 @@ export function federationInstance(): entities.FederationInstance {
 		themeColor: '',
 		infoUpdatedAt: '',
 		latestRequestReceivedAt: '',
+		isMediaSilenced: false,
+		rejectReports: false,
+		rejectQuotes: false,
+		isBubbled: false,
+		mandatoryCW: null,
 	};
 }
 
@@ -240,6 +245,13 @@ export function note(id = 'somenoteid'): entities.Note {
 		reactionCount: 0,
 		renoteCount: 0,
 		repliesCount: 0,
+		threadId: '',
+		userHost: null,
+		isMutingThread: false,
+		isMutingNote: false,
+		isFavorited: false,
+		isRenoted: false,
+		bypassSilence: false,
 	};
 }
 
@@ -254,10 +266,27 @@ export function userLite(id = 'someuserid', username = 'miskist', host: entities
 		avatarBlurhash: 'eQFRshof5NWBRi},juayfPju53WB?0ofs;s*a{ofjuay^SoMEJR%ay',
 		avatarDecorations: [],
 		emojis: {},
+		createdAt: '',
+		updatedAt: null,
+		lastFetchedAt: null,
+		approved: false,
+		description: null,
+		isAdmin: false,
+		isModerator: false,
+		isSystem: false,
+		noindex: false,
+		enableRss: false,
+		mandatoryCW: null,
+		isSilenced: false,
+		bypassSilence: false,
+		followersCount: 0,
+		followingCount: 0,
+		notesCount: 0,
+		attributionDomains: [],
 	};
 }
 
-export function userDetailed(id = 'someuserid', username = 'miskist', host: entities.UserDetailed['host'] = 'misskey-hub.net', name: entities.UserDetailed['name'] = 'Misskey User'): entities.UserDetailed {
+function userDetailed(id = 'someuserid', username = 'miskist', host: entities.UserDetailed['host'] = 'misskey-hub.net', name: entities.UserDetailed['name'] = 'Misskey User'): entities.UserDetailed {
 	return {
 		...userLite(id, username, host, name),
 		bannerBlurhash: 'eQA^IW^-MH8w9tE8I=S^o{$*R4RikXtSxutRozjEnNR.RQadoyozog',
@@ -312,8 +341,16 @@ export function userDetailed(id = 'someuserid', username = 'miskist', host: enti
 		alsoKnownAs: null,
 		notify: 'none',
 		memo: null,
+		backgroundUrl: null,
+		backgroundId: null,
+		backgroundBlurhash: null,
+		listenbrainz: null,
+		canChat: true,
+		chatScope: 'none',
 	};
 }
+
+export default userDetailed;
 
 export function inviteCode(isUsed = false, hasExpiration = false, isExpired = false, isCreatedBySystem = false) {
 	const date = new Date();
@@ -382,9 +419,10 @@ export function role(params: {
 		condFormula: {
 			id: '',
 			type: 'or',
-			values: []
+			values: [],
 		},
 		policies: {},
+		preserveAssignmentOnMoveAccount: true,
 	};
 }
 
