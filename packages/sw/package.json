@@ -7,7 +7,7 @@
 		"typecheck-all": "pnpm run --no-bail typecheck:sw && pnpm run --no-bail typecheck:scripts",
 		"typecheck": "pnpm run typecheck:sw && pnpm run typecheck:scripts",
 		"typecheck:sw": "tsc -p tsconfig.sw.json --noEmit",
-		"typecheck:scripts": "tsc -p jsconfig.scripts.json --noEmit",
+		"typecheck:scripts": "tsc -p tsconfig.scripts.json --noEmit",
 		"eslint": "eslint --quiet --cache -c eslint.config.js",
 		"lint": "pnpm typecheck && pnpm eslint"
 	},

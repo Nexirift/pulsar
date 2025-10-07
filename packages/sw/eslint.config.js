@@ -19,7 +19,7 @@ export default [
 			},
 			parserOptions: {
 				parser: tsParser,
-				project: ['./jsconfig.scripts.json'],
+				project: ['./tsconfig.scripts.json'],
 				sourceType: 'module',
 				tsconfigRootDir: import.meta.dirname,
 			},
