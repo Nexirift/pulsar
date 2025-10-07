@@ -960,6 +960,9 @@ importers:
       estree-walker:
         specifier: 3.0.3
         version: 3.0.3
+      execa:
+        specifier: 9.6.0
+        version: 9.6.0
       fast-glob:
         specifier: 3.3.3
         version: 3.3.3
@@ -1260,6 +1263,9 @@ importers:
       eslint-plugin-vue:
         specifier: 10.5.0
         version: 10.5.0(@stylistic/eslint-plugin@4.2.0(eslint@9.36.0)(typescript@5.9.2))(@typescript-eslint/parser@8.44.1(eslint@9.36.0)(typescript@5.9.2))(eslint@9.36.0)(vue-eslint-parser@10.2.0(eslint@9.36.0))
+      execa:
+        specifier: 9.6.0
+        version: 9.6.0
       nodemon:
         specifier: 3.1.10
         version: 3.1.10
@@ -10518,8 +10524,8 @@ packages:
   vue-component-type-helpers@3.0.8:
     resolution: {integrity: sha512-WyR30Eq15Y/+odrUUMax6FmPbZwAp/HnC7qgR1r3lVFAcqwQ4wUoV79Mbh4SxDy3NiqDa+G4TOKD5xXSgBHo5A==}
 
-  vue-component-type-helpers@3.1.0:
-    resolution: {integrity: sha512-cC1pYNRZkSS1iCvdlaMbbg2sjDwxX098FucEjtz9Yig73zYjWzQsnMe5M9H8dRNv55hAIDGUI29hF2BEUA4FMQ==}
+  vue-component-type-helpers@3.1.1:
+    resolution: {integrity: sha512-B0kHv7qX6E7+kdc5nsaqjdGZ1KwNKSUQDWGy7XkTYT7wFsOpkEyaJ1Vq79TjwrrtuLRgizrTV7PPuC4rRQo+vw==}
 
   vue-demi@0.14.10:
     resolution: {integrity: sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==}
@@ -13985,7 +13991,7 @@ snapshots:
       storybook: 9.1.8(@testing-library/dom@10.4.0)(bufferutil@4.0.9)(msw@2.11.3(@types/node@22.18.1)(typescript@5.9.2))(prettier@3.6.2)(utf-8-validate@6.0.5)(vite@7.1.7(@types/node@22.18.1)(sass@1.93.2)(terser@5.44.0)(tsx@4.20.5))
       type-fest: 2.19.0
       vue: 3.5.21(typescript@5.9.2)
-      vue-component-type-helpers: 3.1.0
+      vue-component-type-helpers: 3.1.1
 
   '@stylistic/eslint-plugin@4.2.0(eslint@9.36.0)(typescript@5.9.2)':
     dependencies:
@@ -21674,7 +21680,7 @@ snapshots:
 
   vue-component-type-helpers@3.0.8: {}
 
-  vue-component-type-helpers@3.1.0: {}
+  vue-component-type-helpers@3.1.1: {}
 
   vue-demi@0.14.10(vue@3.5.21(typescript@5.9.2)):
     dependencies:
