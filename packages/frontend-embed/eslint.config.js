@@ -41,7 +41,7 @@ export default [
 			parserOptions: {
 				extraFileExtensions: ['.vue'],
 				parser: tsParser,
-				project: ['./tsconfig.vue.json'],
+				project: ['tsconfig.vue.json'],
 				sourceType: 'module',
 				tsconfigRootDir: import.meta.dirname,
 			},
@@ -99,11 +99,31 @@ export default [
 		},
 	},
 	{
-		files: ['*.js', '*.ts'],
+		files: [
+			'*.js',
+			'*.ts',
+			'lib/**/*.ts',
+			'lib/**/*.js',
+			'scripts/**/*.ts',
+			'scripts/**/*.js',
+			'scripts/**/*.mjs',
+			'scripts/**/*.cjs',
+		],
+		ignores: [
+			'node_modules',
+			'vue-shims.d.ts',
+			'src',
+			'test',
+			'@types',
+			'assets',
+		],
+		globals: {
+			...globals.node,
+		},
 		languageOptions: {
 			parserOptions: {
 				parser: tsParser,
-				project: ['./tsconfig.scripts.json'],
+				project: ['tsconfig.scripts.json'],
 				sourceType: 'module',
 				tsconfigRootDir: import.meta.dirname,
 			},
@@ -119,7 +139,7 @@ export default [
 			'**/built/',
 			'**/coverage/',
 			'**/node_modules/',
-			'vue-shims.d.ts'
+			'vue-shims.d.ts',
 		],
 	},
 ];

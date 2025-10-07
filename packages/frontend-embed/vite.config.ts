@@ -6,9 +6,7 @@ import { localesVersion } from '../../locales/version.js';
 import locales from '../../locales/index.js';
 import meta from '../../package.json' with { type: 'json' };
 import packageInfo from './package.json' with { type: 'json' };
-import tsconfigVue from './tsconfig.vue.json' with { type: 'json' };
 import pluginJson5 from './vite.json5.js';
-import type { TsconfigRaw } from 'esbuild';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.json5', '.svg', '.sass', '.scss', '.css', '.vue'];
 
@@ -115,12 +113,6 @@ export function getConfig(): UserConfig {
 			_PERF_PREFIX_: JSON.stringify('Misskey:'),
 			__VUE_OPTIONS_API__: false,
 			__VUE_PROD_DEVTOOLS__: false,
-		},
-
-		esbuild: {
-			// https://github.com/vitejs/vite/discussions/8483#discussioncomment-14485974
-			// https://esbuild.github.io/api/#tsconfig-raw
-			tsconfigRaw: tsconfigVue as TsconfigRaw,
 		},
 
 		build: {
