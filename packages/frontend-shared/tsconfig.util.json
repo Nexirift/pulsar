@@ -1,13 +1,9 @@
 {
 	"$schema": "https://json.schemastore.org/tsconfig",
-	"extends": "../shared/tsconfig.node.json",
+	"extends": "../shared/tsconfig.node.jsonc",
 	"compilerOptions": {
 		"noImplicitAny": false,
 		"outDir": "./js-built/util",
-		"typeRoots": [
-			"./node_modules/@types",
-			"./node_modules"
-		]
 	},
 	"include": [
 		"util/**/*.js",
