@@ -97,11 +97,11 @@ export class SystemAccountService implements OnApplicationShutdown {
 		const userId = await this.cache.fetch(type, async () => {
 			const systemAccount = await this.systemAccountsRepository.findOne({
 				where: { type: type },
-				select: { id: true },
-			}) as { id: string } | null;
+				select: { userId: true },
+			}) as { userId: string } | null;
 
 			if (systemAccount) {
-				return systemAccount.id;
+				return systemAccount.userId;
 			} else {
 				const created = await this.createCorrespondingUser(type, {
 					username: `system.${type}`, // NOTE: (できれば避けたいが) . が含まれるかどうかでシステムアカウントかどうかを判定している処理もあるので変えないように
