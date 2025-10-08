@@ -6,7 +6,7 @@
 import { GodOfTimeService } from '../../../misc/GodOfTimeService.js';
 import { MockEnvService } from '../../../misc/MockEnvService.js';
 import { MockInternalEventService } from '../../../misc/MockInternalEventService.js';
-import type Redis from 'ioredis';
+import { MockRedis } from '../../../misc/MockRedis.js';
 import type { MiUser } from '@/models/User.js';
 import type { RolePolicies, RoleService } from '@/core/RoleService.js';
 import type { Config } from '@/config.js';
@@ -18,76 +18,22 @@ describe(SkRateLimiterService, () => {
 	let cacheManagementService: CacheManagementService;
 	let mockInternalEventService: MockInternalEventService;
 	let mockTimeService: GodOfTimeService;
-	let mockRedis: Array<(command: [string, ...unknown[]]) => [Error | null, unknown] | null>;
-	let mockRedisExec: (batch: [string, ...unknown[]][]) => Promise<[Error | null, unknown][] | null>;
+	let mockRedis: MockRedis;
 	let mockEnvService: MockEnvService;
 	let serviceUnderTest: () => SkRateLimiterService;
 	let mockDefaultUserPolicies: Partial<RolePolicies>;
 	let mockUserPolicies: Record<string, Partial<RolePolicies>>;
+	let mockRoleService: RoleService;
 
 	beforeAll(() => {
 		mockTimeService = new GodOfTimeService();
 
-		function callMockRedis(command: [string, ...unknown[]]) {
-			const handlerResults = mockRedis.map(handler => handler(command));
-			const finalResult = handlerResults.findLast(result => result != null);
-			return finalResult ?? [null, null];
-		}
-
-		// I apologize to anyone who tries to read this later 🥲
-		mockRedis = [];
-		mockRedisExec = (batch) => {
-			const results: [Error | null, unknown][] = batch.map(command => {
-				return callMockRedis(command);
-			});
-			return Promise.resolve(results);
-		};
-		const mockRedisClient = {
-			watch(...args: unknown[]) {
-				const result = callMockRedis(['watch', ...args]);
-				return Promise.resolve(result[0] ?? result[1]);
-			},
-			get(...args: unknown[]) {
-				const result = callMockRedis(['get', ...args]);
-				return Promise.resolve(result[0] ?? result[1]);
-			},
-			set(...args: unknown[]) {
-				const result = callMockRedis(['set', ...args]);
-				return Promise.resolve(result[0] ?? result[1]);
-			},
-			multi(batch: [string, ...unknown[]][]) {
-				return {
-					exec() {
-						return mockRedisExec(batch);
-					},
-				};
-			},
-			reset: () => Promise.resolve(),
-			publish: () => Promise.resolve(),
-			on() {},
-			off() {},
-		} as unknown as Redis.Redis;
-
+		mockRedis = new MockRedis(mockTimeService);
 		const fakeConfig = { host: 'example.com' } as unknown as Config;
 		mockInternalEventService = new MockInternalEventService(fakeConfig);
-		cacheManagementService = new CacheManagementService(mockRedisClient, mockTimeService, mockInternalEventService);
+		cacheManagementService = new CacheManagementService(mockRedis, mockTimeService, mockInternalEventService);
 
 		mockEnvService = new MockEnvService(cacheManagementService);
-		mockEnvService.env.NODE_ENV = 'production';
-
-		mockDefaultUserPolicies = { rateLimitFactor: 1 };
-		mockUserPolicies = {};
-		const mockRoleService = {
-			getUserPolicies(key: string | null) {
-				const policies = key != null ? mockUserPolicies[key] : null;
-				return Promise.resolve(policies ?? mockDefaultUserPolicies);
-			},
-		} as unknown as RoleService;
-
-		let service: SkRateLimiterService | undefined = undefined;
-		serviceUnderTest = () => {
-			return service ??= new SkRateLimiterService(mockRedisClient, mockRoleService, mockTimeService, mockEnvService, cacheManagementService);
-		};
 	});
 
 	afterAll(() => {
@@ -97,95 +43,53 @@ describe(SkRateLimiterService, () => {
 
 	beforeEach(() => {
 		mockTimeService.reset();
+
+		mockDefaultUserPolicies = { rateLimitFactor: 1 };
+		mockUserPolicies = {};
+		mockRoleService = {
+			getUserPolicies(key: string | null) {
+				const policies = key != null ? mockUserPolicies[key] : null;
+				return Promise.resolve(policies ?? mockDefaultUserPolicies);
+			},
+		} as unknown as RoleService;
+
+		let service: SkRateLimiterService | undefined = undefined;
+		serviceUnderTest = () => {
+			return service ??= new SkRateLimiterService(mockRedis, mockRoleService, mockTimeService, mockEnvService, cacheManagementService);
+		};
 	});
 
 	afterEach(() => {
 		cacheManagementService.clear();
 		mockInternalEventService.mockReset();
+		mockRedis.mockReset();
+
 		mockEnvService.mockReset();
+		mockEnvService.env.NODE_ENV = 'production';
 	});
 
 	describe('limit', () => {
 		const actor = 'actor';
 		const key = 'test';
 
-		let limitCounter: number | undefined = undefined;
-		let limitTimestamp: number | undefined = undefined;
-
-		beforeEach(() => {
-			limitCounter = undefined;
-			limitTimestamp = undefined;
-
-			mockRedis.push(([command, ...args]) => {
-				if (command === 'get') {
-					if (args[0] === 'rl_actor_test_c') {
-						const data = limitCounter?.toString() ?? null;
-						return [null, data];
-					}
-					if (args[0] === 'rl_actor_test_t') {
-						const data = limitTimestamp?.toString() ?? null;
-						return [null, data];
-					}
-				}
-
-				if (command === 'set') {
-					if (args[0] === 'rl_actor_test_c') {
-						limitCounter = parseInt(args[1] as string);
-						return [null, args[1]];
-					}
-					if (args[0] === 'rl_actor_test_t') {
-						limitTimestamp = parseInt(args[1] as string);
-						return [null, args[1]];
-					}
-				}
-
-				if (command === 'incr') {
-					if (args[0] === 'rl_actor_test_c') {
-						limitCounter = (limitCounter ?? 0) + 1;
-						return [null, null];
-					}
-					if (args[0] === 'rl_actor_test_t') {
-						limitTimestamp = (limitTimestamp ?? 0) + 1;
-						return [null, null];
-					}
-				}
-
-				if (command === 'incrby') {
-					if (args[0] === 'rl_actor_test_c') {
-						limitCounter = (limitCounter ?? 0) + parseInt(args[1] as string);
-						return [null, null];
-					}
-					if (args[0] === 'rl_actor_test_t') {
-						limitTimestamp = (limitTimestamp ?? 0) + parseInt(args[1] as string);
-						return [null, null];
-					}
-				}
-
-				if (command === 'decr') {
-					if (args[0] === 'rl_actor_test_c') {
-						limitCounter = (limitCounter ?? 0) - 1;
-						return [null, null];
-					}
-					if (args[0] === 'rl_actor_test_t') {
-						limitTimestamp = (limitTimestamp ?? 0) - 1;
-						return [null, null];
-					}
-				}
-
-				if (command === 'decrby') {
-					if (args[0] === 'rl_actor_test_c') {
-						limitCounter = (limitCounter ?? 0) - parseInt(args[1] as string);
-						return [null, null];
-					}
-					if (args[0] === 'rl_actor_test_t') {
-						limitTimestamp = (limitTimestamp ?? 0) - parseInt(args[1] as string);
-						return [null, null];
-					}
-				}
-
-				return null;
-			});
-		});
+		const limitCounter = {
+			get: async () => {
+				const c = await mockRedis.get('rl_actor_test_c');
+				return c != null ? parseInt(c) : undefined;
+			},
+			set: async (value: number) => {
+				await mockRedis.set('rl_actor_test_c', value);
+			},
+		};
+		const limitTimestamp = {
+			get: async () => {
+				const t = await mockRedis.get('rl_actor_test_t');
+				return t != null ? parseInt(t) : undefined;
+			},
+			set: async (value: number) => {
+				await mockRedis.set('rl_actor_test_t', value);
+			},
+		};
 
 		it('should bypass in test environment', async () => {
 			mockEnvService.env.NODE_ENV = 'test';
@@ -201,7 +105,7 @@ describe(SkRateLimiterService, () => {
 		});
 
 		describe('with bucket limit', () => {
-			let limit: Keyed<BucketRateLimit> = null!;
+			let limit: Keyed<BucketRateLimit>;
 
 			beforeEach(() => {
 				limit = {
@@ -219,8 +123,8 @@ describe(SkRateLimiterService, () => {
 
 			it('should return correct info when allowed', async () => {
 				limit.size = 2;
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 
 				const info = await serviceUnderTest().limit(limit, actor);
 
@@ -234,7 +138,7 @@ describe(SkRateLimiterService, () => {
 			it('should increment counter when called', async () => {
 				await serviceUnderTest().limit(limit, actor);
 
-				expect(limitCounter).toBe(1);
+				expect(await limitCounter.get()).toBe(1);
 			});
 
 			it('should set timestamp when called', async () => {
@@ -242,28 +146,28 @@ describe(SkRateLimiterService, () => {
 
 				await serviceUnderTest().limit(limit, actor);
 
-				expect(limitTimestamp).toBe(1000);
+				expect(await limitTimestamp.get()).toBe(1000);
 			});
 
 			it('should decrement counter when dripRate has passed', async () => {
-				limitCounter = 2;
-				limitTimestamp = 0;
+				await limitCounter.set(2);
+				await limitTimestamp.set(0);
 				mockTimeService.now = 2000;
 
 				await serviceUnderTest().limit(limit, actor);
 
-				expect(limitCounter).toBe(1); // 2 (starting) - 2 (2x1 drip) + 1 (call) = 1
+				expect(await limitCounter.get()).toBe(1); // 2 (starting) - 2 (2x1 drip) + 1 (call) = 1
 			});
 
 			it('should decrement counter by dripSize', async () => {
-				limitCounter = 2;
-				limitTimestamp = 0;
+				await limitCounter.set(2);
+				await limitTimestamp.set(0);
 				limit.dripSize = 2;
 				mockTimeService.now = 1000;
 
 				await serviceUnderTest().limit(limit, actor);
 
-				expect(limitCounter).toBe(1); // 2 (starting) - 2 (1x2 drip) + 1 (call) = 1
+				expect(await limitCounter.get()).toBe(1); // 2 (starting) - 2 (1x2 drip) + 1 (call) = 1
 			});
 
 			it('should maintain counter between calls over time', async () => {
@@ -278,13 +182,13 @@ describe(SkRateLimiterService, () => {
 				mockTimeService.now += 1000; // 2 - 1 = 1
 				await serviceUnderTest().limit(limit, actor); // 1 + 1 = 2
 
-				expect(limitCounter).toBe(2);
-				expect(limitTimestamp).toBe(3000);
+				expect(await limitCounter.get()).toBe(2);
+				expect(await limitTimestamp.get()).toBe(3000);
 			});
 
 			it('should block when bucket is filled', async () => {
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 
 				const info = await serviceUnderTest().limit(limit, actor);
 
@@ -292,8 +196,8 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should calculate correct info when blocked', async () => {
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 
 				const info = await serviceUnderTest().limit(limit, actor);
 
@@ -304,8 +208,8 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should allow when bucket is filled but should drip', async () => {
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 				mockTimeService.now = 1000;
 
 				const info = await serviceUnderTest().limit(limit, actor);
@@ -315,8 +219,8 @@ describe(SkRateLimiterService, () => {
 
 			it('should scale limit by factor', async () => {
 				mockDefaultUserPolicies.rateLimitFactor = 0.5;
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 
 				const i1 = await serviceUnderTest().limit(limit, actor); // 1 + 1 = 2
 				const i2 = await serviceUnderTest().limit(limit, actor); // 2 + 1 = 3
@@ -329,38 +233,28 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should set counter expiration', async () => {
-				const commands: unknown[][] = [];
-				mockRedis.push(command => {
-					commands.push(command);
-					return null;
-				});
-
 				await serviceUnderTest().limit(limit, actor);
+				mockTimeService.tick(1000);
 
-				expect(commands).toContainEqual(['expire', 'rl_actor_test_c', 1]);
+				expect(await limitCounter.get()).toBe(undefined);
 			});
 
 			it('should set timestamp expiration', async () => {
-				const commands: unknown[][] = [];
-				mockRedis.push(command => {
-					commands.push(command);
-					return null;
-				});
-
 				await serviceUnderTest().limit(limit, actor);
+				mockTimeService.tick(1000);
 
-				expect(commands).toContainEqual(['expire', 'rl_actor_test_t', 1]);
+				expect(await limitTimestamp.get()).toBe(undefined);
 			});
 
 			it('should not increment when already blocked', async () => {
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 				mockTimeService.now += 100;
 
 				await serviceUnderTest().limit(limit, actor);
 
-				expect(limitCounter).toBe(1);
-				expect(limitTimestamp).toBe(0);
+				expect(await limitCounter.get()).toBe(1);
+				expect(await limitTimestamp.get()).toBe(0);
 			});
 
 			it('should skip if factor is zero', async () => {
@@ -453,7 +347,7 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should apply correction if extra calls slip through', async () => {
-				limitCounter = 2;
+				await limitCounter.set(2);
 
 				const info = await serviceUnderTest().limit(limit, actor);
 
@@ -468,8 +362,8 @@ describe(SkRateLimiterService, () => {
 			it('should look up factor by user ID', async () => {
 				const userActor = { id: actor } as unknown as MiUser;
 				mockUserPolicies[actor] = { rateLimitFactor: 0.5 };
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 
 				const i1 = await serviceUnderTest().limit(limit, userActor); // 1 + 1 = 2
 				const i2 = await serviceUnderTest().limit(limit, userActor); // 2 + 1 = 3
@@ -480,7 +374,7 @@ describe(SkRateLimiterService, () => {
 		});
 
 		describe('with min interval', () => {
-			let limit: Keyed<LegacyRateLimit> = null!;
+			let limit: Keyed<LegacyRateLimit>;
 
 			beforeEach(() => {
 				limit = {
@@ -509,8 +403,8 @@ describe(SkRateLimiterService, () => {
 			it('should increment counter when called', async () => {
 				await serviceUnderTest().limit(limit, actor);
 
-				expect(limitCounter).not.toBeUndefined();
-				expect(limitCounter).toBe(1);
+				expect(await limitCounter.get()).not.toBeUndefined();
+				expect(await limitCounter.get()).toBe(1);
 			});
 
 			it('should set timestamp when called', async () => {
@@ -518,19 +412,19 @@ describe(SkRateLimiterService, () => {
 
 				await serviceUnderTest().limit(limit, actor);
 
-				expect(limitCounter).not.toBeUndefined();
-				expect(limitTimestamp).toBe(1000);
+				expect(await limitCounter.get()).not.toBeUndefined();
+				expect(await limitTimestamp.get()).toBe(1000);
 			});
 
 			it('should decrement counter when minInterval has passed', async () => {
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 				mockTimeService.now = 1000;
 
 				await serviceUnderTest().limit(limit, actor);
 
-				expect(limitCounter).not.toBeUndefined();
-				expect(limitCounter).toBe(1); // 1 (starting) - 1 (interval) + 1 (call) = 1
+				expect(await limitCounter.get()).not.toBeUndefined();
+				expect(await limitCounter.get()).toBe(1); // 1 (starting) - 1 (interval) + 1 (call) = 1
 			});
 
 			it('should maintain counter between calls over time', async () => {
@@ -544,13 +438,13 @@ describe(SkRateLimiterService, () => {
 				const info = await serviceUnderTest().limit(limit, actor); // 0 + 1 = 1
 
 				expect(info.blocked).toBeFalsy();
-				expect(limitCounter).toBe(1);
-				expect(limitTimestamp).toBe(3000);
+				expect(await limitCounter.get()).toBe(1);
+				expect(await limitTimestamp.get()).toBe(3000);
 			});
 
 			it('should block when interval exceeded', async () => {
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 
 				const info = await serviceUnderTest().limit(limit, actor);
 
@@ -558,8 +452,8 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should calculate correct info when blocked', async () => {
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 
 				const info = await serviceUnderTest().limit(limit, actor);
 
@@ -570,8 +464,8 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should allow when bucket is filled but interval has passed', async () => {
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 				mockTimeService.now = 1000;
 
 				const info = await serviceUnderTest().limit(limit, actor);
@@ -581,8 +475,8 @@ describe(SkRateLimiterService, () => {
 
 			it('should scale interval by factor', async () => {
 				mockDefaultUserPolicies.rateLimitFactor = 0.5;
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 
 				const i1 = await serviceUnderTest().limit(limit, actor);
 				const i2 = await serviceUnderTest().limit(limit, actor);
@@ -595,38 +489,28 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should set counter expiration', async () => {
-				const commands: unknown[][] = [];
-				mockRedis.push(command => {
-					commands.push(command);
-					return null;
-				});
-
 				await serviceUnderTest().limit(limit, actor);
+				mockTimeService.tick(1000);
 
-				expect(commands).toContainEqual(['expire', 'rl_actor_test_c', 1]);
+				expect(await limitCounter.get()).toBe(undefined);
 			});
 
-			it('should set timer expiration', async () => {
-				const commands: unknown[][] = [];
-				mockRedis.push(command => {
-					commands.push(command);
-					return null;
-				});
-
+			it('should set timestamp expiration', async () => {
 				await serviceUnderTest().limit(limit, actor);
+				mockTimeService.tick(1000);
 
-				expect(commands).toContainEqual(['expire', 'rl_actor_test_t', 1]);
+				expect(await limitTimestamp.get()).toBe(undefined);
 			});
 
 			it('should not increment when already blocked', async () => {
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 				mockTimeService.now += 100;
 
 				await serviceUnderTest().limit(limit, actor);
 
-				expect(limitCounter).toBe(1);
-				expect(limitTimestamp).toBe(0);
+				expect(await limitCounter.get()).toBe(1);
+				expect(await limitTimestamp.get()).toBe(0);
 			});
 
 			it('should skip if factor is zero', async () => {
@@ -664,7 +548,7 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should apply correction if extra calls slip through', async () => {
-				limitCounter = 2;
+				await limitCounter.set(2);
 
 				const info = await serviceUnderTest().limit(limit, actor);
 
@@ -678,7 +562,7 @@ describe(SkRateLimiterService, () => {
 		});
 
 		describe('with legacy limit', () => {
-			let limit: Keyed<LegacyRateLimit> = null!;
+			let limit: Keyed<LegacyRateLimit>;
 
 			beforeEach(() => {
 				limit = {
@@ -698,8 +582,8 @@ describe(SkRateLimiterService, () => {
 			it('should infer dripRate from duration', async () => {
 				limit.max = 10;
 				limit.duration = 10000;
-				limitCounter = 10;
-				limitTimestamp = 0;
+				await limitCounter.set(10);
+				await limitTimestamp.set(0);
 
 				const i1 = await serviceUnderTest().limit(limit, actor);
 				mockTimeService.now += 1000;
@@ -722,8 +606,8 @@ describe(SkRateLimiterService, () => {
 			it('should calculate correct info when allowed', async () => {
 				limit.max = 10;
 				limit.duration = 10000;
-				limitCounter = 10;
-				limitTimestamp = 0;
+				await limitCounter.set(10);
+				await limitTimestamp.set(0);
 				mockTimeService.now += 2000;
 
 				const info = await serviceUnderTest().limit(limit, actor);
@@ -738,8 +622,8 @@ describe(SkRateLimiterService, () => {
 			it('should calculate correct info when blocked', async () => {
 				limit.max = 10;
 				limit.duration = 10000;
-				limitCounter = 10;
-				limitTimestamp = 0;
+				await limitCounter.set(10);
+				await limitTimestamp.set(0);
 
 				const info = await serviceUnderTest().limit(limit, actor);
 
@@ -751,8 +635,8 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should allow when bucket is filled but interval has passed', async () => {
-				limitCounter = 10;
-				limitTimestamp = 0;
+				await limitCounter.set(10);
+				await limitTimestamp.set(0);
 				mockTimeService.now = 1000;
 
 				const info = await serviceUnderTest().limit(limit, actor);
@@ -762,8 +646,8 @@ describe(SkRateLimiterService, () => {
 
 			it('should scale limit by factor', async () => {
 				mockDefaultUserPolicies.rateLimitFactor = 0.5;
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 
 				const i1 = await serviceUnderTest().limit(limit, actor);
 				const i2 = await serviceUnderTest().limit(limit, actor);
@@ -776,46 +660,36 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should set counter expiration', async () => {
-				const commands: unknown[][] = [];
-				mockRedis.push(command => {
-					commands.push(command);
-					return null;
-				});
-
 				await serviceUnderTest().limit(limit, actor);
+				mockTimeService.tick(1000);
 
-				expect(commands).toContainEqual(['expire', 'rl_actor_test_c', 1]);
+				expect(await limitCounter.get()).toBe(undefined);
 			});
 
 			it('should set timestamp expiration', async () => {
-				const commands: unknown[][] = [];
-				mockRedis.push(command => {
-					commands.push(command);
-					return null;
-				});
-
 				await serviceUnderTest().limit(limit, actor);
+				mockTimeService.tick(1000);
 
-				expect(commands).toContainEqual(['expire', 'rl_actor_test_t', 1]);
+				expect(await limitTimestamp.get()).toBe(undefined);
 			});
 
 			it('should not increment when already blocked', async () => {
-				limitCounter = 1;
-				limitTimestamp = 0;
+				await limitCounter.set(1);
+				await limitTimestamp.set(0);
 				mockTimeService.now += 100;
 
 				await serviceUnderTest().limit(limit, actor);
 
-				expect(limitCounter).toBe(1);
-				expect(limitTimestamp).toBe(0);
+				expect(await limitCounter.get()).toBe(1);
+				expect(await limitTimestamp.get()).toBe(0);
 			});
 
 			it('should not allow dripRate to be lower than 0', async () => {
 				// real-world case; taken from StreamingApiServerService
 				limit.max = 4096;
 				limit.duration = 2000;
-				limitCounter = 4096;
-				limitTimestamp = 0;
+				await limitCounter.set(4096);
+				await limitTimestamp.set(0);
 
 				const i1 = await serviceUnderTest().limit(limit, actor);
 				mockTimeService.now = 1;
@@ -868,7 +742,7 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should apply correction if extra calls slip through', async () => {
-				limitCounter = 2;
+				await limitCounter.set(2);
 
 				const info = await serviceUnderTest().limit(limit, actor);
 
@@ -882,7 +756,7 @@ describe(SkRateLimiterService, () => {
 		});
 
 		describe('with legacy limit and min interval', () => {
-			let limit: Keyed<LegacyRateLimit> = null!;
+			let limit: Keyed<LegacyRateLimit>;
 
 			beforeEach(() => {
 				limit = {
@@ -901,8 +775,8 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should block when limit exceeded', async () => {
-				limitCounter = 10;
-				limitTimestamp = 0;
+				await limitCounter.set(10);
+				await limitTimestamp.set(0);
 
 				const info = await serviceUnderTest().limit(limit, actor);
 
@@ -910,8 +784,8 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should calculate correct info when allowed', async () => {
-				limitCounter = 9;
-				limitTimestamp = 0;
+				await limitCounter.set(9);
+				await limitTimestamp.set(0);
 
 				const info = await serviceUnderTest().limit(limit, actor);
 
@@ -923,8 +797,8 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should calculate correct info when blocked', async () => {
-				limitCounter = 10;
-				limitTimestamp = 0;
+				await limitCounter.set(10);
+				await limitTimestamp.set(0);
 
 				const info = await serviceUnderTest().limit(limit, actor);
 
@@ -936,8 +810,8 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should allow when counter is filled but interval has passed', async () => {
-				limitCounter = 5;
-				limitTimestamp = 0;
+				await limitCounter.set(5);
+				await limitTimestamp.set(0);
 				mockTimeService.now = 1000;
 
 				const info = await serviceUnderTest().limit(limit, actor);
@@ -946,8 +820,8 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should drip according to minInterval', async () => {
-				limitCounter = 10;
-				limitTimestamp = 0;
+				await limitCounter.set(10);
+				await limitTimestamp.set(0);
 				mockTimeService.now += 1000;
 
 				const i1 = await serviceUnderTest().limit(limit, actor);
@@ -961,8 +835,8 @@ describe(SkRateLimiterService, () => {
 
 			it('should scale limit and interval by factor', async () => {
 				mockDefaultUserPolicies.rateLimitFactor = 0.5;
-				limitCounter = 19;
-				limitTimestamp = 0;
+				await limitCounter.set(19);
+				await limitTimestamp.set(0);
 
 				const i1 = await serviceUnderTest().limit(limit, actor);
 				const i2 = await serviceUnderTest().limit(limit, actor);
@@ -975,42 +849,32 @@ describe(SkRateLimiterService, () => {
 			});
 
 			it('should set counter expiration', async () => {
-				const commands: unknown[][] = [];
-				mockRedis.push(command => {
-					commands.push(command);
-					return null;
-				});
-
 				await serviceUnderTest().limit(limit, actor);
+				mockTimeService.tick(5000);
 
-				expect(commands).toContainEqual(['expire', 'rl_actor_test_c', 5]);
+				expect(await limitCounter.get()).toBe(undefined);
 			});
 
 			it('should set timestamp expiration', async () => {
-				const commands: unknown[][] = [];
-				mockRedis.push(command => {
-					commands.push(command);
-					return null;
-				});
-
 				await serviceUnderTest().limit(limit, actor);
+				mockTimeService.tick(5000);
 
-				expect(commands).toContainEqual(['expire', 'rl_actor_test_t', 5]);
+				expect(await limitTimestamp.get()).toBe(undefined);
 			});
 
 			it('should not increment when already blocked', async () => {
-				limitCounter = 10;
-				limitTimestamp = 0;
+				await limitCounter.set(10);
+				await limitTimestamp.set(0);
 				mockTimeService.now += 100;
 
 				await serviceUnderTest().limit(limit, actor);
 
-				expect(limitCounter).toBe(10);
-				expect(limitTimestamp).toBe(0);
+				expect(await limitCounter.get()).toBe(10);
+				expect(await limitTimestamp.get()).toBe(0);
 			});
 
 			it('should apply correction if extra calls slip through', async () => {
-				limitCounter = 12;
+				await limitCounter.set(12);
 
 				const info = await serviceUnderTest().limit(limit, actor);
 
