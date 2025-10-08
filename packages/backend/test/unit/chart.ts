@@ -3,13 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { MockConsole } from '../misc/MockConsole.js';
+
 process.env.NODE_ENV = 'test';
 
 import * as assert from 'assert';
 import { DataSource } from 'typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GodOfTimeService } from '../misc/GodOfTimeService.js';
-import { MockLoggerService } from '../misc/MockLoggerService.js';
 import { MockRedis } from '../misc/MockRedis.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import TestChart from '@/core/chart/charts/test.js';
@@ -46,7 +47,7 @@ describe('Chart', () => {
 		})
 			.overrideProvider(DI.redis).useClass(MockRedis)
 			.overrideProvider(TimeService).useClass(GodOfTimeService)
-			.overrideProvider(LoggerService).useClass(MockLoggerService)
+			.overrideProvider(DI.console).useClass(MockConsole)
 			.compile();
 
 		logger = app.get(LoggerService).getLogger('chart');

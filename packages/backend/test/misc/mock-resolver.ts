@@ -4,14 +4,14 @@
  */
 
 import { Inject } from '@nestjs/common';
-import { MockLoggerService } from './MockLoggerService.js';
+import { MockConsole } from './MockConsole.js';
+import { MockEnvService } from './MockEnvService.js';
 import type { Config } from '@/config.js';
 import type { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import type { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import type { ApRequestService } from '@/core/activitypub/ApRequestService.js';
 import type { IObject, IObjectWithId } from '@/core/activitypub/type.js';
 import type { HttpRequestService } from '@/core/HttpRequestService.js';
-import type { LoggerService } from '@/core/LoggerService.js';
 import type { UtilityService } from '@/core/UtilityService.js';
 import type {
 	FollowRequestsRepository,
@@ -23,6 +23,7 @@ import type {
 } from '@/models/_.js';
 import type { CacheService } from '@/core/CacheService.js';
 import { ApLogService } from '@/core/ApLogService.js';
+import { LoggerService } from '@/core/LoggerService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
 import { fromTuple } from '@/misc/from-tuple.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
@@ -30,6 +31,7 @@ import { bindThis } from '@/decorators.js';
 import { Resolver } from '@/core/activitypub/ApResolverService.js';
 import { DI } from '@/di-symbols.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { NativeTimeService } from '@/global/TimeService.js';
 
 type MockResponse = {
 	type: string;
@@ -88,7 +90,7 @@ export class MockResolver extends Resolver {
 			httpRequestService ?? {} as HttpRequestService,
 			apRendererService ?? {} as ApRendererService,
 			apDbResolverService ?? {} as ApDbResolverService,
-			loggerService ?? new MockLoggerService(),
+			loggerService ?? new LoggerService(new MockConsole(), new NativeTimeService(), new MockEnvService()),
 			apLogService ?? {} as ApLogService,
 			apUtilityService ?? {} as ApUtilityService,
 			cacheService ?? {} as CacheService,

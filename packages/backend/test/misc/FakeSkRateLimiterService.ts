@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { Injectable } from '@nestjs/common';
 import type { LimitInfo } from '@/misc/rate-limit-utils.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
-import { Injectable } from '@nestjs/common';
 
 /**
  * Fake implementation of SkRateLimiterService that does not enforce any limits.

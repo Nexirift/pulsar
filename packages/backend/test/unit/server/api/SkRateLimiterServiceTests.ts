@@ -27,13 +27,12 @@ describe(SkRateLimiterService, () => {
 
 	beforeAll(() => {
 		mockTimeService = new GodOfTimeService();
+		mockEnvService = new MockEnvService();
 
 		mockRedis = new MockRedis(mockTimeService);
 		const fakeConfig = { host: 'example.com' } as unknown as Config;
 		mockInternalEventService = new MockInternalEventService(fakeConfig);
 		cacheManagementService = new CacheManagementService(mockRedis, mockTimeService, mockInternalEventService);
-
-		mockEnvService = new MockEnvService(cacheManagementService);
 	});
 
 	afterAll(() => {

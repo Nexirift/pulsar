@@ -10,7 +10,7 @@ import { generateKeyPair } from 'crypto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { jest } from '@jest/globals';
 import { MockApResolverService } from '../misc/MockApResolverService.js';
-import { MockLoggerService } from '../misc/MockLoggerService.js';
+import { MockConsole } from '../misc/MockConsole.js';
 import type { Config } from '@/config.js';
 import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import { ApImageService } from '@/core/activitypub/models/ApImageService.js';
@@ -106,7 +106,7 @@ describe('ActivityPub', () => {
 	let usersRepository: UsersRepository;
 	let config: Config;
 	let cacheManagementService: CacheManagementService;
-	let mockLoggerService: MockLoggerService;
+	let mockConsole: MockConsole;
 	let notesRepository: NotesRepository;
 
 	const metaInitial = {
@@ -162,7 +162,7 @@ describe('ActivityPub', () => {
 			})
 			.overrideProvider(DI.meta).useValue(meta)
 			.overrideProvider(ApResolverService).useClass(MockApResolverService)
-			.overrideProvider(LoggerService).useClass(MockLoggerService)
+			.overrideProvider(DI.console).useClass(MockConsole)
 			.compile();
 
 		await app.init();
@@ -182,7 +182,7 @@ describe('ActivityPub', () => {
 		usersRepository = app.get<UsersRepository>(DI.usersRepository);
 		config = app.get<Config>(DI.config);
 		cacheManagementService = app.get(CacheManagementService);
-		mockLoggerService = app.get<MockLoggerService>(LoggerService);
+		mockConsole = app.get<MockConsole>(DI.console);
 		notesRepository = app.get<NotesRepository>(DI.notesRepository);
 	});
 
@@ -198,7 +198,7 @@ describe('ActivityPub', () => {
 		cacheManagementService.clear();
 
 		// Reset mocks
-		mockLoggerService.reset();
+		mockConsole.mockReset();
 		resolver.clear();
 	});
 
@@ -219,7 +219,7 @@ describe('ActivityPub', () => {
 
 			const user = await personService.createPerson(actor.id, resolver);
 
-			mockLoggerService.assertNoErrors();
+			mockConsole.assertNoErrors();
 			assert.deepStrictEqual(user.uri, actor.id);
 			assert.deepStrictEqual(user.username, actor.preferredUsername);
 			assert.deepStrictEqual(user.inbox, actor.inbox);
@@ -231,7 +231,7 @@ describe('ActivityPub', () => {
 
 			const note = await noteService.createNote(post.id, undefined, resolver, true);
 
-			mockLoggerService.assertNoErrors();
+			mockConsole.assertNoErrors();
 			assert.deepStrictEqual(note?.uri, post.id);
 			assert.deepStrictEqual(note.visibility, 'public');
 			assert.deepStrictEqual(note.text, post.content);
@@ -298,7 +298,7 @@ describe('ActivityPub', () => {
 				const user = await personService.createPerson(actor.id, resolver);
 				const userProfile = await userProfilesRepository.findOneByOrFail({ userId: user.id });
 
-				mockLoggerService.assertNoErrors();
+				mockConsole.assertNoErrors();
 				assert.deepStrictEqual(userProfile.followingVisibility, 'public');
 				assert.deepStrictEqual(userProfile.followersVisibility, 'public');
 			};
@@ -360,7 +360,7 @@ describe('ActivityPub', () => {
 				assert.strictEqual(note.uri, item.id);
 			}
 
-			mockLoggerService.assertNoErrors();
+			mockConsole.assertNoErrors();
 		});
 
 		test('Fetch featured notes from IActor pointing to another remote server', async () => {
@@ -858,7 +858,7 @@ describe('ActivityPub', () => {
 
 				expect(publicKey).not.toBeNull();
 				expect(publicKey?.keyPem).toBe('key material');
-				mockLoggerService.assertNoErrors();
+				mockConsole.assertNoErrors();
 			});
 
 			it('should accept SocialHome actor', async () => {
@@ -907,7 +907,7 @@ describe('ActivityPub', () => {
 
 				expect(user.uri).toBe(actor.id);
 				expect(publicKey).not.toBeNull();
-				mockLoggerService.assertNoErrors();
+				mockConsole.assertNoErrors();
 			});
 		});
 	});

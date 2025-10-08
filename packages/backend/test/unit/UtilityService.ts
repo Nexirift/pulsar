@@ -4,7 +4,6 @@
  */
 
 import * as assert from 'assert';
-import { FakeCacheManagementService } from '../misc/FakeCacheManagementService.js';
 import type { MiMeta } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import type { SoftwareSuspension } from '@/models/Meta.js';
@@ -32,7 +31,7 @@ describe('UtilityService', () => {
 			federation: 'all',
 		} as unknown as MiMeta;
 
-		const envService = new EnvService(new FakeCacheManagementService());
+		const envService = new EnvService();
 		utilityService = new UtilityService(config, meta, envService);
 	});
 

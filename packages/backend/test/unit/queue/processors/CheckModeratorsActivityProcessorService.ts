@@ -7,7 +7,7 @@ import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { addHours, addSeconds, subDays, subHours, subSeconds } from 'date-fns';
 import { GodOfTimeService } from '../../../misc/GodOfTimeService.js';
-import { MockLoggerService } from '../../../misc/MockLoggerService.js';
+import { MockConsole } from '../../../misc/MockConsole.js';
 import { CheckModeratorsActivityProcessorService } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
 import { MiSystemWebhook, MiUser, MiUserProfile, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import { IdService } from '@/core/IdService.js';
@@ -24,7 +24,6 @@ import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { CoreModule } from '@/core/CoreModule.js';
 import { QueueProcessorModule } from '@/queue/QueueProcessorModule.js';
-import { LoggerService } from '@/core/LoggerService.js';
 
 const baseDate = new Date(Date.UTC(2000, 11, 15, 12, 0, 0));
 
@@ -109,7 +108,7 @@ describe('CheckModeratorsActivityProcessorService', () => {
 				fetchActiveSystemWebhooks: jest.fn(),
 				enqueueSystemWebhook: jest.fn(),
 			})
-			.overrideProvider(LoggerService).useClass(MockLoggerService)
+			.overrideProvider(DI.console).useClass(MockConsole)
 			.compile();
 
 		await app.init();

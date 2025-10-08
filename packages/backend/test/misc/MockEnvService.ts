@@ -6,7 +6,6 @@
 import process from 'node:process';
 import { Injectable } from '@nestjs/common';
 import { EnvService } from '@/global/EnvService.js';
-import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { bindThis } from '@/decorators.js';
 
 /**
@@ -15,12 +14,7 @@ import { bindThis } from '@/decorators.js';
  */
 @Injectable()
 export class MockEnvService extends EnvService {
-	private _env: Partial<Record<string, string>>;
-
-	constructor(cacheManagementService: CacheManagementService) {
-		super(cacheManagementService);
-		this._env = process.env;
-	}
+	private _env: Partial<Record<string, string>> = process.env;
 
 	/**
 	 * Gets the mocked environment.
@@ -43,24 +37,10 @@ export class MockEnvService extends EnvService {
 	}
 
 	/**
-	 * Overrides the version for a dependency.
-	 * Pass a string or null to override the version, or pass undefined to clear the override and restore the original value.
-	 */
-	@bindThis
-	public setDependencyVersion(dependency: string, version: string | null | undefined) {
-		if (version !== undefined) {
-			this.dependencyVersionCache.set(dependency, version);
-		} else {
-			this.dependencyVersionCache.delete(dependency);
-		}
-	}
-
-	/**
 	 * Resets the mock to initial values.
 	 */
 	@bindThis
 	public mockReset(): void {
 		this._env = process.env;
-		this.dependencyVersionCache.clear();
 	}
 }
