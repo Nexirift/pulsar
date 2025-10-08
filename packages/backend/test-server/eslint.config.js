@@ -51,10 +51,4 @@ export default [
 			],
 		},
 	},
-	{
-		ignores: [
-			"**/built/",
-			'*.*',
-		],
-	},
 ];
