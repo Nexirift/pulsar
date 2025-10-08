@@ -12545,6 +12545,14 @@ export interface Locale extends ILocale {
      * Failed to load note
      */
     "cannotLoadNote": string;
+    /**
+     * Please click [OK] to unsubscribe from announcement e-mails.
+     */
+    "clickToUnsubscribe": string;
+    /**
+     * There was a problem unsubscribing.
+     */
+    "unsubscribeError": string;
     "_flash": {
         /**
          * Flash Content Hidden
@@ -13475,13 +13483,13 @@ export interface Locale extends ILocale {
      * Custom font size
      */
     "customFontSize": string;
-	  /**
-	   * Hide ads
-	   */
-  	"hideAds": string;
-	  /**
-	   * Apps using this token will have no API access except for the functions listed below.
-	   */
+    /**
+     * Hide ads
+     */
+    "hideAds": string;
+    /**
+     * Apps using this token will have no API access except for the functions listed below.
+     */
     "permissionsDescription": string;
     /**
      * Apps using this token will have no administrative access except for the functions enabled below.
