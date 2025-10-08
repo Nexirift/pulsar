@@ -14,6 +14,7 @@ import { TimeService, NativeTimeService } from '@/global/TimeService.js';
 import { EnvService } from '@/global/EnvService.js';
 import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { InternalEventService } from '@/global/InternalEventService.js';
+import { DependencyService } from '@/global/DependencyService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { DI } from './di-symbols.js';
 import { Config, loadConfig } from './config.js';
@@ -179,12 +180,14 @@ const $TimeService: Provider[] = [
 ];
 const $EnvService: Provider[] = [EnvService, { provide: 'EnvService', useExisting: EnvService }];
 const $LoggerService: Provider[] = [LoggerService, { provide: 'LoggerService', useExisting: LoggerService }];
+const $Console: Provider[] = [{ provide: DI.console, useValue: global.console }];
+const $DependencyService: Provider[] = [DependencyService, { provide: 'DependencyService', useExisting: DependencyService }];
 
 @Global()
 @Module({
 	imports: [RepositoryModule],
-	providers: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit, $CacheManagementService, $InternalEventService, $TimeService, $EnvService, $LoggerService].flat(),
-	exports: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit, $CacheManagementService, $InternalEventService, $TimeService, $EnvService, $LoggerService, RepositoryModule].flat(),
+	providers: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit, $CacheManagementService, $InternalEventService, $TimeService, $EnvService, $LoggerService, $Console, $DependencyService].flat(),
+	exports: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit, $CacheManagementService, $InternalEventService, $TimeService, $EnvService, $LoggerService, RepositoryModule, $Console, $DependencyService].flat(),
 })
 export class GlobalModule implements OnApplicationShutdown {
 	private readonly logger = new Logger('global');
