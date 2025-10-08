@@ -8,6 +8,10 @@ import nodeFs from 'node:fs';
 import { Injectable } from '@nestjs/common';
 import { CacheManagementService, type ManagedMemoryKVCache } from '@/global/CacheManagementService.js';
 import { bindThis } from '@/decorators.js';
+<<<<<<<< HEAD:packages/backend/src/global/DependencyService.ts
+========
+import { type ManagedMemoryKVCache, CacheManagementService } from '@/global/CacheManagementService.js';
+>>>>>>>> 3e14e73c59 (move global services to "global" directory):packages/backend/src/global/EnvService.ts
 
 @Injectable()
 export class DependencyService {
