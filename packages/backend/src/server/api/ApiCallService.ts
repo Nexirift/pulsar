@@ -20,7 +20,7 @@ import { RoleService } from '@/core/RoleService.js';
 import type { Config } from '@/config.js';
 import { sendRateLimitHeaders } from '@/misc/rate-limit-utils.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
-import { TimeService, type TimerHandle } from '@/core/TimeService.js';
+import { TimeService, type TimerHandle } from '@/global/TimeService.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { renderFullError } from '@/misc/render-full-error.js';
 import { ApiError } from './error.js';

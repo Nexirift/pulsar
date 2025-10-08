@@ -4,7 +4,7 @@
  */
 
 import { bindThis } from '@/decorators.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import type { InternalEventTypes } from '@/core/GlobalEventService.js';
 import { MemoryKVCache, type MemoryCacheServices } from '@/misc/cache.js';
 import { makeKVPArray, type KVPArray } from '@/misc/kvp-array.js';

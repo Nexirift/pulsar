@@ -7,7 +7,7 @@ import { Injectable } from '@nestjs/common';
 
 import { bindThis } from '@/decorators.js';
 import { ChartLoggerService } from '@/core/chart/ChartLoggerService.js';
-import { TimeService, type TimerHandle } from '@/core/TimeService.js';
+import { TimeService, type TimerHandle } from '@/global/TimeService.js';
 import Logger from '@/logger.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import FederationChart from './charts/federation.js';

@@ -19,10 +19,10 @@ import { bindThis } from '@/decorators.js';
 import { generateNativeUserToken } from '@/misc/token.js';
 import { IdService } from '@/core/IdService.js';
 import { genRsaKeyPair } from '@/misc/gen-key-pair.js';
-import { CacheManagementService, type ManagedMemoryKVCache } from '@/core/CacheManagementService.js';
+import { CacheManagementService, type ManagedMemoryKVCache } from '@/global/CacheManagementService.js';
 import { CacheService } from '@/core/CacheService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export const SYSTEM_ACCOUNT_TYPES = ['actor', 'relay', 'proxy'] as const;
 

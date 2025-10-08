@@ -16,7 +16,7 @@ import { ChannelFollowingService } from '@/core/ChannelFollowingService.js';
 import { isJsonObject } from '@/misc/json-value.js';
 import type { JsonObject, JsonValue } from '@/misc/json-value.js';
 import { LoggerService } from '@/core/LoggerService.js';
-import { TimeService, type TimerHandle } from '@/core/TimeService.js';
+import { TimeService, type TimerHandle } from '@/global/TimeService.js';
 import type Logger from '@/logger.js';
 import { QueryService } from '@/core/QueryService.js';
 import type { ChannelsService } from './ChannelsService.js';

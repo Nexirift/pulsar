@@ -49,7 +49,7 @@ import type { RolePolicies, RoleService } from '@/core/RoleService.js';
 import type { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
 import type { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import type { IdService } from '@/core/IdService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { AnnouncementService } from '@/core/AnnouncementService.js';
 import type { CustomEmojiService } from '@/core/CustomEmojiService.js';
 import type { AvatarDecorationService } from '@/core/AvatarDecorationService.js';

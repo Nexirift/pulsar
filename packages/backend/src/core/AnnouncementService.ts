@@ -17,7 +17,7 @@ import { ModerationLogService } from '@/core/ModerationLogService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import type { Config } from '@/config.js';
 import { RoleService } from '@/core/RoleService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 @Injectable()
 export class AnnouncementService {

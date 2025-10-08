@@ -12,11 +12,11 @@ import type { InternalEventTypes } from '@/core/GlobalEventService.js';
 import { IdService } from '@/core/IdService.js';
 import { DI } from '@/di-symbols.js';
 import { UtilityService } from '@/core/UtilityService.js';
-import { CacheManagementService, type ManagedQuantumKVCache } from '@/core/CacheManagementService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { CacheManagementService, type ManagedQuantumKVCache } from '@/global/CacheManagementService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { diffArraysSimple } from '@/misc/diff-arrays.js';
 import { bindThis } from '@/decorators.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
 @Injectable()

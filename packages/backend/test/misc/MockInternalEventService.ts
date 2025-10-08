@@ -5,10 +5,10 @@
 
 import { Injectable } from '@nestjs/common';
 import { MockRedis } from './MockRedis.js';
-import type { Listener, ListenerProps } from '@/core/InternalEventService.js';
+import type { Listener, ListenerProps } from '@/global/InternalEventService.js';
 import type { InternalEventTypes } from '@/core/GlobalEventService.js';
 import type { Config } from '@/config.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { bindThis } from '@/decorators.js';
 
 type FakeCall<K extends keyof InternalEventService> = [K, Parameters<InternalEventService[K]>];

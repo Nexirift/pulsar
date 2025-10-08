@@ -24,7 +24,7 @@ import { AppLockService } from '@/core/AppLockService.js';
 import Logger from '@/logger.js';
 import { CoreModule } from '@/core/CoreModule.js';
 import { DI } from '@/di-symbols.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 
 describe('Chart', () => {

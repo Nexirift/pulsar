@@ -11,7 +11,7 @@ import { Test } from '@nestjs/testing';
 import type { TestingModule } from '@nestjs/testing';
 import type { MockMetadata } from 'jest-mock';
 import { GodOfTimeService } from '../misc/GodOfTimeService.js';
-import { CacheManagementService } from '@/core/CacheManagementService.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { RoleService } from '@/core/RoleService.js';
 import { CoreModule } from '@/core/CoreModule.js';
@@ -36,8 +36,8 @@ import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { NotificationService } from '@/core/NotificationService.js';
 import { RoleCondFormulaValue } from '@/models/Role.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 const moduleMocker = new ModuleMocker(global);
 

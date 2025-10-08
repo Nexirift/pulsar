@@ -7,7 +7,7 @@ import { jest } from '@jest/globals';
 import { MockRedis } from '../../misc/MockRedis.js';
 import { GodOfTimeService } from '../../misc/GodOfTimeService.js';
 import { MockInternalEventService } from '../../misc/MockInternalEventService.js';
-import { CacheManagementService, type Manager, GC_INTERVAL } from '@/core/CacheManagementService.js';
+import { CacheManagementService, type Manager, GC_INTERVAL } from '@/global/CacheManagementService.js';
 import { MemoryKVCache } from '@/misc/cache.js';
 
 describe(CacheManagementService, () => {

@@ -12,7 +12,7 @@ import { GlobalEventService } from '@/core/GlobalEventService.js';
 import { bindThis } from '@/decorators.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import { FeaturedService } from '@/core/FeaturedService.js';
-import { TimeService, type TimerHandle } from '@/core/TimeService.js';
+import { TimeService, type TimerHandle } from '@/global/TimeService.js';
 import { MiInstance } from '@/models/Instance.js';
 import { diffArrays } from '@/misc/diff-arrays.js';
 import type { MetasRepository } from '@/models/_.js';

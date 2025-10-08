@@ -18,10 +18,10 @@ import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { IdService } from '@/core/IdService.js';
-import { CacheManagementService } from '@/core/CacheManagementService.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { CoreModule } from '@/core/CoreModule.js';
 import { DI } from '@/di-symbols.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 describe('FetchInstanceMetadataService', () => {
 	let app: TestingModule;

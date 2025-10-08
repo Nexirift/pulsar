@@ -10,7 +10,7 @@ import type { Config } from '@/config.js';
 import type { SoftwareSuspension } from '@/models/Meta.js';
 import type { MiInstance } from '@/models/Instance.js';
 import { UtilityService } from '@/core/UtilityService.js';
-import { EnvService } from '@/core/EnvService.js';
+import { EnvService } from '@/global/EnvService.js';
 
 describe('UtilityService', () => {
 	let utilityService: UtilityService;

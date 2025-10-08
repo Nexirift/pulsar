@@ -11,7 +11,7 @@ import { bindThis } from '@/decorators.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 import { MiMeta } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
-import { TimeService, type TimerHandle } from '@/core/TimeService.js';
+import { TimeService, type TimerHandle } from '@/global/TimeService.js';
 
 export interface Stats {
 	cpu: number,

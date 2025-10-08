@@ -10,11 +10,11 @@ import { ModuleMocker } from 'jest-mock';
 import { Test } from '@nestjs/testing';
 import { FakeCacheManagementService } from '../misc/FakeCacheManagementService.js';
 import { MockInternalEventService } from '../misc/MockInternalEventService.js';
-import { CacheManagementService } from '@/core/CacheManagementService.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { AnnouncementService } from '@/core/AnnouncementService.js';
 import { AnnouncementEntityService } from '@/core/entities/AnnouncementEntityService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import type {
 	AnnouncementReadsRepository,
 	AnnouncementsRepository,

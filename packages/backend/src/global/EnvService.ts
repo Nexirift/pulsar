@@ -7,7 +7,7 @@ import nodePath from 'node:path';
 import nodeFs from 'node:fs';
 import { Injectable } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
-import { type ManagedMemoryKVCache, CacheManagementService } from '@/core/CacheManagementService.js';
+import { type ManagedMemoryKVCache, CacheManagementService } from '@/global/CacheManagementService.js';
 
 /**
  * Provides structured, mockable access to runtime/environment details.

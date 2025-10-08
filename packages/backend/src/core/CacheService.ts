@@ -13,13 +13,13 @@ import { isLocalUser, isRemoteUser } from '@/models/User.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import type { InternalEventTypes } from '@/core/GlobalEventService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import {
 	CacheManagementService,
 	type ManagedMemoryKVCache,
 	type ManagedQuantumKVCache,
-} from '@/core/CacheManagementService.js';
+} from '@/global/CacheManagementService.js';
 import type { OnApplicationShutdown } from '@nestjs/common';
 
 export interface FollowStats {

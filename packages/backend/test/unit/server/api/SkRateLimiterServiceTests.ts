@@ -12,7 +12,7 @@ import type { RolePolicies, RoleService } from '@/core/RoleService.js';
 import type { Config } from '@/config.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
 import { BucketRateLimit, Keyed, LegacyRateLimit } from '@/misc/rate-limit-utils.js';
-import { CacheManagementService } from '@/core/CacheManagementService.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
 
 describe(SkRateLimiterService, () => {
 	let cacheManagementService: CacheManagementService;

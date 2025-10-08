@@ -12,7 +12,7 @@ import type { ApContextsRepository, ApFetchLogsRepository, ApInboxLogsRepository
 import type { Config } from '@/config.js';
 import { JsonValue } from '@/misc/json-value.js';
 import { UtilityService } from '@/core/UtilityService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { IdService } from '@/core/IdService.js';
 import { IActivity, IObject } from './activitypub/type.js';
 

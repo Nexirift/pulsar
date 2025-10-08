@@ -14,8 +14,8 @@ import { CacheService } from '@/core/CacheService.js';
 import { isNativeUserToken } from '@/misc/token.js';
 import { bindThis } from '@/decorators.js';
 import { attachCallerId } from '@/misc/attach-caller-id.js';
-import { CacheManagementService, type ManagedMemoryKVCache } from '@/core/CacheManagementService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { CacheManagementService, type ManagedMemoryKVCache } from '@/global/CacheManagementService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export class AuthenticationError extends Error {
 	constructor(message: string) {

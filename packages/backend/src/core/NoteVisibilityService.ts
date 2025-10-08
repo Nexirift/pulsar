@@ -14,7 +14,7 @@ import type { Packed } from '@/misc/json-schema.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { CacheService } from '@/core/CacheService.js';
 import { IdService } from '@/core/IdService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { awaitAll } from '@/misc/prelude/await-all.js';
 import { DI } from '@/di-symbols.js';

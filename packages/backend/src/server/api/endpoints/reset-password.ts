@@ -9,7 +9,7 @@ import type { UserProfilesRepository, PasswordResetRequestsRepository } from '@/
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { DI } from '@/di-symbols.js';
 import { IdService } from '@/core/IdService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export const meta = {
 	tags: ['reset password'],

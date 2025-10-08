@@ -4,7 +4,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { TimeService, Timer } from '@/core/TimeService.js';
+import { TimeService, Timer } from '@/global/TimeService.js';
 import { addPatch, type DatePatch } from '@/misc/patch-date.js';
 
 /**

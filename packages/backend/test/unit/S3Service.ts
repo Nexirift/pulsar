@@ -21,7 +21,7 @@ import { CoreModule } from '@/core/CoreModule.js';
 import { S3Service } from '@/core/S3Service.js';
 import { MiMeta } from '@/models/_.js';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { DI } from '@/di-symbols.js';
 
 describe('S3Service', () => {

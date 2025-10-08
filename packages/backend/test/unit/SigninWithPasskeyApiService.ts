@@ -22,7 +22,7 @@ import { WebAuthnService } from '@/core/WebAuthnService.js';
 import { SigninService } from '@/server/api/SigninService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
-import { CacheManagementService } from '@/core/CacheManagementService.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { ServerModule } from '@/server/ServerModule.js';
 
 const moduleMocker = new ModuleMocker(global);

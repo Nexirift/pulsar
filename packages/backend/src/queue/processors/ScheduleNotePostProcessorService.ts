@@ -13,7 +13,7 @@ import { NotificationService } from '@/core/NotificationService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import type { MiScheduleNoteType } from '@/models/NoteSchedule.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type * as Bull from 'bullmq';
 import type { ScheduleNotePostJobData } from '../types.js';

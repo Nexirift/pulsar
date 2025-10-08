@@ -16,7 +16,7 @@ import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.j
 import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
 import { MfmService } from "@/core/MfmService.js";
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 @Injectable()
 export class FeedService {

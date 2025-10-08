@@ -10,8 +10,8 @@ import { MockInternalEventService } from './MockInternalEventService.js';
 import { MockRedis } from './MockRedis.js';
 import type { QuantumKVOpts } from '@/misc/QuantumKVCache.js';
 import type { RedisKVCacheOpts, RedisSingleCacheOpts } from '@/misc/cache.js';
-import type { TimeService } from '@/core/TimeService.js';
-import type { InternalEventService } from '@/core/InternalEventService.js';
+import type { TimeService } from '@/global/TimeService.js';
+import type { InternalEventService } from '@/global/InternalEventService.js';
 import {
 	CacheManagementService,
 	type ManagedMemoryKVCache,
@@ -19,7 +19,7 @@ import {
 	type ManagedRedisKVCache,
 	type ManagedRedisSingleCache,
 	type ManagedQuantumKVCache,
-} from '@/core/CacheManagementService.js';
+} from '@/global/CacheManagementService.js';
 
 /**
  * Fake implementation of cache management that suppresses all caching behavior.

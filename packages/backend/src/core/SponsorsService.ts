@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { MiMeta } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
-import { CacheManagementService, type ManagedRedisKVCache } from '@/core/CacheManagementService.js';
+import { CacheManagementService, type ManagedRedisKVCache } from '@/global/CacheManagementService.js';
 
 export interface Sponsor {
 	MemberId: number;

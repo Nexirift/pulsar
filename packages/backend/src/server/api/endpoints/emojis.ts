@@ -8,7 +8,7 @@ import type { EmojisRepository, MiEmoji } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { EmojiEntityService } from '@/core/entities/EmojiEntityService.js';
 import { DI } from '@/di-symbols.js';
-import { CacheManagementService, type ManagedMemorySingleCache } from '@/core/CacheManagementService.js';
+import { CacheManagementService, type ManagedMemorySingleCache } from '@/global/CacheManagementService.js';
 import { CustomEmojiService } from '@/core/CustomEmojiService.js';
 
 export const meta = {

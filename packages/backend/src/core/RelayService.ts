@@ -15,7 +15,7 @@ import { DI } from '@/di-symbols.js';
 import { deepClone } from '@/misc/clone.js';
 import { bindThis } from '@/decorators.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
-import { CacheManagementService, ManagedMemorySingleCache } from '@/core/CacheManagementService.js';
+import { CacheManagementService, ManagedMemorySingleCache } from '@/global/CacheManagementService.js';
 
 @Injectable()
 export class RelayService {

@@ -5,7 +5,7 @@
 
 import * as Redis from 'ioredis';
 import { bindThis } from '@/decorators.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export interface RedisCacheServices extends MemoryCacheServices {
 	readonly redisClient: Redis.Redis

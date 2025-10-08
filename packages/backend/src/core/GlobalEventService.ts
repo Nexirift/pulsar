@@ -26,7 +26,7 @@ import { DI } from '@/di-symbols.js';
 import type { Config } from '@/config.js';
 import { bindThis } from '@/decorators.js';
 import type { Serialized } from '@/types.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 import type Emitter from 'strict-event-emitter-types';
 import type { EventEmitter } from 'events';

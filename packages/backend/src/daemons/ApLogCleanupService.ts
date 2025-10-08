@@ -8,7 +8,7 @@ import { bindThis } from '@/decorators.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import Logger from '@/logger.js';
 import { ApLogService } from '@/core/ApLogService.js';
-import { TimeService, type TimerHandle } from '@/core/TimeService.js';
+import { TimeService, type TimerHandle } from '@/global/TimeService.js';
 
 // 10 minutes
 export const scanInterval = 1000 * 60 * 10;

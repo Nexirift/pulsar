@@ -8,7 +8,7 @@ import { CollapsedQueue } from '@/misc/collapsed-queue.js';
 import { bindThis } from '@/decorators.js';
 import { MiNote } from '@/models/Note.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 type UpdateInstanceJob = {
 	latestRequestReceivedAt: Date,

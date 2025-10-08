@@ -13,9 +13,9 @@ import { bindThis } from '@/decorators.js';
 import { MemorySingleCache } from '@/misc/cache.js';
 import type { GlobalEvents } from '@/core/GlobalEventService.js';
 import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { CacheManagementService, type ManagedMemorySingleCache } from '@/core/CacheManagementService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { CacheManagementService, type ManagedMemorySingleCache } from '@/global/CacheManagementService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 @Injectable()
 export class AvatarDecorationService implements OnApplicationShutdown {

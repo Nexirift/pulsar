@@ -8,7 +8,7 @@ import chalk from 'chalk';
 import { default as convertColor } from 'color-convert';
 import { format as dateFormat } from 'date-fns';
 import { bindThis } from '@/decorators.js';
-import { TimeService, NativeTimeService } from '@/core/TimeService.js';
+import { TimeService, NativeTimeService } from '@/global/TimeService.js';
 import { envOption } from './env.js';
 import type { KEYWORD } from 'color-convert/conversions.js';
 

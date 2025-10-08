@@ -10,7 +10,7 @@ import type { Config } from '@/config.js';
 import Logger, { type Console } from '@/logger.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
-import { NativeTimeService, TimeService } from '@/core/TimeService.js';
+import { NativeTimeService, TimeService } from '@/global/TimeService.js';
 
 /**
  * Mocked implementation of LoggerService.

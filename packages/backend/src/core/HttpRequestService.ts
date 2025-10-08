@@ -19,7 +19,7 @@ import { validateContentTypeSetAsActivityPub } from '@/core/activitypub/misc/val
 import type { IObject, IObjectWithId } from '@/core/activitypub/type.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { Response } from 'node-fetch';
 import type { Socket } from 'node:net';
 

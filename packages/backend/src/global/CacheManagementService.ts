@@ -16,8 +16,8 @@ import {
 import { QuantumKVCache, type QuantumKVOpts } from '@/misc/QuantumKVCache.js';
 import { bindThis } from '@/decorators.js';
 import { DI } from '@/di-symbols.js';
-import { TimeService, type TimerHandle } from '@/core/TimeService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { TimeService, type TimerHandle } from '@/global/TimeService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 
 // This is the one place that's *supposed* to new() up caches.
 /* eslint-disable no-restricted-syntax */

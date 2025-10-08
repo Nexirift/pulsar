@@ -19,7 +19,7 @@ import { bindThis } from '@/decorators.js';
 import { QueueService } from '@/core/QueueService.js';
 import type { RoleService } from '@/core/RoleService.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { CacheService } from '@/core/CacheService.js';
 
 @Injectable()

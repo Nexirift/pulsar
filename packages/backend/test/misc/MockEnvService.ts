@@ -5,8 +5,8 @@
 
 import process from 'node:process';
 import { Injectable } from '@nestjs/common';
-import { EnvService } from '@/core/EnvService.js';
-import { CacheManagementService } from '@/core/CacheManagementService.js';
+import { EnvService } from '@/global/EnvService.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { bindThis } from '@/decorators.js';
 
 /**

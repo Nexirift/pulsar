@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { TimeService, TimerHandle } from '@/core/TimeService.js';
+import type { TimeService, TimerHandle } from '@/global/TimeService.js';
 
 type Job<V> = {
 	value: V;

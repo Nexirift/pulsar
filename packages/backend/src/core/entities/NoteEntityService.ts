@@ -17,7 +17,7 @@ import { DebounceLoader } from '@/misc/loader.js';
 import type { IdService } from '@/core/IdService.js';
 import type { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
 import { QueryService } from '@/core/QueryService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { Config } from '@/config.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import type { NoteVisibilityData } from '@/core/NoteVisibilityService.js';

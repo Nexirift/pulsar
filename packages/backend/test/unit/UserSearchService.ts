@@ -11,7 +11,7 @@ import { FollowingsRepository, InstancesRepository, MiUser, UserProfilesReposito
 import { IdService } from '@/core/IdService.js';
 import { GlobalModule } from '@/GlobalModule.js';
 import { DI } from '@/di-symbols.js';
-import { CacheManagementService } from '@/core/CacheManagementService.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { genAidx } from '@/misc/id/aidx.js';
 import { CoreModule } from '@/core/CoreModule.js';

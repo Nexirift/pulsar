@@ -11,7 +11,7 @@ import { DI } from '@/di-symbols.js';
 import { MastodonClientService } from '@/server/api/mastodon/MastodonClientService.js';
 import { getErrorData } from '@/server/api/mastodon/MastodonLogger.js';
 import { ServerUtilityService } from '@/server/ServerUtilityService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { FastifyInstance } from 'fastify';
 
 const kinds = [

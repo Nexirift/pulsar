@@ -11,8 +11,8 @@ import type { UserKeypairsRepository } from '@/models/_.js';
 import type { MiUserKeypair } from '@/models/UserKeypair.js';
 import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
-import { CacheManagementService, type ManagedQuantumKVCache } from '@/core/CacheManagementService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { CacheManagementService, type ManagedQuantumKVCache } from '@/global/CacheManagementService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import type { InternalEventTypes } from '@/core/GlobalEventService.js';
 
 @Injectable()

@@ -29,12 +29,12 @@ import { ModerationLogService } from '@/core/ModerationLogService.js';
 import type { Packed } from '@/misc/json-schema.js';
 import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
 import type { NotificationService } from '@/core/NotificationService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 import {
 	CacheManagementService,
 	type ManagedMemorySingleCache,
 	type ManagedMemoryKVCache,
-} from '@/core/CacheManagementService.js';
+} from '@/global/CacheManagementService.js';
 import type { OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { getCallerId } from '@/misc/attach-caller-id.js';
 

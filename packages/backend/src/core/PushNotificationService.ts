@@ -12,8 +12,8 @@ import type { Packed } from '@/misc/json-schema.js';
 import { getNoteSummary } from '@/misc/get-note-summary.js';
 import type { MiMeta, MiSwSubscription, SwSubscriptionsRepository } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
-import { CacheManagementService, type ManagedQuantumKVCache } from '@/core/CacheManagementService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { CacheManagementService, type ManagedQuantumKVCache } from '@/global/CacheManagementService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 // Defined also packages/sw/types.ts#L13
 type PushNotificationsTypes = {
