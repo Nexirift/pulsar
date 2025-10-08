@@ -8,6 +8,7 @@ import nodeFs from 'node:fs';
 import { Injectable } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
 import { type ManagedMemoryKVCache, CacheManagementService } from '@/global/CacheManagementService.js';
+import { type EnvOption, createEnvOptions } from '@/env.js';
 
 /**
  * Provides structured, mockable access to runtime/environment details.
@@ -15,17 +16,27 @@ import { type ManagedMemoryKVCache, CacheManagementService } from '@/global/Cach
 @Injectable()
 export class EnvService {
 	protected readonly dependencyVersionCache: ManagedMemoryKVCache<string | null>;
+	protected readonly envOptions: EnvOption;
 
 	constructor(cacheManagementService: CacheManagementService) {
 		this.dependencyVersionCache = cacheManagementService.createMemoryKVCache<string | null>(Infinity);
+		this.envOptions = createEnvOptions(() => this.env);
 	}
 
 	/**
 	 * Returns the environment variables of the process.
-	 * Can be modified, but modifications are not reflected to the operating system environment.
+	 * Modifications are reflected back to the local process, but not to the operating system environment.
 	 */
 	public get env(): Partial<Record<string, string>> {
 		return process.env;
+	}
+
+	/**
+	 * Maps and returns environment-based options for the process.
+	 * Modifications are reflected back to the local process ("env" property), but not to the operating system environment.
+	 */
+	public get options(): EnvOption {
+		return this.envOptions;
 	}
 
 	/**
