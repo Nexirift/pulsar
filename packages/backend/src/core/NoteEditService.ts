@@ -52,6 +52,7 @@ import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { LatestNoteService } from '@/core/LatestNoteService.js';
 import { CollapsedQueue } from '@/misc/collapsed-queue.js';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
+import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import { isPureRenote } from '@/misc/is-renote.js';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention' | 'edited';
@@ -221,6 +222,7 @@ export class NoteEditService implements OnApplicationShutdown {
 		private cacheService: CacheService,
 		private latestNoteService: LatestNoteService,
 		private noteCreateService: NoteCreateService,
+		private readonly noteVisibilityService: NoteVisibilityService,
 	) {
 		this.updateNotesCountQueue = new CollapsedQueue(process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseNotesCount, this.performUpdateNotesCount);
 	}
@@ -339,7 +341,8 @@ export class NoteEditService implements OnApplicationShutdown {
 				}
 
 				// Check visibility
-				if (!await this.noteEntityService.isVisibleForMe(data.renote, user.id)) {
+				const visibilityCheck = await this.noteVisibilityService.checkNoteVisibilityAsync(data.renote, user.id);
+				if (!visibilityCheck.accessible) {
 					throw new IdentifiableError('be9529e9-fe72-4de0-ae43-0b363c4938af', 'Cannot renote an invisible note');
 				}
 

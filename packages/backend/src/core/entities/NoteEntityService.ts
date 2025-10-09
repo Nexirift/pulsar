@@ -19,7 +19,6 @@ import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
 import { QueryService } from '@/core/QueryService.js';
 import type { Config } from '@/config.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
-import type { PopulatedNote } from '@/core/NoteVisibilityService.js';
 import type { NoteVisibilityData } from '@/core/NoteVisibilityService.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { CacheService } from '../CacheService.js';
@@ -653,29 +652,28 @@ export class NoteEntityService implements OnModuleInit {
 				processErrors: note.processErrors,
 			} : {}),
 
-				reply: opts.recurseReply && note.replyId ? this.pack(note.reply ?? opts._hint_?.notes.get(note.replyId) ?? note.replyId, me, {
-					detail: false,
-					skipHide: opts.skipHide,
-					withReactionAndUserPairCache: opts.withReactionAndUserPairCache,
-					_hint_: options?._hint_,
+			reply: opts.recurseReply && note.replyId ? this.pack(note.reply ?? opts._hint_?.notes.get(note.replyId) ?? note.replyId, me, {
+				detail: false,
+				skipHide: opts.skipHide,
+				withReactionAndUserPairCache: opts.withReactionAndUserPairCache,
+				_hint_: options?._hint_,
 
-					// Don't silence target of self-reply, since the outer note will already be silenced.
-					bypassSilence: bypassSilence || note.userId === note.replyUserId,
-				}) : undefined,
+				// Don't silence target of self-reply, since the outer note will already be silenced.
+				bypassSilence: bypassSilence || note.userId === note.replyUserId,
+			}) : undefined,
 
-				// The renote target needs to be packed with the reply, but we *must not* recurse any further.
-				// Pass detail=false and recurseReply=true to make sure we only include the right data.
-				renote: opts.recurseRenote && note.renoteId ? this.pack(note.renote ?? opts._hint_?.notes.get(note.renoteId) ?? note.renoteId, me, {
-					detail: false,
-					recurseReply: true,
-					skipHide: opts.skipHide,
-					withReactionAndUserPairCache: opts.withReactionAndUserPairCache,
-					_hint_: options?._hint_,
+			// The renote target needs to be packed with the reply, but we *must not* recurse any further.
+			// Pass detail=false and recurseReply=true to make sure we only include the right data.
+			renote: opts.recurseRenote && note.renoteId ? this.pack(note.renote ?? opts._hint_?.notes.get(note.renoteId) ?? note.renoteId, me, {
+				detail: false,
+				recurseReply: true,
+				skipHide: opts.skipHide,
+				withReactionAndUserPairCache: opts.withReactionAndUserPairCache,
+				_hint_: options?._hint_,
 
-					// Don't silence target of self-renote, since the outer note will already be silenced.
-					bypassSilence: bypassSilence || note.userId === note.renoteUserId,
-				}) : undefined,
-			} : {}),
+				// Don't silence target of self-renote, since the outer note will already be silenced.
+				bypassSilence: bypassSilence || note.userId === note.renoteUserId,
+			}) : undefined,
 		});
 
 		this.noteVisibilityService.syncVisibility(packed);

@@ -57,6 +57,7 @@ import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { LatestNoteService } from '@/core/LatestNoteService.js';
 import { CollapsedQueue } from '@/misc/collapsed-queue.js';
 import { CacheService } from '@/core/CacheService.js';
+import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import { isPureRenote } from '@/misc/is-renote.js';
 
 type NotificationType = 'reply' | 'renote' | 'quote' | 'mention';
@@ -224,6 +225,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		private userBlockingService: UserBlockingService,
 		private cacheService: CacheService,
 		private latestNoteService: LatestNoteService,
+		private readonly noteVisibilityService: NoteVisibilityService,
 	) {
 		this.updateNotesCountQueue = new CollapsedQueue(process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseNotesCount, this.performUpdateNotesCount);
 	}
@@ -320,7 +322,8 @@ export class NoteCreateService implements OnApplicationShutdown {
 				}
 
 				// Check visibility
-				if (!await this.noteEntityService.isVisibleForMe(data.renote, user.id)) {
+				const visibilityCheck = await this.noteVisibilityService.checkNoteVisibilityAsync(data.renote, user.id);
+				if (!visibilityCheck.accessible) {
 					throw new IdentifiableError('be9529e9-fe72-4de0-ae43-0b363c4938af', 'Cannot renote an invisible note');
 				}
 
@@ -343,7 +346,8 @@ export class NoteCreateService implements OnApplicationShutdown {
 				}
 
 				// Check visibility
-				if (!await this.noteEntityService.isVisibleForMe(data.reply, user.id)) {
+				const visibilityCheck = await this.noteVisibilityService.checkNoteVisibilityAsync(data.reply, user.id);
+				if (!visibilityCheck.accessible) {
 					throw new IdentifiableError('b98980fa-3780-406c-a935-b6d0eeee10d1', 'Cannot reply to an invisible note');
 				}
 
