@@ -13,6 +13,7 @@ import { inspect } from 'node:util';
 import chalk from 'chalk';
 import Xev from 'xev';
 import Logger from '@/logger.js';
+import { prepEnv } from '@/boot/prepEnv.js';
 import { envOption } from '../env.js';
 import { masterMain } from './master.js';
 import { workerMain } from './worker.js';
@@ -22,8 +23,7 @@ import 'reflect-metadata';
 
 process.title = `Misskey (${cluster.isPrimary ? 'master' : 'worker'})`;
 
-Error.stackTraceLimit = Infinity;
-EventEmitter.defaultMaxListeners = 128;
+prepEnv();
 
 const logger = new Logger('core', 'cyan');
 const clusterLogger = logger.createSubLogger('cluster', 'orange');

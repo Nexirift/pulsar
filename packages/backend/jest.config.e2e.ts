@@ -8,7 +8,7 @@ import base from './jest.config.ts';
 export default {
 	...base,
 	globalSetup: "<rootDir>/built-test/entry.js",
-	setupFilesAfterEnv: ["<rootDir>/test/jest.setup.ts"],
+	setupFilesAfterEnv: ["<rootDir>/test/jest.setup.e2e.ts"],
 
 	// All imported modules in your tests should be mocked automatically
 	// automock: false,

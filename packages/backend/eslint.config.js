@@ -182,5 +182,8 @@ export default [
 				tsconfigRootDir: import.meta.dirname,
 			},
 		},
+		rules: {
+			'import/no-default-export': 'off',
+		},
 	},
 ];
