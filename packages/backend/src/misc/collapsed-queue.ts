@@ -5,7 +5,7 @@
 
 import promiseLimit from 'promise-limit';
 import type { TimeService, TimerHandle } from '@/global/TimeService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { bindThis } from '@/decorators.js';
 import { Serialized } from '@/types.js';
 

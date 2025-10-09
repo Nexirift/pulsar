@@ -10,7 +10,7 @@ import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import { SystemWebhookService } from '@/core/SystemWebhookService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { CollapsedQueueService } from '@/global/CollapsedQueueService.js';
+import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 import { TimeService } from '@/global/TimeService.js';
 
 @Injectable()

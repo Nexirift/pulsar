@@ -46,7 +46,7 @@ import { isRetryableError } from '@/misc/is-retryable-error.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
 import { QueueService } from '@/core/QueueService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 import { promiseMap } from '@/misc/promise-map.js';
 import { getApId, getApType, getNullableApId, isActor, isPost, isPropertyValue } from '../type.js';

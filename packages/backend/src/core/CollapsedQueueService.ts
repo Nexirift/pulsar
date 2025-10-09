@@ -9,14 +9,14 @@ import type Logger from '@/logger.js';
 import { CollapsedQueue } from '@/misc/collapsed-queue.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
-import { EnvService } from '@/core/EnvService.js';
+import { EnvService } from '@/global/EnvService.js';
 import { bindThis } from '@/decorators.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import type { UsersRepository, NotesRepository, AccessTokensRepository, MiAntenna, FollowingsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { AntennaService } from '@/core/AntennaService.js';
 import { CacheService } from '@/core/CacheService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export type UpdateInstanceJob = {
 	latestRequestReceivedAt?: Date,

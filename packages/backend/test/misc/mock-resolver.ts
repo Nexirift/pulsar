@@ -22,6 +22,7 @@ import type {
 	UsersRepository,
 } from '@/models/_.js';
 import type { CacheService } from '@/core/CacheService.js';
+import type { MiLocalUser } from '@/models/User.js';
 import { ApLogService } from '@/core/ApLogService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
@@ -31,7 +32,7 @@ import { bindThis } from '@/decorators.js';
 import { Resolver } from '@/core/activitypub/ApResolverService.js';
 import { DI } from '@/di-symbols.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import type { MiLocalUser } from '@/models/User.js';
+import { NativeTimeService } from '@/global/TimeService.js';
 
 type MockResponse = {
 	type: string;

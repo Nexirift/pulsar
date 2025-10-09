@@ -30,7 +30,7 @@ import { ApLogService } from '@/core/ApLogService.js';
 import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
 import { isRemoteUser } from '@/models/User.js';
 import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 @Injectable()
 export class BackgroundTaskProcessorService {
