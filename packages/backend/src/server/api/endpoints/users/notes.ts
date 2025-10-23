@@ -64,7 +64,6 @@ export const paramDef = {
 	properties: {
 		userId: { type: 'string', format: 'misskey:id' },
 		withReplies: { type: 'boolean', default: false },
-		withRepliesToSelf: { type: 'boolean', default: true },
 		withQuotes: { type: 'boolean', default: true },
 		withRenotes: { type: 'boolean', default: true },
 		withBots: { type: 'boolean', default: true },
@@ -123,8 +122,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					withQuotes: ps.withQuotes,
 					withBots: ps.withBots,
 					withNonPublic: ps.withNonPublic,
-					withRepliesToOthers: ps.withReplies,
-					withRepliesToSelf: ps.withRepliesToSelf,
+					withReplies: ps.withReplies,
 				}, me);
 
 				return await this.noteEntityService.packMany(timeline, me);
@@ -153,9 +151,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				excludeBots: !ps.withBots,
 				noteFilter: note => {
 					if (note.channel?.isSensitive && !isSelf) return false;
-
-					// These are handled by DB fallback, but we duplicate them here in case a timeline was already populated with notes
-					if (!ps.withRepliesToSelf && note.reply?.userId === note.userId) return false;
 					if (!ps.withQuotes && isRenote(note) && isQuote(note)) return false;
 					if (!ps.withNonPublic && note.visibility !== 'public') return false;
 
@@ -172,8 +167,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					withQuotes: ps.withQuotes,
 					withBots: ps.withBots,
 					withNonPublic: ps.withNonPublic,
-					withRepliesToOthers: ps.withReplies,
-					withRepliesToSelf: ps.withRepliesToSelf,
+					withReplies: ps.withReplies,
 				}, me),
 			});
 
@@ -192,8 +186,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		withQuotes: boolean,
 		withBots: boolean,
 		withNonPublic: boolean,
-		withRepliesToOthers: boolean,
-		withRepliesToSelf: boolean,
+		withReplies: boolean,
 	}, me: MiLocalUser | null) {
 		const isSelf = me && (me.id === ps.userId);
 
@@ -237,12 +230,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			this.queryService.andIsNotQuote(query, 'note');
 		}
 
-		if (!ps.withRepliesToOthers && !ps.withRepliesToSelf) {
-			query.andWhere('reply.id IS NULL');
-		} else if (!ps.withRepliesToOthers) {
+		if (ps.withReplies) {
 			this.queryService.generateExcludedRepliesQueryForNotes(query, me);
-		} else if (!ps.withRepliesToSelf) {
-			query.andWhere('(reply.id IS NULL OR reply."userId" != note."userId")');
+		} else {
+			query.andWhere('note.replyId IS NULL');
 		}
 
 		if (!ps.withNonPublic) {
