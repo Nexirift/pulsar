@@ -12,10 +12,7 @@ import { EventEmitter } from 'node:events';
 import { inspect } from 'node:util';
 import chalk from 'chalk';
 import Xev from 'xev';
-import Logger from '@/logger.js';
-import { EnvService } from '@/global/EnvService.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import { NativeTimeService } from '@/global/TimeService.js';
+import { coreLogger, envService, loggerService } from '@/boot/coreLogger.js';
 import { prepEnv } from '@/boot/prepEnv.js';
 import { masterMain } from './master.js';
 import { workerMain } from './worker.js';
@@ -33,13 +30,9 @@ const ev = new Xev();
 // because not all platforms support top level await :/
 
 async function main() {
-	const envService = new EnvService();
 	const envOption = envService.options;
-
-	// eslint-disable-next-line no-restricted-globals
-	const loggerService = new LoggerService(console, new NativeTimeService(), envService);
-	const logger = loggerService.getLogger('core', 'cyan');
-	const clusterLogger = logger.createSubLogger('cluster', 'orange');
+	const clusterLogger = coreLogger.createSubLogger('cluster', 'orange');
+	const logger = coreLogger;
 
 	//#region Events
 	// Listen new workers
