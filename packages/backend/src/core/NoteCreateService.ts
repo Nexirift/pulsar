@@ -663,7 +663,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 			this.queueService.endedPollNotificationQueue.add(note.id, {
 				noteId: note.id,
 			}, {
-				jobId: `pollEnd:${note.id}`,
+				jobId: `pollEnd_${note.id}`,
 				delay,
 				removeOnComplete: {
 					age: 3600 * 24 * 7, // keep up to 7 days

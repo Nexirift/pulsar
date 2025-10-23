@@ -632,7 +632,7 @@ export class NoteEditService implements OnApplicationShutdown {
 			this.queueService.endedPollNotificationQueue.add(note.id, {
 				noteId: note.id,
 			}, {
-				jobId: `pollEnd:${note.id}`,
+				jobId: `pollEnd_${note.id}`,
 				delay,
 				removeOnComplete: true,
 			});
