@@ -253,11 +253,12 @@ export class BackgroundTaskProcessorService {
 	private async processPostNote(task: PostNoteBackgroundTask): Promise<string> {
 		const note = await this.notesRepository.findOne({
 			where: { id: task.noteId },
-			relations: { user: true, renote: true, reply: true, channel: true },
+			relations: { renote: true, reply: true, channel: true },
 		});
 		if (!note) return `Skipping post-note task: note ${task.noteId} has been deleted`;
 		const user = await this.cacheService.findUserById(note.userId);
 		if (user.isSuspended) return `Skipping post-note task: note ${task.noteId}'s user ${note.userId} is suspended`;
+		note.user = user;
 
 		const mentionedUsers = await this.cacheService.getUsers(note.mentions);
 		const poll = await this.pollsRepository.findOneBy({ noteId: note.id });
