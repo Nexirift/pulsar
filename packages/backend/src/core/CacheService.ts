@@ -141,7 +141,7 @@ export class CacheService implements OnApplicationShutdown {
 
 		this.userListMembershipsCache = this.cacheManagementService.createQuantumKVCache<Map<string, MiUserListMembership>>('userListMemberships', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: async userId => await this.userListMembershipsRepository.findBy({ userId }).then(ms => new Map(ms.map(m => [m.id, m]))),
+			fetcher: async userId => await this.userListMembershipsRepository.findBy({ userId }).then(ms => new Map(ms.map(m => [m.userListId, m]))),
 			bulkFetcher: async userIds => await this.userListMembershipsRepository
 				.findBy({ userId: In(userIds) })
 				.then(ms => ms
@@ -158,7 +158,7 @@ export class CacheService implements OnApplicationShutdown {
 
 		this.listUserMembershipsCache = this.cacheManagementService.createQuantumKVCache<Map<string, MiUserListMembership>>('listUserMemberships', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: async userListId => await this.userListMembershipsRepository.findBy({ userListId }).then(ms => new Map(ms.map(m => [m.id, m]))),
+			fetcher: async userListId => await this.userListMembershipsRepository.findBy({ userListId }).then(ms => new Map(ms.map(m => [m.userId, m]))),
 			bulkFetcher: async userListIds => await this.userListMembershipsRepository
 				.findBy({ userListId: In(userListIds) })
 				.then(ms => ms
