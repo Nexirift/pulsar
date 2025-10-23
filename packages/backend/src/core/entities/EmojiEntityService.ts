@@ -60,7 +60,7 @@ export class EmojiEntityService implements OnModuleInit {
 			if (typeof(x) === 'string') {
 				x = fetched.get(x) ?? await this.customEmojiService.emojisByIdCache.fetch(x);
 			}
-			return this.packSimple(x);
+			return await this.packSimple(x);
 		}));
 	}
 
