@@ -6,7 +6,7 @@
 import Redis from 'ioredis';
 import { loadConfig } from '../built/config.js';
 import { createPostgresDataSource } from '../built/postgres.js';
-import Logger from '../src/logger.js';
+import Logger from '../built/logger.js';
 
 const config = loadConfig();
 
