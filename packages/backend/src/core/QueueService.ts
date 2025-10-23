@@ -872,7 +872,7 @@ export class QueueService implements OnModuleInit {
 	@bindThis
 	public async createPostNoteJob(noteId: string, silent: boolean, type: 'create' | 'edit') {
 		const edit = type === 'edit';
-		const duplication = `${noteId}:${type}`;
+		const duplication = `${noteId}_${type}`;
 
 		return await this.createBackgroundTask({ type: 'post-note', noteId, silent, edit }, duplication);
 	}
@@ -949,7 +949,7 @@ export class QueueService implements OnModuleInit {
 
 				// https://docs.bullmq.io/guide/jobs/deduplication
 				deduplication: typeof(duplication) === 'string'
-					? { id: `${data.type}:${duplication}` }
+					? { id: `${data.type}_${duplication}` }
 					: duplication,
 			},
 		);
