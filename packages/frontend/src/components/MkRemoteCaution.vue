@@ -4,11 +4,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root"><i class="ti ti-alert-triangle" style="margin-right: 8px;"></i>{{ i18n.ts.remoteUserCaution }}<a v-if="href" :class="$style.link" :href="href" rel="nofollow noopener" target="_blank">{{ i18n.ts.showOnRemote }}</a></div>
+<div :class="$style.root"><i class="ti ti-alert-triangle" style="margin-right: 8px;"></i>{{ i18n.ts.remoteUserCaution }} <MkLink v-if="href" :class="$style.link" :url="href" target="_blank">{{ i18n.ts.showOnRemote }}</MkLink></div>
 </template>
 
 <script lang="ts" setup>
 import { i18n } from '@/i18n.js';
+import MkLink from '@/components/MkLink.vue';
 
 defineProps<{
 	href?: string;
@@ -27,7 +28,6 @@ defineProps<{
 }
 
 .link {
-	margin-left: 4px;
 	color: var(--MI_THEME-accent);
 }
 </style>
