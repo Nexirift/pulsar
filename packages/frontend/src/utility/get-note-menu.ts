@@ -25,7 +25,7 @@ import { getAppearNote } from '@/utility/get-appear-note.js';
 import { genEmbedCode } from '@/utility/get-embed-code.js';
 import { prefer } from '@/preferences.js';
 import { getPluginHandlers } from '@/plugin.js';
-import { showOnRemote } from '@/utility/show-on-remote.js';
+import { showNoteOnOriginalInstance } from '@/utility/show-note-on-original-instance.js';
 
 export async function getNoteClipMenu(props: {
 	note: Misskey.entities.Note;
@@ -360,7 +360,7 @@ export function getNoteMenu(props: {
 				icon: 'ti ti-external-link',
 				text: i18n.ts.showOnRemote,
 				action: () => {
-					showOnRemote(appearNote);
+					showNoteOnOriginalInstance(appearNote);
 				},
 			});
 		} else {
@@ -549,7 +549,7 @@ export function getNoteMenu(props: {
 				icon: 'ti ti-external-link',
 				text: i18n.ts.showOnRemote,
 				action: () => {
-					showOnRemote(appearNote);
+					showNoteOnOriginalInstance(appearNote);
 				},
 			});
 		} else {

@@ -4,12 +4,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root"><i class="ti ti-alert-triangle" style="margin-right: 8px;"></i>{{ i18n.ts.remoteUserCaution }} <MkLink v-if="href" :class="$style.link" :url="href" target="_blank">{{ i18n.ts.showOnRemote }}</MkLink></div>
+<div :class="$style.root"><i class="ti ti-alert-triangle" style="margin-right: 8px;"></i>{{ i18n.ts.remoteUserCaution }} <a v-if="href" :class="$style.link" :href="href" rel="nofollow noopener" target="_blank" @click.prevent="warningExternalWebsite(href)" @click.stop>{{ i18n.ts.showOnRemote }}</a></div>
 </template>
 
 <script lang="ts" setup>
 import { i18n } from '@/i18n.js';
-import MkLink from '@/components/MkLink.vue';
+import { warningExternalWebsite } from '@/utility/warning-external-website.js';
 
 defineProps<{
 	href?: string;

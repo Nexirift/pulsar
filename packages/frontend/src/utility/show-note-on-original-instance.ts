@@ -13,7 +13,7 @@ const router = useRouter();
 /**
  * Show a note on the remote instance, if possible. Otherwise, show the local note.
  */
-export function showOnRemote(note: entities.Note) {
+export function showNoteOnOriginalInstance(note: entities.Note) {
 	const remoteUrl = note.url ?? note.uri;
 	if (remoteUrl) {
 		warningExternalWebsite(remoteUrl);
