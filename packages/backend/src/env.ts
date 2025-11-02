@@ -50,7 +50,8 @@ export function createEnvOptions(getEnv: () => Partial<Record<string, string>>):
 			const env = getEnv();
 			const envKey = translateKey(key);
 			if (envKey in env) {
-				return !!env[envKey];
+				const envValue = env[envKey]?.toLowerCase();
+				return !!envValue && envValue !== '0' && envValue !== 'false';
 			}
 
 			const def = env.NODE_ENV === 'test' ? testEnvOption : defaultEnvOption;
