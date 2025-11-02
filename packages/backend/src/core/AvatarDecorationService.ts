@@ -36,7 +36,7 @@ export class AvatarDecorationService implements OnApplicationShutdown {
 
 		cacheManagementService: CacheManagementService,
 	) {
-		this.cache = cacheManagementService.createMemorySingleCache<MiAvatarDecoration[]>(1000 * 60 * 30); // 30s
+		this.cache = cacheManagementService.createMemorySingleCache<MiAvatarDecoration[]>('avatarDecorations', 1000 * 60 * 30); // 30s
 
 		this.internalEventService.on('avatarDecorationCreated', this.onAvatarEvent);
 		this.internalEventService.on('avatarDecorationUpdated', this.onAvatarEvent);

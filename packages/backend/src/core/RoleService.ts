@@ -162,8 +162,8 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 
 		cacheManagementService: CacheManagementService,
 	) {
-		this.rolesCache = cacheManagementService.createMemorySingleCache<MiRole[]>(1000 * 60 * 60); // 1h
-		this.roleAssignmentByUserIdCache = cacheManagementService.createMemoryKVCache<MiRoleAssignment[]>(1000 * 60 * 5); // 5m
+		this.rolesCache = cacheManagementService.createMemorySingleCache<MiRole[]>('roles', 1000 * 60 * 60); // 1h
+		this.roleAssignmentByUserIdCache = cacheManagementService.createMemoryKVCache<MiRoleAssignment[]>('roleAssignment', 1000 * 60 * 5); // 5m
 		// TODO additional cache for final calculation?
 
 		this.redisForSub.on('message', this.onMessage);

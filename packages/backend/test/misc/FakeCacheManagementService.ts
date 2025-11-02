@@ -9,7 +9,7 @@ import { GodOfTimeService } from './GodOfTimeService.js';
 import { MockInternalEventService } from './MockInternalEventService.js';
 import { MockRedis } from './MockRedis.js';
 import type { QuantumKVOpts } from '@/misc/QuantumKVCache.js';
-import type { RedisKVCacheOpts, RedisSingleCacheOpts } from '@/misc/cache.js';
+import type { RedisKVCacheOpts, RedisSingleCacheOpts, MemoryCacheOpts } from '@/misc/cache.js';
 import type { TimeService } from '@/global/TimeService.js';
 import type { InternalEventService } from '@/global/InternalEventService.js';
 import {
@@ -40,12 +40,14 @@ export class FakeCacheManagementService extends CacheManagementService {
 		super(redisClient, timeService, internalEventService);
 	}
 
-	createMemoryKVCache<T>(): ManagedMemoryKVCache<T> {
-		return super.createMemoryKVCache(-1);
+	createMemoryKVCache<T>(name: string, optsOrLifetime: number | MemoryCacheOpts): ManagedMemoryKVCache<T> {
+		const opts = typeof(optsOrLifetime) === 'number' ? { lifetime: -1 } : { ...optsOrLifetime, lifetime: -1 };
+		return super.createMemoryKVCache(name, opts);
 	}
 
-	createMemorySingleCache<T>(): ManagedMemorySingleCache<T> {
-		return super.createMemorySingleCache(-1);
+	createMemorySingleCache<T>(name: string, optsOrLifetime: number | MemoryCacheOpts): ManagedMemorySingleCache<T> {
+		const opts = typeof(optsOrLifetime) === 'number' ? { lifetime: -1 } : { ...optsOrLifetime, lifetime: -1 };
+		return super.createMemorySingleCache(name, opts);
 	}
 
 	createRedisKVCache<T>(name: string, opts: RedisKVCacheOpts<T>): ManagedRedisKVCache<T> {

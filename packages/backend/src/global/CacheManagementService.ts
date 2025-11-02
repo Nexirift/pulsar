@@ -12,8 +12,15 @@ import {
 	RedisSingleCache,
 	type RedisKVCacheOpts,
 	type RedisSingleCacheOpts,
+	type MemoryCacheServices,
+	type RedisCacheServices,
+	type MemoryCacheOpts,
 } from '@/misc/cache.js';
-import { QuantumKVCache, type QuantumKVOpts } from '@/misc/QuantumKVCache.js';
+import {
+	QuantumKVCache,
+	type QuantumKVOpts,
+	type QuantumCacheServices,
+} from '@/misc/QuantumKVCache.js';
 import { bindThis } from '@/decorators.js';
 import { DI } from '@/di-symbols.js';
 import { TimeService, type TimerHandle } from '@/global/TimeService.js';
@@ -32,6 +39,8 @@ export type ManagedQuantumKVCache<T> = Managed<QuantumKVCache<T>>;
 export type Managed<T> = Omit<T, 'dispose' | 'onApplicationShutdown' | 'gc'>;
 export type Manager = { dispose(): void, clear(): void, gc(): void };
 
+type CacheServices = MemoryCacheServices & RedisCacheServices & QuantumCacheServices;
+
 export const GC_INTERVAL = 1000 * 60 * 3; // 3m
 
 /**
@@ -40,7 +49,7 @@ export const GC_INTERVAL = 1000 * 60 * 3; // 3m
  */
 @Injectable()
 export class CacheManagementService implements OnApplicationShutdown {
-	private readonly managedCaches = new Set<Manager>();
+	private readonly managedCaches = new Map<string, Manager>();
 	private gcTimer?: TimerHandle | null;
 
 	constructor(
@@ -51,7 +60,7 @@ export class CacheManagementService implements OnApplicationShutdown {
 		private readonly internalEventService: InternalEventService,
 	) {}
 
-	private get cacheServices() {
+	private get cacheServices(): CacheServices {
 		return {
 			internalEventService: this.internalEventService,
 			redisClient: this.redisClient,
@@ -60,52 +69,56 @@ export class CacheManagementService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public createMemoryKVCache<T>(lifetime: number): ManagedMemoryKVCache<T> {
-		const cache = new MemoryKVCache<T>(lifetime, this.cacheServices);
-		return this.manageCache(cache);
+	public createMemoryKVCache<T>(name: string, optsOrLifetime: MemoryCacheOpts | number): ManagedMemoryKVCache<T> {
+		const opts = typeof(optsOrLifetime) === 'number' ? { lifetime: optsOrLifetime } : optsOrLifetime;
+		return this.create(name, () => new MemoryKVCache<T>(name, this.cacheServices, opts));
 	}
 
 	@bindThis
-	public createMemorySingleCache<T>(lifetime: number): ManagedMemorySingleCache<T> {
-		const cache = new MemorySingleCache<T>(lifetime, this.cacheServices);
-		return this.manageCache(cache);
+	public createMemorySingleCache<T>(name: string, optsOrLifetime: MemoryCacheOpts | number): ManagedMemorySingleCache<T> {
+		const opts = typeof(optsOrLifetime) === 'number' ? { lifetime: optsOrLifetime } : optsOrLifetime;
+		return this.create(name, () => new MemorySingleCache<T>(name, this.cacheServices, opts));
 	}
 
 	@bindThis
 	public createRedisKVCache<T>(name: string, opts: RedisKVCacheOpts<T>): ManagedRedisKVCache<T> {
-		const cache = new RedisKVCache<T>(name, this.cacheServices, opts);
-		return this.manageCache(cache);
+		return this.create(name, () => new RedisKVCache<T>(name, this.cacheServices, opts));
 	}
 
 	@bindThis
 	public createRedisSingleCache<T>(name: string, opts: RedisSingleCacheOpts<T>): ManagedRedisSingleCache<T> {
-		const cache = new RedisSingleCache<T>(name, this.cacheServices, opts);
-		return this.manageCache(cache);
+		return this.create(name, () => new RedisSingleCache<T>(name, this.cacheServices, opts));
 	}
 
 	@bindThis
 	public createQuantumKVCache<T>(name: string, opts: QuantumKVOpts<T>): ManagedQuantumKVCache<T> {
-		const cache = new QuantumKVCache<T>(name, this.cacheServices, opts);
-		return this.manageCache(cache);
+		return this.create(name, () => new QuantumKVCache<T>(name, this.cacheServices, opts));
 	}
 
-	protected manageCache<T extends Manager>(cache: T): Managed<T> {
-		this.managedCaches.add(cache);
+	private create<T extends Manager>(name: string, factory: () => T): T {
+		if (this.managedCaches.has(name)) {
+			throw new Error(`Duplicate cache name: "${name}"`);
+		}
+
+		const cache = factory();
+
+		this.managedCaches.set(name, cache);
 		this.startGcTimer();
+
 		return cache;
 	}
 
 	@bindThis
 	public gc(): void {
 		this.resetGcTimer(() => {
-			callAllOn(this.managedCaches, 'gc');
+			callAllOn(this.managedCaches.values(), 'gc');
 		});
 	}
 
 	@bindThis
 	public clear(): void {
 		this.resetGcTimer(() => {
-			callAllOn(this.managedCaches, 'clear');
+			callAllOn(this.managedCaches.values(), 'clear');
 		});
 	}
 
@@ -113,7 +126,7 @@ export class CacheManagementService implements OnApplicationShutdown {
 	public async dispose(): Promise<void> {
 		this.stopGcTimer();
 
-		const toDispose = new Set(this.managedCaches);
+		const toDispose = Array.from(this.managedCaches.values());
 		this.managedCaches.clear();
 
 		callAllOn(toDispose, 'dispose');

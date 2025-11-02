@@ -6,7 +6,9 @@
 import { jest } from '@jest/globals';
 import { GodOfTimeService } from '../../misc/GodOfTimeService.js';
 import { MockInternalEventService } from '../../misc/MockInternalEventService.js';
-import { QuantumKVCache, QuantumKVOpts, FetchFailedError, KeyNotFoundError } from '@/misc/QuantumKVCache.js';
+import { QuantumKVCache, QuantumKVOpts } from '@/misc/QuantumKVCache.js';
+import { KeyNotFoundError } from '@/misc/errors/KeyNotFoundError.js';
+import { FetchFailedError } from '@/misc/errors/FetchFailedError.js';
 
 describe(QuantumKVCache, () => {
 	let fakeTimeService: GodOfTimeService;

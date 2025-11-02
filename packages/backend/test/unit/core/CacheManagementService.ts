@@ -44,14 +44,14 @@ describe(CacheManagementService, () => {
 
 	function createCache(): MemoryKVCache<string> {
 		// Cast to allow access to managed functions, for spying purposes.
-		return serviceUnderTest.createMemoryKVCache<string>(Infinity) as MemoryKVCache<string>;
+		return serviceUnderTest.createMemoryKVCache<string>('test', Infinity) as MemoryKVCache<string>;
 	}
 
-	describe('createMemoryKVCache', () => testCreate('createMemoryKVCache', Infinity));
-	describe('createMemorySingleCache', () => testCreate('createMemorySingleCache', Infinity));
-	describe('createRedisKVCache', () => testCreate('createRedisKVCache', 'redis', { lifetime: Infinity, memoryCacheLifetime: Infinity }));
-	describe('createRedisSingleCache', () => testCreate('createRedisSingleCache', 'single', { lifetime: Infinity, memoryCacheLifetime: Infinity }));
-	describe('createQuantumKVCache', () => testCreate('createQuantumKVCache', 'quantum', { lifetime: Infinity, fetcher: () => { throw new Error('not implement'); } }));
+	describe('createMemoryKVCache', () => testCreate('createMemoryKVCache', 'memoryKV', { lifetime: Infinity }));
+	describe('createMemorySingleCache', () => testCreate('createMemorySingleCache', 'memorySingle', { lifetime: Infinity }));
+	describe('createRedisKVCache', () => testCreate('createRedisKVCache', 'redisKV', { lifetime: Infinity, memoryCacheLifetime: Infinity }));
+	describe('createRedisSingleCache', () => testCreate('createRedisSingleCache', 'redisSingle', { lifetime: Infinity, memoryCacheLifetime: Infinity }));
+	describe('createQuantumKVCache', () => testCreate('createQuantumKVCache', 'quantumKV', { lifetime: Infinity, fetcher: () => { throw new Error('not implement'); } }));
 
 	describe('clear', () => {
 		testClear('clear', false);
@@ -80,7 +80,7 @@ describe(CacheManagementService, () => {
 		it('should track reference', () => {
 			const cache = act();
 
-			expect(internalsUnderTest.managedCaches).toContain(cache);
+			expect(internalsUnderTest.managedCaches.values()).toContain(cache);
 		});
 
 		it('should start GC timer', () => {
@@ -90,6 +90,12 @@ describe(CacheManagementService, () => {
 			timeService.tick({ milliseconds: GC_INTERVAL * 3 });
 
 			expect(gc).toHaveBeenCalledTimes(3);
+		});
+
+		it('should throw if name is duplicate', () => {
+			act();
+
+			expect(() => act()).toThrow();
 		});
 	}
 
@@ -140,9 +146,9 @@ describe(CacheManagementService, () => {
 			act();
 
 			if (shouldDispose) {
-				expect(internalsUnderTest.managedCaches).not.toContain(cache);
+				expect(internalsUnderTest.managedCaches.values()).not.toContain(cache);
 			} else {
-				expect(internalsUnderTest.managedCaches).toContain(cache);
+				expect(internalsUnderTest.managedCaches.values()).toContain(cache);
 			}
 		});
 

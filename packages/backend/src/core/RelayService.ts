@@ -32,7 +32,7 @@ export class RelayService {
 
 		cacheManagementService: CacheManagementService,
 	) {
-		this.relaysCache = cacheManagementService.createMemorySingleCache<MiRelay[]>(1000 * 60 * 10); // 10m
+		this.relaysCache = cacheManagementService.createMemorySingleCache<MiRelay[]>('relay', 1000 * 60 * 10); // 10m
 	}
 
 	@bindThis

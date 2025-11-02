@@ -106,10 +106,10 @@ export class CacheService implements OnApplicationShutdown {
 	) {
 		//this.onMessage = this.onMessage.bind(this);
 
-		this.userByIdCache = this.cacheManagementService.createMemoryKVCache<MiUser>(1000 * 60 * 5); // 5m
-		this.localUserByNativeTokenCache = this.cacheManagementService.createMemoryKVCache<MiLocalUser | null>(1000 * 60 * 5); // 5m
-		this.localUserByIdCache = this.cacheManagementService.createMemoryKVCache<MiLocalUser>(1000 * 60 * 5); // 5m
-		this.uriPersonCache = this.cacheManagementService.createMemoryKVCache<MiUser | null>(1000 * 60 * 5); // 5m
+		this.userByIdCache = this.cacheManagementService.createMemoryKVCache<MiUser>('userById', 1000 * 60 * 5); // 5m
+		this.localUserByNativeTokenCache = this.cacheManagementService.createMemoryKVCache<MiLocalUser | null>('localUserByNativeToken', 1000 * 60 * 5); // 5m
+		this.localUserByIdCache = this.cacheManagementService.createMemoryKVCache<MiLocalUser>('localUserById', 1000 * 60 * 5); // 5m
+		this.uriPersonCache = this.cacheManagementService.createMemoryKVCache<MiUser | null>('uriPerson', 1000 * 60 * 5); // 5m
 
 		this.userProfileCache = this.cacheManagementService.createQuantumKVCache('userProfile', {
 			lifetime: 1000 * 60 * 30, // 30m
@@ -345,7 +345,7 @@ export class CacheService implements OnApplicationShutdown {
 			},
 		});
 
-		this.userFollowStatsCache = this.cacheManagementService.createMemoryKVCache<FollowStats>(1000 * 60 * 10); // 10 minutes
+		this.userFollowStatsCache = this.cacheManagementService.createMemoryKVCache<FollowStats>('followStats', 1000 * 60 * 10); // 10 minutes
 
 		this.userFollowingChannelsCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('userFollowingChannels', {
 			lifetime: 1000 * 60 * 30, // 30m

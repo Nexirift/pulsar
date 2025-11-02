@@ -46,8 +46,8 @@ export class SkRateLimiterService {
 		envService: EnvService,
 		cacheManagementService: CacheManagementService,
 	) {
-		this.factorCache = cacheManagementService.createMemoryKVCache<number>(1000 * 60); // 1m
-		this.lockoutCache = cacheManagementService.createMemoryKVCache<number>(1000 * 10); // 10s
+		this.factorCache = cacheManagementService.createMemoryKVCache<number>('rateLimitFactor', 1000 * 60); // 1m
+		this.lockoutCache = cacheManagementService.createMemoryKVCache<number>('rateLimitLockout', 1000 * 10); // 10s
 		this.disabled = envService.env.NODE_ENV === 'test';
 	}
 

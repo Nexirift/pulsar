@@ -36,7 +36,7 @@ export class RedisKVCache<T> {
 		this.lifetime = opts.lifetime;
 		// OK: we forward all management calls to the inner cache.
 		// eslint-disable-next-line no-restricted-syntax
-		this.memoryCache = new MemoryKVCache(opts.memoryCacheLifetime, services);
+		this.memoryCache = new MemoryKVCache(name + ':mem', services, { lifetime: opts.memoryCacheLifetime });
 		this.fetcher = opts.fetcher ?? (() => { throw new Error('fetch not supported - use get/set directly'); });
 		this.toRedisConverter = opts.toRedisConverter ?? ((value) => JSON.stringify(value));
 		this.fromRedisConverter = opts.fromRedisConverter ?? ((value) => JSON.parse(value));
@@ -151,7 +151,7 @@ export class RedisSingleCache<T> {
 		this.lifetime = opts.lifetime;
 		// OK: we forward all management calls to the inner cache.
 		// eslint-disable-next-line no-restricted-syntax
-		this.memoryCache = new MemorySingleCache(opts.memoryCacheLifetime, services);
+		this.memoryCache = new MemorySingleCache(name + ':mem', services, { lifetime: opts.memoryCacheLifetime });
 
 		this.fetcher = opts.fetcher ?? (() => { throw new Error('fetch not supported - use get/set directly'); });
 		this.toRedisConverter = opts.toRedisConverter ?? ((value) => JSON.stringify(value));
@@ -247,17 +247,24 @@ export interface MemoryCacheServices {
 	readonly timeService: TimeService;
 }
 
+export interface MemoryCacheOpts {
+	lifetime: number;
+}
+
 // TODO: メモリ節約のためあまり参照されないキーを定期的に削除できるようにする？
 
 export class MemoryKVCache<T> {
 	private readonly cache = new Map<string, { date: number; value: T; }>();
 	private readonly timeService: TimeService;
+	private readonly lifetime: number;
 
 	constructor(
-		private readonly lifetime: number,
+		public readonly name: string,
 		services: MemoryCacheServices,
+		opts: MemoryCacheOpts,
 	) {
 		this.timeService = services.timeService;
+		this.lifetime = opts.lifetime;
 	}
 
 	@bindThis
@@ -388,14 +395,18 @@ export class MemoryKVCache<T> {
 
 export class MemorySingleCache<T> {
 	private readonly timeService: TimeService;
+	private readonly lifetime: number;
+
 	private cachedAt: number | null = null;
 	private value: T | undefined;
 
 	constructor(
-		private lifetime: number,
+		public readonly name: string,
 		services: MemoryCacheServices,
+		opts: MemoryCacheOpts,
 	) {
 		this.timeService = services.timeService;
+		this.lifetime = opts.lifetime;
 	}
 
 	@bindThis

@@ -14,7 +14,7 @@ export class DependencyService {
 	protected readonly dependencyVersionCache: ManagedMemoryKVCache<string | null>;
 
 	constructor(cacheManagementService: CacheManagementService) {
-		this.dependencyVersionCache = cacheManagementService.createMemoryKVCache<string | null>(Infinity);
+		this.dependencyVersionCache = cacheManagementService.createMemoryKVCache<string | null>('dependencyVersion', Infinity);
 	}
 
 	/**

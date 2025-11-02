@@ -69,7 +69,7 @@ export class SystemWebhookService implements OnApplicationShutdown {
 
 		cacheManagementService: CacheManagementService,
 	) {
-		this.activeSystemWebhooks = cacheManagementService.createMemorySingleCache<MiSystemWebhook[]>(1000 * 60 * 60 * 12); // 12h
+		this.activeSystemWebhooks = cacheManagementService.createMemorySingleCache<MiSystemWebhook[]>('systemWebhooks', 1000 * 60 * 60 * 12); // 12h
 
 		this.internalEventService.on('systemWebhookCreated', this.onWebhookEvent);
 		this.internalEventService.on('systemWebhookUpdated', this.onWebhookEvent);

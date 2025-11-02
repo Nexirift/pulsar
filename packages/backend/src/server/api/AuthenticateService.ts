@@ -43,7 +43,7 @@ export class AuthenticateService {
 
 		cacheManagementService: CacheManagementService,
 	) {
-		this.appCache = cacheManagementService.createMemoryKVCache<MiApp>(1000 * 60 * 60 * 24); // 1d
+		this.appCache = cacheManagementService.createMemoryKVCache<MiApp>('app', 1000 * 60 * 60 * 24); // 1d
 	}
 
 	@bindThis

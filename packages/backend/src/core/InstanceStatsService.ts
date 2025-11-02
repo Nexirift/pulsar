@@ -56,10 +56,10 @@ export class InstanceStatsService {
 
 		cacheManagementService: CacheManagementService,
 	) {
-		this.localPostsCache = cacheManagementService.createMemorySingleCache<number>(1000 * 60 * 60); // 1h
-		this.localUsersCache = cacheManagementService.createMemorySingleCache<number>(1000 * 60 * 60); // 1h
-		this.activeMonthCache = cacheManagementService.createMemorySingleCache<number>(1000 * 60 * 60 * 24); // 1d
-		this.activeSixMonthsCache = cacheManagementService.createMemorySingleCache<number>(1000 * 60 * 60 * 24 * 7); // 1w
+		this.localPostsCache = cacheManagementService.createMemorySingleCache<number>('localPosts', 1000 * 60 * 60); // 1h
+		this.localUsersCache = cacheManagementService.createMemorySingleCache<number>('localUsers', 1000 * 60 * 60); // 1h
+		this.activeMonthCache = cacheManagementService.createMemorySingleCache<number>('activeMonth', 1000 * 60 * 60 * 24); // 1d
+		this.activeSixMonthsCache = cacheManagementService.createMemorySingleCache<number>('activeSixMonths', 1000 * 60 * 60 * 24 * 7); // 1w
 	}
 
 	@bindThis

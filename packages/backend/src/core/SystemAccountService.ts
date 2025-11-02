@@ -56,7 +56,7 @@ export class SystemAccountService implements OnApplicationShutdown {
 
 		cacheManagementService: CacheManagementService,
 	) {
-		this.cache = cacheManagementService.createMemoryKVCache<string>(1000 * 60 * 10); // 10m
+		this.cache = cacheManagementService.createMemoryKVCache<string>('systemAccount', 1000 * 60 * 10); // 10m
 
 		this.redisForSub.on('message', this.onMessage);
 	}

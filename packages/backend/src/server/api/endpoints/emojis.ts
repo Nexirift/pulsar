@@ -87,6 +87,6 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			};
 		});
 
-		this.localEmojiIdsCache = cacheManagementService.createMemorySingleCache<MiEmoji['id'][]>(1000 * 2);
+		this.localEmojiIdsCache = cacheManagementService.createMemorySingleCache<MiEmoji['id'][]>('localEmojis', 1000 * 2);
 	}
 }
