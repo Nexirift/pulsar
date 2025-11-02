@@ -18,6 +18,7 @@ import { bindThis } from '@/decorators.js';
 import { DI } from '@/di-symbols.js';
 import { TimeService, type TimerHandle } from '@/global/TimeService.js';
 import { InternalEventService } from '@/global/InternalEventService.js';
+import { callAllOn } from '@/misc/call-all.js';
 
 // This is the one place that's *supposed* to new() up caches.
 /* eslint-disable no-restricted-syntax */
@@ -97,29 +98,25 @@ export class CacheManagementService implements OnApplicationShutdown {
 	@bindThis
 	public gc(): void {
 		this.resetGcTimer(() => {
-			// TODO callAll()
-			for (const manager of this.managedCaches) {
-				manager.gc();
-			}
+			callAllOn(this.managedCaches, 'gc');
 		});
 	}
 
 	@bindThis
 	public clear(): void {
 		this.resetGcTimer(() => {
-			for (const manager of this.managedCaches) {
-				manager.clear();
-			}
+			callAllOn(this.managedCaches, 'clear');
 		});
 	}
 
 	@bindThis
 	public async dispose(): Promise<void> {
 		this.stopGcTimer();
-		for (const manager of this.managedCaches) {
-			manager.dispose();
-		}
+
+		const toDispose = new Set(this.managedCaches);
 		this.managedCaches.clear();
+
+		callAllOn(toDispose, 'dispose');
 	}
 
 	@bindThis
