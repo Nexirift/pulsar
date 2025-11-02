@@ -3,14 +3,15 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import { EntityNotFoundError } from 'typeorm';
 import { bindThis } from '@/decorators.js';
 import { InternalEventService } from '@/global/InternalEventService.js';
 import type { InternalEventTypes } from '@/core/GlobalEventService.js';
 import { MemoryKVCache, type MemoryCacheServices } from '@/misc/cache.js';
 import { makeKVPArray, type KVPArray } from '@/misc/kvp-array.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
-import { isRetryableSymbol } from '@/misc/is-retryable-error.js';
-import { EntityNotFoundError } from 'typeorm';
+import { FetchFailedError } from '@/misc/errors/FetchFailedError.js';
+import { KeyNotFoundError } from '@/misc/errors/KeyNotFoundError.js';
 
 export interface QuantumKVOpts<T> {
 	/**
@@ -469,76 +470,3 @@ export class QuantumKVCache<T> implements Iterable<readonly [key: string, value:
 	}
 }
 
-/**
- * Base class for all Quantum Cache errors.
- */
-export class QuantumCacheError extends Error {
-	/**
-	 * Name of the cache that produced this error.
-	 */
-	public readonly cacheName: string;
-
-	constructor(
-		cacheName: string,
-		message?: string,
-		options?: ErrorOptions,
-	) {
-		const actualMessage = message
-			? `Error in cache ${cacheName}: ${message}`
-			: `Error in cache ${cacheName}.`;
-		super(actualMessage, options);
-
-		this.cacheName = cacheName;
-	}
-}
-
-/**
- * Thrown when a fetch failed for any reason.
- */
-export class FetchFailedError extends QuantumCacheError {
-	/**
-	 * Name of the key(s) that could not be fetched.
-	 * Will be an array if bulkFetcher() failed, and a string if regular fetch() failed.
-	 */
-	public readonly keyNames: string | readonly string[];
-
-	constructor(
-		cacheName: string,
-		keyNames: string | readonly string[],
-		message?: string,
-		options?: ErrorOptions,
-	) {
-		const actualMessage = typeof(keyNames) === 'string'
-			? message
-				? `Fetch failed for key "${keyNames}": ${message}`
-				: `Fetch failed for key "${keyNames}".`
-			: message
-				? `Fetch failed for ${keyNames.length} keys: ${message}`
-				: `Fetch failed for ${keyNames.length} keys.`;
-		super(cacheName, actualMessage, options);
-
-		this.keyNames = keyNames;
-	}
-}
-
-/**
- * Thrown when a fetch failed because no value was found for the requested key(s).
- */
-export class KeyNotFoundError extends FetchFailedError {
-	/**
-	 * Missing keys are considered non-retryable, as they won't suddenly appear unless something external creates them.
-	 */
-	readonly [isRetryableSymbol] = false;
-
-	constructor(
-		cacheName: string,
-		keyNames: string | readonly string[],
-		message?: string,
-		options?: ErrorOptions,
-	) {
-		const actualMessage = message
-			? `Fetcher did not return a value: ${message}`
-			: 'Fetcher did not return a value.';
-		super(cacheName, keyNames, actualMessage, options);
-	}
-}

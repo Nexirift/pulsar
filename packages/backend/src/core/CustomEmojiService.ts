@@ -24,8 +24,8 @@ import { CacheManagementService, type ManagedQuantumKVCache } from '@/global/Cac
 import { TimeService } from '@/global/TimeService.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { isRetryableSymbol } from '@/misc/is-retryable-error.js';
-import { KeyNotFoundError } from '@/misc/QuantumKVCache.js';
 import type Logger from '@/logger.js';
+import { KeyNotFoundError } from '@/misc/errors/KeyNotFoundError.js';
 
 // TODO move to sk-types.d.ts when merged
 type MinEntity<T> = Omit<T, NullableProps<T>> & {
