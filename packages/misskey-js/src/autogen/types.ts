@@ -2997,6 +2997,26 @@ export type paths = {
      */
     post: operations['i___revoke-token'];
   };
+  '/i/shared-access/list': {
+    /**
+     * i/shared-access/list
+     * @description No description provided.
+     *
+     * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+     * **Credential required**: *Yes*
+     */
+    post: operations['i___shared-access___list'];
+  };
+  '/i/shared-access/login': {
+    /**
+     * i/shared-access/login
+     * @description No description provided.
+     *
+     * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+     * **Credential required**: *Yes*
+     */
+    post: operations['i___shared-access___login'];
+  };
   '/i/signin-history': {
     /**
      * i/signin-history
@@ -4585,6 +4605,7 @@ export type components = {
       achievements: components['schemas']['Achievement'][];
       loggedInDays: number;
       policies: components['schemas']['RolePolicies'];
+      permissions: string[];
       /** @default false */
       twoFactorEnabled: boolean;
       /** @default false */
@@ -5010,6 +5031,39 @@ export type components = {
       /** Format: id */
       userId: string;
       note: components['schemas']['Note'];
+    } | ({
+      /** Format: id */
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** @enum {string} */
+      type: 'sharedAccessGranted';
+      user: components['schemas']['UserLite'];
+      /** Format: id */
+      userId: string;
+      permCount?: number;
+      /** @enum {string|null} */
+      rank?: 'admin' | 'mod' | 'user';
+    }) | {
+      /** Format: id */
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** @enum {string} */
+      type: 'sharedAccessRevoked';
+      user: components['schemas']['UserLite'];
+      /** Format: id */
+      userId: string;
+    } | {
+      /** Format: id */
+      id: string;
+      /** Format: date-time */
+      createdAt: string;
+      /** @enum {string} */
+      type: 'sharedAccessLogin';
+      user: components['schemas']['UserLite'];
+      /** Format: id */
+      userId: string;
     } | {
       /** Format: id */
       id: string;
@@ -22709,6 +22763,13 @@ export type operations = {
         'application/json': {
           /** @enum {string} */
           sort?: '+createdAt' | '-createdAt' | '+lastUsedAt' | '-lastUsedAt';
+          onlySharedAccess?: boolean;
+          /** @default 30 */
+          limit?: number;
+          /** Format: misskey:id */
+          sinceId?: string;
+          /** Format: misskey:id */
+          untilId?: string;
         };
       };
     };
@@ -22716,7 +22777,7 @@ export type operations = {
       /** @description OK (with results) */
       200: {
         content: {
-          'application/json': {
+          'application/json': ({
               /** Format: misskey:id */
               id: string;
               name?: string;
@@ -22725,7 +22786,10 @@ export type operations = {
               /** Format: date-time */
               lastUsedAt?: string;
               permission: string[];
-            }[];
+              grantees: components['schemas']['UserLite'][];
+              /** @enum {string|null} */
+              rank: 'admin' | 'mod' | 'user';
+            })[];
         };
       };
       /** @description Client error */
@@ -24117,8 +24181,8 @@ export type operations = {
           untilId?: string;
           /** @default true */
           markAsRead?: boolean;
-          includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'importCompleted' | 'login' | 'createToken' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
-          excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'importCompleted' | 'login' | 'createToken' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+          includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'importCompleted' | 'login' | 'createToken' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'sharedAccessGranted' | 'sharedAccessRevoked' | 'sharedAccessLogin' | 'pollVote' | 'groupInvited')[];
+          excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'importCompleted' | 'login' | 'createToken' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'sharedAccessGranted' | 'sharedAccessRevoked' | 'sharedAccessLogin' | 'pollVote' | 'groupInvited')[];
         };
       };
     };
@@ -24185,8 +24249,8 @@ export type operations = {
           untilId?: string;
           /** @default true */
           markAsRead?: boolean;
-          includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'importCompleted' | 'login' | 'createToken' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
-          excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'importCompleted' | 'login' | 'createToken' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'pollVote' | 'groupInvited')[];
+          includeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'importCompleted' | 'login' | 'createToken' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'sharedAccessGranted' | 'sharedAccessRevoked' | 'sharedAccessLogin' | 'pollVote' | 'groupInvited')[];
+          excludeTypes?: ('note' | 'follow' | 'mention' | 'reply' | 'renote' | 'quote' | 'reaction' | 'pollEnded' | 'edited' | 'receiveFollowRequest' | 'followRequestAccepted' | 'roleAssigned' | 'chatRoomInvitationReceived' | 'achievementEarned' | 'exportCompleted' | 'importCompleted' | 'login' | 'createToken' | 'scheduledNoteFailed' | 'scheduledNotePosted' | 'app' | 'test' | 'sharedAccessGranted' | 'sharedAccessRevoked' | 'sharedAccessLogin' | 'pollVote' | 'groupInvited')[];
         };
       };
     };
@@ -25112,6 +25176,140 @@ export type operations = {
       /** @description OK (without any results) */
       204: {
         content: never;
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Too many requests */
+      429: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * i/shared-access/list
+   * @description No description provided.
+   *
+   * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+   * **Credential required**: *Yes*
+   */
+  'i___shared-access___list': {
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @default 30 */
+          limit?: number;
+          /** Format: misskey:id */
+          sinceId?: string;
+          /** Format: misskey:id */
+          untilId?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': ({
+              id: string;
+              user: components['schemas']['UserLite'];
+              permissions: string[];
+              /** @enum {string|null} */
+              rank: 'admin' | 'mod' | 'user';
+            })[];
+        };
+      };
+      /** @description Client error */
+      400: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Authentication error */
+      401: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Forbidden error */
+      403: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description I'm Ai */
+      418: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Too many requests */
+      429: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+      /** @description Internal server error */
+      500: {
+        content: {
+          'application/json': components['schemas']['Error'];
+        };
+      };
+    };
+  };
+  /**
+   * i/shared-access/login
+   * @description No description provided.
+   *
+   * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+   * **Credential required**: *Yes*
+   */
+  'i___shared-access___login': {
+    requestBody: {
+      content: {
+        'application/json': {
+          grantId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description OK (with results) */
+      200: {
+        content: {
+          'application/json': {
+            userId: string;
+            token: string;
+          };
+        };
       };
       /** @description Client error */
       400: {
@@ -26304,6 +26502,9 @@ export type operations = {
           description?: string | null;
           iconUrl?: string | null;
           permission: string[];
+          grantees?: string[];
+          /** @enum {string|null} */
+          rank?: 'admin' | 'mod' | 'user';
         };
       };
     };

@@ -5,6 +5,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import * as Redis from 'ioredis';
+import * as Misskey from 'misskey-js';
 import _Ajv from 'ajv';
 import { ModuleRef } from '@nestjs/core';
 import { In } from 'typeorm';
@@ -54,6 +55,7 @@ import { ChatService } from '@/core/ChatService.js';
 import { isSystemAccount } from '@/misc/is-system-account.js';
 import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 import type { CacheService } from '@/core/CacheService.js';
+import { getCallerId } from '@/misc/attach-caller-id.js';
 import type { OnModuleInit } from '@nestjs/common';
 import type { NoteEntityService } from './NoteEntityService.js';
 import type { PageEntityService } from './PageEntityService.js';
@@ -432,6 +434,7 @@ export class UserEntityService implements OnModuleInit {
 			userMemos?: Map<MiUser['id'], string | null>,
 			pinNotes?: Map<MiUser['id'], MiUserNotePining[]>,
 			iAmModerator?: boolean,
+			iAmAdmin?: boolean,
 			userIdsByUri?: Map<string, string>,
 			instances?: Map<string, MiInstance | null>,
 			securityKeyCounts?: Map<string, number>,
@@ -477,7 +480,8 @@ export class UserEntityService implements OnModuleInit {
 		const isDetailed = opts.schema !== 'UserLite';
 		const meId = me ? me.id : null;
 		const isMe = meId === user.id;
-		const iAmModerator = opts.iAmModerator ?? (me ? await this.roleService.isModerator(me as MiUser) : false);
+		const iAmModerator = opts.iAmModerator ?? (me ? await this.roleService.isModerator(me) : false);
+		const iAmAdmin = opts.iAmAdmin ?? (me ? await this.roleService.isAdministrator(me) : false);
 
 		const profile = isDetailed
 			? (opts.userProfile ?? user.userProfile ?? await this.userProfilesRepository.findOneByOrFail({ userId: user.id }))
@@ -529,8 +533,6 @@ export class UserEntityService implements OnModuleInit {
 			(profile.followersVisibility === 'followers') && (relation && relation.isFollowing) ? user.followersCount :
 			null;
 
-		const isModerator = isMe && isDetailed ? this.roleService.isModerator(user) : null;
-		const isAdmin = isMe && isDetailed ? this.roleService.isAdministrator(user) : null;
 		const unreadAnnouncements = isMe && isDetailed ?
 			(await this.announcementService.getUnreadAnnouncements(user)).map((announcement) => ({
 				createdAt: this.idService.parse(announcement.id).date.toISOString(),
@@ -663,8 +665,8 @@ export class UserEntityService implements OnModuleInit {
 				bannerId: user.bannerId,
 				backgroundId: user.backgroundId,
 				followedMessage: profile!.followedMessage,
-				isModerator: isModerator,
-				isAdmin: isAdmin,
+				isModerator: iAmModerator,
+				isAdmin: iAmAdmin,
 				isSystem: isSystemAccount(user),
 				injectFeaturedNote: profile!.injectFeaturedNote,
 				receiveAnnouncementEmail: profile!.receiveAnnouncementEmail,
@@ -699,6 +701,7 @@ export class UserEntityService implements OnModuleInit {
 				achievements: profile!.achievements,
 				loggedInDays: profile!.loggedInDates.length,
 				policies: fetchPolicies(),
+				permissions: this.getPermissions(user, iAmModerator, iAmAdmin),
 				defaultCW: profile!.defaultCW,
 				defaultCWPriority: profile!.defaultCWPriority,
 				allowUnsignedFetch: user.allowUnsignedFetch,
@@ -767,7 +770,10 @@ export class UserEntityService implements OnModuleInit {
 		}
 		const _userIds = _users.map(u => u.id);
 
-		const iAmModerator = await this.roleService.isModerator(me as MiUser);
+		// Sync with ApiCallService
+		const iAmAdmin = me ? await this.roleService.isAdministrator(me) : false;
+		const iAmModerator = me ? await this.roleService.isModerator(me) : false;
+
 		const meId = me ? me.id : null;
 		const isDetailed = options && options.schema !== 'UserLite';
 		const isDetailedAndMod = isDetailed && iAmModerator;
@@ -864,6 +870,7 @@ export class UserEntityService implements OnModuleInit {
 					userMemos: userMemos,
 					pinNotes: pinNotes,
 					iAmModerator,
+					iAmAdmin,
 					userIdsByUri,
 					instances,
 					securityKeyCounts,
@@ -871,5 +878,17 @@ export class UserEntityService implements OnModuleInit {
 				},
 			)),
 		);
+	}
+
+	@bindThis
+	private getPermissions(user: MiUser, isModerator: boolean, isAdmin: boolean): readonly string[] {
+		const token = getCallerId(user);
+		let permissions = token?.accessToken?.permission ?? Misskey.permissions;
+
+		if (!isModerator && !isAdmin) {
+			permissions = permissions.filter(perm => !perm.startsWith('read:admin') && !perm.startsWith('write:admin'));
+		}
+
+		return permissions;
 	}
 }

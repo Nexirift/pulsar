@@ -9244,6 +9244,14 @@ export interface Locale extends ILocale {
          * Compose or delete scheduled notes
          */
         "write:notes-schedule": string;
+        /**
+         * Read abuse report notification recipients
+         */
+        "read:admin:abuse-report:notification-recipient": string;
+        /**
+         * Edit abuse report notification recipients
+         */
+        "write:admin:abuse-report:notification-recipient": string;
     };
     "_auth": {
         /**
@@ -10434,6 +10442,18 @@ export interface Locale extends ILocale {
          * Import of {x} has been completed
          */
         "importOfXCompleted": ParameterizedString<"x">;
+        /**
+         * Shared access granted
+         */
+        "sharedAccessGranted": string;
+        /**
+         * Shared access revoked
+         */
+        "sharedAccessRevoked": string;
+        /**
+         * Shared access login
+         */
+        "sharedAccessLogin": string;
     };
     "_deck": {
         /**
@@ -13467,6 +13487,152 @@ export interface Locale extends ILocale {
      * Hide ads
      */
     "hideAds": string;
+    /**
+     * Apps using this token will have no API access except for the functions listed below.
+     */
+    "permissionsDescription": string;
+    /**
+     * Apps using this token will have no administrative access except for the functions enabled below.
+     */
+    "adminPermissionsDescription": string;
+    /**
+     * Shared account
+     */
+    "sharedAccount": string;
+    /**
+     * Shared access
+     */
+    "sharedAccess": string;
+    /**
+     * Any accounts listed here will be granted access to the token and may use it to access this account.
+     */
+    "sharedAccessDescription": string;
+    /**
+     * Shared access allows another user to access your account without using your password. You may select exactly which features and data are available to guest users.
+     */
+    "sharedAccessDescription2": string;
+    /**
+     * Share access
+     */
+    "addGrantee": string;
+    /**
+     * Remove access
+     */
+    "removeGrantee": string;
+    /**
+     * Login with shared access
+     */
+    "loginWithSharedAccess": string;
+    /**
+     * Login with granted access to a shared account
+     */
+    "loginWithSharedAccessDescription": string;
+    /**
+     * You have not been granted shared access to any accounts
+     */
+    "noSharedAccess": string;
+    /**
+     * Expand
+     */
+    "expand": string;
+    /**
+     * Collapse
+     */
+    "collapse": string;
+    /**
+     * Permissions
+     */
+    "permissions": string;
+    /**
+     * Limit rank
+     */
+    "overrideRank": string;
+    /**
+     * Limits the user rank (admin, moderator, or user) for apps using this token.
+     */
+    "overrideRankDescription": string;
+    /**
+     * Rank
+     */
+    "rank": string;
+    "_ranks": {
+        /**
+         * Admin
+         */
+        "admin": string;
+        /**
+         * Moderator
+         */
+        "mod": string;
+        /**
+         * User
+         */
+        "user": string;
+        /**
+         * default
+         */
+        "default": string;
+    };
+    /**
+     * Permissions: {num}
+     */
+    "permissionsLabel": ParameterizedString<"num">;
+    /**
+     * You have been granted shared access to {target} with {rank} rank and {perms} permissions.
+     */
+    "sharedAccessGranted": ParameterizedString<"target" | "rank" | "perms">;
+    /**
+     * Shared access to {target} has been revoked.
+     */
+    "sharedAccessRevoked": ParameterizedString<"target">;
+    /**
+     * {target} logged in via shared access.
+     */
+    "sharedAccessLogin": ParameterizedString<"target">;
+    /**
+     * Unique name to record the purpose of this access token
+     */
+    "accessTokenNameDescription": string;
+    /**
+     * Are you sure you want to revoke this token?
+     */
+    "confirmRevokeToken": string;
+    /**
+     * Are you sure you want to revoke this token? {num} shared other users will lose shared access.
+     */
+    "confirmRevokeSharedToken": ParameterizedString<"num">;
+    /**
+     * Grant shared access
+     */
+    "grantSharedAccessButton": string;
+    /**
+     * No shared access listed
+     */
+    "grantSharedAccessNoSelection": string;
+    /**
+     * No shared access users were selected. Please add at least one user in the "shared access" section.
+     */
+    "grantSharedAccessNoSelection2": string;
+    /**
+     * Shared access granted
+     */
+    "grantSharedAccessSuccess": string;
+    /**
+     * Shared access has been granted to {num} users.
+     */
+    "grantSharedAccessSuccess2": ParameterizedString<"num">;
+    /**
+     * Are you sure you want to create a token with no permissions?
+     */
+    "tokenHasNoPermissionsConfirm": string;
+    /**
+     * Enable all read-only permissions
+     */
+    "enableAllRead": string;
+    /**
+     * Enable all write/edit permissions
+     */
+    "enableAllWrite": string;
 }
 declare const locales: {
     [lang: string]: Locale;
