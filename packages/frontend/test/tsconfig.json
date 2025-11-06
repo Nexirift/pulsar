@@ -4,17 +4,28 @@
 	"compilerOptions": {
 		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
-		"baseUrl": "./",
+		"rootDir": "../",
 		"paths": {
-			"@/*": ["../src/*"]
+			"@/*": ["../src/*"],
+			"@@/*": ["../../frontend-shared/*"]
 		},
 		"typeRoots": [
-			"../node_modules/@types"
+			"../@types",
+			"../node_modules/@types",
+			"../node_modules/@vue-macros",
+			"../node_modules"
 		],
 		"types": ["node"]
 	},
 	"include": [
+		"../lib/**/*.ts",
+		"../src/**/*.ts",
+		"../src/**/*.vue",
+		"../@types/**/*.ts",
 		"./**/*.ts",
-		"../src/**/*.vue"
+	],
+	"exclude": [
+		"node_modules",
+		"../.storybook/**/*"
 	]
 }
