@@ -59,7 +59,7 @@ describe(SkRateLimiterService, () => {
 	});
 
 	afterEach(() => {
-		cacheManagementService.clear();
+		cacheManagementService.dispose();
 		mockInternalEventService.mockReset();
 		mockRedis.mockReset();
 
