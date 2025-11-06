@@ -326,11 +326,14 @@ git checkout -m merge/$(date +%Y-%m-%d)   # Create/switch to a merge branch for 
 git merge --no-ff misskey/develop   # Merge from Misskey's develop branch, forcing a merge commit.
 ```
 
-Fix conflicts and *commit!* Conflicts in `pnpm-lock.yaml` can usually
-be fixed by running `pnpm install` - it detects conflict markers and
-seems to do a decent job.
+Fix conflicts and *commit!*
+- Conflicts in `pnpm-lock.yaml` can be fixed by rejecting changes and running `pnpm install`.
+- Conflicts in `packages/misskey-js/etc` and `packages/misskey-js/src/autogen` can be fixed by rejecting changes and running `pnpm run build-misskey-js-with-types`.
+- Conflicts in `locales/index.d.ts` can be fixed by rejecting changes and running `pnpm run build-assets`.
+- Conflicts in any `package.json` file can be fixed by merging only added/removed dependencies, then running `pnpm run sync-dependency-versions`. Other changes (not dependencies) will need to be merged manually.
+- Conflicts involving `this.timeService.now` or `this.timeService.date` can be resolved by accepting remote changes. ESLint will highlight all the missing references in a later step.
 
-*After that commit,* do all the extra work, on the same branch:
+*After that commit*, do all the extra work on the same branch:
 
 - Copy all changes (commit after each step):
     - in `packages/backend/src/core/activitypub/models/ApNoteService.ts`, from `createNote` to `updateNote`

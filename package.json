@@ -47,7 +47,8 @@
 		"test-and-coverage": "pnpm -r test-and-coverage",
 		"clean": "node ./scripts/clean.js",
 		"clean-all": "node ./scripts/clean-all.js",
-		"cleanall": "pnpm clean-all"
+		"cleanall": "pnpm clean-all",
+		"sync-dependency-versions": "node scripts/sync-deps.mjs"
 	},
 	"resolutions": {
 		"chokidar": "4.0.3",
