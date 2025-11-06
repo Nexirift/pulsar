@@ -236,7 +236,7 @@
 		"@typescript-eslint/parser": "8.44.1",
 		"aws-sdk-client-mock": "4.1.0",
 		"cross-env": "10.0.0",
-		"eslint": "9.25.1",
+		"eslint": "9.36.0",
 		"eslint-plugin-import": "2.32.0",
 		"execa": "9.6.0",
 		"fkill": "9.0.0",
