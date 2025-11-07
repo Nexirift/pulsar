@@ -222,7 +222,8 @@ export class NoteEditService implements OnApplicationShutdown {
 		private readonly timeService: TimeService,
 		private readonly noteVisibilityService: NoteVisibilityService,
 		private readonly collapsedQueueService: CollapsedQueueService,
-	) {}
+	) {
+	}
 
 	@bindThis
 	public async edit(user: MiUser, editid: MiNote['id'], data: Option, silent = false): Promise<MiNote> {

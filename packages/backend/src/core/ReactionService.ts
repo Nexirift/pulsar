@@ -8,8 +8,8 @@ import { ModuleRef } from '@nestjs/core';
 import { DI } from '@/di-symbols.js';
 import type { EmojisRepository, NoteReactionsRepository, UsersRepository, NotesRepository, MiMeta } from '@/models/_.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { isLocalUser, isRemoteUser } from '@/models/User.js';
 import type { MiRemoteUser, MiUser } from '@/models/User.js';
+import { isLocalUser, isRemoteUser } from '@/models/User.js';
 import type { MiNote } from '@/models/Note.js';
 import { IdService } from '@/core/IdService.js';
 import { MiNoteReaction } from '@/models/NoteReaction.js';
@@ -19,7 +19,6 @@ import { NotificationService } from '@/core/NotificationService.js';
 import PerUserReactionsChart from '@/core/chart/charts/per-user-reactions.js';
 import { emojiRegex } from '@/misc/emoji-regex.js';
 import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerService.js';
-import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { bindThis } from '@/decorators.js';
 import { UtilityService } from '@/core/UtilityService.js';
@@ -299,7 +298,7 @@ export class ReactionService implements OnModuleInit {
 			if (['public', 'home', 'followers'].includes(note.visibility)) {
 				dm.addFollowersRecipe();
 			} else if (note.visibility === 'specified') {
-				const visibleUsers = await this.cacheService.getUsers(note.visibleUserIds);
+				const visibleUsers = await this.cacheService.findUsersById(note.visibleUserIds);
 				for (const u of visibleUsers.values()) {
 					if (isRemoteUser(u)) {
 						dm.addDirectRecipe(u as MiRemoteUser);

@@ -28,7 +28,7 @@ import { CacheManagementService } from '@/global/CacheManagementService.js';
 import { ApResolverService } from '@/core/activitypub/ApResolverService.js';
 import { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataService.js';
 import type { IActor, IApDocument, ICollection, IObject, IPost } from '@/core/activitypub/type.js';
-import { MiMeta, MiNote, MiUser, MiUserKeypair, UserNotePiningsRepository, UserProfilesRepository, UserPublickeysRepository, UserKeypairsRepository, UsersRepository, NotesRepository } from '@/models/_.js';
+import { MiMeta, MiNote, MiUser, MiUserKeypair, UserProfilesRepository, UserPublickeysRepository, UserKeypairsRepository, UsersRepository, NotesRepository, UserNotePiningsRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { DownloadService } from '@/core/DownloadService.js';

@@ -260,7 +260,7 @@ export class BackgroundTaskProcessorService {
 		if (user.isSuspended) return `Skipping post-note task: note ${task.noteId}'s user ${note.userId} is suspended`;
 		note.user = user;
 
-		const mentionedUsers = await this.cacheService.getUsers(note.mentions);
+		const mentionedUsers = await this.cacheService.findUsersById(note.mentions);
 		const poll = await this.pollsRepository.findOneBy({ noteId: note.id });
 
 		if (task.edit) {

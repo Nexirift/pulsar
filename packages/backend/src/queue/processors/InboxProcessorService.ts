@@ -299,30 +299,8 @@ export class InboxProcessorService implements OnApplicationShutdown {
 		return 'ok';
 	}
 
-	// Moved to CollapsedQueueService
-	/*
-	@bindThis
-	public collapseUpdateInstanceJobs(oldJob: UpdateInstanceJob, newJob: UpdateInstanceJob) {
-		const latestRequestReceivedAt = oldJob.latestRequestReceivedAt < newJob.latestRequestReceivedAt
-			? newJob.latestRequestReceivedAt
-			: oldJob.latestRequestReceivedAt;
-		const shouldUnsuspend = oldJob.shouldUnsuspend || newJob.shouldUnsuspend;
-		return {
-			latestRequestReceivedAt,
-			shouldUnsuspend,
-		};
-	}
-
-	@bindThis
-	public async performUpdateInstance(id: string, job: UpdateInstanceJob) {
-		await this.federatedInstanceService.update(id, {
-			latestRequestReceivedAt: this.timeService.date,
-			isNotResponding: false,
-			// もしサーバーが死んでるために配信が止まっていた場合には自動的に復活させてあげる
-			suspensionState: job.shouldUnsuspend ? 'none' : undefined,
-		});
-	}
-	*/
+	// collapseUpdateInstanceJobs moved to CollapsedQueueService
+	// performUpdateInstance moved to CollapsedQueueService
 
 	@bindThis
 	public async dispose(): Promise<void> {}

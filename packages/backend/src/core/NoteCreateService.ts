@@ -156,7 +156,6 @@ export type PureRenoteOption = Option & { renote: MiNote } & ({ text?: null } | 
 @Injectable()
 export class NoteCreateService implements OnApplicationShutdown {
 	#shutdownController = new AbortController();
-	// private updateNotesCountQueue: CollapsedQueue<MiNote['id'], number>;
 
 	constructor(
 		@Inject(DI.config)
@@ -230,7 +229,6 @@ export class NoteCreateService implements OnApplicationShutdown {
 		private readonly noteVisibilityService: NoteVisibilityService,
 		private readonly collapsedQueueService: CollapsedQueueService,
 	) {
-		//this.updateNotesCountQueue = new CollapsedQueue(this.timeService, process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseNotesCount, this.performUpdateNotesCount);
 	}
 
 	@bindThis
@@ -1034,23 +1032,11 @@ export class NoteCreateService implements OnApplicationShutdown {
 		return false;
 	}
 
-	// Moved to CollapsedQueueService
-	/*
-	@bindThis
-	private collapseNotesCount(oldValue: number, newValue: number) {
-		return oldValue + newValue;
-	}
-
-	@bindThis
-	private async performUpdateNotesCount(id: MiNote['id'], incrBy: number) {
-		await this.instancesRepository.increment({ id: id }, 'notesCount', incrBy);
-	}
-	*/
+	// collapseNotesCount moved to CollapsedQueueService
 
 	@bindThis
 	public async dispose(): Promise<void> {
 		this.#shutdownController.abort();
-		// await this.updateNotesCountQueue.performAllNow();
 	}
 
 	@bindThis

@@ -74,7 +74,6 @@ export class ApPersonService implements OnModuleInit {
 	private readonly publicKeyByUserIdCache: ManagedQuantumKVCache<MiUserPublickey>;
 
 	private driveFileEntityService: DriveFileEntityService;
-	private idService: IdService;
 	private federatedInstanceService: FederatedInstanceService;
 	private fetchInstanceMetadataService: FetchInstanceMetadataService;
 	private cacheService: CacheService;
@@ -88,6 +87,7 @@ export class ApPersonService implements OnModuleInit {
 	private instanceChart: InstanceChart;
 	private accountMoveService: AccountMoveService;
 	private logger: Logger;
+	private idService: IdService;
 
 	constructor(
 		private moduleRef: ModuleRef,
@@ -184,7 +184,6 @@ export class ApPersonService implements OnModuleInit {
 	@bindThis
 	onModuleInit(): void {
 		this.driveFileEntityService = this.moduleRef.get('DriveFileEntityService');
-		this.idService = this.moduleRef.get('IdService');
 		this.federatedInstanceService = this.moduleRef.get('FederatedInstanceService');
 		this.fetchInstanceMetadataService = this.moduleRef.get('FetchInstanceMetadataService');
 		this.cacheService = this.moduleRef.get('CacheService');
@@ -197,6 +196,7 @@ export class ApPersonService implements OnModuleInit {
 		this.usersChart = this.moduleRef.get('UsersChart');
 		this.instanceChart = this.moduleRef.get('InstanceChart');
 		this.accountMoveService = this.moduleRef.get('AccountMoveService');
+		this.idService = this.moduleRef.get('IdService');
 	}
 
 	/**
@@ -995,25 +995,6 @@ export class ApPersonService implements OnModuleInit {
 				});
 			}
 		});
-	}
-
-	@bindThis
-	private async resolveUserForFeatured(userOrId: MiRemoteUser | MiUser['id']): Promise<(MiRemoteUser & { featured: string }) | null> {
-		const userId = typeof(userOrId) === 'object' ? userOrId.id : userOrId;
-		const user = typeof(userOrId) === 'object' ? userOrId : await this.cacheService.findRemoteUserById(userId);
-
-		if (user.isDeleted || user.isSuspended) {
-			this.logger.debug(`Not updating featured for ${userId}: user is deleted`);
-			return null;
-		}
-
-		if (!user.featured) {
-			this.logger.debug(`Not updating featured for ${userId}: no featured collection`);
-			return null;
-		}
-
-		// For some reason TS doesn't recognize the type check above.
-		return user as MiRemoteUser & { featured: string };
 	}
 
 	/**
