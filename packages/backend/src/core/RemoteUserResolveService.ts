@@ -11,19 +11,19 @@ import type { UsersRepository } from '@/models/_.js';
 import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
 import type { Config } from '@/config.js';
 import type Logger from '@/logger.js';
-import { isRemoteUser } from '@/models/User.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import { ILink, WebfingerService } from '@/core/WebfingerService.js';
 import { RemoteLoggerService } from '@/core/RemoteLoggerService.js';
 import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
-import { bindThis } from '@/decorators.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
-import { CacheService } from '@/core/CacheService.js';
 import { TimeService } from '@/global/TimeService.js';
-import * as Acct from '@/misc/acct.js';
+import { CacheService } from '@/core/CacheService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { InternalEventService } from '@/global/InternalEventService.js';
+import * as Acct from '@/misc/acct.js';
+import { isRemoteUser } from '@/models/User.js';
+import { bindThis } from '@/decorators.js';
+import { renderInlineError } from '@/misc/render-inline-error.js';
 
 @Injectable()
 export class RemoteUserResolveService {
