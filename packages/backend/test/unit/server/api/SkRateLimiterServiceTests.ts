@@ -58,6 +58,15 @@ describe(SkRateLimiterService, () => {
 		};
 	});
 
+	afterEach(() => {
+		cacheManagementService.dispose();
+		mockInternalEventService.mockReset();
+		mockRedis.mockReset();
+
+		mockEnvService.mockReset();
+		mockEnvService.env.NODE_ENV = 'production';
+	});
+
 	describe('limit', () => {
 		const actor = 'actor';
 		const key = 'test';
