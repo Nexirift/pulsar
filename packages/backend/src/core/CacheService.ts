@@ -361,6 +361,7 @@ export class CacheService implements OnApplicationShutdown {
 		this.internalEventService.on('userChangeDeletedState', this.onUserEvent);
 		this.internalEventService.on('remoteUserUpdated', this.onUserEvent);
 		this.internalEventService.on('localUserUpdated', this.onUserEvent);
+		this.internalEventService.on('userUpdated', this.onUserEvent);
 		this.internalEventService.on('userTokenRegenerated', this.onTokenEvent);
 		this.internalEventService.on('follow', this.onFollowEvent);
 		this.internalEventService.on('unfollow', this.onFollowEvent);
@@ -377,7 +378,7 @@ export class CacheService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async onUserEvent<E extends 'userChangeSuspendedState' | 'userChangeDeletedState' | 'remoteUserUpdated' | 'localUserUpdated' | 'usersUpdated'>(body: InternalEventTypes[E], _: E, isLocal: boolean): Promise<void> {
+	private async onUserEvent<E extends 'userChangeSuspendedState' | 'userChangeDeletedState' | 'remoteUserUpdated' | 'localUserUpdated' | 'usersUpdated' | 'userUpdated'>(body: InternalEventTypes[E], _: E, isLocal: boolean): Promise<void> {
 		const ids = 'ids' in body ? body.ids : [body.id];
 		if (ids.length === 0) return;
 
@@ -686,6 +687,7 @@ export class CacheService implements OnApplicationShutdown {
 		this.internalEventService.off('userChangeDeletedState', this.onUserEvent);
 		this.internalEventService.off('remoteUserUpdated', this.onUserEvent);
 		this.internalEventService.off('localUserUpdated', this.onUserEvent);
+		this.internalEventService.off('userUpdated', this.onUserEvent);
 		this.internalEventService.off('userTokenRegenerated', this.onTokenEvent);
 		this.internalEventService.off('follow', this.onFollowEvent);
 		this.internalEventService.off('unfollow', this.onFollowEvent);
