@@ -80,7 +80,7 @@ export class QueueService implements OnModuleInit {
 	public async onModuleInit() {
 		await this.systemQueue.upsertJobScheduler(
 			'tickCharts-scheduler',
-			{ pattern: '0 * * * *' },
+			{ pattern: '0 * * * *' }, // every hour at :00
 			{
 				name: 'tickCharts',
 				opts: {
@@ -91,7 +91,7 @@ export class QueueService implements OnModuleInit {
 
 		await this.systemQueue.upsertJobScheduler(
 			'resyncCharts-scheduler',
-			{ pattern: '10 0 * * *' },
+			{ pattern: '10 0 * * *' }, // every day at 00:10 (avoid tickCharts)
 			{
 				name: 'resyncCharts',
 				opts: {
@@ -102,7 +102,7 @@ export class QueueService implements OnModuleInit {
 
 		await this.systemQueue.upsertJobScheduler(
 			'cleanCharts-scheduler',
-			{ pattern: '30 0 * * *' },
+			{ pattern: '30 0 * * *' }, // every day at 00:30 (wait for resyncCharts)
 			{
 				name: 'cleanCharts',
 				opts: {
@@ -113,7 +113,7 @@ export class QueueService implements OnModuleInit {
 
 		await this.systemQueue.upsertJobScheduler(
 			'aggregateRetention-scheduler',
-			{ pattern: '0 1 * * *' },
+			{ pattern: '5 1 * * *' }, // every day at 01:05 (avoid chart jobs)
 			{
 				name: 'aggregateRetention',
 				opts: {
@@ -124,7 +124,7 @@ export class QueueService implements OnModuleInit {
 
 		await this.systemQueue.upsertJobScheduler(
 			'clean-scheduler',
-			{ pattern: '10 1 * * *' },
+			{ pattern: '10 1 * * *' }, // every day at 01:10 (avoid aggregateRetention)
 			{
 				name: 'clean',
 				opts: {
@@ -135,7 +135,7 @@ export class QueueService implements OnModuleInit {
 
 		await this.systemQueue.upsertJobScheduler(
 			'checkExpiredMutings-scheduler',
-			{ pattern: '*/5 * * * *' },
+			{ pattern: '*/5 * * * *' }, // every 5 minutes
 			{
 				name: 'checkExpiredMutings',
 				opts: {
@@ -146,7 +146,7 @@ export class QueueService implements OnModuleInit {
 
 		await this.systemQueue.upsertJobScheduler(
 			'cleanupApLogs-scheduler',
-			{ pattern: '*/10 * * *' },
+			{ pattern: '*/10 * * *' }, // every 10 minutes
 			{
 				name: 'cleanupApLogs',
 				opts: {
@@ -157,7 +157,7 @@ export class QueueService implements OnModuleInit {
 
 		await this.systemQueue.upsertJobScheduler(
 			'bakeBufferedReactions-scheduler',
-			{ pattern: '20 1 * * *' },
+			{ pattern: '20 1 * * *' }, // every day at 01:20 (avoid clean)
 			{
 				name: 'bakeBufferedReactions',
 				opts: {
@@ -169,7 +169,7 @@ export class QueueService implements OnModuleInit {
 		await this.systemQueue.upsertJobScheduler(
 			'checkModeratorsActivity-scheduler',
 			// 毎時30分に起動
-			{ pattern: '30 1 * * *' },
+			{ pattern: '30 1 * * *' }, // every day at 01:30 (avoid cleanupApLogs)
 			{
 				name: 'checkModeratorsActivity',
 				opts: {
@@ -180,7 +180,7 @@ export class QueueService implements OnModuleInit {
 
 		await this.systemQueue.upsertJobScheduler(
 				'hibernateUsers-scheduler',
-				{ pattern: '40 1 * * *' },
+				{ pattern: '40 1 * * *' }, // every day at 01:40 (avoid checkModeratorsActivity)
 				{
 					name: 'hibernateUsers',
 					opts: {
