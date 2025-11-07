@@ -1,12 +1,24 @@
 /*
- * SPDX-FileCopyrightText: syuilo and misskey-project
+ * SPDX-FileCopyrightText: hazelnoot and other Sharkey contributors; originally based on code by syuilo and misskey-project
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
 import { Inject, Injectable } from '@nestjs/common';
-import * as Redis from 'ioredis';
-import { In, IsNull, Not, Brackets, MoreThan } from 'typeorm';
-import type { BlockingsRepository, FollowingsRepository, MutingsRepository, RenoteMutingsRepository, MiUserProfile, UserProfilesRepository, UsersRepository, MiFollowing, NoteThreadMutingsRepository, ChannelFollowingsRepository, UserListMembershipsRepository, UserListFavoritesRepository } from '@/models/_.js';
+import { In, IsNull, Brackets, MoreThan } from 'typeorm';
+import type {
+	BlockingsRepository,
+	FollowingsRepository,
+	MutingsRepository,
+	RenoteMutingsRepository,
+	MiUserProfile,
+	UserProfilesRepository,
+	UsersRepository,
+	MiFollowing,
+	NoteThreadMutingsRepository,
+	ChannelFollowingsRepository,
+	UserListMembershipsRepository,
+	UserListFavoritesRepository,
+} from '@/models/_.js';
 import type { MiLocalUser, MiRemoteUser, MiUser } from '@/models/User.js';
 import type { MiUserListMembership } from '@/models/UserListMembership.js';
 import { isLocalUser, isRemoteUser } from '@/models/User.js';
@@ -136,29 +148,23 @@ export class CacheService implements OnApplicationShutdown {
 	public readonly userFollowingChannelsCache: ManagedQuantumKVCache<Set<string>>;
 
 	constructor(
-		@Inject(DI.redis)
-		private redisClient: Redis.Redis,
-
-		@Inject(DI.redisForSub)
-		private redisForSub: Redis.Redis,
-
 		@Inject(DI.usersRepository)
-		private usersRepository: UsersRepository,
+		private readonly usersRepository: UsersRepository,
 
 		@Inject(DI.userProfilesRepository)
-		private userProfilesRepository: UserProfilesRepository,
+		private readonly userProfilesRepository: UserProfilesRepository,
 
 		@Inject(DI.mutingsRepository)
-		private mutingsRepository: MutingsRepository,
+		private readonly mutingsRepository: MutingsRepository,
 
 		@Inject(DI.blockingsRepository)
-		private blockingsRepository: BlockingsRepository,
+		private readonly blockingsRepository: BlockingsRepository,
 
 		@Inject(DI.renoteMutingsRepository)
-		private renoteMutingsRepository: RenoteMutingsRepository,
+		private readonly renoteMutingsRepository: RenoteMutingsRepository,
 
 		@Inject(DI.followingsRepository)
-		private followingsRepository: FollowingsRepository,
+		private readonly followingsRepository: FollowingsRepository,
 
 		@Inject(DI.noteThreadMutingsRepository)
 		private readonly noteThreadMutingsRepository: NoteThreadMutingsRepository,
@@ -176,8 +182,6 @@ export class CacheService implements OnApplicationShutdown {
 		private readonly cacheManagementService: CacheManagementService,
 		private readonly timeService: TimeService,
 	) {
-		//this.onMessage = this.onMessage.bind(this);
-
 		this.userByIdCache = this.cacheManagementService.createQuantumKVCache('userById', {
 			lifetime: 1000 * 60 * 5, // 5m
 			fetcher: async (userId) => await this.usersRepository.findOneByOrFail({ id: userId }),
@@ -506,91 +510,46 @@ export class CacheService implements OnApplicationShutdown {
 
 	@bindThis
 	private async onUserEvent<E extends 'userChangeSuspendedState' | 'userChangeDeletedState' | 'remoteUserUpdated' | 'localUserUpdated' | 'usersUpdated' | 'userUpdated'>(body: InternalEventTypes[E], _: E, isLocal: boolean): Promise<void> {
+		// Local instance is responsible for expanding these events into the appropriate Quantum events
+		if (!isLocal) return;
+
 		const ids = 'ids' in body ? body.ids : [body.id];
 		if (ids.length === 0) return;
 
-		// Update quantum caches
-		if (isLocal) {
-			// Contains IDs of all lists where this user is a member.
-			const userListMemberships = this.listUserMembershipsCache
-				.entries()
-				.filter(e => ids.some(id => e[1].has(id)))
-				.map(e => e[0])
-				.toArray();
+		// Contains IDs of all lists where this user is a member.
+		const userListMemberships = this.listUserMembershipsCache
+			.entries()
+			.filter(e => ids.some(id => e[1].has(id)))
+			.map(e => e[0])
+			.toArray();
 
-			await Promise.all([
-				this.userByIdCache.deleteMany(ids),
-				this.userProfileCache.deleteMany(ids),
-				this.userMutingsCache.deleteMany(ids),
-				this.userMutedCache.deleteMany(ids),
-				this.userBlockingCache.deleteMany(ids),
-				this.userBlockedCache.deleteMany(ids),
-				this.renoteMutingsCache.deleteMany(ids),
-				this.userFollowingsCache.deleteMany(ids),
-				this.userFollowersCache.deleteMany(ids),
-				this.hibernatedUserCache.deleteMany(ids),
-				this.threadMutingsCache.deleteMany(ids),
-				this.noteMutingsCache.deleteMany(ids),
-				this.userListMembershipsCache.deleteMany(ids),
-				this.listUserMembershipsCache.deleteMany(userListMemberships),
-			]);
-		}
-
-		// Update other caches
-		const users = await this.usersRepository.findBy({
-			id: ids.length === 1 ? ids[0] : In(ids),
-		});
-		for (const id of ids) {
-			const user = users.find(u => u.id === id);
-			this.updateMkUserCaches({ id }, user ?? null);
-		}
-	}
-
-	// This is here purely to help git line up MK's original code with our changes
-	@bindThis
-	private updateMkUserCaches(body: { id: string }, user: MiUser | null): void {
-		{
-			{
-				{
-					if (user == null) {
-						this.userByIdCache.delete(body.id);
-						for (const [k, v] of this.uriPersonCache.entries) {
-							if (v.value?.id === body.id) {
-								this.uriPersonCache.delete(k);
-							}
-						}
-					} else {
-						this.userByIdCache.set(user.id, user);
-						for (const [k, v] of this.uriPersonCache.entries) {
-							if (v.value?.id === user.id) {
-								this.uriPersonCache.set(k, user);
-							}
-						}
-						if (isLocalUser(user)) {
-							this.localUserByNativeTokenCache.set(user.token!, user);
-							this.localUserByIdCache.set(user.id, user);
-						}
-					}
-				}
-			}
-		}
+		await Promise.all([
+			this.userByIdCache.deleteMany(ids),
+			this.userProfileCache.deleteMany(ids),
+			this.userMutingsCache.deleteMany(ids),
+			this.userMutedCache.deleteMany(ids),
+			this.userBlockingCache.deleteMany(ids),
+			this.userBlockedCache.deleteMany(ids),
+			this.renoteMutingsCache.deleteMany(ids),
+			this.userFollowingsCache.deleteMany(ids),
+			this.userFollowersCache.deleteMany(ids),
+			this.hibernatedUserCache.deleteMany(ids),
+			this.threadMutingsCache.deleteMany(ids),
+			this.noteMutingsCache.deleteMany(ids),
+			this.userListMembershipsCache.deleteMany(ids),
+			this.listUserMembershipsCache.deleteMany(userListMemberships),
+		]);
 	}
 
 	@bindThis
 	private async onTokenEvent<E extends 'userTokenRegenerated'>(body: InternalEventTypes[E], _: E, isLocal: boolean): Promise<void> {
-		{
-			{
-				{
-					// Local instance is responsible for expanding these events into the appropriate Quantum events
-					if (!isLocal) return;
+		// Local instance is responsible for expanding these events into the appropriate Quantum events
+		if (!isLocal) return;
 
-					await Promise.all([
-						this.nativeTokenCache.delete(body.oldToken),
-						this.nativeTokenCache.set(body.newToken, body.id),
-					]);
-				}
-			}
-		}
+		await Promise.all([
+			this.nativeTokenCache.delete(body.oldToken),
+			this.nativeTokenCache.set(body.newToken, body.id),
+		]);
 	}
 
 	@bindThis
