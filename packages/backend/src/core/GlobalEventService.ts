@@ -235,7 +235,9 @@ export interface InternalEventTypes {
 	userChangeSuspendedState: { id: MiUser['id']; isSuspended: MiUser['isSuspended']; };
 	userChangeDeletedState: { id: MiUser['id']; isDeleted: MiUser['isDeleted']; };
 	userTokenRegenerated: { id: MiUser['id']; oldToken: string; newToken: string; };
+	/** @deprecated Use userUpdated or usersUpdated instead */
 	remoteUserUpdated: { id: MiUser['id']; };
+	/** @deprecated Use userUpdated or usersUpdated instead */
 	localUserUpdated: { id: MiUser['id']; };
 	usersUpdated: { ids: MiUser['id'][]; };
 	userUpdated: { id: MiUser['id']; };
