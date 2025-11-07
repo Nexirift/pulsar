@@ -10,7 +10,7 @@ import type Logger from '@/logger.js';
 import { bindThis } from '@/decorators.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { CacheService } from '@/core/CacheService.js';
-import { TimeService } from '@/core/TimeService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { FollowingsRepository, UsersRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 
