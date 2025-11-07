@@ -16,11 +16,11 @@ import { deepClone } from '@/misc/clone.js';
 import { bindThis } from '@/decorators.js';
 import { SystemAccountService } from '@/core/SystemAccountService.js';
 import { CacheManagementService, ManagedMemorySingleCache } from '@/global/CacheManagementService.js';
-import { IActivity } from '@/core/activitypub/type.js';
+import type { IActivity } from '@/core/activitypub/type.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
-import { Signed } from '@/core/activitypub/JsonLdService.js';
+import type { Signed } from '@/core/activitypub/JsonLdService.js';
 
 @Injectable()
 export class RelayService {
