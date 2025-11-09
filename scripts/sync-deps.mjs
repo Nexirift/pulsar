@@ -272,11 +272,15 @@ function mapDependencies(packages) {
 				};
 				mappedDependencies[dependency.name] = mapping;
 			} else {
-				if (isNewer(dependency.version, mapping.newestVersion)) {
-					mapping.newestVersion = dependency.version;
-					mapping.newestNpmVersion = dependency.npmVersion;
+				if (dependency.npmVersion !== mapping.newestNpmVersion) {
 					mapping.hasDifference = true;
+
+					if (isNewer(dependency.version, mapping.newestVersion)) {
+						mapping.newestVersion = dependency.version;
+						mapping.newestNpmVersion = dependency.npmVersion;
+					}
 				}
+
 				mapping.packages.push(packageDependency);
 			}
 		}
