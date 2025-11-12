@@ -714,10 +714,6 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 			// Start new call
 			const fetchPromise = promiseTry(this.callFetcher, key)
 				.catch(async err => {
-					if (err instanceof QuantumCacheError && err.cacheName === this.nameForError) {
-						throw err;
-					}
-
 					if (err instanceof EntityNotFoundError) {
 						throw new KeyNotFoundError(this.nameForError, key, renderInlineError(err), { cause: err });
 					}
@@ -763,10 +759,6 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 				// Start new call
 				const fetchPromise = promiseTry(this.callOptionalFetcher, key)
 					.catch(async err => {
-						if (err instanceof QuantumCacheError && err.cacheName === this.nameForError) {
-							throw err;
-						}
-
 						throw new FetchFailedError(this.nameForError, key, renderInlineError(err), { cause: err });
 					})
 					.then(result => result ?? undefined);
