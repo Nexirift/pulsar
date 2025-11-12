@@ -375,12 +375,24 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 	}
 
 	/**
-	 * Gets a value from the local memory cache, or returns undefined if not found.
+	 * Gets a value from the local memory cache, or throws KeyNotFoundError if not found.
 	 * Returns cached data only - does not make any fetches.
-	 * TODO separate get/getMaybe
 	 */
 	@bindThis
-	public get(key: string): T | undefined {
+	public get(key: string): T {
+		const result = this.getMaybe(key);
+		if (result === undefined) {
+			throw new KeyNotFoundError(this.nameForError, key);
+		}
+		return result;
+	}
+
+	/**
+	 * Gets a value from the local memory cache, or returns undefined if not found.
+	 * Returns cached data only - does not make any fetches.
+	 */
+	@bindThis
+	public getMaybe(key: string): T | undefined {
 		return this.memoryCache.get(key);
 	}
 
@@ -393,7 +405,7 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 	public getMany(keys: Iterable<string>): [key: string, value: T | undefined][] {
 		const results: [key: string, value: T | undefined][] = [];
 		for (const key of keys) {
-			results.push([key, this.get(key)]);
+			results.push([key, this.getMaybe(key)]);
 		}
 		return results;
 	}
@@ -460,7 +472,7 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 		// Spliterate into cached results / uncached keys.
 		for (const key of keys) {
-			const fromCache = this.get(key);
+			const fromCache = this.getMaybe(key);
 			if (fromCache) {
 				results.push([key, fromCache]);
 			} else {

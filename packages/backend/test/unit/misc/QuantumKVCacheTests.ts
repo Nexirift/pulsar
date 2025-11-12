@@ -220,10 +220,29 @@ describe(QuantumKVCache, () => {
 			expect(result).toBe('bar');
 		});
 
+		it('should throw KeyNotFoundError if missing', () => {
+			const cache = makeCache<string>();
+
+			assert.throws(KeyNotFoundError, () => {
+				cache.get('foo');
+			});
+		});
+	});
+
+	describe('getMaybe', () => {
+		it('should return value if present', async () => {
+			const cache = makeCache<string>();
+			await cache.set('foo', 'bar');
+
+			const result = cache.getMaybe('foo');
+
+			expect(result).toBe('bar');
+		});
+
 		it('should return undefined if missing', () => {
 			const cache = makeCache<string>();
 
-			const result = cache.get('foo');
+			const result = cache.getMaybe('foo');
 
 			expect(result).toBe(undefined);
 		});

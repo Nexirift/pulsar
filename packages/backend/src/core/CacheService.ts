@@ -553,7 +553,7 @@ export class CacheService implements OnApplicationShutdown {
 				for (const uid of userIds) {
 					const toAdd: MiUser[] = [];
 
-					const userById = this.userByIdCache.get(uid);
+					const userById = this.userByIdCache.getMaybe(uid);
 					if (userById) toAdd.push(userById);
 
 					if (toAdd.length > 0) {
@@ -670,9 +670,9 @@ export class CacheService implements OnApplicationShutdown {
 			// TODO should we filter for local/remote events?
 			switch (type) {
 				case 'follow': {
-					const follower = this.userByIdCache.get(body.followerId);
+					const follower = this.userByIdCache.getMaybe(body.followerId);
 					if (follower) follower.followingCount++;
-					const followee = this.userByIdCache.get(body.followeeId);
+					const followee = this.userByIdCache.getMaybe(body.followeeId);
 					if (followee) followee.followersCount++;
 					await Promise.all([
 						this.userFollowingsCache.delete(body.followerId),
@@ -683,9 +683,9 @@ export class CacheService implements OnApplicationShutdown {
 					break;
 				}
 				case 'unfollow': {
-					const follower = this.userByIdCache.get(body.followerId);
+					const follower = this.userByIdCache.getMaybe(body.followerId);
 					if (follower) follower.followingCount--;
-					const followee = this.userByIdCache.get(body.followeeId);
+					const followee = this.userByIdCache.getMaybe(body.followeeId);
 					if (followee) followee.followersCount--;
 					await Promise.all([
 						this.userFollowingsCache.delete(body.followerId),
@@ -860,7 +860,7 @@ export class CacheService implements OnApplicationShutdown {
 		const followeeId = typeof(followee) === 'string' ? followee : followee.id;
 
 		// This lets us use whichever one is in memory, falling back to DB fetch via userFollowingsCache.
-		return this.userFollowersCache.get(followeeId)?.has(followerId)
+		return this.userFollowersCache.getMaybe(followeeId)?.has(followerId)
 		?? (await this.userFollowingsCache.fetch(followerId)).has(followeeId);
 	}
 
