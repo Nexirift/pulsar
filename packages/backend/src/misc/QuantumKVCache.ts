@@ -550,6 +550,11 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 		return value;
 	}
 
+	/**
+	 * Refreshes multiple values from the cache, and erases any stale caches across the cluster.
+	 * Fires an onChanged event after the cache has been updated in all processes.
+	 * Missing / unmapped values are excluded from the response.
+	 */
 	@bindThis
 	public async refreshMany(keys: Iterable<string>): Promise<KVPArray<T>> {
 		this.throwIfDisposed();
