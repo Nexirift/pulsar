@@ -24,7 +24,7 @@ import { bindThis } from '@/decorators.js';
 import { DI } from '@/di-symbols.js';
 import { TimeService, type TimerHandle } from '@/global/TimeService.js';
 import { InternalEventService } from '@/global/InternalEventService.js';
-import { callAllOn } from '@/misc/call-all.js';
+import { callAllOn, callAllOnAsync } from '@/misc/call-all.js';
 import type * as Redis from 'ioredis';
 
 // This is the one place that's *supposed* to new() up caches.
@@ -37,7 +37,7 @@ export type ManagedRedisSingleCache<T> = Managed<RedisSingleCache<T>>;
 export type ManagedQuantumKVCache<T> = Managed<QuantumKVCache<T>>;
 
 export type Managed<T> = Omit<T, 'dispose' | 'onApplicationShutdown' | 'gc'>;
-export type Manager = { dispose(): void, clear(): void, gc(): void };
+export type Manager = { dispose(): Promise<void> | void, clear(): void, gc(): void };
 
 type CacheServices = MemoryCacheServices & RedisCacheServices & QuantumCacheServices;
 
@@ -129,7 +129,7 @@ export class CacheManagementService implements OnApplicationShutdown {
 		const toDispose = Array.from(this.managedCaches.values());
 		this.managedCaches.clear();
 
-		callAllOn(toDispose, 'dispose');
+		await callAllOnAsync(toDispose, 'dispose');
 	}
 
 	@bindThis
