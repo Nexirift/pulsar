@@ -36,6 +36,7 @@ export default [
 		ignores: [
 			"**/built/",
 			'*.*',
+			"**/jest.setup.*"
 		],
 	},
 ];
