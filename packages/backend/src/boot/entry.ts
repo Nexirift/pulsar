@@ -8,8 +8,6 @@
  */
 
 import cluster from 'node:cluster';
-import { EventEmitter } from 'node:events';
-import { inspect } from 'node:util';
 import chalk from 'chalk';
 import Xev from 'xev';
 import { coreLogger, coreEnvService, coreLoggerService } from '@/boot/coreLogger.js';
@@ -17,8 +15,6 @@ import { prepEnv } from '@/boot/prepEnv.js';
 import { masterMain } from './master.js';
 import { workerMain } from './worker.js';
 import { readyRef } from './ready.js';
-
-import 'reflect-metadata';
 
 process.title = `Misskey (${cluster.isPrimary ? 'master' : 'worker'})`;
 
@@ -51,36 +47,6 @@ async function main() {
 		// we're not sentimental
 		clusterLogger.error(chalk.red(`[${worker.id}] died :(`));
 		cluster.fork();
-	});
-
-	// Display detail of unhandled promise rejection
-	if (!envOption.quiet) {
-		process.on('unhandledRejection', e => {
-			logger.error('Unhandled rejection:', inspect(e));
-		});
-	}
-
-	process.on('uncaughtException', (err) => {
-		// Workaround for https://github.com/node-fetch/node-fetch/issues/954
-		if (String(err).match(/^TypeError: .+ is an? url with embedded credentials.$/)) {
-			logger.debug('Suppressed node-fetch issue#954, but the current job may fail.');
-			return;
-		}
-
-		// Workaround for https://github.com/node-fetch/node-fetch/issues/1845
-		if (String(err) === 'TypeError: Cannot read properties of undefined (reading \'body\')') {
-			logger.debug('Suppressed node-fetch issue#1845, but the current job may fail.');
-			return;
-		}
-
-		// Throw all other errors to avoid inconsistent state.
-		// (per NodeJS docs, it's unsafe to suppress arbitrary errors in an uncaughtException handler.)
-		throw err;
-	});
-
-	// Display detail of uncaught exception
-	process.on('uncaughtExceptionMonitor', (err, origin) => {
-		logger.error(`Uncaught exception (${origin}):`, err);
 	});
 
 	// Dying away...
