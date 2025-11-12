@@ -399,13 +399,15 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 	/**
 	 * Gets multiple values from the local memory cache; returning undefined for any missing keys.
 	 * Returns cached data only - does not make any fetches.
-	 * TODO don't return undefined, matching fetch
 	 */
 	@bindThis
-	public getMany(keys: Iterable<string>): [key: string, value: T | undefined][] {
-		const results: [key: string, value: T | undefined][] = [];
+	public getMany(keys: Iterable<string>): [key: string, value: T][] {
+		const results: [key: string, value: T][] = [];
 		for (const key of keys) {
-			results.push([key, this.getMaybe(key)]);
+			const value = this.getMaybe(key);
+			if (value !== undefined) {
+				results.push([key, value]);
+			}
 		}
 		return results;
 	}

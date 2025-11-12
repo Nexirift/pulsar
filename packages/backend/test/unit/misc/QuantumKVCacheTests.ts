@@ -308,7 +308,7 @@ describe(QuantumKVCache, () => {
 			expect(result).toEqual([]);
 		});
 
-		it('should return the value for all keys', () => {
+		it('should include the value of all found keys', () => {
 			const cache = makeCache();
 			cache.add('foo', 'bar');
 			cache.add('alpha', 'omega');
@@ -318,13 +318,13 @@ describe(QuantumKVCache, () => {
 			expect(result).toEqual([['foo', 'bar'], ['alpha', 'omega']]);
 		});
 
-		it('should return undefined for missing keys', () => {
+		it('should exclude all missing keys', () => {
 			const cache = makeCache();
 			cache.add('foo', 'bar');
 
 			const result = cache.getMany(['foo', 'alpha']);
 
-			expect(result).toEqual([['foo', 'bar'], ['alpha', undefined]]);
+			expect(result).toEqual([['foo', 'bar']]);
 		});
 	});
 
