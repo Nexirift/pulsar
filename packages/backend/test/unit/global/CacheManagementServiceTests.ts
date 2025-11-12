@@ -100,22 +100,22 @@ describe(CacheManagementService, () => {
 	}
 
 	function testClear(func: 'clear' | 'dispose' | 'onApplicationShutdown', shouldDispose: boolean) {
-		const act = () => serviceUnderTest[func]();
+		const act = async () => await serviceUnderTest[func]();
 
-		it('should clear managed caches', () => {
+		it('should clear managed caches', async () => {
 			const cache = createCache();
 			const clear = jest.spyOn(cache, 'clear');
 
-			act();
+			await act();
 
 			expect(clear).toHaveBeenCalled();
 		});
 
-		it(`should${shouldDispose ? ' ' : ' not '}dispose managed caches`, () => {
+		it(`should${shouldDispose ? ' ' : ' not '}dispose managed caches`, async () => {
 			const cache = createCache();
 			const dispose = jest.spyOn(cache, 'dispose');
 
-			act();
+			await act();
 
 			if (shouldDispose) {
 				expect(dispose).toHaveBeenCalled();
@@ -124,26 +124,26 @@ describe(CacheManagementService, () => {
 			}
 		});
 
-		it('should not error with nothing to do', () => {
-			act();
+		it('should not error with nothing to do', async () => {
+			await act();
 		});
 
-		it('should be callable multiple times', () => {
+		it('should be callable multiple times', async () => {
 			const cache = createCache();
 			const clear = jest.spyOn(cache, 'clear');
 
-			act();
-			act();
-			act();
+			await act();
+			await act();
+			await act();
 
 			const expected = shouldDispose ? 1 : 3;
 			expect(clear).toHaveBeenCalledTimes(expected);
 		});
 
-		it(`should${shouldDispose ? ' ' : ' not '}deref caches`, () => {
+		it(`should${shouldDispose ? ' ' : ' not '}deref caches`, async () => {
 			const cache = createCache();
 
-			act();
+			await act();
 
 			if (shouldDispose) {
 				expect(internalsUnderTest.managedCaches.values()).not.toContain(cache);
@@ -152,10 +152,10 @@ describe(CacheManagementService, () => {
 			}
 		});
 
-		it(`should${shouldDispose ? ' ' : ' not '}reset cache list`, () => {
+		it(`should${shouldDispose ? ' ' : ' not '}reset cache list`, async () => {
 			createCache();
 
-			act();
+			await act();
 
 			if (shouldDispose) {
 				expect(internalsUnderTest.managedCaches.size).toBe(0);
