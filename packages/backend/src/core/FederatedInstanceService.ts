@@ -63,10 +63,11 @@ export class FederatedInstanceService implements OnApplicationShutdown {
 				}
 				return instance;
 			},
+			// optionalFetcher not needed
 			bulkFetcher: async keys => {
 				const hosts = keys.map(key => this.utilityService.toPuny(key));
 				const instances = await this.instancesRepository.findBy({ host: In(hosts) });
-				return instances.map(i => [i.host, i]);
+				return instances.map(instance => [instance.host, instance]);
 			},
 		});
 

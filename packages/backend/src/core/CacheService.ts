@@ -185,7 +185,11 @@ export class CacheService implements OnApplicationShutdown {
 		this.userByIdCache = this.cacheManagementService.createQuantumKVCache('userById', {
 			lifetime: 1000 * 60 * 5, // 5m
 			fetcher: async (userId) => await this.usersRepository.findOneByOrFail({ id: userId }),
-			bulkFetcher: async (userIds) => await this.usersRepository.findBy({ id: In(userIds) }).then(us => us.map(u => [u.id, u])),
+			optionalFetcher: async (userId) => await this.usersRepository.findOneBy({ id: userId }),
+			bulkFetcher: async (userIds) => {
+				const users = await this.usersRepository.findBy({ id: In(userIds) });
+				return users.map(user => [user.id, user]);
+			},
 		});
 
 		this.nativeTokenCache = this.cacheManagementService.createQuantumKVCache('localUserByNativeToken', {
@@ -198,6 +202,14 @@ export class CacheService implements OnApplicationShutdown {
 					.getOneOrFail() as { id: string };
 				return id;
 			},
+			optionalFetcher: async (token) => {
+				const result = await this.usersRepository
+					.createQueryBuilder('user')
+					.select('user.id')
+					.where({ token })
+					.getOne() as { id: string } | null;
+				return result?.id;
+			},
 			bulkFetcher: async (tokens) => {
 				const users = await this.usersRepository
 					.createQueryBuilder('user')
@@ -205,7 +217,7 @@ export class CacheService implements OnApplicationShutdown {
 					.addSelect('user.token')
 					.where({ token: In(tokens) })
 					.getMany() as { id: string, token: string }[];
-				return users.map(u => [u.token, u.id]);
+				return users.map(user => [user.token, user.id]);
 			},
 		});
 
@@ -223,224 +235,314 @@ export class CacheService implements OnApplicationShutdown {
 					.getOneOrFail();
 				return id;
 			},
-			// No bulk fetcher for this
+			optionalFetcher: async (acct) => {
+				const parsed = Acct.parse(acct);
+				const res = await this.usersRepository
+					.createQueryBuilder('user')
+					.select('user.id')
+					.where({
+						usernameLower: parsed.username.toLowerCase(),
+						host: parsed.host ?? IsNull(),
+					})
+					.getOne();
+				return res?.id;
+			},
+			// no bulkFetcher possible
 		});
 
 		this.userProfileCache = this.cacheManagementService.createQuantumKVCache('userProfile', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: (key) => this.userProfilesRepository.findOneBy({ userId: key }),
-			bulkFetcher: userIds => this.userProfilesRepository.findBy({ userId: In(userIds) }).then(ps => ps.map(p => [p.userId, p])),
+			fetcher: async userId => await this.userProfilesRepository.findOneByOrFail({ userId }),
+			optionalFetcher: async userId => await this.userProfilesRepository.findOneBy({ userId }),
+			bulkFetcher: async userIds => {
+				const profiles = await this.userProfilesRepository.findBy({ userId: In(userIds) });
+				return profiles.map(profile => [profile.userId, profile]);
+			},
 		});
 
 		this.userMutingsCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('userMutings', {
 			lifetime: 1000 * 60 * 30, // 3m (workaround for mute expiration)
-			fetcher: (key) => this.mutingsRepository.find({ where: { muterId: key }, select: ['muteeId'] }).then(xs => new Set(xs.map(x => x.muteeId))),
-			bulkFetcher: muterIds => this.mutingsRepository
-				.createQueryBuilder('muting')
-				.select('"muting"."muterId"', 'muterId')
-				.addSelect('array_agg("muting"."muteeId")', 'muteeIds')
-				.where({ muterId: In(muterIds) })
-				.andWhere(new Brackets(qb => qb
-					.orWhere({ expiresAt: IsNull() })
-					.orWhere({ expiresAt: MoreThan(this.timeService.date) })))
-				.groupBy('muting.muterId')
-				.getRawMany<{ muterId: string, muteeIds: string[] }>()
-				.then(ms => ms.map(m => [m.muterId, new Set(m.muteeIds)])),
+			fetcher: async muterId => {
+				const mutings = await this.mutingsRepository.find({ where: { muterId: muterId }, select: ['muteeId'] });
+				return new Set(mutings.map(muting => muting.muteeId));
+			},
+			// no optionalFetcher needed
+			bulkFetcher: async muterIds => {
+				const mutings = await this.mutingsRepository
+					.createQueryBuilder('muting')
+					.select('"muting"."muterId"', 'muterId')
+					.addSelect('array_agg("muting"."muteeId")', 'muteeIds')
+					.where({ muterId: In(muterIds) })
+					.andWhere(new Brackets(qb => qb
+						.orWhere({ expiresAt: IsNull() })
+						.orWhere({ expiresAt: MoreThan(this.timeService.date) })))
+					.groupBy('muting.muterId')
+					.getRawMany<{ muterId: string, muteeIds: string[] }>();
+				return mutings.map(muting => [muting.muterId, new Set(muting.muteeIds)]);
+			},
 		});
 
 		this.userMutedCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('userMuted', {
 			lifetime: 1000 * 60 * 30, // 3m (workaround for mute expiration)
-			fetcher: (key) => this.mutingsRepository.find({ where: { muteeId: key }, select: ['muterId'] }).then(xs => new Set(xs.map(x => x.muterId))),
-			bulkFetcher: muteeIds => this.mutingsRepository
-				.createQueryBuilder('muting')
-				.select('"muting"."muteeId"', 'muteeId')
-				.addSelect('array_agg("muting"."muterId")', 'muterIds')
-				.where({ muteeId: In(muteeIds) })
-				.andWhere(new Brackets(qb => qb
-					.orWhere({ expiresAt: IsNull() })
-					.orWhere({ expiresAt: MoreThan(this.timeService.date) })))
-				.groupBy('muting.muteeId')
-				.getRawMany<{ muteeId: string, muterIds: string[] }>()
-				.then(ms => ms.map(m => [m.muteeId, new Set(m.muterIds)])),
+			fetcher: async muteeId => {
+				const mutings = await this.mutingsRepository.find({ where: { muteeId }, select: ['muterId'] });
+				return new Set(mutings.map(muting => muting.muterId));
+			},
+			// no optionalFetcher needed
+			bulkFetcher: async muteeIds => {
+				const mutings = await this.mutingsRepository
+					.createQueryBuilder('muting')
+					.select('"muting"."muteeId"', 'muteeId')
+					.addSelect('array_agg("muting"."muterId")', 'muterIds')
+					.where({ muteeId: In(muteeIds) })
+					.andWhere(new Brackets(qb => qb
+						.orWhere({ expiresAt: IsNull() })
+						.orWhere({ expiresAt: MoreThan(this.timeService.date) })))
+					.groupBy('muting.muteeId')
+					.getRawMany<{ muteeId: string, muterIds: string[] }>();
+				return mutings.map(muting => [muting.muteeId, new Set(muting.muterIds)]);
+			},
 		});
 
 		this.userBlockingCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('userBlocking', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: (key) => this.blockingsRepository.find({ where: { blockerId: key }, select: ['blockeeId'] }).then(xs => new Set(xs.map(x => x.blockeeId))),
-			bulkFetcher: blockerIds => this.blockingsRepository
-				.createQueryBuilder('blocking')
-				.select('"blocking"."blockerId"', 'blockerId')
-				.addSelect('array_agg("blocking"."blockeeId")', 'blockeeIds')
-				.where({ blockerId: In(blockerIds) })
-				.groupBy('blocking.blockerId')
-				.getRawMany<{ blockerId: string, blockeeIds: string[] }>()
-				.then(ms => ms.map(m => [m.blockerId, new Set(m.blockeeIds)])),
+			fetcher: async blockerId => {
+				const blockings = await this.blockingsRepository.find({ where: { blockerId }, select: ['blockeeId'] });
+				return new Set(blockings.map(blocking => blocking.blockeeId));
+			},
+			// no optionalFetcher needed
+			bulkFetcher: async blockerIds => {
+				const blockings = await this.blockingsRepository
+					.createQueryBuilder('blocking')
+					.select('"blocking"."blockerId"', 'blockerId')
+					.addSelect('array_agg("blocking"."blockeeId")', 'blockeeIds')
+					.where({ blockerId: In(blockerIds) })
+					.groupBy('blocking.blockerId')
+					.getRawMany<{ blockerId: string, blockeeIds: string[] }>();
+				return blockings.map(blocking => [blocking.blockerId, new Set(blocking.blockeeIds)]);
+			},
 		});
 
 		this.userBlockedCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('userBlocked', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: (key) => this.blockingsRepository.find({ where: { blockeeId: key }, select: ['blockerId'] }).then(xs => new Set(xs.map(x => x.blockerId))),
-			bulkFetcher: blockeeIds => this.blockingsRepository
-				.createQueryBuilder('blocking')
-				.select('"blocking"."blockeeId"', 'blockeeId')
-				.addSelect('array_agg("blocking"."blockerId")', 'blockerIds')
-				.where({ blockeeId: In(blockeeIds) })
-				.groupBy('blocking.blockeeId')
-				.getRawMany<{ blockeeId: string, blockerIds: string[] }>()
-				.then(ms => ms.map(m => [m.blockeeId, new Set(m.blockerIds)])),
+			fetcher: async blockeeId => {
+				const blockings = await this.blockingsRepository.find({ where: { blockeeId: blockeeId }, select: ['blockerId'] });
+				return new Set(blockings.map(blocking => blocking.blockerId));
+			},
+			// no optionalFetcher needed
+			bulkFetcher: async blockeeIds => {
+				const blockings = await this.blockingsRepository
+					.createQueryBuilder('blocking')
+					.select('"blocking"."blockeeId"', 'blockeeId')
+					.addSelect('array_agg("blocking"."blockerId")', 'blockerIds')
+					.where({ blockeeId: In(blockeeIds) })
+					.groupBy('blocking.blockeeId')
+					.getRawMany<{ blockeeId: string, blockerIds: string[] }>();
+				return blockings.map(blocking => [blocking.blockeeId, new Set(blocking.blockerIds)]);
+			},
 		});
 
 		this.userListMembershipsCache = this.cacheManagementService.createQuantumKVCache<Map<string, MiUserListMembership>>('userListMemberships', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: async userId => await this.userListMembershipsRepository.findBy({ userId }).then(ms => new Map(ms.map(m => [m.userListId, m]))),
-			bulkFetcher: async userIds => await this.userListMembershipsRepository
-				.findBy({ userId: In(userIds) })
-				.then(ms => ms
-					.reduce((groups, m) => {
-						let listsForUser = groups.get(m.userId);
-						if (!listsForUser) {
-							listsForUser = new Map();
-							groups.set(m.userId, listsForUser);
-						}
-						listsForUser.set(m.userListId, m);
-						return groups;
-					}, new Map<string, Map<string, MiUserListMembership>>)),
+			fetcher: async userId => {
+				const memberships = await this.userListMembershipsRepository.findBy({ userId });
+				return new Map(memberships.map(membership => [membership.userListId, membership]));
+			},
+			// no optionalFetcher needed
+			bulkFetcher: async userIds => {
+				const groups = new Map<string, Map<string, MiUserListMembership>>;
+
+				const memberships = await this.userListMembershipsRepository.findBy({ userId: In(userIds) });
+				for (const membership of memberships) {
+					let listsForUser = groups.get(membership.userId);
+					if (!listsForUser) {
+						listsForUser = new Map();
+						groups.set(membership.userId, listsForUser);
+					}
+					listsForUser.set(membership.userListId, membership);
+				}
+
+				return groups;
+			},
 		});
 
 		this.listUserMembershipsCache = this.cacheManagementService.createQuantumKVCache<Map<string, MiUserListMembership>>('listUserMemberships', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: async userListId => await this.userListMembershipsRepository.findBy({ userListId }).then(ms => new Map(ms.map(m => [m.userId, m]))),
-			bulkFetcher: async userListIds => await this.userListMembershipsRepository
-				.findBy({ userListId: In(userListIds) })
-				.then(ms => ms
-					.reduce((groups, m) => {
-						let usersForList = groups.get(m.userListId);
-						if (!usersForList) {
-							usersForList = new Map();
-							groups.set(m.userListId, usersForList);
-						}
-						usersForList.set(m.userId, m);
-						return groups;
-					}, new Map<string, Map<string, MiUserListMembership>>)),
+			fetcher: async userListId => {
+				const memberships = await this.userListMembershipsRepository.findBy({ userListId });
+				return new Map(memberships.map(membership => [membership.userId, membership]));
+			},
+			// no optionalFetcher needed
+			bulkFetcher: async userListIds => {
+				const memberships = await this.userListMembershipsRepository.findBy({ userListId: In(userListIds) });
+				const groups = new Map<string, Map<string, MiUserListMembership>>();
+				for (const membership of memberships) {
+					let usersForList = groups.get(membership.userListId);
+					if (!usersForList) {
+						usersForList = new Map();
+						groups.set(membership.userListId, usersForList);
+					}
+					usersForList.set(membership.userId, membership);
+				}
+				return groups;
+			},
 		});
 
 		this.userListFavoritesCache = cacheManagementService.createQuantumKVCache<Set<string>>('userListFavorites', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: async userId => await this.userListFavoritesRepository.findBy({ userId }).then(fs => new Set(fs.map(f => f.userListId))),
-			bulkFetcher: async userIds => await this.userListFavoritesRepository
-				.createQueryBuilder('favorite')
-				.select('"favorite"."userId"', 'userId')
-				.addSelect('array_agg("favorite"."userListId")', 'userListIds')
-				.where({ userId: In(userIds) })
-				.groupBy('favorite.userId')
-				.getRawMany<{ userId: string, userListIds: string[] }>()
-				.then(fs => fs.map(f => [f.userId, new Set(f.userListIds)])),
+			fetcher: async userId => {
+				const favorites = await this.userListFavoritesRepository.find({ where: { userId }, select: ['userListId'] });
+				return new Set(favorites.map(favorites => favorites.userListId));
+			},
+			// no optionalFetcher needed
+			bulkFetcher: async userIds => {
+				const favorites = await this.userListFavoritesRepository
+					.createQueryBuilder('favorite')
+					.select('"favorite"."userId"', 'userId')
+					.addSelect('array_agg("favorite"."userListId")', 'userListIds')
+					.where({ userId: In(userIds) })
+					.groupBy('favorite.userId')
+					.getRawMany<{ userId: string, userListIds: string[] }>();
+				return favorites.map(favorite => [favorite.userId, new Set(favorite.userListIds)]);
+			},
 		});
 
 		this.listUserFavoritesCache = cacheManagementService.createQuantumKVCache<Set<string>>('listUserFavorites', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: async userListId => await this.userListFavoritesRepository.findBy({ userListId }).then(fs => new Set(fs.map(f => f.userId))),
-			bulkFetcher: async userListIds => await this.userListFavoritesRepository
-				.createQueryBuilder('favorite')
-				.select('"favorite"."userListId"', 'userListId')
-				.addSelect('array_agg("favorite"."userId")', 'userIds')
-				.where({ userListId: In(userListIds) })
-				.groupBy('favorite.userListId')
-				.getRawMany<{ userListId: string, userIds: string[] }>()
-				.then(fs => fs.map(f => [f.userListId, new Set(f.userIds)])),
+			fetcher: async userListId => {
+				const favorites = await this.userListFavoritesRepository.find({ where: { userListId }, select: ['userId'] });
+				return new Set(favorites.map(favorite => favorite.userId));
+			},
+			// no optionalFetcher needed
+			bulkFetcher: async userListIds => {
+				const favorites = await this.userListFavoritesRepository
+					.createQueryBuilder('favorite')
+					.select('"favorite"."userListId"', 'userListId')
+					.addSelect('array_agg("favorite"."userId")', 'userIds')
+					.where({ userListId: In(userListIds) })
+					.groupBy('favorite.userListId')
+					.getRawMany<{ userListId: string, userIds: string[] }>();
+				return favorites.map(favorite => [favorite.userListId, new Set(favorite.userIds)]);
+			},
 		});
 
 		this.renoteMutingsCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('renoteMutings', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: (key) => this.renoteMutingsRepository.find({ where: { muterId: key }, select: ['muteeId'] }).then(xs => new Set(xs.map(x => x.muteeId))),
-			bulkFetcher: muterIds => this.renoteMutingsRepository
-				.createQueryBuilder('muting')
-				.select('"muting"."muterId"', 'muterId')
-				.addSelect('array_agg("muting"."muteeId")', 'muteeIds')
-				.where({ muterId: In(muterIds) })
-				.groupBy('muting.muterId')
-				.getRawMany<{ muterId: string, muteeIds: string[] }>()
-				.then(ms => ms.map(m => [m.muterId, new Set(m.muteeIds)])),
+			fetcher: async muterId => {
+				const mutings = await this.renoteMutingsRepository.find({ where: { muterId: muterId }, select: ['muteeId'] });
+				return new Set(mutings.map(muting => muting.muteeId));
+			},
+			// no optionalFetcher needed
+			bulkFetcher: async muterIds => {
+				const mutings = await this.renoteMutingsRepository
+					.createQueryBuilder('muting')
+					.select('"muting"."muterId"', 'muterId')
+					.addSelect('array_agg("muting"."muteeId")', 'muteeIds')
+					.where({ muterId: In(muterIds) })
+					.groupBy('muting.muterId')
+					.getRawMany<{ muterId: string, muteeIds: string[] }>();
+				return mutings.map(muting => [muting.muterId, new Set(muting.muteeIds)]);
+			},
 		});
 
 		this.threadMutingsCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('threadMutings', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: muterId => this.noteThreadMutingsRepository
-				.find({ where: { userId: muterId, isPostMute: false }, select: { threadId: true } })
-				.then(ms => new Set(ms.map(m => m.threadId))),
-			bulkFetcher: muterIds => this.noteThreadMutingsRepository
-				.createQueryBuilder('muting')
-				.select('"muting"."userId"', 'userId')
-				.addSelect('array_agg("muting"."threadId")', 'threadIds')
-				.groupBy('"muting"."userId"')
-				.where({ userId: In(muterIds), isPostMute: false })
-				.getRawMany<{ userId: string, threadIds: string[] }>()
-				.then(ms => ms.map(m => [m.userId, new Set(m.threadIds)])),
+			fetcher: async muterId => {
+				const mutings = await this.noteThreadMutingsRepository.find({ where: { userId: muterId, isPostMute: false }, select: { threadId: true } });
+				return new Set(mutings.map(muting => muting.threadId));
+			},
+			// no optionalFetcher needed
+			bulkFetcher: async muterIds => {
+				const mutings = await this.noteThreadMutingsRepository
+					.createQueryBuilder('muting')
+					.select('"muting"."userId"', 'userId')
+					.addSelect('array_agg("muting"."threadId")', 'threadIds')
+					.groupBy('"muting"."userId"')
+					.where({ userId: In(muterIds), isPostMute: false })
+					.getRawMany<{ userId: string, threadIds: string[] }>();
+				return mutings.map(muting => [muting.userId, new Set(muting.threadIds)]);
+			},
 		});
 
 		this.noteMutingsCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('noteMutings', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: muterId => this.noteThreadMutingsRepository
-				.find({ where: { userId: muterId, isPostMute: true }, select: { threadId: true } })
-				.then(ms => new Set(ms.map(m => m.threadId))),
-			bulkFetcher: muterIds => this.noteThreadMutingsRepository
-				.createQueryBuilder('muting')
-				.select('"muting"."userId"', 'userId')
-				.addSelect('array_agg("muting"."threadId")', 'threadIds')
-				.groupBy('"muting"."userId"')
-				.where({ userId: In(muterIds), isPostMute: true })
-				.getRawMany<{ userId: string, threadIds: string[] }>()
-				.then(ms => ms.map(m => [m.userId, new Set(m.threadIds)])),
+			fetcher: async muterId => {
+				const mutings = await this.noteThreadMutingsRepository.find({ where: { userId: muterId, isPostMute: true }, select: { threadId: true } });
+				return new Set(mutings.map(mutings => mutings.threadId));
+			},
+			// no optionalFetcher needed
+			bulkFetcher: async muterIds => {
+				const mutings = await this.noteThreadMutingsRepository
+					.createQueryBuilder('muting')
+					.select('"muting"."userId"', 'userId')
+					.addSelect('array_agg("muting"."threadId")', 'threadIds')
+					.groupBy('"muting"."userId"')
+					.where({ userId: In(muterIds), isPostMute: true })
+					.getRawMany<{ userId: string, threadIds: string[] }>();
+				return mutings.map(muting => [muting.userId, new Set(muting.threadIds)]);
+			},
 		});
 
 		this.userFollowingsCache = this.cacheManagementService.createQuantumKVCache<Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>('userFollowings', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: (key) => this.followingsRepository.findBy({ followerId: key }).then(xs => new Map(xs.map(f => [f.followeeId, f]))),
-			bulkFetcher: followerIds => this.followingsRepository
-				.findBy({ followerId: In(followerIds) })
-				.then(fs => fs
-					.reduce((groups, f) => {
-						let group = groups.get(f.followerId);
-						if (!group) {
-							group = new Map();
-							groups.set(f.followerId, group);
-						}
-						group.set(f.followeeId, f);
-						return groups;
-					}, new Map<string, Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>)),
+			fetcher: async followerId => {
+				const followings = await this.followingsRepository.findBy({ followerId: followerId });
+				return new Map(followings.map(following => [following.followeeId, following]));
+			},
+			// no optionalFetcher needed
+			bulkFetcher: async followerIds => {
+				const groups = new Map<string, Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>();
+
+				const followings = await this.followingsRepository.findBy({ followerId: In(followerIds) });
+				for (const following of followings) {
+					let group = groups.get(following.followerId);
+					if (!group) {
+						group = new Map();
+						groups.set(following.followerId, group);
+					}
+					group.set(following.followeeId, following);
+				}
+
+				return groups;
+			},
 		});
 
 		this.userFollowersCache = this.cacheManagementService.createQuantumKVCache<Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>('userFollowers', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: followeeId => this.followingsRepository.findBy({ followeeId: followeeId }).then(xs => new Map(xs.map(x => [x.followerId, x]))),
-			bulkFetcher: followeeIds => this.followingsRepository
-				.findBy({ followeeId: In(followeeIds) })
-				.then(fs => fs
-					.reduce((groups, f) => {
-						let group = groups.get(f.followeeId);
-						if (!group) {
-							group = new Map();
-							groups.set(f.followeeId, group);
-						}
-						group.set(f.followerId, f);
-						return groups;
-					}, new Map<string, Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>)),
+			fetcher: async followeeId => {
+				const followings = await this.followingsRepository.findBy({ followeeId: followeeId });
+				return new Map(followings.map(following => [following.followerId, following]));
+			},
+			// no optionalFetcher needed
+			bulkFetcher: async followeeIds => {
+				const groups = new Map<string, Map<string, Omit<MiFollowing, 'isFollowerHibernated'>>>();
+
+				const followings = await this.followingsRepository.findBy({ followeeId: In(followeeIds) });
+				for (const following of followings) {
+					let group = groups.get(following.followeeId);
+					if (!group) {
+						group = new Map();
+						groups.set(following.followeeId, group);
+					}
+					group.set(following.followerId, following);
+				}
+
+				return groups;
+			},
 		});
 
 		this.hibernatedUserCache = this.cacheManagementService.createQuantumKVCache<boolean>('hibernatedUsers', {
 			lifetime: 1000 * 60 * 30, // 30m
 			fetcher: async userId => {
-				const result = await this.usersRepository.findOne({
-					where: { id: userId },
-					select: { isHibernated: true },
-				});
+				const { isHibernated } = await this.usersRepository.findOneOrFail({ where: { id: userId }, select: { isHibernated: true } });
+				return isHibernated;
+			},
+			optionalFetcher: async userId => {
+				const result = await this.usersRepository.findOne({ where: { id: userId }, select: { isHibernated: true } });
 				return result?.isHibernated;
 			},
 			bulkFetcher: async userIds => {
-				const results = await this.usersRepository.find({
-					where: { id: In(userIds) },
-					select: { id: true, isHibernated: true },
-				});
+				const results = await this.usersRepository.find({ where: { id: In(userIds) }, select: { id: true, isHibernated: true } });
 				return results.map(({ id, isHibernated }) => [id, isHibernated]);
 			},
 			onChanged: async userIds => {
@@ -467,8 +569,8 @@ export class CacheService implements OnApplicationShutdown {
 					for (const { id, isHibernated } of hibernations) {
 						const users = userObjects.get(id);
 						if (users) {
-							for (const u of users) {
-								u.isHibernated = isHibernated;
+							for (const user of users) {
+								user.isHibernated = isHibernated;
 							}
 						}
 					}
@@ -480,11 +582,21 @@ export class CacheService implements OnApplicationShutdown {
 
 		this.userFollowingChannelsCache = this.cacheManagementService.createQuantumKVCache<Set<string>>('userFollowingChannels', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: (key) => this.channelFollowingsRepository.find({
-				where: { followerId: key },
-				select: ['followeeId'],
-			}).then(xs => new Set(xs.map(x => x.followeeId))),
-			// TODO bulk fetcher
+			fetcher: async (followerId) => {
+				const followings = await this.channelFollowingsRepository.find({ where: { followerId: followerId }, select: ['followeeId'] });
+				return new Set(followings.map(following => following.followeeId));
+			},
+			// no optionalFetcher needed
+			bulkFetcher: async followerIds => {
+				const followings = await this.channelFollowingsRepository
+					.createQueryBuilder('following')
+					.select('"following"."followerId"', 'followerId')
+					.addSelect('array_agg("following"."followeeId")', 'followeeIds')
+					.where({ followerId: In(followerIds) })
+					.groupBy('following.followerId')
+					.getRawMany<{ followerId: string, followeeIds: string[] }>();
+				return followings.map(following => [following.followerId, new Set(following.followeeIds)]);
+			},
 		});
 
 		this.internalEventService.on('usersUpdated', this.onUserEvent);
@@ -758,7 +870,7 @@ export class CacheService implements OnApplicationShutdown {
 	@bindThis
 	public async getHibernatedFollowers(followeeId: string): Promise<MiFollowing[]> {
 		const followers = await this.getFollowersWithHibernation(followeeId);
-		return followers.filter(f => f.isFollowerHibernated);
+		return followers.filter(follower => follower.isFollowerHibernated);
 	}
 
 	/**
@@ -767,7 +879,7 @@ export class CacheService implements OnApplicationShutdown {
 	@bindThis
 	public async getNonHibernatedFollowers(followeeId: string): Promise<MiFollowing[]> {
 		const followers = await this.getFollowersWithHibernation(followeeId);
-		return followers.filter(f => !f.isFollowerHibernated);
+		return followers.filter(follower => !follower.isFollowerHibernated);
 	}
 
 	/**
@@ -777,14 +889,14 @@ export class CacheService implements OnApplicationShutdown {
 	@bindThis
 	public async getFollowersWithHibernation(followeeId: string): Promise<MiFollowing[]> {
 		const followers = await this.userFollowersCache.fetch(followeeId);
-		const hibernations = await this.hibernatedUserCache.fetchMany(followers.keys()).then(fs => fs.reduce((map, f) => {
-			map.set(f[0], f[1]);
-			return map;
-		}, new Map<string, boolean>));
-		return Array.from(followers.values()).map(following => ({
-			...following,
-			isFollowerHibernated: hibernations.get(following.followerId) ?? false,
-		}));
+		const hibernations = new Map(await this.hibernatedUserCache.fetchMany(followers.keys()));
+		return followers
+			.values()
+			.map(following => ({
+				...following,
+				isFollowerHibernated: hibernations.get(following.followerId) ?? false,
+			}))
+			.toArray();
 	}
 
 	/**
@@ -793,7 +905,7 @@ export class CacheService implements OnApplicationShutdown {
 	@bindThis
 	public async refreshFollowRelationsFor(userId: string): Promise<void> {
 		const followings = await this.userFollowingsCache.refresh(userId);
-		const followees = Array.from(followings.values()).map(f => f.followeeId);
+		const followees = followings.values().map(following => following.followeeId);
 		await this.userFollowersCache.deleteMany(followees);
 	}
 

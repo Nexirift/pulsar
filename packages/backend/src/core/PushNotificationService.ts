@@ -70,7 +70,9 @@ export class PushNotificationService {
 	) {
 		this.subscriptionsCache = cacheManagementService.createQuantumKVCache<MiSwSubscription[]>('userSwSubscriptions', {
 			lifetime: 1000 * 60 * 60 * 1, // 1h
-			fetcher: (key) => this.swSubscriptionsRepository.findBy({ userId: key }),
+			fetcher: async userId => await this.swSubscriptionsRepository.findBy({ userId }),
+			// optionalFetcher not needed
+			// bulkFetcher not needed
 		});
 	}
 

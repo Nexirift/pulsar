@@ -136,6 +136,14 @@ export class ApPersonService implements OnModuleInit {
 					.getOneOrFail() as { id: string };
 				return id;
 			},
+			optionalFetcher: async (uri) => {
+				const res = await this.usersRepository
+					.createQueryBuilder('user')
+					.select('user.id')
+					.where({ uri })
+					.getOne() as { id: string } | null;
+				return res?.id;
+			},
 			bulkFetcher: async (uris) => {
 				const users = await this.usersRepository
 					.createQueryBuilder('user')
@@ -143,20 +151,28 @@ export class ApPersonService implements OnModuleInit {
 					.addSelect('user.uri')
 					.where({ uri: In(uris) })
 					.getMany() as { id: string, uri: string }[];
-				return users.map(u => [u.uri, u.id]);
+				return users.map(user => [user.uri, user.id]);
 			},
 		});
 
 		this.publicKeyByKeyIdCache = this.cacheManagementService.createQuantumKVCache<MiUserPublickey>('publicKeyByKeyId', {
 			lifetime: 1000 * 60 * 60 * 12, // 12h
-			fetcher: async (keyId) => await this.userPublickeysRepository.findOneBy({ keyId }),
-			bulkFetcher: async (keyIds) => await this.userPublickeysRepository.findBy({ keyId: In(keyIds) }).then(ks => ks.map(k => [k.keyId, k])),
+			fetcher: async (keyId) => await this.userPublickeysRepository.findOneByOrFail({ keyId }),
+			optionalFetcher: async (keyId) => await this.userPublickeysRepository.findOneBy({ keyId }),
+			bulkFetcher: async (keyIds) => {
+				const publicKeys = await this.userPublickeysRepository.findBy({ keyId: In(keyIds) });
+				return publicKeys.map(k => [k.keyId, k]);
+			},
 		});
 
 		this.publicKeyByUserIdCache = this.cacheManagementService.createQuantumKVCache<MiUserPublickey>('publicKeyByUserId', {
 			lifetime: 1000 * 60 * 60 * 12, // 12h
-			fetcher: async (userId) => await this.userPublickeysRepository.findOneBy({ userId }),
-			bulkFetcher: async (userIds) => await this.userPublickeysRepository.findBy({ userId: In(userIds) }).then(ks => ks.map(k => [k.userId, k])),
+			fetcher: async (userId) => await this.userPublickeysRepository.findOneByOrFail({ userId }),
+			optionalFetcher: async (userId) => await this.userPublickeysRepository.findOneBy({ userId }),
+			bulkFetcher: async (userIds) => {
+				const publicKeys = await this.userPublickeysRepository.findBy({ userId: In(userIds) });
+				return publicKeys.map(k => [k.userId, k]);
+			},
 		});
 	}
 

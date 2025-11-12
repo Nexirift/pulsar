@@ -115,13 +115,21 @@ export class CustomEmojiService {
 
 		this.emojisByIdCache = cacheManagementService.createQuantumKVCache<MiEmoji>('emojisById', {
 			lifetime: 1000 * 60 * 60, // 1h
-			fetcher: async (id) => await this.emojisRepository.findOneBy({ id }),
-			bulkFetcher: async (ids) => await this.emojisRepository.findBy({ id: In(ids) }).then(es => es.map(e => [e.id, e])),
+			fetcher: async (id) => await this.emojisRepository.findOneByOrFail({ id }),
+			optionalFetcher: async (id) => await this.emojisRepository.findOneBy({ id }),
+			bulkFetcher: async (ids) => {
+				const emojis = await this.emojisRepository.findBy({ id: In(ids) });
+				return emojis.map(emoji => [emoji.id, emoji]);
+			},
 		});
 
 		this.emojisByKeyCache = cacheManagementService.createQuantumKVCache<MiEmoji>('emojisByKey', {
 			lifetime: 1000 * 60 * 60, // 1h
 			fetcher: async (key) => {
+				const { host, name } = decodeEmojiKey(key);
+				return await this.emojisRepository.findOneByOrFail({ host: host ?? IsNull(), name });
+			},
+			optionalFetcher: async (key) => {
 				const { host, name } = decodeEmojiKey(key);
 				return await this.emojisRepository.findOneBy({ host: host ?? IsNull(), name });
 			},

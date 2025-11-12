@@ -61,8 +61,12 @@ export class UserListService implements OnModuleInit {
 	) {
 		this.userListsCache = cacheManagementService.createQuantumKVCache('userLists', {
 			lifetime: 1000 * 60 * 30, // 30m
-			fetcher: async id => await this.userListsRepository.findOneBy({ id }),
-			bulkFetcher: async ids => await this.userListsRepository.findBy({ id: In(ids) }).then(ls => ls.map(l => [l.id, l])),
+			fetcher: async id => await this.userListsRepository.findOneByOrFail({ id }),
+			optionalFetcher: async id => await this.userListsRepository.findOneBy({ id }),
+			bulkFetcher: async ids => {
+				const lists = await this.userListsRepository.findBy({ id: In(ids) });
+				return lists.map(list => [list.id, list]);
+			},
 		});
 	}
 

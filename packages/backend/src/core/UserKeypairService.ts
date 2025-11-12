@@ -32,8 +32,12 @@ export class UserKeypairService implements OnApplicationShutdown {
 	) {
 		this.userKeypairCache = cacheManagementService.createQuantumKVCache('userKeypair', {
 			lifetime: 1000 * 60 * 60, // 1h
-			fetcher: async userId => await this.userKeypairsRepository.findOneBy({ userId }),
-			bulkFetcher: async userIds => await this.userKeypairsRepository.findBy({ userId: In(userIds) }).then(ks => ks.map(k => [k.userId, k])),
+			fetcher: async userId => await this.userKeypairsRepository.findOneByOrFail({ userId }),
+			optionalFetcher: async userId => await this.userKeypairsRepository.findOneBy({ userId }),
+			bulkFetcher: async userIds => {
+				const keypairs = await this.userKeypairsRepository.findBy({ userId: In(userIds) });
+				return keypairs.map(keypair => [keypair.userId, keypair]);
+			},
 		});
 
 		this.internalEventService.on('userChangeDeletedState', this.onUserDeleted);
