@@ -5,9 +5,8 @@
 
 import { EventEmitter } from 'node:events';
 import { inspect } from 'node:util';
-import { coreLogger, coreEnvService } from '@/boot/coreLogger.js';
+import { coreLogger } from '@/boot/coreLogger.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
-// import { patchPromiseTypes } from '@/misc/patch-promise-types.js';
 
 // Polyfill reflection metadata *without* loading dependencies that may corrupt native types.
 // https://github.com/microsoft/reflect-metadata?tab=readme-ov-file#es-modules-in-nodejsbrowser-typescriptbabel-bundlers
@@ -24,13 +23,6 @@ export function prepEnv() {
 	// Avoid warnings like "11 message listeners added to [Commander]. MaxListeners is 10."
 	// This is expected due to use of NestJS lifecycle hooks.
 	EventEmitter.defaultMaxListeners = 128;
-
-	// // In non-production environments, patch the Promise type to report unsafe usage.
-	// // This can identify subtle bugs at the expense of reduced JIT performance.
-	// const isProduction = coreEnvService.env.NODE_ENV === 'production';
-	// if (!isProduction) {
-	// 	patchPromiseTypes();
-	// }
 
 	// Workaround certain 3rd-party bugs
 	process.on('uncaughtException', (err) => {
