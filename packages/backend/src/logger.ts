@@ -73,7 +73,7 @@ export default class Logger {
 		if (this.envService.options.quiet) return;
 
 		// Debugging logging is disabled in production unless MK_VERBOSE is set.
-		if (level === 'debug' && process.env.NODE_ENV === 'production' && !this.envService.options.verbose) {
+		if (level === 'debug' && this.envService.env.NODE_ENV === 'production' && !this.envService.options.verbose) {
 			return;
 		}
 
