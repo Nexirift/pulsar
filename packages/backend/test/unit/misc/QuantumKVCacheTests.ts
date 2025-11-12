@@ -431,7 +431,7 @@ describe(QuantumKVCache, () => {
 	describe('fetchMaybe', () => {
 		it('should return value when found by fetcher', async () => {
 			const cache = makeCache<string>({
-				fetcher: () => 'bar',
+				optionalFetcher: () => 'bar',
 			});
 
 			const result = await cache.fetchMaybe('foo');
@@ -439,10 +439,21 @@ describe(QuantumKVCache, () => {
 			expect(result).toBe('bar');
 		});
 
+		it('should persist value when found by fetcher', async () => {
+			const cache = makeCache<string>({
+				optionalFetcher: () => 'bar',
+			});
+
+			await cache.fetchMaybe('foo');
+			const result = cache.get('foo');
+
+			expect(result).toBe('bar');
+		});
+
 		it('should call onChanged when found by fetcher', async () => {
 			const fakeOnChanged = jest.fn(() => Promise.resolve());
 			const cache = makeCache<string>({
-				fetcher: () => 'bar',
+				optionalFetcher: () => 'bar',
 				onChanged: fakeOnChanged,
 			});
 
@@ -453,7 +464,7 @@ describe(QuantumKVCache, () => {
 
 		it('should return undefined when fetcher returns undefined', async () => {
 			const cache = makeCache<string>({
-				fetcher: () => undefined,
+				optionalFetcher: () => undefined,
 			});
 
 			const result = await cache.fetchMaybe('foo');
@@ -464,7 +475,7 @@ describe(QuantumKVCache, () => {
 		it('should not call onChanged when fetcher returns undefined', async () => {
 			const fakeOnChanged = jest.fn(() => Promise.resolve());
 			const cache = makeCache<string>({
-				fetcher: () => undefined,
+				optionalFetcher: () => undefined,
 				onChanged: fakeOnChanged,
 			});
 
@@ -475,7 +486,7 @@ describe(QuantumKVCache, () => {
 
 		it('should return undefined when fetcher returns null', async () => {
 			const cache = makeCache<string>({
-				fetcher: () => null,
+				optionalFetcher: () => null,
 			});
 
 			const result = await cache.fetchMaybe('foo');
@@ -486,7 +497,7 @@ describe(QuantumKVCache, () => {
 		it('should not call onChanged when fetcher returns null', async () => {
 			const fakeOnChanged = jest.fn(() => Promise.resolve());
 			const cache = makeCache<string>({
-				fetcher: () => null,
+				optionalFetcher: () => null,
 				onChanged: fakeOnChanged,
 			});
 
@@ -497,12 +508,22 @@ describe(QuantumKVCache, () => {
 
 		it('should throw FetchFailedError when fetcher throws error', async () => {
 			const cache = makeCache<string>({
-				fetcher: () => { throw new Error('test error'); },
+				optionalFetcher: () => { throw new Error('test error'); },
 			});
 
 			await assert.throwsAsync(FetchFailedError, async () => {
 				return await cache.fetchMaybe('foo');
 			});
+		});
+
+		it('should fall back on fetcher when optionalFetcher is not defined', async () => {
+			const cache = makeCache<string>({
+				fetcher: () => 'bar',
+			});
+
+			const result = await cache.fetchMaybe('foo');
+
+			expect(result).toBe('bar');
 		});
 
 		it('should respect optionalFetcherConcurrency', async () => {
