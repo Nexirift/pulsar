@@ -5,6 +5,7 @@
 
 import { Injectable, type OnApplicationShutdown } from '@nestjs/common';
 import { bindThis } from '@/decorators.js';
+import { withSignal, withCleanup } from '@/misc/promiseUtils.js';
 
 const timerTokenSymbol = Symbol('timerToken');
 
@@ -53,19 +54,22 @@ export abstract class TimeService<TTimer extends Timer = Timer> implements OnApp
 		const abortController = new AbortController();
 		const abortSignal = opts?.signal ? AbortSignal.any([abortController.signal, opts.signal]) : abortController.signal;
 
-		const handlePromise = new Promise<T>((resolve, reject) => {
-			// Connect AbortSignal
-			abortSignal.throwIfAborted();
-			abortSignal.addEventListener('abort', () => reject(abortSignal.reason));
+		const handlePromise =
+			withCleanup(
+				// Bind abort signal
+				withSignal(
+					() => new Promise<T>(resolve => {
+						// Start the underlying timer
+						this.startTimer<T>(resolve, delay, undefined, value as T); // overloads ensure it can't be null
+					}),
+					abortSignal,
+				),
 
-			// Start the underlying timer
-			this.startTimer<T>(resolve, delay, undefined, value as T); // overloads ensure it can't be null
-		});
-
-		// Make sure we dispose the real handle if promise rejects!
-		handlePromise.catch(() => {
-			this.stopTimer(timerId);
-		});
+				// Register cleanup func
+				() => {
+					// Make sure we dispose the real handle if promise rejects!
+					this.stopTimer(timerId);
+				});
 
 		// Populate and return the handle.
 		return Object.assign(handlePromise, {
