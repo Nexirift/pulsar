@@ -3,9 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
+import type { TimeService, TimerHandle } from '@/global/TimeService.js';
+
 type Job<V> = {
 	value: V;
-	timer: NodeJS.Timeout;
+	timer: TimerHandle;
 };
 
 // TODO: redis使えるようにする
@@ -13,6 +15,7 @@ export class CollapsedQueue<K, V> {
 	private jobs: Map<K, Job<V>> = new Map();
 
 	constructor(
+		protected readonly timeService: TimeService,
 		private timeout: number,
 		private collapse: (oldValue: V, newValue: V) => V,
 		private perform: (key: K, value: V) => Promise<void>,
@@ -24,7 +27,7 @@ export class CollapsedQueue<K, V> {
 			const merged = this.collapse(old.value, value);
 			this.jobs.set(key, { ...old, value: merged });
 		} else {
-			const timer = setTimeout(() => {
+			const timer = this.timeService.startTimer(() => {
 				const job = this.jobs.get(key)!;
 				this.jobs.delete(key);
 				this.perform(key, job.value);
@@ -37,7 +40,7 @@ export class CollapsedQueue<K, V> {
 		const entries = [...this.jobs.entries()];
 		this.jobs.clear();
 		for (const [_key, job] of entries) {
-			clearTimeout(job.timer);
+			this.timeService.stopTimer(job.timer);
 		}
 		await Promise.allSettled(entries.map(([key, job]) => this.perform(key, job.value)));
 	}

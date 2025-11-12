@@ -22,14 +22,14 @@ import type { FollowingsRepository, FollowRequestsRepository, InstancesRepositor
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { bindThis } from '@/decorators.js';
-import { UserBlockingService } from '@/core/UserBlockingService.js';
+import type { UserBlockingService } from '@/core/UserBlockingService.js';
 import { CacheService } from '@/core/CacheService.js';
 import type { Config } from '@/config.js';
 import { AccountMoveService } from '@/core/AccountMoveService.js';
 import { UtilityService } from '@/core/UtilityService.js';
 import type { ThinUser } from '@/queue/types.js';
 import { LoggerService } from '@/core/LoggerService.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 import type Logger from '../logger.js';
 
 type Local = MiLocalUser | {
@@ -94,6 +94,7 @@ export class UserFollowingService implements OnModuleInit {
 		this.logger = loggerService.getLogger('following/create');
 	}
 
+	@bindThis
 	onModuleInit() {
 		this.userBlockingService = this.moduleRef.get('UserBlockingService');
 	}

@@ -11,6 +11,7 @@ import { bindThis } from '@/decorators.js';
 import Logger from '@/logger.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { StatusError } from '@/misc/status-error.js';
+import { TimeService } from '@/global/TimeService.js';
 import { CONTEXT, PRELOADED_CONTEXTS } from './misc/contexts.js';
 import { validateContentTypeSetAsJsonLD } from './misc/validator.js';
 import type { ContextDefinition, JsonLdDocument } from 'jsonld';
@@ -56,6 +57,8 @@ export class JsonLdService {
 
 	constructor(
 		private httpRequestService: HttpRequestService,
+		private readonly timeService: TimeService,
+
 		loggerService: LoggerService,
 	) {
 		this.logger = loggerService.getLogger('json-ld');
@@ -73,7 +76,7 @@ export class JsonLdService {
 			type: 'RsaSignature2017',
 			creator,
 			nonce: crypto.randomBytes(16).toString('hex'),
-			created: (created ?? new Date()).toISOString(),
+			created: (created ?? this.timeService.date).toISOString(),
 		};
 
 		if (domain) {

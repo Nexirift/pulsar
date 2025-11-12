@@ -31,6 +31,7 @@ import { SkApInboxLog } from '@/models/_.js';
 import type { Config } from '@/config.js';
 import { ApLogService, calculateDurationSince } from '@/core/ApLogService.js';
 import { UpdateInstanceQueue } from '@/core/UpdateInstanceQueue.js';
+import { TimeService } from '@/global/TimeService.js';
 import { isRetryableError } from '@/misc/is-retryable-error.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
@@ -66,6 +67,7 @@ export class InboxProcessorService implements OnApplicationShutdown {
 		private queueLoggerService: QueueLoggerService,
 		private readonly apLogService: ApLogService,
 		private readonly updateInstanceQueue: UpdateInstanceQueue,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('inbox');
 	}
@@ -263,7 +265,7 @@ export class InboxProcessorService implements OnApplicationShutdown {
 			if (i == null) return;
 
 			this.updateInstanceQueue.enqueue(i.id, {
-				latestRequestReceivedAt: new Date(),
+				latestRequestReceivedAt: this.timeService.date,
 				shouldUnsuspend: i.suspensionState === 'autoSuspendedForNotResponding',
 			});
 
@@ -322,7 +324,7 @@ export class InboxProcessorService implements OnApplicationShutdown {
 	@bindThis
 	public async performUpdateInstance(id: string, job: UpdateInstanceJob) {
 		await this.federatedInstanceService.update(id, {
-			latestRequestReceivedAt: new Date(),
+			latestRequestReceivedAt: this.timeService.date,
 			isNotResponding: false,
 			// もしサーバーが死んでるために配信が止まっていた場合には自動的に復活させてあげる
 			suspensionState: job.shouldUnsuspend ? 'none' : undefined,

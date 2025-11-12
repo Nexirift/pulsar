@@ -27,6 +27,8 @@ import { SystemAccountService } from '@/core/SystemAccountService.js';
 import { RoleService } from '@/core/RoleService.js';
 import { AntennaService } from '@/core/AntennaService.js';
 import { CacheService } from '@/core/CacheService.js';
+import { UserListService } from '@/core/UserListService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 @Injectable()
 export class AccountMoveService {
@@ -70,6 +72,8 @@ export class AccountMoveService {
 		private roleService: RoleService,
 		private antennaService: AntennaService,
 		private readonly cacheService: CacheService,
+		private readonly userListService: UserListService,
+		private readonly timeService: TimeService,
 	) {
 	}
 
@@ -87,7 +91,7 @@ export class AccountMoveService {
 		const update = {} as Partial<MiLocalUser>;
 		update.alsoKnownAs = src.alsoKnownAs?.includes(dstUri) ? src.alsoKnownAs : src.alsoKnownAs?.concat([dstUri]) ?? [dstUri];
 		update.movedToUri = dstUri;
-		update.movedAt = new Date();
+		update.movedAt = this.timeService.date;
 		await this.usersRepository.update(src.id, update);
 		Object.assign(src, update);
 
@@ -179,7 +183,7 @@ export class AccountMoveService {
 		// Insert new mutings with the same values except mutee
 		const oldMutings = await this.mutingsRepository.findBy([
 			{ muteeId: src.id, expiresAt: IsNull() },
-			{ muteeId: src.id, expiresAt: MoreThan(new Date()) },
+			{ muteeId: src.id, expiresAt: MoreThan(this.timeService.date) },
 		]);
 		if (oldMutings.length === 0) return;
 
@@ -263,45 +267,35 @@ export class AccountMoveService {
 	@bindThis
 	public async updateLists(src: ThinUser, dst: MiUser): Promise<void> {
 		// Return if there is no list to be updated.
-		const oldMemberships = await this.userListMembershipsRepository.find({
-			where: {
-				userId: src.id,
-			},
-		});
-		if (oldMemberships.length === 0) return;
+		const [srcMemberships, dstMemberships] = await Promise.all([
+			this.cacheService.userListMembershipsCache.fetch(src.id),
+			this.cacheService.userListMembershipsCache.fetch(dst.id),
+		]);
+		if (srcMemberships.size === 0) return;
 
-		const existingUserListIds = await this.userListMembershipsRepository.find({
-			where: {
-				userId: dst.id,
-			},
-		}).then(memberships => memberships.map(membership => membership.userListId));
+		const newMemberships = srcMemberships.values()
+			.filter(srcMembership => !dstMemberships.has(srcMembership.userListId))
+			.map(srcMembership => ({
+				userListId: srcMembership.userListId,
+				withReplies: srcMembership.withReplies,
+			}))
+			.toArray();
+		const updatedMemberships = srcMemberships.values()
+			.filter(srcMembership => {
+				const dstMembership = dstMemberships.get(srcMembership.userListId);
+				return dstMembership != null && dstMembership.withReplies !== srcMembership.withReplies;
+			})
+			.map(srcMembership => ({
+				userListId: srcMembership.userListId,
+				withReplies: srcMembership.withReplies,
+			}))
+			.toArray();
 
-		const newMemberships: Map<string, { userId: string; userListId: string; userListUserId: string; }> = new Map();
-
-		// 重複しないようにIDを生成
-		const genId = (): string => {
-			let id: string;
-			do {
-				id = this.idService.gen();
-			} while (newMemberships.has(id));
-			return id;
-		};
-		for (const membership of oldMemberships) {
-			if (existingUserListIds.includes(membership.userListId)) continue; // skip if dst exists in this user's list
-			newMemberships.set(genId(), {
-				userId: dst.id,
-				userListId: membership.userListId,
-				userListUserId: membership.userListUserId,
-			});
+		if (newMemberships.length > 0) {
+			await this.userListService.bulkAddMember(dst, newMemberships);
 		}
-
-		const arrayToInsert = Array.from(newMemberships.entries()).map(entry => ({ ...entry[1], id: entry[0] }));
-		await this.userListMembershipsRepository.insert(arrayToInsert);
-
-		// Have the proxy account follow the new account in the same way as UserListService.push
-		if (this.userEntityService.isRemoteUser(dst)) {
-			const proxy = await this.systemAccountService.fetch('proxy');
-			this.queueService.createFollowJob([{ from: { id: proxy.id }, to: { id: dst.id } }]);
+		if (updatedMemberships.length > 0) {
+			await this.userListService.bulkUpdateMembership(dst, updatedMemberships);
 		}
 	}
 
@@ -356,7 +350,7 @@ export class AccountMoveService {
 		let resultUser: MiLocalUser | MiRemoteUser | null = null;
 
 		if (this.userEntityService.isRemoteUser(dst)) {
-			if (Date.now() - (dst.lastFetchedAt?.getTime() ?? 0) > 10 * 1000) {
+			if (this.timeService.now - (dst.lastFetchedAt?.getTime() ?? 0) > 10 * 1000) {
 				await this.apPersonService.updatePerson(dst.uri);
 			}
 			dst = await this.apPersonService.fetchPerson(dst.uri) ?? dst;
@@ -372,7 +366,7 @@ export class AccountMoveService {
 				if (!src) continue; // oldAccountを探してもこのサーバーに存在しない場合はフォロー関係もないということなのでスルー
 
 				if (this.userEntityService.isRemoteUser(dst)) {
-					if (Date.now() - (src.lastFetchedAt?.getTime() ?? 0) > 10 * 1000) {
+					if (this.timeService.now - (src.lastFetchedAt?.getTime() ?? 0) > 10 * 1000) {
 						await this.apPersonService.updatePerson(srcUri);
 					}
 

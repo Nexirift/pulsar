@@ -11,6 +11,7 @@ import { QueryService } from '@/core/QueryService.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { SelectQueryBuilder } from 'typeorm';
 
 export const meta = {
@@ -68,6 +69,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userEntityService: UserEntityService,
 		private queryService: QueryService,
 		private readonly roleService: RoleService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const query = this.usersRepository.createQueryBuilder('user')
@@ -75,7 +77,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.andWhere('user.isSuspended = FALSE');
 
 			switch (ps.state) {
-				case 'alive': query.andWhere('user.updatedAt > :date', { date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5) }); break;
+				case 'alive': query.andWhere('user.updatedAt > :date', { date: new Date(this.timeService.now - 1000 * 60 * 60 * 24 * 5) }); break;
 			}
 
 			switch (ps.origin) {

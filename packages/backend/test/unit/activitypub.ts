@@ -2,19 +2,17 @@
  * SPDX-FileCopyrightText: syuilo and misskey-project
  * SPDX-License-Identifier: AGPL-3.0-only
  */
+
 process.env.NODE_ENV = 'test';
 
 import * as assert from 'assert';
 import { generateKeyPair } from 'crypto';
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 import { jest } from '@jest/globals';
-
-import { NoOpCacheService } from '../misc/noOpCaches.js';
-import { FakeInternalEventService } from '../misc/FakeInternalEventService.js';
+import { MockApResolverService } from '../misc/MockApResolverService.js';
+import { MockConsole } from '../misc/MockConsole.js';
 import type { Config } from '@/config.js';
 import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
-import { CacheService } from '@/core/CacheService.js';
 import { ApImageService } from '@/core/activitypub/models/ApImageService.js';
 import { ApNoteService } from '@/core/activitypub/models/ApNoteService.js';
 import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
@@ -25,16 +23,16 @@ import { GlobalModule } from '@/GlobalModule.js';
 import { CoreModule } from '@/core/CoreModule.js';
 import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
 import { LoggerService } from '@/core/LoggerService.js';
+import { CacheManagementService } from '@/global/CacheManagementService.js';
+import { ApResolverService } from '@/core/activitypub/ApResolverService.js';
 import type { IActor, IApDocument, ICollection, IObject, IPost } from '@/core/activitypub/type.js';
-import { MiMeta, MiNote, MiUser, MiUserKeypair, UserProfilesRepository, UserPublickeysRepository } from '@/models/_.js';
+import { MiMeta, MiNote, MiUser, MiUserKeypair, UserProfilesRepository, UserPublickeysRepository, UserKeypairsRepository, UsersRepository, NotesRepository } from '@/models/_.js';
 import { DI } from '@/di-symbols.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { DownloadService } from '@/core/DownloadService.js';
 import { genAidx } from '@/misc/id/aidx.js';
 import { IdService } from '@/core/IdService.js';
 import { MockResolver } from '../misc/mock-resolver.js';
-import { UserKeypairService } from '@/core/UserKeypairService.js';
-import { MemoryKVCache } from '@/misc/cache.js';
 
 const host = 'https://host1.test';
 
@@ -94,6 +92,7 @@ async function createRandomRemoteUser(
 }
 
 describe('ActivityPub', () => {
+	let app: TestingModule;
 	let userProfilesRepository: UserProfilesRepository;
 	let imageService: ApImageService;
 	let noteService: ApNoteService;
@@ -103,8 +102,12 @@ describe('ActivityPub', () => {
 	let resolver: MockResolver;
 	let idService: IdService;
 	let userPublickeysRepository: UserPublickeysRepository;
-	let userKeypairService: UserKeypairService;
+	let userKeypairsRepository: UserKeypairsRepository;
+	let usersRepository: UsersRepository;
 	let config: Config;
+	let cacheManagementService: CacheManagementService;
+	let mockConsole: MockConsole;
+	let notesRepository: NotesRepository;
 
 	const metaInitial = {
 		id: 'x',
@@ -147,7 +150,7 @@ describe('ActivityPub', () => {
 	}
 
 	beforeAll(async () => {
-		const app = await Test.createTestingModule({
+		app = await Test.createTestingModule({
 			imports: [GlobalModule, CoreModule],
 		})
 			.overrideProvider(DownloadService).useValue({
@@ -157,9 +160,9 @@ describe('ActivityPub', () => {
 					};
 				},
 			})
-			.overrideProvider(DI.meta).useFactory({ factory: () => meta })
-			.overrideProvider(CacheService).useClass(NoOpCacheService)
-			.overrideProvider(InternalEventService).useClass(FakeInternalEventService)
+			.overrideProvider(DI.meta).useValue(meta)
+			.overrideProvider(ApResolverService).useClass(MockApResolverService)
+			.overrideProvider(DI.console).useClass(MockConsole)
 			.compile();
 
 		await app.init();
@@ -172,18 +175,30 @@ describe('ActivityPub', () => {
 		rendererService = app.get<ApRendererService>(ApRendererService);
 		imageService = app.get<ApImageService>(ApImageService);
 		jsonLdService = app.get<JsonLdService>(JsonLdService);
-		resolver = new MockResolver(await app.resolve<LoggerService>(LoggerService));
+		resolver = app.get<MockApResolverService>(ApResolverService).resolver;
 		idService = app.get<IdService>(IdService);
 		userPublickeysRepository = app.get<UserPublickeysRepository>(DI.userPublickeysRepository);
-		userKeypairService = app.get<UserKeypairService>(UserKeypairService);
+		userKeypairsRepository = app.get<UserKeypairsRepository>(DI.userKeypairsRepository);
+		usersRepository = app.get<UsersRepository>(DI.usersRepository);
 		config = app.get<Config>(DI.config);
-
-		// Prevent ApPersonService from fetching instance, as it causes Jest import-after-test error
-		const federatedInstanceService = app.get<FederatedInstanceService>(FederatedInstanceService);
-		jest.spyOn(federatedInstanceService, 'fetch').mockImplementation(() => new Promise(() => { }));
+		cacheManagementService = app.get(CacheManagementService);
+		mockConsole = app.get<MockConsole>(DI.console);
+		notesRepository = app.get<NotesRepository>(DI.notesRepository);
 	});
 
-	beforeEach(() => {
+	afterAll(async () => {
+		await app.close();
+	});
+
+	beforeEach(async () => {
+		// This will cascade-delete everything else
+		await usersRepository.deleteAll();
+
+		// Clear all caches app-wide
+		cacheManagementService.clear();
+
+		// Reset mocks
+		mockConsole.mockReset();
 		resolver.clear();
 	});
 
@@ -204,6 +219,7 @@ describe('ActivityPub', () => {
 
 			const user = await personService.createPerson(actor.id, resolver);
 
+			mockConsole.assertNoErrors();
 			assert.deepStrictEqual(user.uri, actor.id);
 			assert.deepStrictEqual(user.username, actor.preferredUsername);
 			assert.deepStrictEqual(user.inbox, actor.inbox);
@@ -215,6 +231,7 @@ describe('ActivityPub', () => {
 
 			const note = await noteService.createNote(post.id, undefined, resolver, true);
 
+			mockConsole.assertNoErrors();
 			assert.deepStrictEqual(note?.uri, post.id);
 			assert.deepStrictEqual(note.visibility, 'public');
 			assert.deepStrictEqual(note.text, post.content);
@@ -250,30 +267,45 @@ describe('ActivityPub', () => {
 	});
 
 	describe('Collection visibility', () => {
-		test('Public following/followers', async () => {
-			const actor = createRandomActor();
-			actor.following = {
-				id: `${actor.id}/following`,
-				type: 'OrderedCollection',
-				totalItems: 0,
-				first: `${actor.id}/following?page=1`,
+		function createPublicTest(inline: boolean) {
+			return async () => {
+				const actor = createRandomActor();
+				const following = {
+					id: `${actor.id}/following`,
+					type: 'OrderedCollection',
+					totalItems: 0,
+					first: `${actor.id}/following?page=1`,
+				} as const;
+				const followers = {
+					id: `${actor.id}/followers`,
+					type: 'OrderedCollection',
+					totalItems: 0,
+					first: `${actor.id}/followers?page=1`,
+				} as const;
+
+				if (inline) {
+					actor.following = following;
+					actor.followers = followers;
+				} else {
+					actor.following = following.id;
+					actor.followers = followers.id;
+				}
+
+				resolver.register(actor.id, actor);
+				resolver.register(following.id, following);
+				resolver.register(followers.id, followers);
+
+				const user = await personService.createPerson(actor.id, resolver);
+				const userProfile = await userProfilesRepository.findOneByOrFail({ userId: user.id });
+
+				mockConsole.assertNoErrors();
+				assert.deepStrictEqual(userProfile.followingVisibility, 'public');
+				assert.deepStrictEqual(userProfile.followersVisibility, 'public');
 			};
-			actor.followers = `${actor.id}/followers`;
+		}
 
-			resolver.register(actor.id, actor);
-			resolver.register(actor.followers, {
-				id: actor.followers,
-				type: 'OrderedCollection',
-				totalItems: 0,
-				first: `${actor.followers}?page=1`,
-			});
-
-			const user = await personService.createPerson(actor.id, resolver);
-			const userProfile = await userProfilesRepository.findOneByOrFail({ userId: user.id });
-
-			assert.deepStrictEqual(userProfile.followingVisibility, 'public');
-			assert.deepStrictEqual(userProfile.followersVisibility, 'public');
-		});
+		test('Public following/followers (URI)', createPublicTest(false));
+		test('Public following/followers (inline)', createPublicTest(true));
 
 		test('Private following/followers', async () => {
 			const actor = createRandomActor();
@@ -327,6 +359,8 @@ describe('ActivityPub', () => {
 				assert.strictEqual(note.text, 'test test foo');
 				assert.strictEqual(note.uri, item.id);
 			}
+
+			mockConsole.assertNoErrors();
 		});
 
 		test('Fetch featured notes from IActor pointing to another remote server', async () => {
@@ -528,15 +562,15 @@ describe('ActivityPub', () => {
 				name: 'Test Author',
 				isCat: true,
 				requireSigninToViewContents: true,
-				makeNotesFollowersOnlyBefore: new Date(2025, 2, 20).valueOf(),
-				makeNotesHiddenBefore: new Date(2025, 2, 21).valueOf(),
+				makeNotesFollowersOnlyBefore: new Date(2025, 2, 20).valueOf() / 1000,
+				makeNotesHiddenBefore: new Date(2025, 2, 21).valueOf() / 1000,
 				isLocked: true,
 				isExplorable: true,
 				hideOnlineStatus: true,
 				noindex: true,
 				enableRss: true,
-
 			}) as MiLocalUser;
+			await usersRepository.insert(author);
 
 			const [publicKey, privateKey] = await new Promise<[string, string]>((res, rej) =>
 				generateKeyPair('rsa', {
@@ -560,7 +594,7 @@ describe('ActivityPub', () => {
 				publicKey,
 				privateKey,
 			});
-			(userKeypairService as unknown as { cache: MemoryKVCache<MiUserKeypair> }).cache.set(author.id, keypair);
+			await userKeypairsRepository.insert(keypair);
 
 			note = new MiNote({
 				id: idService.gen(),
@@ -585,6 +619,7 @@ describe('ActivityPub', () => {
 				tags: [],
 				hasPoll: false,
 			});
+			await notesRepository.insert(note);
 		});
 
 		describe('renderNote', () => {
@@ -823,6 +858,7 @@ describe('ActivityPub', () => {
 
 				expect(publicKey).not.toBeNull();
 				expect(publicKey?.keyPem).toBe('key material');
+				mockConsole.assertNoErrors();
 			});
 
 			it('should accept SocialHome actor', async () => {
@@ -871,6 +907,7 @@ describe('ActivityPub', () => {
 
 				expect(user.uri).toBe(actor.id);
 				expect(publicKey).not.toBeNull();
+				mockConsole.assertNoErrors();
 			});
 		});
 	});

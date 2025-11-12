@@ -20,6 +20,7 @@ import type { MiApp } from '@/models/App.js';
 import { concat } from '@/misc/prelude/array.js';
 import { IdService } from '@/core/IdService.js';
 import type { MiUser, MiLocalUser, MiRemoteUser } from '@/models/User.js';
+import { isRemoteUser, isLocalUser } from '@/models/User.js';
 import { MiPoll, type IPoll } from '@/models/Poll.js';
 import type { MiChannel } from '@/models/Channel.js';
 import { normalizeForSearch } from '@/misc/normalize-for-search.js';
@@ -34,7 +35,6 @@ import { NotificationService } from '@/core/NotificationService.js';
 import { UserWebhookService } from '@/core/UserWebhookService.js';
 import { QueueService } from '@/core/QueueService.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerService.js';
 import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
@@ -52,6 +52,7 @@ import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { LatestNoteService } from '@/core/LatestNoteService.js';
 import { CollapsedQueue } from '@/misc/collapsed-queue.js';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
 import { isPureRenote } from '@/misc/is-renote.js';
 
@@ -200,7 +201,6 @@ export class NoteEditService implements OnApplicationShutdown {
 		@Inject(DI.pollsRepository)
 		private pollsRepository: PollsRepository,
 
-		private userEntityService: UserEntityService,
 		private noteEntityService: NoteEntityService,
 		private idService: IdService,
 		private globalEventService: GlobalEventService,
@@ -222,9 +222,10 @@ export class NoteEditService implements OnApplicationShutdown {
 		private cacheService: CacheService,
 		private latestNoteService: LatestNoteService,
 		private noteCreateService: NoteCreateService,
+		private readonly timeService: TimeService,
 		private readonly noteVisibilityService: NoteVisibilityService,
 	) {
-		this.updateNotesCountQueue = new CollapsedQueue(process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseNotesCount, this.performUpdateNotesCount);
+		this.updateNotesCountQueue = new CollapsedQueue(this.timeService, process.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0, this.collapseNotesCount, this.performUpdateNotesCount);
 	}
 
 	@bindThis
@@ -273,7 +274,7 @@ export class NoteEditService implements OnApplicationShutdown {
 			data.channel = await this.channelsRepository.findOneBy({ id: data.reply.channelId });
 		}
 
-		if (data.updatedAt == null) data.updatedAt = new Date();
+		if (data.updatedAt == null) data.updatedAt = this.timeService.date;
 		if (data.visibility == null) data.visibility = 'public';
 		if (data.localOnly == null) data.localOnly = false;
 		if (data.channel != null) data.visibility = 'public';
@@ -494,12 +495,12 @@ export class NoteEditService implements OnApplicationShutdown {
 				cw: update.cw || undefined,
 				fileIds: undefined,
 				oldDate: exists ? oldnote.updatedAt as Date : this.idService.parse(oldnote.id).date,
-				updatedAt: new Date(),
+				updatedAt: this.timeService.date,
 			});
 
 			const note = new MiNote({
 				id: oldnote.id,
-				updatedAt: data.updatedAt ? data.updatedAt : new Date(),
+				updatedAt: data.updatedAt ? data.updatedAt : this.timeService.date,
 				fileIds: data.files ? data.files.map(file => file.id) : [],
 				replyId: oldnote.replyId,
 				renoteId: data.renote ? data.renote.id : null,
@@ -545,7 +546,7 @@ export class NoteEditService implements OnApplicationShutdown {
 			if (mentionedUsers.length > 0) {
 				note.mentions = mentionedUsers.map(u => u.id);
 				const profiles = await this.userProfilesRepository.findBy({ userId: In(note.mentions) });
-				note.mentionedRemoteUsers = JSON.stringify(mentionedUsers.filter(u => this.userEntityService.isRemoteUser(u)).map(u => {
+				note.mentionedRemoteUsers = JSON.stringify(mentionedUsers.filter(u => isRemoteUser(u)).map(u => {
 					const profile = profiles.find(p => p.userId === u.id);
 					const url = profile != null ? profile.url : null;
 					return {
@@ -608,7 +609,7 @@ export class NoteEditService implements OnApplicationShutdown {
 	}, data: Option, silent: boolean, tags: string[], mentionedUsers: MinimumUser[]) {
 		// Register host
 		if (this.meta.enableStatsForFederatedInstances) {
-			if (this.userEntityService.isRemoteUser(user)) {
+			if (isRemoteUser(user)) {
 				this.federatedInstanceService.fetchOrRegister(user.host).then(async i => {
 					if (note.renote && note.text || !note.renote) {
 						this.updateNotesCountQueue.enqueue(i.id, 1);
@@ -620,25 +621,25 @@ export class NoteEditService implements OnApplicationShutdown {
 			}
 		}
 
-		this.usersRepository.update({ id: user.id }, { updatedAt: new Date() });
+		this.usersRepository.update({ id: user.id }, { updatedAt: this.timeService.date });
 
 		// ハッシュタグ更新
 		this.pushToTl(note, user);
 
 		if (data.poll && data.poll.expiresAt) {
-			const delay = data.poll.expiresAt.getTime() - Date.now();
+			const delay = data.poll.expiresAt.getTime() - this.timeService.now;
 			this.queueService.endedPollNotificationQueue.remove(`pollEnd:${note.id}`);
 			this.queueService.endedPollNotificationQueue.add(note.id, {
 				noteId: note.id,
 			}, {
-				jobId: `pollEnd:${note.id}`,
+				jobId: `pollEnd_${note.id}`,
 				delay,
 				removeOnComplete: true,
 			});
 		}
 
 		if (!silent) {
-			if (this.userEntityService.isLocalUser(user)) this.activeUsersChart.write(user);
+			if (isLocalUser(user)) this.activeUsersChart.write(user);
 
 			// Pack the note
 			const noteObj = await this.noteEntityService.pack(note, null, { skipHide: true, withReactionAndUserPairCache: true });
@@ -680,26 +681,26 @@ export class NoteEditService implements OnApplicationShutdown {
 			nm.notify();
 
 			//#region AP deliver
-			if (!data.localOnly && this.userEntityService.isLocalUser(user)) {
+			if (!data.localOnly && isLocalUser(user)) {
 				trackTask(async () => {
 					const noteActivity = await this.apRendererService.renderNoteOrRenoteActivity(note, user, { renote: data.renote });
 					const dm = this.apDeliverManagerService.createDeliverManager(user, noteActivity);
 
 					// メンションされたリモートユーザーに配送
-					for (const u of mentionedUsers.filter(u => this.userEntityService.isRemoteUser(u))) {
+					for (const u of mentionedUsers.filter(u => isRemoteUser(u))) {
 						dm.addDirectRecipe(u as MiRemoteUser);
 					}
 
 					// 投稿がリプライかつ投稿者がローカルユーザーかつリプライ先の投稿の投稿者がリモートユーザーなら配送
 					if (data.reply && data.reply.userHost !== null) {
 						const u = await this.usersRepository.findOneBy({ id: data.reply.userId });
-						if (u && this.userEntityService.isRemoteUser(u)) dm.addDirectRecipe(u);
+						if (u && isRemoteUser(u)) dm.addDirectRecipe(u);
 					}
 
 					// 投稿がRenoteかつ投稿者がローカルユーザーかつRenote元の投稿の投稿者がリモートユーザーなら配送
 					if (this.isRenote(data) && data.renote.userHost !== null) {
 						const u = await this.usersRepository.findOneBy({ id: data.renote.userId });
-						if (u && this.userEntityService.isRemoteUser(u)) dm.addDirectRecipe(u);
+						if (u && isRemoteUser(u)) dm.addDirectRecipe(u);
 					}
 
 					// フォロワーに配送
@@ -738,7 +739,7 @@ export class NoteEditService implements OnApplicationShutdown {
 		if (data.channel) {
 			this.channelsRepository.increment({ id: data.channel.id }, 'notesCount', 1);
 			this.channelsRepository.update(data.channel.id, {
-				lastNotedAt: new Date(),
+				lastNotedAt: this.timeService.date,
 			});
 
 			this.notesRepository.countBy({
@@ -830,12 +831,7 @@ export class NoteEditService implements OnApplicationShutdown {
 			// eslint-disable-next-line prefer-const
 			let [followings, userListMemberships] = await Promise.all([
 				this.cacheService.getNonHibernatedFollowers(user.id),
-				this.userListMembershipsRepository.find({
-					where: {
-						userId: user.id,
-					},
-					select: ['userListId', 'userListUserId', 'withReplies'],
-				}),
+				this.cacheService.userListMembershipsCache.fetch(user.id).then(ms => ms.values().toArray()),
 			]);
 
 			if (note.visibility === 'followers') {
@@ -941,7 +937,7 @@ export class NoteEditService implements OnApplicationShutdown {
 		const hibernatedUsers = await this.usersRepository.find({
 			where: {
 				id: In(samples.map(x => x.followerId)),
-				lastActiveDate: LessThan(new Date(Date.now() - (1000 * 60 * 60 * 24 * 50))),
+				lastActiveDate: LessThan(new Date(this.timeService.now - (1000 * 60 * 60 * 24 * 50))),
 			},
 			select: ['id'],
 		});

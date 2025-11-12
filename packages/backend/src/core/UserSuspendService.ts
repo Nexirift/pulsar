@@ -21,7 +21,7 @@ import { LoggerService } from '@/core/LoggerService.js';
 import type Logger from '@/logger.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
-import { InternalEventService } from '@/core/InternalEventService.js';
+import { InternalEventService } from '@/global/InternalEventService.js';
 
 @Injectable()
 export class UserSuspendService {

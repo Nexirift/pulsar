@@ -20,6 +20,7 @@ import { RoleService } from '@/core/RoleService.js';
 import type { Config } from '@/config.js';
 import { sendRateLimitHeaders } from '@/misc/rate-limit-utils.js';
 import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
+import { TimeService, type TimerHandle } from '@/global/TimeService.js';
 import { renderInlineError } from '@/misc/render-inline-error.js';
 import { renderFullError } from '@/misc/render-full-error.js';
 import { ApiError } from './error.js';
@@ -39,7 +40,7 @@ const accessDenied = {
 export class ApiCallService implements OnApplicationShutdown {
 	private logger: Logger;
 	private userIpHistories: Map<MiUser['id'], Set<string>>;
-	private userIpHistoriesClearIntervalId: NodeJS.Timeout;
+	private userIpHistoriesClearIntervalId: TimerHandle;
 
 	constructor(
 		@Inject(DI.meta)
@@ -55,13 +56,14 @@ export class ApiCallService implements OnApplicationShutdown {
 		private rateLimiterService: SkRateLimiterService,
 		private roleService: RoleService,
 		private apiLoggerService: ApiLoggerService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.apiLoggerService.logger;
 		this.userIpHistories = new Map<MiUser['id'], Set<string>>();
 
-		this.userIpHistoriesClearIntervalId = setInterval(() => {
+		this.userIpHistoriesClearIntervalId = this.timeService.startTimer(() => {
 			this.userIpHistories.clear();
-		}, 1000 * 60 * 60);
+		}, 1000 * 60 * 60, { repeated: true });
 	}
 
 	#sendApiError(reply: FastifyReply, err: ApiError): void {
@@ -284,7 +286,7 @@ export class ApiCallService implements OnApplicationShutdown {
 
 			try {
 				this.userIpsRepository.createQueryBuilder().insert().values({
-					createdAt: new Date(),
+					createdAt: this.timeService.date,
 					userId: user.id,
 					ip: ip,
 				}).orIgnore(true).execute();
@@ -456,7 +458,7 @@ export class ApiCallService implements OnApplicationShutdown {
 
 	@bindThis
 	public dispose(): void {
-		clearInterval(this.userIpHistoriesClearIntervalId);
+		this.timeService.stopTimer(this.userIpHistoriesClearIntervalId);
 	}
 
 	@bindThis

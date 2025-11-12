@@ -44,16 +44,17 @@ import type {
 	UsersRepository,
 } from '@/models/_.js';
 import { bindThis } from '@/decorators.js';
-import { RolePolicies, RoleService } from '@/core/RoleService.js';
-import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
-import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
-import { IdService } from '@/core/IdService.js';
+import { isSystemAccount } from '@/misc/is-system-account.js';
+import type { RolePolicies, RoleService } from '@/core/RoleService.js';
+import type { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
+import type { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
+import type { IdService } from '@/core/IdService.js';
+import { TimeService } from '@/global/TimeService.js';
 import type { AnnouncementService } from '@/core/AnnouncementService.js';
 import type { CustomEmojiService } from '@/core/CustomEmojiService.js';
-import { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
-import { ChatService } from '@/core/ChatService.js';
-import { isSystemAccount } from '@/misc/is-system-account.js';
-import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
+import type { AvatarDecorationService } from '@/core/AvatarDecorationService.js';
+import type { ChatService } from '@/core/ChatService.js';
+import type { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
 import type { CacheService } from '@/core/CacheService.js';
 import { getCallerId } from '@/misc/attach-caller-id.js';
 import type { OnModuleInit } from '@nestjs/common';
@@ -153,9 +154,12 @@ export class UserEntityService implements OnModuleInit {
 
 		@Inject(DI.userMemosRepository)
 		private userMemosRepository: UserMemoRepository,
+
+		private readonly timeService: TimeService,
 	) {
 	}
 
+	@bindThis
 	onModuleInit() {
 		this.apPersonService = this.moduleRef.get('ApPersonService');
 		this.noteEntityService = this.moduleRef.get('NoteEntityService');
@@ -181,7 +185,9 @@ export class UserEntityService implements OnModuleInit {
 	public validateListenBrainz = ajv.compile(listenbrainzSchema);
 	//#endregion
 
+	/** @deprecated use export from MiUser */
 	public isLocalUser = isLocalUser;
+	/** @deprecated use export from MiUser */
 	public isRemoteUser = isRemoteUser;
 
 	@bindThis
@@ -283,7 +289,7 @@ export class UserEntityService implements OnModuleInit {
 			this.cacheService.userBlockingCache.fetch(me),
 			this.cacheService.userMutingsCache.fetch(me),
 			this.cacheService.renoteMutingsCache.fetch(me),
-			this.cacheService.getUsers(targets)
+			this.cacheService.findUsersById(targets)
 				.then(users => {
 					const record: Record<string, string | null> = {};
 					for (const [id, user] of users) {
@@ -395,7 +401,7 @@ export class UserEntityService implements OnModuleInit {
 	public getOnlineStatus(user: MiUser): 'unknown' | 'online' | 'active' | 'offline' {
 		if (user.hideOnlineStatus) return 'unknown';
 		if (user.lastActiveDate == null) return 'unknown';
-		const elapsed = Date.now() - user.lastActiveDate.getTime();
+		const elapsed = this.timeService.now - user.lastActiveDate.getTime();
 		return (
 			elapsed < USER_ONLINE_THRESHOLD ? 'online' :
 			elapsed < USER_ACTIVE_THRESHOLD ? 'active' :

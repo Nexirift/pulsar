@@ -39,6 +39,7 @@ import { FetchInstanceMetadataService } from '@/core/FetchInstanceMetadataServic
 import { UpdateInstanceQueue } from '@/core/UpdateInstanceQueue.js';
 import { CacheService } from '@/core/CacheService.js';
 import { NoteVisibilityService } from '@/core/NoteVisibilityService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { getApHrefNullable, getApId, getApIds, getApType, getNullableApId, isAccept, isActor, isAdd, isAnnounce, isApObject, isBlock, isCollectionOrOrderedCollection, isCreate, isDelete, isFlag, isFollow, isLike, isDislike, isMove, isPost, isReject, isRemove, isTombstone, isUndo, isUpdate, validActor, validPost, isActivity, IObjectWithId } from './type.js';
 import { ApNoteService } from './models/ApNoteService.js';
 import { ApLoggerService } from './ApLoggerService.js';
@@ -102,6 +103,7 @@ export class ApInboxService {
 		private readonly updateInstanceQueue: UpdateInstanceQueue,
 		private readonly cacheService: CacheService,
 		private readonly noteVisibilityService: NoteVisibilityService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.apLoggerService.logger;
 	}
@@ -150,7 +152,7 @@ export class ApInboxService {
 
 		// ついでにリモートユーザーの情報が古かったら更新しておく
 		if (actor.uri) {
-			if (actor.lastFetchedAt == null || Date.now() - actor.lastFetchedAt.getTime() > 1000 * 60 * 60 * 24) {
+			if (actor.lastFetchedAt == null || this.timeService.now - actor.lastFetchedAt.getTime() > 1000 * 60 * 60 * 24) {
 				setImmediate(() => {
 					// 同一ユーザーの情報を再度処理するので、使用済みのresolverを再利用してはいけない
 					this.apPersonService.updatePerson(actor.uri)
@@ -397,7 +399,7 @@ export class ApInboxService {
 				uri,
 			});
 		} finally {
-			unlock();
+			await unlock();
 		}
 	}
 
@@ -431,7 +433,7 @@ export class ApInboxService {
 			if (i == null) return;
 
 			this.updateInstanceQueue.enqueue(i.id, {
-				latestRequestReceivedAt: new Date(),
+				latestRequestReceivedAt: this.timeService.date,
 				shouldUnsuspend: i.suspensionState === 'autoSuspendedForNotResponding',
 			});
 
@@ -446,7 +448,7 @@ export class ApInboxService {
 		return await this.performOneActivity(actor, activity, resolver)
 			.finally(() => {
 				// Update user (adapted from performActivity)
-				if (actor.lastFetchedAt == null || Date.now() - actor.lastFetchedAt.getTime() > 1000 * 60 * 60 * 24) {
+				if (actor.lastFetchedAt == null || this.timeService.now - actor.lastFetchedAt.getTime() > 1000 * 60 * 60 * 24) {
 					setImmediate(() => {
 						// Don't re-use the resolver, or it may throw recursion errors.
 						// Instead, create a new resolver with an appropriately-reduced recursion limit.
@@ -547,7 +549,7 @@ export class ApInboxService {
 			await this.apNoteService.createNote(note, actor, resolver, silent);
 			return 'ok';
 		} finally {
-			unlock();
+			await unlock();
 		}
 	}
 
@@ -632,7 +634,7 @@ export class ApInboxService {
 			await this.noteDeleteService.delete(actor, note);
 			return 'ok: note deleted';
 		} finally {
-			unlock();
+			await unlock();
 		}
 	}
 

@@ -4,7 +4,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { MetricsTime, type JobType } from 'bullmq';
 import { parse as parseRedisInfo } from 'redis-info';
 import type { IActivity } from '@/core/activitypub/type.js';
@@ -16,8 +16,9 @@ import { DI } from '@/di-symbols.js';
 import { bindThis } from '@/decorators.js';
 import type { Antenna } from '@/server/api/endpoints/i/import-antennas.js';
 import { ApRequestCreator } from '@/core/activitypub/ApRequestService.js';
-import { type SystemWebhookPayload } from '@/core/SystemWebhookService.js';
-import { MiNote } from '@/models/Note.js';
+import { TimeService } from '@/global/TimeService.js';
+import type { SystemWebhookPayload } from '@/core/SystemWebhookService.js';
+import type { MiNote } from '@/models/Note.js';
 import { type UserWebhookPayload } from './UserWebhookService.js';
 import type {
 	DbJobData,
@@ -56,7 +57,7 @@ export const QUEUE_TYPES = [
 ] as const;
 
 @Injectable()
-export class QueueService {
+export class QueueService implements OnModuleInit {
 	constructor(
 		@Inject(DI.config)
 		private config: Config,
@@ -71,57 +72,62 @@ export class QueueService {
 		@Inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
 		@Inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
 		@Inject('queue:scheduleNotePost') public ScheduleNotePostQueue: ScheduleNotePostQueue,
-	) {
-		this.systemQueue.add('tickCharts', {
+
+		private readonly timeService: TimeService,
+	) {}
+
+	@bindThis
+	public async onModuleInit() {
+		await this.systemQueue.add('tickCharts', {
 		}, {
 			repeat: { pattern: '55 * * * *' },
 			removeOnComplete: 10,
 			removeOnFail: 30,
 		});
 
-		this.systemQueue.add('resyncCharts', {
+		await this.systemQueue.add('resyncCharts', {
 		}, {
 			repeat: { pattern: '0 0 * * *' },
 			removeOnComplete: 10,
 			removeOnFail: 30,
 		});
 
-		this.systemQueue.add('cleanCharts', {
+		await this.systemQueue.add('cleanCharts', {
 		}, {
 			repeat: { pattern: '0 0 * * *' },
 			removeOnComplete: 10,
 			removeOnFail: 30,
 		});
 
-		this.systemQueue.add('aggregateRetention', {
+		await this.systemQueue.add('aggregateRetention', {
 		}, {
 			repeat: { pattern: '0 0 * * *' },
 			removeOnComplete: 10,
 			removeOnFail: 30,
 		});
 
-		this.systemQueue.add('clean', {
+		await this.systemQueue.add('clean', {
 		}, {
 			repeat: { pattern: '0 0 * * *' },
 			removeOnComplete: 10,
 			removeOnFail: 30,
 		});
 
-		this.systemQueue.add('checkExpiredMutings', {
+		await this.systemQueue.add('checkExpiredMutings', {
 		}, {
 			repeat: { pattern: '*/5 * * * *' },
 			removeOnComplete: 10,
 			removeOnFail: 30,
 		});
 
-		this.systemQueue.add('bakeBufferedReactions', {
+		await this.systemQueue.add('bakeBufferedReactions', {
 		}, {
 			repeat: { pattern: '0 0 * * *' },
 			removeOnComplete: 10,
 			removeOnFail: 30,
 		});
 
-		this.systemQueue.add('checkModeratorsActivity', {
+		await this.systemQueue.add('checkModeratorsActivity', {
 		}, {
 			// 毎時30分に起動
 			repeat: { pattern: '30 * * * *' },
@@ -788,7 +794,7 @@ export class QueueService {
 			userId: webhook.userId,
 			to: webhook.url,
 			secret: webhook.secret,
-			createdAt: Date.now(),
+			createdAt: this.timeService.now,
 			eventId: randomUUID(),
 		};
 
@@ -825,7 +831,7 @@ export class QueueService {
 			webhookId: webhook.id,
 			to: webhook.url,
 			secret: webhook.secret,
-			createdAt: Date.now(),
+			createdAt: this.timeService.now,
 			eventId: randomUUID(),
 		};
 
@@ -890,7 +896,7 @@ export class QueueService {
 	@bindThis
 	public async queueRetryJob(queueType: typeof QUEUE_TYPES[number], jobId: string) {
 		const queue = this.getQueue(queueType);
-		const job: Bull.Job | null = await queue.getJob(jobId);
+		const job: Bull.Job | undefined = await queue.getJob(jobId);
 		if (job) {
 			if (job.finishedOn != null) {
 				await job.retry();
@@ -903,7 +909,7 @@ export class QueueService {
 	@bindThis
 	public async queueRemoveJob(queueType: typeof QUEUE_TYPES[number], jobId: string) {
 		const queue = this.getQueue(queueType);
-		const job: Bull.Job | null = await queue.getJob(jobId);
+		const job: Bull.Job | undefined = await queue.getJob(jobId);
 		if (job) {
 			await job.remove();
 		}
@@ -937,7 +943,7 @@ export class QueueService {
 	@bindThis
 	public async queueGetJob(queueType: typeof QUEUE_TYPES[number], jobId: string) {
 		const queue = this.getQueue(queueType);
-		const job: Bull.Job | null = await queue.getJob(jobId);
+		const job: Bull.Job | undefined = await queue.getJob(jobId);
 		if (job) {
 			return this.packJobData(job);
 		} else {

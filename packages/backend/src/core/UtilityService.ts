@@ -14,7 +14,7 @@ import { bindThis } from '@/decorators.js';
 import type { MiMeta, SoftwareSuspension } from '@/models/Meta.js';
 import type { MiInstance } from '@/models/Instance.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { EnvService } from '@/core/EnvService.js';
+import { EnvService } from '@/global/EnvService.js';
 
 @Injectable()
 export class UtilityService {

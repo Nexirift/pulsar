@@ -21,6 +21,7 @@ import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
 import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
 import { QueueService } from '@/core/QueueService.js';
 import type { MiLocalUser, MiRemoteUser, MiUser } from '@/models/User.js';
+import { isLocalUser } from '@/models/User.js';
 import { UserKeypairService } from '@/core/UserKeypairService.js';
 import type { MiUserPublickey } from '@/models/UserPublickey.js';
 import type { MiFollowing } from '@/models/Following.js';
@@ -28,7 +29,6 @@ import { countIf } from '@/misc/prelude/array.js';
 import type { MiNote } from '@/models/Note.js';
 import { QueryService } from '@/core/QueryService.js';
 import { UtilityService } from '@/core/UtilityService.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import type Logger from '@/logger.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
@@ -36,6 +36,7 @@ import { IActivity, IAnnounce, ICreate } from '@/core/activitypub/type.js';
 import { isPureRenote, isQuote, isRenote } from '@/misc/is-renote.js';
 import * as Acct from '@/misc/acct.js';
 import { CacheService } from '@/core/CacheService.js';
+import { CustomEmojiService, encodeEmojiKey } from '@/core/CustomEmojiService.js';
 import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginOptions, FastifyBodyParser } from 'fastify';
 import type { FindOptionsWhere } from 'typeorm';
 import { FanoutTimelineEndpointService } from '@/core/FanoutTimelineEndpointService.js';
@@ -80,7 +81,6 @@ export class ActivityPubServerService {
 		private followRequestsRepository: FollowRequestsRepository,
 
 		private utilityService: UtilityService,
-		private userEntityService: UserEntityService,
 		private apRendererService: ApRendererService,
 		private apDbResolverService: ApDbResolverService,
 		private queueService: QueueService,
@@ -89,6 +89,7 @@ export class ActivityPubServerService {
 		private fanoutTimelineEndpointService: FanoutTimelineEndpointService,
 		private loggerService: LoggerService,
 		private readonly cacheService: CacheService,
+		private readonly customEmojiService: CustomEmojiService,
 	) {
 		//this.createServer = this.createServer.bind(this);
 		this.logger = this.loggerService.getLogger('apserv', 'pink');
@@ -974,7 +975,7 @@ export class ActivityPubServerService {
 
 			const keypair = await this.userKeypairService.getUserKeypair(user.id);
 
-			if (this.userEntityService.isLocalUser(user)) {
+			if (isLocalUser(user)) {
 				this.setResponseType(request, reply);
 				return (this.apRendererService.addContext(this.apRendererService.renderKey(user, keypair)));
 			} else {
@@ -1037,10 +1038,8 @@ export class ActivityPubServerService {
 			const { reject } = await this.checkAuthorizedFetch(request, reply);
 			if (reject) return;
 
-			const emoji = await this.emojisRepository.findOneBy({
-				host: IsNull(),
-				name: request.params.emoji,
-			});
+			const emojiKey = encodeEmojiKey({ name: request.params.emoji, host: null });
+			const emoji = await this.customEmojiService.emojisByKeyCache.fetchMaybe(emojiKey);
 
 			if (emoji == null || emoji.localOnly) {
 				reply.code(404);
@@ -1048,7 +1047,7 @@ export class ActivityPubServerService {
 			}
 
 			this.setResponseType(request, reply);
-			return (this.apRendererService.addContext(await this.apRendererService.renderEmoji(emoji)));
+			return (this.apRendererService.addContext(this.apRendererService.renderEmoji(emoji)));
 		});
 
 		// like

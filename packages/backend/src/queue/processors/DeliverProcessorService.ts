@@ -19,6 +19,7 @@ import ApRequestChart from '@/core/chart/charts/ap-request.js';
 import FederationChart from '@/core/chart/charts/federation.js';
 import { StatusError } from '@/misc/status-error.js';
 import { UtilityService } from '@/core/UtilityService.js';
+import { TimeService } from '@/global/TimeService.js';
 import { bindThis } from '@/decorators.js';
 import { QueueLoggerService } from '../QueueLoggerService.js';
 import type { DeliverJobData } from '../types.js';
@@ -26,8 +27,6 @@ import type { DeliverJobData } from '../types.js';
 @Injectable()
 export class DeliverProcessorService {
 	private logger: Logger;
-	private suspendedHostsCache: MemorySingleCache<MiInstance[]>;
-	private latest: string | null;
 
 	constructor(
 		@Inject(DI.meta)
@@ -44,9 +43,9 @@ export class DeliverProcessorService {
 		private apRequestChart: ApRequestChart,
 		private federationChart: FederationChart,
 		private queueLoggerService: QueueLoggerService,
+		private readonly timeService: TimeService,
 	) {
 		this.logger = this.queueLoggerService.logger.createSubLogger('deliver');
-		this.suspendedHostsCache = new MemorySingleCache<MiInstance[]>(1000 * 60 * 60); // 1h
 	}
 
 	@bindThis
@@ -57,25 +56,15 @@ export class DeliverProcessorService {
 			return 'skip (blocked)';
 		}
 
-		// isSuspendedなら中断
-		let suspendedHosts = this.suspendedHostsCache.get();
-		if (suspendedHosts == null) {
-			suspendedHosts = await this.instancesRepository.find({
-				where: {
-					suspensionState: Not('none'),
-				},
-			});
-			this.suspendedHostsCache.set(suspendedHosts);
-		}
-		if (suspendedHosts.map(x => x.host).includes(this.utilityService.toPuny(host))) {
+		const i = await this.federatedInstanceService.federatedInstanceCache.fetch(host);
+		if (i.suspensionState !== 'none') {
 			return 'skip (suspended)';
 		}
 
-		const i = await (this.meta.enableStatsForFederatedInstances
-			? this.federatedInstanceService.fetchOrRegister(host)
-			: this.federatedInstanceService.fetch(host));
+		// Make sure info is up-to-date.
+		await this.fetchInstanceMetadataService.fetchInstanceMetadata(i);
 
-		// suspend server by software
+		// suspend server by software.
 		if (i != null && this.utilityService.isDeliverSuspendedSoftware(i)) {
 			return 'skip (software suspended)';
 		}
@@ -97,10 +86,6 @@ export class DeliverProcessorService {
 					});
 				}
 
-				if (this.meta.enableStatsForFederatedInstances) {
-					this.fetchInstanceMetadataService.fetchInstanceMetadata(i);
-				}
-
 				if (this.meta.enableChartsForFederatedInstances) {
 					this.instanceChart.requestSent(i.host, true);
 				}
@@ -116,11 +101,11 @@ export class DeliverProcessorService {
 				if (!i.isNotResponding) {
 					this.federatedInstanceService.update(i.id, {
 						isNotResponding: true,
-						notRespondingSince: new Date(),
+						notRespondingSince: this.timeService.date,
 					});
 				} else if (i.notRespondingSince) {
 					// 1週間以上不通ならサスペンド
-					if (i.suspensionState === 'none' && i.notRespondingSince.getTime() <= Date.now() - 1000 * 60 * 60 * 24 * 7) {
+					if (i.suspensionState === 'none' && i.notRespondingSince.getTime() <= this.timeService.now - 1000 * 60 * 60 * 24 * 7) {
 						this.federatedInstanceService.update(i.id, {
 							suspensionState: 'autoSuspendedForNotResponding',
 						});
@@ -129,7 +114,7 @@ export class DeliverProcessorService {
 					// isNotRespondingがtrueでnotRespondingSinceがnullの場合はnotRespondingSinceをセット
 					// notRespondingSinceは新たな機能なので、それ以前のデータにはnotRespondingSinceがない場合がある
 					this.federatedInstanceService.update(i.id, {
-						notRespondingSince: new Date(),
+						notRespondingSince: this.timeService.date,
 					});
 				}
 

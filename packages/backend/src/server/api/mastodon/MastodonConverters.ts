@@ -5,9 +5,9 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { Entity, MastodonEntity, MisskeyEntity } from 'megalodon';
-import mfm from 'mfm-js';
-import { MastodonNotificationType } from 'megalodon/lib/src/mastodon/notification.js';
-import { NotificationType } from 'megalodon/lib/src/notification.js';
+import * as mfm from 'mfm-js';
+import { MastodonNotificationType } from 'megalodon/built/lib/mastodon/notification.js';
+import { NotificationType } from 'megalodon/built/lib/notification.js';
 import { DI } from '@/di-symbols.js';
 import { MfmService } from '@/core/MfmService.js';
 import type { Config } from '@/config.js';
@@ -287,7 +287,7 @@ export class MastodonConverters {
 			this.getUser(p)
 				.then(u => this.encode(u, mentionedRemoteUsers))
 				.catch(() => null)))
-			.then((p: Entity.Mention[]) => p.filter(m => m));
+			.then((p: (Entity.Mention | null)[]) => p.filter(m => m != null));
 
 		const tags = note.tags.map(tag => {
 			return {
@@ -345,7 +345,7 @@ export class MastodonConverters {
 			sensitive: status.sensitive || !!cw,
 			spoiler_text: cw,
 			visibility: status.visibility,
-			media_attachments: status.media_attachments.map((a: Entity.Account) => convertAttachment(a)),
+			media_attachments: status.media_attachments.map((a: Entity.Attachment) => convertAttachment(a)),
 			mentions: mentions,
 			tags: tags,
 			card: null, //FIXME

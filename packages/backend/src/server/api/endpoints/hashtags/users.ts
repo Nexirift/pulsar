@@ -11,6 +11,7 @@ import { normalizeForSearch } from '@/misc/normalize-for-search.js';
 import { UserEntityService } from '@/core/entities/UserEntityService.js';
 import { DI } from '@/di-symbols.js';
 import { RoleService } from '@/core/RoleService.js';
+import { TimeService } from '@/global/TimeService.js';
 
 export const meta = {
 	requireCredential: false,
@@ -60,6 +61,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private userEntityService: UserEntityService,
 		private readonly roleService: RoleService,
+		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (!safeForSql(normalizeForSearch(ps.tag))) throw new Error('Injection');
@@ -67,7 +69,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				.where(':tag <@ user.tags', { tag: [normalizeForSearch(ps.tag)] })
 				.andWhere('user.isSuspended = FALSE');
 
-			const recent = new Date(Date.now() - (1000 * 60 * 60 * 24 * 5));
+			const recent = new Date(this.timeService.now - (1000 * 60 * 60 * 24 * 5));
 
 			if (ps.state === 'alive') {
 				query.andWhere('user.updatedAt > :date', { date: recent });

@@ -8,6 +8,7 @@ import { bindThis } from '@/decorators.js';
 import { LoggerService } from '@/core/LoggerService.js';
 import Logger from '@/logger.js';
 import { ApLogService } from '@/core/ApLogService.js';
+import { TimeService, type TimerHandle } from '@/global/TimeService.js';
 
 // 10 minutes
 export const scanInterval = 1000 * 60 * 10;
@@ -15,10 +16,12 @@ export const scanInterval = 1000 * 60 * 10;
 @Injectable()
 export class ApLogCleanupService implements OnApplicationShutdown {
 	private readonly logger: Logger;
-	private scanTimer: NodeJS.Timeout | null = null;
+	private scanTimer: TimerHandle | null = null;
 
 	constructor(
 		private readonly apLogService: ApLogService,
+		private readonly timeService: TimeService,
+
 		loggerService: LoggerService,
 	) {
 		this.logger = loggerService.getLogger('activity-log-cleanup');
@@ -34,7 +37,7 @@ export class ApLogCleanupService implements OnApplicationShutdown {
 		this.tick();
 
 		// Prune on a regular interval for the lifetime of the server.
-		this.scanTimer = setInterval(this.tick, scanInterval);
+		this.scanTimer = this.timeService.startTimer(this.tick, scanInterval, { repeated: true });
 	}
 
 	@bindThis
@@ -55,7 +58,7 @@ export class ApLogCleanupService implements OnApplicationShutdown {
 	@bindThis
 	public dispose(): void {
 		if (this.scanTimer) {
-			clearInterval(this.scanTimer);
+			this.timeService.stopTimer(this.scanTimer);
 			this.scanTimer = null;
 		}
 	}
