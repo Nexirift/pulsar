@@ -13,7 +13,6 @@ import { ServerStatsService } from '@/daemons/ServerStatsService.js';
 import { ServerService } from '@/server/ServerService.js';
 import { MainModule } from '@/MainModule.js';
 import { EnvService } from '@/global/EnvService.js';
-import { ApLogCleanupService } from '@/daemons/ApLogCleanupService.js';
 
 export async function server() {
 	const app = await NestFactory.createApplicationContext(MainModule, {
@@ -32,7 +31,6 @@ export async function server() {
 	if (!envService.options.noDaemons) {
 		app.get(QueueStatsService).start();
 		app.get(ServerStatsService).start();
-		app.get(ApLogCleanupService).start();
 	}
 
 	return app;

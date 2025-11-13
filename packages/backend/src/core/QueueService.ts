@@ -78,62 +78,119 @@ export class QueueService implements OnModuleInit {
 
 	@bindThis
 	public async onModuleInit() {
-		await this.systemQueue.add('tickCharts', {
-		}, {
-			repeat: { pattern: '55 * * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'tickCharts-scheduler',
+			{ pattern: '0 * * * *' }, // every hour at :00
+			{
+				name: 'tickCharts',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		await this.systemQueue.add('resyncCharts', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'resyncCharts-scheduler',
+			{ pattern: '20 0 * * *' }, // every day at 00:20 (wait for tickCharts)
+			{
+				name: 'resyncCharts',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		await this.systemQueue.add('cleanCharts', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'cleanCharts-scheduler',
+			{ pattern: '40 0 * * *' }, // every day at 00:40 (wait for resyncCharts)
+			{
+				name: 'cleanCharts',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		await this.systemQueue.add('aggregateRetention', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'aggregateRetention-scheduler',
+			{ pattern: '0 1 * * *' }, // every day at 01:00
+			{
+				name: 'aggregateRetention',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		await this.systemQueue.add('clean', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'clean-scheduler',
+			{ pattern: '10 1 * * *' }, // every day at 01:10 (wait for aggregateRetention)
+			{
+				name: 'clean',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		await this.systemQueue.add('checkExpiredMutings', {
-		}, {
-			repeat: { pattern: '*/5 * * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'checkExpiredMutings-scheduler',
+			{ pattern: '*/5 * * * *' }, // every 5 minutes
+			{
+				name: 'checkExpiredMutings',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		await this.systemQueue.add('bakeBufferedReactions', {
-		}, {
-			repeat: { pattern: '0 0 * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+		await this.systemQueue.upsertJobScheduler(
+			'bakeBufferedReactions-scheduler',
+			{ pattern: '20 1 * * *' }, // every day at 01:40 (wait for clean)
+			{
+				name: 'bakeBufferedReactions',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
 
-		await this.systemQueue.add('checkModeratorsActivity', {
-		}, {
+		await this.systemQueue.upsertJobScheduler(
+			'checkModeratorsActivity-scheduler',
 			// 毎時30分に起動
-			repeat: { pattern: '30 * * * *' },
-			removeOnComplete: 10,
-			removeOnFail: 30,
-		});
+			{ pattern: '30 * * * *' }, // every hour at :30
+			{
+				name: 'checkModeratorsActivity',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
+
+		await this.systemQueue.upsertJobScheduler(
+			'cleanupApLogs-scheduler',
+			{ pattern: '*/10 * * *' }, // every 10 minutes
+			{
+				name: 'cleanupApLogs',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
+
+		await this.systemQueue.upsertJobScheduler(
+			'hibernateUsers-scheduler',
+			{ pattern: '30 1 * * *' }, // every day at 01:30 (avoid bakeBufferedReactions)
+			{
+				name: 'hibernateUsers',
+				opts: {
+					removeOnComplete: 10,
+					removeOnFail: 30,
+				},
+			});
+
+		// Slot '40 1 * * *' is available for future work
+		// Slot '50 1 * * *' is available for future work
 	}
 
 	@bindThis
