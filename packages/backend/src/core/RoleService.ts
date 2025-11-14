@@ -171,6 +171,7 @@ const DefaultPoliciesSchema: JSONSchemaType<RolePolicies> = {
 		canImportUserLists: { type: 'boolean' },
 		chatAvailability: { type: 'string', enum: ['available', 'readonly', 'unavailable'] },
 		canTrend: { type: 'boolean' },
+		canViewFederation: { type: 'boolean' },
 	},
 };
 
