@@ -91,8 +91,6 @@ export class BackgroundTaskProcessorService {
 			return await this.processPostInbox(job.data);
 		} else if (job.data.type === 'post-note') {
 			return await this.processPostNote(job.data);
-		} else if (job.data.type === 'check-hibernation') {
-			return await this.processCheckHibernation(job.data);
 		} else if (job.data.type === 'delete-file') {
 			return await this.processDeleteFile(job.data);
 		} else if (job.data.type === 'update-latest-note') {
@@ -269,14 +267,6 @@ export class BackgroundTaskProcessorService {
 			await this.noteCreateService.postNoteCreated(note, user, { ...note, poll }, task.silent, Array.from(mentionedUsers.values()));
 		}
 
-		return 'ok';
-	}
-
-	private async processCheckHibernation(task: CheckHibernationBackgroundTask): Promise<string> {
-		const followers = await this.cacheService.getNonHibernatedFollowers(task.userId);
-		if (followers.length < 1) return `Skipping check-hibernation task: user ${task.userId} has no non-hibernated followers`;
-
-		await this.noteCreateService.checkHibernation(followers);
 		return 'ok';
 	}
 

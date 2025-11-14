@@ -179,7 +179,6 @@ export type BackgroundTaskJobData =
 	PostDeliverBackgroundTask |
 	PostInboxBackgroundTask |
 	PostNoteBackgroundTask |
-	CheckHibernationBackgroundTask |
 	DeleteFileBackgroundTask |
 	UpdateLatestNoteBackgroundTask |
 	PostSuspendBackgroundTask |

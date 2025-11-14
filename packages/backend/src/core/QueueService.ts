@@ -878,16 +878,6 @@ export class QueueService implements OnModuleInit {
 	}
 
 	@bindThis
-	public async createCheckHibernationJob(userId: string) {
-		return await this.createBackgroundTask(
-			{ type: 'check-hibernation', userId },
-
-			// This is a very heavy task, so only run once per day per user
-			{ id: `check-hibernation:${userId}`, ttl: 1000 * 60 * 60 * 24 },
-		);
-	}
-
-	@bindThis
 	public async createUpdateUserTagsJob(userId: string) {
 		return await this.createBackgroundTask({ type: 'update-user-tags', userId }, userId);
 	}
