@@ -129,20 +129,21 @@ export class ApDbResolverService implements OnApplicationShutdown {
 	 */
 	@bindThis
 	public async refetchPublicKeyForApId(user: MiRemoteUser): Promise<MiUserPublickey | null> {
+		const oldKey = await this.apPersonService.findPublicKeyByUserId(user.id);
+
 		// Don't re-fetch if we've updated the user recently
-		if (
-			(user.lastFetchedAt && user.lastFetchedAt.valueOf() > maxUpdatedTime) ||
 		const maxUpdatedTime = this.timeService.now - (1000 * 60 * 60); // 1 hour
+		if ((user.lastFetchedAt && user.lastFetchedAt.valueOf() > maxUpdatedTime) ||
 			(user.updatedAt && user.updatedAt.valueOf() > maxUpdatedTime) ||
 			this.idService.parse(user.id).date.valueOf() > maxUpdatedTime
 		) {
 			this.apLoggerService.logger.debug(`Not updating public key for user ${user.id} (${user.uri}): already checked recently`);
-		} else {
-			this.apLoggerService.logger.debug(`Updating public key for user ${user.id} (${user.uri})`);
+			return oldKey;
 		}
 
-		// findPublicKeyByUserId pulls from a cache, but updatePerson also updates that cache if there's any changes.
-		const oldKey = await this.apPersonService.findPublicKeyByUserId(user.id);
+		this.apLoggerService.logger.debug(`Updating public key for user ${user.id} (${user.uri})`);
+
+		// updatePerson will update the public key cache if there's any changes.
 		await this.apPersonService.updatePerson(user.uri);
 		const newKey = await this.apPersonService.findPublicKeyByUserId(user.id);
 
