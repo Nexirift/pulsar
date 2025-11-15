@@ -39,7 +39,6 @@ import { trackPromise } from '@/misc/promise-tracker.js';
 import { QueueService } from '@/core/QueueService.js';
 import { ApiLoggerService } from '../../ApiLoggerService.js';
 import { ApiError } from '../../error.js';
-import { trackPromise } from '@/misc/promise-tracker.js';
 
 export const meta = {
 	tags: ['account'],
