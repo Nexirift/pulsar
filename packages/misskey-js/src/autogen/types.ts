@@ -15800,12 +15800,17 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK (without any results) */
-            204: {
+            /** @description OK (with results) */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    'application/json': {
+                        public: string;
+                        private: string;
+                    };
+                };
             };
             /** @description Client error */
             400: {
@@ -16346,6 +16351,7 @@ export interface operations {
                         defaultLightTheme: string | null;
                         defaultLike: string;
                         description: string | null;
+                        about: string | null;
                         disableRegistration: boolean;
                         impressumUrl: string | null;
                         donationUrl: string | null;
@@ -47894,8 +47900,6 @@ export interface operations {
                     userId: string;
                     /** @default false */
                     withReplies?: boolean;
-                    /** @default true */
-                    withRepliesToSelf?: boolean;
                     /** @default true */
                     withQuotes?: boolean;
                     /** @default true */

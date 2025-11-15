@@ -251,6 +251,9 @@ type AdminFederationUpdateInstanceRequest = operations['admin___federation___upd
 type AdminForwardAbuseUserReportRequest = operations['admin___forward-abuse-user-report']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
+type AdminGenVapidKeysResponse = operations['admin___gen-vapid-keys']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type AdminGetIndexStatsResponse = operations['admin___get-index-stats']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
@@ -1598,6 +1601,7 @@ declare namespace entities {
         AdminFederationRemoveAllFollowingRequest,
         AdminFederationUpdateInstanceRequest,
         AdminForwardAbuseUserReportRequest,
+        AdminGenVapidKeysResponse,
         AdminGetIndexStatsResponse,
         AdminGetTableStatsResponse,
         AdminGetUserIpsRequest,

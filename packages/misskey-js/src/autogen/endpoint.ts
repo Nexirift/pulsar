@@ -71,6 +71,7 @@ import type {
 	AdminFederationRemoveAllFollowingRequest,
 	AdminFederationUpdateInstanceRequest,
 	AdminForwardAbuseUserReportRequest,
+	AdminGenVapidKeysResponse,
 	AdminGetIndexStatsResponse,
 	AdminGetTableStatsResponse,
 	AdminGetUserIpsRequest,
@@ -726,7 +727,7 @@ export type Endpoints = {
 	'admin/federation/remove-all-following': { req: AdminFederationRemoveAllFollowingRequest; res: EmptyResponse };
 	'admin/federation/update-instance': { req: AdminFederationUpdateInstanceRequest; res: EmptyResponse };
 	'admin/forward-abuse-user-report': { req: AdminForwardAbuseUserReportRequest; res: EmptyResponse };
-	'admin/gen-vapid-keys': { req: EmptyRequest; res: EmptyResponse };
+	'admin/gen-vapid-keys': { req: EmptyRequest; res: AdminGenVapidKeysResponse };
 	'admin/get-index-stats': { req: EmptyRequest; res: AdminGetIndexStatsResponse };
 	'admin/get-table-stats': { req: EmptyRequest; res: AdminGetTableStatsResponse };
 	'admin/get-user-ips': { req: AdminGetUserIpsRequest; res: AdminGetUserIpsResponse };
