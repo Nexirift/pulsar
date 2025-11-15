@@ -130,9 +130,9 @@ export class ApDbResolverService implements OnApplicationShutdown {
 	@bindThis
 	public async refetchPublicKeyForApId(user: MiRemoteUser): Promise<MiUserPublickey | null> {
 		// Don't re-fetch if we've updated the user recently
-		const maxUpdatedTime = this.timeService.now - 60_000; // 1 minute ago
 		if (
 			(user.lastFetchedAt && user.lastFetchedAt.valueOf() > maxUpdatedTime) ||
+		const maxUpdatedTime = this.timeService.now - (1000 * 60 * 60); // 1 hour
 			(user.updatedAt && user.updatedAt.valueOf() > maxUpdatedTime) ||
 			this.idService.parse(user.id).date.valueOf() > maxUpdatedTime
 		) {
