@@ -477,12 +477,9 @@ export class NoteEditService implements OnApplicationShutdown {
 		const filesChanged = oldNote.fileIds.length || data.files?.length;
 
 		const oldPoll = await this.pollsRepository.findOneBy({ noteId: oldNote.id });
-
-		const oldPollData = oldPoll ? { choices: oldPoll.choices, multiple: oldPoll.multiple, expiresAt: oldPoll.expiresAt } : null;
-		const pollChanged =
-			(data.poll == null && oldPoll != null) ||
-			(data.poll != null && oldPoll == null) ||
-			(data.poll != null && oldPoll != null && JSON.stringify(data.poll) !== JSON.stringify(oldPollData));
+		const oldPollData = oldPoll ? { choices: oldPoll.choices, multiple: oldPoll.multiple, expiresAt: oldPoll.expiresAt?.toISOString() ?? null } : null;
+		const newPollData = data.poll ? { choices: data.poll.choices, multiple: data.poll.multiple, expiresAt: data.poll.expiresAt ?? null } : null;
+		const pollChanged = data.poll !== undefined && JSON.stringify(oldPollData) !== JSON.stringify(newPollData);
 
 		if (Object.keys(update).length > 0 || filesChanged || pollChanged) {
 			const exists = await this.noteEditsRepository.findOneBy({ noteId: oldNote.id });
