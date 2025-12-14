@@ -29,14 +29,15 @@ jobs:
         id: get-tag
         run: |
           if [[ "${{ github.ref_type }}" == "tag" ]]; then
-            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            TAG="${{ github.ref_name }}"
           elif [[ "${{ github.ref_name }}" == "stable" ]]; then
-            echo "tag=latest" >> $GITHUB_OUTPUT
+            TAG="latest"
           elif [[ "${{ github.ref_name }}" == "develop" ]]; then
-            echo "tag=develop" >> $GITHUB_OUTPUT
+            TAG="develop"
           else
-            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            TAG="${{ github.ref_name }}"
           fi
+          echo "tag=${TAG,,}" >> $GITHUB_OUTPUT
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -77,3 +78,4 @@ jobs:
           image-ref: ${{ env.REGISTRY }}/${{ github.repository }}:${{ steps.get-tag.outputs.tag }}
           format: 'table'
         if: always()
+
