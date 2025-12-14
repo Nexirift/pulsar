@@ -36,7 +36,7 @@ export async function createNotification<K extends keyof PushNotificationDataMap
 		return globalThis.registration.showNotification(...n);
 	} else {
 		console.error('Could not compose notification', data);
-		return createEmptyNotification();
+		//return createEmptyNotification();
 	}
 }
 
@@ -315,7 +315,7 @@ export async function createEmptyNotification(): Promise<void> {
 		await globalThis.registration.showNotification(
 			(new URL(origin)).host,
 			{
-				body: `Sharkey v${_VERSION_}`,
+				body: `Pulsar v${_VERSION_}`,
 				silent: true,
 				badge: iconUrl('null'),
 				tag: 'read_notification',

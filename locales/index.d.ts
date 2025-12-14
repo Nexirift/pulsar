@@ -4892,7 +4892,7 @@ export interface Locale extends ILocale {
      */
     "repositoryUrl": string;
     /**
-     * If there is a repository where the source code is publicly available, enter its URL. If you are using Sharkey as-is (without any changes to the source code), enter https://activitypub.software/TransFem-org/Sharkey/.
+     * If there is a repository where the source code is publicly available, enter its URL. If you are using Pulsar as-is (without any changes to the source code), enter https://github.com/Nexirift/pulsar.
      */
     "repositoryUrlDescription": string;
     /**

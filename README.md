@@ -1,3 +1,13 @@
+# Nexirift Pulsar
+
+Nexirift Pulsar is a fork of Sharkey. Our main goal is to implement features that our users want.
+
+## Features
+
+- Bottom navigation bar customisation
+
+## Sharkey README
+
 <div align="center">
 <a href="https://joinsharkey.org/">
 	<img src="https://activitypub.software/TransFem-org/Sharkey/-/raw/develop/packages/frontend/assets/sharkey.svg" alt="Sharkey logo" style="border-radius:50%" width="300"/>

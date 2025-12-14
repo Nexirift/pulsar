@@ -9,7 +9,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<form :class="$style.form" class="_panel" @submit.prevent="submit()">
 			<div :class="$style.title">
 				<!-- TODO translate -->
-				<div>Welcome to Sharkey!</div>
+				<div>Welcome to Pulsar!</div>
 				<div :class="$style.version">v{{ version }}</div>
 			</div>
 			<div class="_gaps_m" style="padding: 32px;">

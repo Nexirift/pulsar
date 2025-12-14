@@ -44,15 +44,15 @@ function greet(logger: Logger, bootLogger: Logger, envOption: EnvOption) {
 		logger.info(themeColor('                                 |___/ '));
 		//#endregion
 
-		logger.info(' Sharkey is an open-source decentralized microblogging platform.');
-		logger.info(chalk.rgb(255, 136, 0)(' If you like Sharkey, please donate to support development. https://opencollective.com/sharkey'));
+		logger.info(' Pulsar is an open-source decentralized microblogging platform.');
+		logger.info(chalk.rgb(255, 136, 0)(' Pulsar is built on Sharkey. If you like Sharkey, please donate to support development. https://opencollective.com/sharkey'));
 
 		logger.info('');
 		logger.info(chalkTemplate`--- ${os.hostname()} {gray (PID: ${process.pid.toString()})} ---`);
 	}
 
-	bootLogger.info('Welcome to Sharkey!');
-	bootLogger.info(`Sharkey v${meta.gitVersion ?? meta.version}`, null, true);
+	bootLogger.info('Welcome to Pulsar!');
+	bootLogger.info(`Pulsar v${meta.gitVersion ?? meta.version}`, null, true);
 }
 
 /**
@@ -78,7 +78,7 @@ export async function masterMain(loggerService: LoggerService, envService: EnvSe
 		process.exit(1);
 	}
 
-	bootLogger.info('Sharkey initialized');
+	bootLogger.info('Pulsar initialized');
 
 	if (config.sentryForBackend) {
 		Sentry.init({
@@ -95,7 +95,7 @@ export async function masterMain(loggerService: LoggerService, envService: EnvSe
 			maxBreadcrumbs: 0,
 
 			// Set release version
-			release: 'Sharkey@' + (meta.gitVersion ?? meta.version),
+			release: 'Pulsar@' + (meta.gitVersion ?? meta.version),
 
 			...config.sentryForBackend.options,
 		});

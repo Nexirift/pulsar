@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div v-panel class="about">
 					<div ref="containerEl" class="container" :class="{ playing: easterEggEngine != null }">
 						<img src="/client-assets/about-icon.png" alt="" class="icon" draggable="false" @load="iconLoaded" @click="gravity"/>
-						<div class="misskey">Sharkey</div>
+						<div class="misskey">Pulsar</div>
 						<div class="version">v{{ version }}</div>
 						<span v-for="emoji in easterEggEmojis" :key="emoji.id" class="emoji" :data-physics-x="emoji.left" :data-physics-y="emoji.top" :class="{ _physics_circle_: !emoji.emoji.startsWith(':') }">
 							<MkCustomEmoji v-if="emoji.emoji[0] === ':'" class="emoji" :name="emoji.emoji" :normal="true" :noStyle="true" :fallbackToImage="true"/>
@@ -22,12 +22,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<button v-if="thereIsTreasure" class="_button treasure" @click="getTreasure"><img src="/fluent-emoji/1f3c6.png" class="treasureImg"></button>
 				</div>
 				<div style="text-align: center;">
+					Pulsar is built on Sharkey. <br/><br/>
 					{{ i18n.ts._aboutMisskey.about }}<br><a href="https://joinsharkey.org/" target="_blank" class="_link">{{ i18n.ts.learnMore }}</a>
 				</div>
 				<div v-if="$i != null" style="text-align: center;">
-					<MkButton primary rounded inline @click="iLoveMisskey">I <Mfm text="$[jelly ❤]"/> #Sharkey</MkButton>
+					<MkButton primary rounded inline @click="iLoveMisskey">I <Mfm text="$[jelly ❤]"/> #Pulsar</MkButton>
 				</div>
-				<FormSection v-if="instance.repositoryUrl !== 'https://activitypub.software/TransFem-org/Sharkey/'">
+				<FormSection v-if="instance.repositoryUrl !== 'https://github.com/Nexirift/pulsar'">
 					<div class="_gaps_s">
 						<MkInfo>
 							{{ i18n.tsx._aboutMisskey.thisIsModifiedVersion({ name: instance.name ?? '' }) }}
@@ -44,6 +45,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkInfo v-if="!instance.repositoryUrl && !instance.providesTarball" warn>
 							{{ i18n.ts.sourceCodeIsNotYetProvided }}
 						</MkInfo>
+					</div>
+				</FormSection>
+
+				<FormSection>
+					<div class="_gaps_s">
+						<FormLink to="https://github.com/Nexirift/pulsar" external>
+							<template #icon><i class="ph-code ph-bold ph-lg"></i></template>
+							{{ i18n.ts._aboutMisskey.source }} (Pulsar)
+							<template #suffix>GitHub</template>
+						</FormLink>
 					</div>
 				</FormSection>
 				<FormSection>
@@ -132,6 +143,21 @@ const easterEggEmojis = ref<{
 }[]>([]);
 const easterEggEngine = ref<{ stop: () => void } | null>(null);
 const everyone = ref<Section[]>([
+	{
+		heading: i18n.ts._aboutMisskey.projectMembers + " (Pulsar)",
+		link: {
+			label: i18n.ts._aboutMisskey.allContributors,
+			url: 'https://github.com/Nexirift/pulsar/graphs/contributors',
+		},
+		people: fisher_yates([
+			{
+				handle: '@Creaous',
+				avatar: 'https://github.com/Creaous.png',
+				link: 'https://github.com/Creaous',
+			},
+			
+		]),
+	},
 	{
 		heading: i18n.ts._aboutMisskey.projectMembers,
 		link: {
@@ -322,7 +348,7 @@ function gravity() {
 
 function iLoveMisskey() {
 	os.post({
-		initialText: 'I $[jelly ❤] #Sharkey',
+		initialText: 'I $[jelly ❤] #Pulsar',
 		instant: true,
 	});
 }

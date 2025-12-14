@@ -103,7 +103,7 @@ turnOffBotTrending: "Das Deaktivieren dieser Option verhindert, dass Bots Hashta
 renotes: "Boosts"
 showBots: "Bots in der Chronik anzeigen"
 showRenotes: "Boosts anzeigen"
-repositoryUrlDescription: "Wenn es ein Repository gibt, in dem der Quellcode öffentlich zugänglich ist, gib dessen URL ein. Wenn du Sharkey unverändert verwendest (ohne Änderungen am Quellcode), gib bitte https://activitypub.software/TransFem-org/Sharkey/ ein."
+repositoryUrlDescription: "Wenn es ein Repository gibt, in dem der Quellcode öffentlich zugänglich ist, gib dessen URL ein. Wenn du Pulsar unverändert verwendest (ohne Änderungen am Quellcode), gib bitte https://github.com/Nexirift/pulsar ein."
 donation: "Spenden"
 donationUrl: "Spenden-URL"
 showBelowAvatar: "Unter dem Profilbild anzeigen"

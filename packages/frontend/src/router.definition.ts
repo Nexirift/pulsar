@@ -223,8 +223,8 @@ export const ROUTE_DEF = [{
 	path: '/contact',
 	component: page(() => import('@/pages/contact.vue')),
 }, {
-	path: '/about-sharkey',
-	component: page(() => import('@/pages/about-sharkey.vue')),
+	path: '/about-pulsar',
+	component: page(() => import('@/pages/about-pulsar.vue')),
 }, {
 	path: '/invite',
 	name: 'invite',

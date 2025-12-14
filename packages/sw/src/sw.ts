@@ -87,7 +87,7 @@ globalThis.addEventListener('push', ev => {
 				break;
 		}
 
-		await createEmptyNotification();
+		//await createEmptyNotification();
 		return;
 	}));
 });

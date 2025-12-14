@@ -23,7 +23,7 @@ import { i18n, updateI18n } from '@/i18n.js';
 
 import type { Theme } from '@/theme.js';
 
-console.log('Sharkey Embed');
+console.log('Pulsar Embed');
 
 //#region Embedパラメータの取得・パース
 const params = new URLSearchParams(location.search);

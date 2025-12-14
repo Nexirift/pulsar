@@ -27,7 +27,7 @@ const modal = useTemplateRef('modal');
 
 const whatIsNew = () => {
 	modal.value?.close();
-	window.open(`https://activitypub.software/TransFem-org/Sharkey/-/releases/${version}`, '_blank');
+	window.open(`https://github.com/Nexirift/pulsar/releases/${version}`, '_blank');
 };
 
 onMounted(() => {

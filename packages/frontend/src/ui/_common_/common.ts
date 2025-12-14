@@ -168,7 +168,7 @@ export function openInstanceMenu(ev: MouseEvent) {
 		type: 'link',
 		text: i18n.ts.aboutMisskey,
 		icon: 'sk-icons sk-shark sk-icons-lg',
-		to: '/about-sharkey',
+		to: '/about-pulsar',
 	});
 
 	os.popupMenu(menuItems, ev.currentTarget ?? ev.target, {
