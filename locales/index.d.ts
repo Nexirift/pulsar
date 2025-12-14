@@ -6208,6 +6208,18 @@ export interface Locale extends ILocale {
              * You can view notes from connected servers picked by your admins.
              */
             "bubble": string;
+            /**
+             * Customize timeline tabs
+             */
+            "customizeTabs": string;
+            /**
+             * Show, hide, and reorder timeline tabs to customize your timeline experience.
+             */
+            "customizeTabsDescription": string;
+            /**
+             * Timeline tabs
+             */
+            "timelineTabs": string;
         };
         "_postNote": {
             /**

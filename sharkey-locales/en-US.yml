@@ -209,6 +209,9 @@ _initialTutorial:
   _timeline:
     description1: "Pulsar provides multiple timelines based on usage (some may not be available depending on the server's policies)."
     bubble: "You can view notes from connected servers picked by your admins."
+    customizeTabs: "Customize timeline tabs"
+    customizeTabsDescription: "Show, hide, and reorder timeline tabs to customize your timeline experience."
+    timelineTabs: "Timeline tabs"
   _postNote:
     description1: "When posting a note on Pulsar, various options are available. The posting form looks like this."
     _visibility:

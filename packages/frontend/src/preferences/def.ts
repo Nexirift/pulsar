@@ -138,6 +138,7 @@ export const PREF_DEF = {
 			'explore',
 			'followRequests',
 			'-',
+			'chat',
 			'announcements',
 			'search',
 			'-',
@@ -153,6 +154,19 @@ export const PREF_DEF = {
 			'notifications',
 			'chat'
 		],
+	},
+	timelineTabs: {
+		default: [
+			{ id: 'home', visible: true },
+			{ id: 'local', visible: true },
+			{ id: 'social', visible: true },
+			{ id: 'bubble', visible: true },
+			{ id: 'global', visible: true },
+			{ id: 'following', visible: true },
+			{ id: 'lists', visible: true },
+			{ id: 'antennas', visible: true },
+			{ id: 'channels', visible: true },
+		] as { id: string; visible: boolean }[],
 	},
 	statusbars: {
 		default: [] as {

@@ -30,7 +30,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, watch, provide, useTemplateRef, ref, onMounted, onActivated } from 'vue';
+import { computed, watch, provide, useTemplateRef, ref, onMounted, onActivated, defineAsyncComponent } from 'vue';
 import type { Tab } from '@/components/global/MkPageHeader.tabs.vue';
 import type { MenuItem } from '@/types/menu.js';
 import type { BasicTimelineType } from '@/timelines.js';
@@ -48,6 +48,7 @@ import { deepMerge } from '@/utility/merge.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { availableBasicTimelines, hasWithReplies, isAvailableBasicTimeline, isBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
 import { prefer } from '@/preferences.js';
+import { PREF_DEF } from '@/preferences/def.js';
 import { useRouter } from '@/router';
 
 provide('shouldOmitHeaderTitle', true);
@@ -251,6 +252,12 @@ onActivated(() => {
 
 const router = useRouter();
 
+async function customizeTimelineTabs() {
+	const { canceled } = await os.popup(defineAsyncComponent(() => import('@/components/MkTimelineTabsSettings.vue')), {}, {
+		closed: () => {},
+	});
+}
+
 const headerActions = computed(() => {
 	const tmp = [
 		{
@@ -287,6 +294,11 @@ const headerActions = computed(() => {
 					text: i18n.ts.fileAttachedOnly,
 					ref: onlyFiles,
 					disabled: isBasicTimeline(src.value) && hasWithReplies(src.value) ? withReplies : false,
+				}, { type: 'divider' }, {
+					type: 'button',
+					icon: 'ti ti-layout-navbar',
+					text: i18n.ts._initialTutorial._timeline.customizeTabs,
+					action: () => customizeTimelineTabs(),
 				});
 
 				os.popupMenu(menuItems, ev.currentTarget ?? ev.target);
@@ -305,44 +317,81 @@ const headerActions = computed(() => {
 	return tmp;
 });
 
-const headerTabs = computed(() => [...(prefer.r.pinnedUserLists.value.map(l => ({
-	key: 'list:' + l.id,
-	title: l.name,
-	icon: 'ti ti-star',
-	iconOnly: true,
-}))), ...availableBasicTimelines().map(tl => ({
-	key: tl,
-	title: i18n.ts._timelines[tl],
-	icon: basicTimelineIconClass(tl),
-	iconOnly: true,
-})), {
-	icon: 'ph-user-check ph-bold ph-lg',
-	title: i18n.ts.following,
-	iconOnly: true,
-	onClick: () => router.push('/following-feed'),
-}, {
-	icon: 'ti ti-list',
-	title: i18n.ts.lists,
-	iconOnly: true,
-	onClick: chooseList,
-}, {
-	icon: 'ti ti-antenna',
-	title: i18n.ts.antennas,
-	iconOnly: true,
-	onClick: chooseAntenna,
-}, {
-	icon: 'ti ti-device-tv',
-	title: i18n.ts.channel,
-	iconOnly: true,
-	onClick: chooseChannel,
-}] as Tab[]);
+const headerTabs = computed(() => {
+	// Get user-configured timeline tabs in their preferred order
+	const tabs = prefer.r.timelineTabs?.value ?? PREF_DEF.timelineTabs.default;
+	
+	const resultTabs: Tab[] = [];
+	
+	// Add pinned user lists first
+	resultTabs.push(...prefer.r.pinnedUserLists.value.map(l => ({
+		key: 'list:' + l.id,
+		title: l.name,
+		icon: 'ti ti-star',
+		iconOnly: true,
+	})));
+	
+	// Process configured tabs
+	for (const tab of tabs) {
+		if (!tab.visible) continue;
+		
+		if (isBasicTimeline(tab.id)) {
+			// Basic timeline tabs
+			if (isAvailableBasicTimeline(tab.id as BasicTimelineType)) {
+				resultTabs.push({
+					key: tab.id,
+					title: i18n.ts._timelines[tab.id],
+					icon: basicTimelineIconClass(tab.id as BasicTimelineType),
+					iconOnly: true,
+				});
+			}
+		} else if (tab.id === 'lists') {
+			resultTabs.push({
+				icon: 'ti ti-list',
+				title: i18n.ts.lists,
+				iconOnly: true,
+				onClick: chooseList,
+			});
+		} else if (tab.id === 'antennas') {
+			resultTabs.push({
+				icon: 'ti ti-antenna',
+				title: i18n.ts.antennas,
+				iconOnly: true,
+				onClick: chooseAntenna,
+			});
+		} else if (tab.id === 'channels') {
+			resultTabs.push({
+				icon: 'ti ti-device-tv',
+				title: i18n.ts.channel,
+				iconOnly: true,
+				onClick: chooseChannel,
+			});
+		} else if (tab.id === 'following') {
+			resultTabs.push({
+				icon: 'ph-user-check ph-bold ph-lg',
+				title: i18n.ts.following,
+				iconOnly: true,
+				onClick: () => router.push('/following-feed'),
+			});
+		}
+	}
+	
+	return resultTabs;
+});
 
-const headerTabsWhenNotLogin = computed(() => [...availableBasicTimelines().map(tl => ({
-	key: tl,
-	title: i18n.ts._timelines[tl],
-	icon: basicTimelineIconClass(tl),
-	iconOnly: true,
-}))] as Tab[]);
+const headerTabsWhenNotLogin = computed(() => {
+	// Get user-configured timeline tabs in their preferred order
+	const tabs = prefer.r.timelineTabs?.value ?? PREF_DEF.timelineTabs.default;
+	
+	return tabs
+		.filter(tab => tab.visible && isAvailableBasicTimeline(tab.id as BasicTimelineType))
+		.map(tab => ({
+			key: tab.id,
+			title: i18n.ts._timelines[tab.id],
+			icon: basicTimelineIconClass(tab.id as BasicTimelineType),
+			iconOnly: true,
+		})) as Tab[];
+});
 
 definePage(() => ({
 	title: i18n.ts.timeline,

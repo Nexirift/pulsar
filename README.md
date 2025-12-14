@@ -7,6 +7,9 @@ Nexirift Pulsar is a fork of Sharkey. Our main goal is to implement features tha
 - Bottom navigation bar customisation
 - Fixed random "test" notification
 - Requires adminstrator to view emails
+- New "Combined" profile view
+- Chat shown in navbar by default
+- Allow timeline tabs to be customised
 
 ## Sharkey README
 

@@ -164,6 +164,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<!-- Instead, we add a "no notes" placeholder and default to null (all notes) if there's nothing pinned. -->
 						<!-- It also converts all comments into text! -->
 						<MkTab v-model="noteview" :class="$style.tab">
+							<option value="combined">{{ i18n.ts.combined }}</option>
 							<option value="pinned">{{ i18n.ts.pinnedOnly }}</option>
 							<option :value="null">{{ i18n.ts.notes }}</option>
 							<option value="all">{{ i18n.ts.all }}</option>
@@ -171,7 +172,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkTab>
 					</template>
 					<MkLazy>
-						<div v-if="noteview === 'pinned'" class="_gaps">
+						<div v-if="noteview === 'combined'" class="_gaps">
+							<div v-if="user.pinnedNotes.length > 0" class="_panel" style="margin-bottom: 8px;">
+								<DynamicNote v-for="note of user.pinnedNotes" :key="note.id" class="note" :class="$style.pinnedNote" :note="note" :pinned="true" @expandMute="n => onExpandMute(n)"/>
+							</div>
+							<MkNotes :class="$style.tl" :noGap="true" :pagination="AllPagination" @expandMute="n => onExpandMute(n)"/>
+						</div>
+						<div v-else-if="noteview === 'pinned'" class="_gaps">
 							<div v-if="user.pinnedNotes.length < 1" class="_fullinfo">
 								<MkResult type="empty" :text="i18n.ts.noNotes"/>
 							</div>
@@ -291,7 +298,7 @@ const memoDraft = ref(props.user.memo);
 const isEditingMemo = ref(false);
 const moderationNote = ref(props.user.moderationNote);
 const editModerationNote = ref(false);
-const noteview = ref<string | null>(props.user.pinnedNotes.length ? 'pinned' : null);
+const noteview = ref<string | null>('combined');
 
 const listenbrainzdata = ref(false);
 if (props.user.listenbrainz) {
@@ -343,9 +350,9 @@ const AllPagination = {
 	limit: 10,
 	params: computed(() => ({
 		userId: props.user.id,
-		withRenotes: noteview.value === 'all',
-		withReplies: noteview.value === 'all',
-		withChannelNotes: noteview.value === 'all',
+		withRenotes: noteview.value === 'all' || noteview.value === 'combined',
+		withReplies: noteview.value === 'all' || noteview.value === 'combined',
+		withChannelNotes: noteview.value === 'all' || noteview.value === 'combined',
 		withFiles: noteview.value === 'files',
 	})),
 };
