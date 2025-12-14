@@ -337,8 +337,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}));
 
 			return {
-				email: profile.email,
-				emailVerified: profile.emailVerified,
+				email: isAdministrator ? profile.email : "[requires administrator permission]",
+				emailVerified: profile.emailVerified, // this isn't really that sensitive so we'll still reveal it
 				approved: user.approved,
 				signupReason: user.signupReason,
 				followedMessage: profile.followedMessage,

@@ -1,12 +1,12 @@
 # Reporting Security Issues
 
-If you discover a security issue in Sharkey, please report it by sending an
-email to [admin@transfem.org](mailto:admin@transfem.org).
+If you discover a security issue in Pulsar, please report it by sending an
+email to [security@nexirift.com](mailto:security@nexirift.com).
 
 This will allow us to assess the risk, and make a fix available before we add a
 bug report to the GitLab repository.
 
-Thanks for helping make Sharkey safe for everyone.
+Thanks for helping make Pulsar safe for everyone.
 
 > [!note]
 > CNA [requires](https://www.cve.org/ResourcesSupport/AllResources/CNARules#section_5-2_Description) that CVEs include a description in English for inclusion in the CVE Catalog.

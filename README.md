@@ -2,9 +2,11 @@
 
 Nexirift Pulsar is a fork of Sharkey. Our main goal is to implement features that our users want.
 
-## Features
+## Changes
 
 - Bottom navigation bar customisation
+- Fixed random "test" notification
+- Requires adminstrator to view emails
 
 ## Sharkey README
 
