@@ -3,6 +3,7 @@ name: Container Security Scanning
 on:
   push:
     branches:
+      - main
       - develop
       - stable
     tags:
