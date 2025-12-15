@@ -83,20 +83,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div v-if="showingOptions" style="padding: 8px 16px;">
 	</div>
 	<footer :class="$style.footer">
-		<div :class="$style.footerLeft">
-			<button v-tooltip="i18n.ts.attachFile" class="_button" :class="$style.footerButton" @click="chooseFileFrom"><i class="ti ti-photo-plus"></i></button>
-			<button v-tooltip="i18n.ts.poll" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: poll }]" @click="togglePoll"><i class="ti ti-chart-arrows"></i></button>
-			<button v-tooltip="i18n.ts.useCw" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: useCw }]" @click="useCw = !useCw"><i class="ti ti-eye-off"></i></button>
-			<button v-tooltip="i18n.ts.mention" class="_button" :class="$style.footerButton" @click="insertMention"><i class="ti ti-at"></i></button>
-			<button v-tooltip="i18n.ts.hashtags" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: withHashtags }]" @click="withHashtags = !withHashtags"><i class="ti ti-hash"></i></button>
-			<button v-if="postFormActions.length > 0" v-tooltip="i18n.ts.plugins" class="_button" :class="$style.footerButton" @click="showActions"><i class="ti ti-plug"></i></button>
-			<button v-tooltip="i18n.ts.emoji" :class="['_button', $style.footerButton]" @click="insertEmoji"><i class="ti ti-mood-happy"></i></button>
-			<button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
-		</div>
-		<div :class="$style.footerRight">
-			<button v-tooltip="i18n.ts.previewNoteText" class="_button" :class="[$style.footerButton, { [$style.previewButtonActive]: showPreview }]" @click="showPreview = !showPreview"><i class="ti ti-eye"></i></button>
-			<button v-tooltip="'MFM Cheatsheet'" class="_button" :class="$style.footerButton" @click="MFMWindow"><i class="ph-notebook ph-bold ph-lg"></i></button>
-			<!--<button v-tooltip="i18n.ts.more" class="_button" :class="$style.footerButton" @click="showingOptions = !showingOptions"><i class="ti ti-dots"></i></button>-->
+		<div :class="$style.footerButtons">
+			<div :class="$style.footerLeft">
+				<button v-tooltip="i18n.ts.attachFile" class="_button" :class="$style.footerButton" @click="chooseFileFrom"><i class="ti ti-photo-plus"></i></button>
+				<button v-tooltip="i18n.ts.poll" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: poll }]" @click="togglePoll"><i class="ti ti-chart-arrows"></i></button>
+				<button v-tooltip="i18n.ts.useCw" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: useCw }]" @click="useCw = !useCw"><i class="ti ti-eye-off"></i></button>
+				<button v-tooltip="i18n.ts.mention" class="_button" :class="$style.footerButton" @click="insertMention"><i class="ti ti-at"></i></button>
+				<button v-tooltip="i18n.ts.hashtags" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: withHashtags }]" @click="withHashtags = !withHashtags"><i class="ti ti-hash"></i></button>
+				<button v-if="postFormActions.length > 0" v-tooltip="i18n.ts.plugins" class="_button" :class="$style.footerButton" @click="showActions"><i class="ti ti-plug"></i></button>
+				<button v-tooltip="i18n.ts.emoji" :class="['_button', $style.footerButton]" @click="insertEmoji"><i class="ti ti-mood-happy"></i></button>
+				<button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
+			</div>
+			<div :class="$style.footerRight">
+				<button v-tooltip="i18n.ts.previewNoteText" class="_button" :class="[$style.footerButton, { [$style.previewButtonActive]: showPreview }]" @click="showPreview = !showPreview"><i class="ti ti-eye"></i></button>
+				<button v-tooltip="'MFM Cheatsheet'" class="_button" :class="$style.footerButton" @click="MFMWindow"><i class="ph-notebook ph-bold ph-lg"></i></button>
+				<!--<button v-tooltip="i18n.ts.more" class="_button" :class="$style.footerButton" @click="showingOptions = !showingOptions"><i class="ti ti-dots"></i></button>-->
+			</div>
 		</div>
 	</footer>
 	<datalist id="hashtags">
@@ -294,8 +296,18 @@ const canPost = computed((): boolean => {
 const withHashtags = computed(store.makeGetterSetter('postFormWithHashtags'));
 const hashtags = computed(store.makeGetterSetter('postFormHashtags'));
 
+function adjustTextareaHeight() {
+	if (textareaEl.value) {
+		textareaEl.value.style.height = 'auto';
+		textareaEl.value.style.height = `${textareaEl.value.scrollHeight}px`;
+	}
+}
+
 watch(text, () => {
 	checkMissingMention();
+	nextTick(() => {
+		adjustTextareaHeight();
+	});
 }, { immediate: true });
 
 watch(visibility, () => {
@@ -306,6 +318,18 @@ watch(visibleUsers, () => {
 	checkMissingMention();
 }, {
 	deep: true,
+});
+
+watch(files, () => {
+	nextTick(() => {
+		adjustTextareaHeight();
+	});
+}, { deep: true });
+
+watch(useCw, () => {
+	nextTick(() => {
+		adjustTextareaHeight();
+	});
 });
 
 if (props.mention) {
@@ -1227,6 +1251,11 @@ onMounted(() => {
 
 		nextTick(() => watchForDraft());
 	});
+
+	// Initial textarea height adjustment
+	nextTick(() => {
+		adjustTextareaHeight();
+	});
 });
 
 defineExpose({
@@ -1501,7 +1530,8 @@ defineExpose({
 	min-width: 100%;
 	width: 100%;
 	min-height: 5.85em;
-	height: 100%;
+	overflow-y: hidden;
+	resize: none;
 }
 
 .textCount {
@@ -1521,16 +1551,21 @@ defineExpose({
 }
 
 .footer {
-	display: flex;
 	padding: 0 16px 16px 16px;
 	font-size: 1em;
+}
+
+.footerButtons {
+	display: flex;
+	overflow-x: auto;
+	overflow-y: hidden;
 }
 
 .footerLeft {
 	flex: 1;
 	display: grid;
-	grid-auto-flow: row;
-	grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+	grid-auto-flow: column;
+	grid-auto-columns: 42px;
 	grid-auto-rows: 40px;
 }
 
@@ -1538,8 +1573,8 @@ defineExpose({
 	flex: 0.3;
 	margin-left: auto;
 	display: grid;
-	grid-auto-flow: row;
-	grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+	grid-auto-flow: column;
+	grid-auto-columns: 42px;
 	grid-auto-rows: 40px;
 	direction: rtl;
 }
