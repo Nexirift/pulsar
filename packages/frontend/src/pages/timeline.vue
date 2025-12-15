@@ -157,9 +157,10 @@ async function createList() {
 	const { canceled, result: name } = await os.inputText({
 		title: i18n.ts.enterListName,
 	});
-	if (canceled) return;
-	await os.apiWithDialog('users/lists/create', { name: name });
+	if (canceled || name === null) return;
+	const list = await os.apiWithDialog('users/lists/create', { name: name });
 	userListsCache.delete();
+	router.push(`/my/lists/${list.id}`);
 }
 
 async function chooseAntenna(ev: MouseEvent): Promise<void> {
