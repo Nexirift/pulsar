@@ -5,13 +5,18 @@ Nexirift Pulsar is a fork of Sharkey. Our main goal is to implement features tha
 ## Changes
 
 - Bottom navigation bar customisation
+	- Post button now floats (hides in a chat)
 - Fixed random "test" notification
 - Requires adminstrator to view emails
 - New "Combined" profile view
+	- Has pinned posts, posts (no replies), and boosts
 - Chat shown in navbar by default
+	- On both the desktop and mobile ones
 - Allow timeline tabs to be customised
+	- Show or hide labels for all tabs
+- Post form textarea resizes automatically
 
-## Sharkey README
+# Sharkey README
 
 <div align="center">
 <a href="https://joinsharkey.org/">

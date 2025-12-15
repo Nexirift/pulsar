@@ -959,9 +959,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<hr>
 
 		<div class="_gaps_s">
-			<FormLink to="/settings/mobile-footer-menu"><template #icon><i class="ti ti-list"></i></template>{{ i18n.ts.mobileFooterMenu }}</FormLink>
-			<FormLink to="/settings/navbar"><template #icon><i class="ti ti-list"></i></template>{{ i18n.ts.navbar }}</FormLink>
-			<FormLink to="/settings/statusbar"><template #icon><i class="ti ti-list"></i></template>{{ i18n.ts.statusbar }}</FormLink>
+			<FormLink to="/settings/mobile-footer-menu"><template #icon><i class="ti ti-device-mobile"></i></template>{{ i18n.ts.mobileFooterMenu }}</FormLink>
+			<FormLink to="/settings/navbar"><template #icon><i class="ti ti-menu-2"></i></template>{{ i18n.ts.navbar }}</FormLink>
+			<FormLink to="/settings/statusbar"><template #icon><i class="ti ti-rectangle"></i></template>{{ i18n.ts.statusbar }}</FormLink>
 			<FormLink to="/settings/deck"><template #icon><i class="ti ti-columns"></i></template>{{ i18n.ts.deck }}</FormLink>
 			<FormLink to="/settings/custom-css"><template #icon><i class="ti ti-code"></i></template>{{ i18n.ts.customCss }}</FormLink>
 		</div>
