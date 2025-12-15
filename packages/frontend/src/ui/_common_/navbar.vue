@@ -26,7 +26,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					:class="[$style.item, { [$style.active]: navbarItemDef[item].active }]"
 					:activeClass="$style.active"
 					:to="navbarItemDef[item].to"
-					v-on="navbarItemDef[item].action ? { click: navbarItemDef[item].action } : {}"
+					v-on="item === 'widgets' && onWidgetButtonClick ? { click: onWidgetButtonClick } : navbarItemDef[item].action ? { click: navbarItemDef[item].action } : {}"
 				>
 					<i class="ti-fw" :class="[$style.itemIcon, navbarItemDef[item].icon]" :style="{ viewTransitionName: 'navbar-item-' + item }"></i><span :class="$style.itemText">{{ navbarItemDef[item].title }}</span>
 					<span v-if="navbarItemDef[item].indicated" :class="$style.itemIndicator" class="_blink">
@@ -48,9 +48,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkA>
 		</div>
 		<div :class="$style.bottom">
-			<button v-if="showWidgetButton" class="_button" :class="[$style.widget]" @click="() => emit('widgetButtonClick')">
-				<i class="ti ti-apps ti-fw"></i>
-			</button>
 			<button v-tooltip.noDelay.right="i18n.ts.note" class="_button" :class="[$style.post]" data-cy-open-post-form @click="() => { os.post(); }">
 				<i class="ti ti-pencil ti-fw" :class="$style.postIcon"></i><span :class="$style.postText">{{ i18n.ts.note }}</span>
 			</button>
@@ -108,7 +105,7 @@ import { $i } from '@/i.js';
 const router = useRouter();
 
 const props = defineProps<{
-	showWidgetButton?: boolean;
+	onWidgetButtonClick?: () => void;
 }>();
 
 const emit = defineEmits<{

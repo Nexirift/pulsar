@@ -8,7 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<XTitlebar v-if="prefer.r.showTitlebar.value" style="flex-shrink: 0;"/>
 
 	<div :class="$style.nonTitlebarArea">
-		<XSidebar v-if="!isMobile" :class="$style.sidebar" :showWidgetButton="!isDesktop" @widgetButtonClick="widgetsShowing = true"/>
+		<XSidebar v-if="!isMobile" :class="$style.sidebar" :onWidgetButtonClick="toggleWidgets"/>
 
 		<div :class="[$style.contents, !isMobile && prefer.r.showTitlebar.value ? $style.withSidebarAndTitlebar : null]" @contextmenu.stop="onContextmenu">
 			<div>
@@ -21,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<XMobileFooterMenu v-if="isMobile" ref="navFooter" v-model:drawerMenuShowing="drawerMenuShowing" v-model:widgetsShowing="widgetsShowing"/>
 		</div>
 
-		<div v-if="isDesktop && !pageMetadata?.needWideArea" :class="$style.widgets">
+		<div v-if="isDesktop && !pageMetadata?.needWideArea && prefer.r.widgetsVisible.value" :class="$style.widgets">
 			<XWidgets/>
 		</div>
 	</div>
@@ -90,6 +90,16 @@ provide(DI.drawerMenuShowing, drawerMenuShowing);
 mainRouter.on('change', () => {
 	drawerMenuShowing.value = false;
 });
+
+function toggleWidgets() {
+	// On mobile and tablet (when no widgets column exists), open the widgets drawer
+	// On desktop (when widgets column exists), toggle the static widgets column visibility
+	if (!isDesktop.value) {
+		widgetsShowing.value = true;
+	} else {
+		prefer.commit('widgetsVisible', !prefer.s.widgetsVisible);
+	}
+}
 
 if (window.innerWidth > 1024) {
 	const tempUI = miLocalStorage.getItem('ui_temp');

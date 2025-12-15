@@ -196,6 +196,9 @@ export const PREF_DEF = {
 	advancedMfm: {
 		default: true,
 	},
+	widgetsVisible: {
+		default: true,
+	},
 	showReactionsCount: {
 		default: false,
 	},
