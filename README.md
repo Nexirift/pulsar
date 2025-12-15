@@ -15,6 +15,7 @@ Nexirift Pulsar is a fork of Sharkey. Our main goal is to implement features tha
 - Allow timeline tabs to be customised
 	- Show or hide labels for all tabs
 - Post form textarea resizes automatically
+- Added a toggle for the widgets sidebar
 
 # Sharkey README
 
