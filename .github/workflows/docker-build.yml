@@ -1,11 +1,12 @@
 name: Build and Push Docker Image
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - main
-      - develop
-      - stable
+    # branches:
+    #   - main
+    #   - develop
+    #   - stable
     tags:
       - '*'
 
