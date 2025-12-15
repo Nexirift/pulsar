@@ -309,7 +309,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const isSilenced = user.isSilenced || !(await this.roleService.getUserPolicies(user.id)).canPublicNote;
 
 			const _me = await this.usersRepository.findOneByOrFail({ id: me.id });
-			if (!await this.roleService.isAdministrator(_me) && await this.roleService.isAdministrator(user)) {
+			const _meIsAdministrator = await this.roleService.isAdministrator(_me);
+
+			if (!_meIsAdministrator && isAdministrator) {
 				throw new Error('cannot show info of admin');
 			}
 
@@ -337,7 +339,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}));
 
 			return {
-				email: isAdministrator ? profile.email : "[requires administrator permission]",
+				email: _meIsAdministrator ? profile.email : null,
 				emailVerified: profile.emailVerified, // this isn't really that sensitive so we'll still reveal it
 				approved: user.approved,
 				signupReason: user.signupReason,

@@ -57,7 +57,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkKeyValue>
 						<MkKeyValue v-if="info" oneline>
 							<template #key>{{ i18n.ts.email }}</template>
-							<template #value><span class="_monospace">{{ info.email }}</span></template>
+							<template #value><span class="_monospace">{{ iAmAdmin ? info.email : 'Requires Administrator Permission' }}</span></template>
 						</MkKeyValue>
 						<MkKeyValue v-if="info" oneline>
 							<template #key>{{ i18n.ts.totalFollowers }}</template>
