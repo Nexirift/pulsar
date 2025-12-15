@@ -36,6 +36,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkButton primary class="save" @click="save"><i class="ti ti-device-floppy"></i> {{ i18n.ts.save }}</MkButton>
 		</div>
 
+		<MkInfo>{{ i18n.ts._settings.widgetsNavbarInfo }}</MkInfo>
+
 		<MkRadios v-model="menuDisplay">
 			<template #label>{{ i18n.ts.display }}</template>
 			<option value="sideFull">{{ i18n.ts._menuDisplay.sideFull }}</option>
@@ -70,6 +72,7 @@ import FormSlot from '@/components/form/slot.vue';
 import MkContainer from '@/components/MkContainer.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkPreferenceContainer from '@/components/MkPreferenceContainer.vue';
+import MkInfo from '@/components/MkInfo.vue';
 import * as os from '@/os.js';
 import { navbarItemDef } from '@/navbar.js';
 import { store } from '@/store.js';

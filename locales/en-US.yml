@@ -1427,6 +1427,7 @@ _settings:
   showAccountMenuOnAvatarClick: "Show account menu on avatar click"
   showAccountMenuOnAvatarClickDescription: "When enabled on mobile, clicking your avatar in the page header will open the account menu. When disabled, it will open the drawer menu. A menu button will be added to the account menu to access the drawer menu."
   mobileFooterMenuInfo: "The mobile footer menu is displayed at the bottom of the screen on mobile devices."
+  widgetsNavbarInfo: "On desktop, the widgets button toggles the right sidebar. On mobile, add it to the footer menu to open the widgets drawer."
   ifOn: "When turned on"
   ifOff: "When turned off"
   enableSyncThemesBetweenDevices: "Synchronize installed themes across devices"
