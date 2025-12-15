@@ -91,7 +91,14 @@ export default class Logger {
 			level === 'debug' ? chalk.gray('VERB') :
 			level === 'info' ? chalk.blue('INFO') :
 			null;
-		const contexts = [this.context].concat(subContexts).map(d => d.color ? chalk.rgb(...convertColor.keyword.rgb(d.color))(d.name) : chalk.white(d.name));
+	const contexts = [this.context].concat(subContexts).map(d => {
+		if (d.color) {
+			// Create a hex color string to avoid color-convert mutation issues
+			const hex = convertColor.keyword.hex(d.color);
+			return chalk.hex(hex)(d.name);
+		}
+		return chalk.white(d.name);
+	});
 		const m =
 			level === 'error' ? chalk.red(message) :
 			level === 'warning' ? chalk.yellow(message) :
