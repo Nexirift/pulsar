@@ -114,25 +114,26 @@ export class CheckModeratorsActivityProcessorService {
 
 	@bindThis
 	private async processImpl() {
-		const evaluateResult = await this.evaluateModeratorsInactiveDays();
-		if (evaluateResult.isModeratorsInactive) {
-			this.logger.warn(`The moderator has been inactive for ${MODERATOR_INACTIVITY_LIMIT_DAYS} days. We will move to invitation only.`);
+		// const evaluateResult = await this.evaluateModeratorsInactiveDays();
+		// if (evaluateResult.isModeratorsInactive) {
+		// 	this.logger.warn(`The moderator has been inactive for ${MODERATOR_INACTIVITY_LIMIT_DAYS} days. We will move to invitation only.`);
 
-			await this.changeToInvitationOnly();
-			await this.notifyChangeToInvitationOnly();
-		} else {
-			const remainingTime = evaluateResult.remainingTime;
-			if (remainingTime.asDays <= MODERATOR_INACTIVITY_WARNING_REMAINING_DAYS) {
-				const timeVariant = remainingTime.asDays === 0 ? `${remainingTime.asHours} hours` : `${remainingTime.asDays} days`;
-				this.logger.warn(`A moderator has been inactive for a period of time. If you are inactive for an additional ${timeVariant}, it will switch to invitation only.`);
+		// 	await this.changeToInvitationOnly();
+		// 	await this.notifyChangeToInvitationOnly();
+		// } else {
+		// 	const remainingTime = evaluateResult.remainingTime;
+		// 	if (remainingTime.asDays <= MODERATOR_INACTIVITY_WARNING_REMAINING_DAYS) {
+		// 		const timeVariant = remainingTime.asDays === 0 ? `${remainingTime.asHours} hours` : `${remainingTime.asDays} days`;
+		// 		this.logger.warn(`A moderator has been inactive for a period of time. If you are inactive for an additional ${timeVariant}, it will switch to invitation only.`);
 
-				if (remainingTime.asHours % MODERATOR_INACTIVITY_WARNING_NOTIFY_INTERVAL_HOURS === 0) {
-					// ジョブの実行頻度と同等だと通知が多すぎるため期限から6時間ごとに通知する
-					// つまり、のこり2日を切ったら6時間ごとに通知が送られる
-					await this.notifyInactiveModeratorsWarning(remainingTime);
-				}
-			}
-		}
+		// 		if (remainingTime.asHours % MODERATOR_INACTIVITY_WARNING_NOTIFY_INTERVAL_HOURS === 0) {
+		// 			// ジョブの実行頻度と同等だと通知が多すぎるため期限から6時間ごとに通知する
+		// 			// つまり、のこり2日を切ったら6時間ごとに通知が送られる
+		// 			await this.notifyInactiveModeratorsWarning(remainingTime);
+		// 		}
+		// 	}
+		// }
+		// disabled for now
 	}
 
 	/**
@@ -211,7 +212,8 @@ export class CheckModeratorsActivityProcessorService {
 		for (const moderator of moderators) {
 			const profile = moderatorProfiles.get(moderator.id);
 			if (profile && profile.email && profile.emailVerified) {
-				this.emailService.sendEmail(profile.email, mail.subject, mail.html, mail.text);
+				// disabled for now
+				// this.emailService.sendEmail(profile.email, mail.subject, mail.html, mail.text);
 			}
 		}
 
