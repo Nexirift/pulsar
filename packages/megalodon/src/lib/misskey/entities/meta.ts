@@ -9,6 +9,7 @@ export interface Meta {
 	description: string
 	langs: Array<string>
 	disableRegistration: boolean
+	disableInactivity: boolean
 	disableLocalTimeline: boolean
 	bannerUrl: string
 	maxNoteTextLength: number

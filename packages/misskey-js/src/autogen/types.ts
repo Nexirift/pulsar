@@ -11535,6 +11535,7 @@ export type components = {
             defaultLightTheme: string | null;
             defaultLike: string | null;
             disableRegistration: boolean;
+            disableInactivity: boolean;
             emailRequiredForSignup: boolean;
             approvalRequiredForSignup: boolean;
             enableHcaptcha: boolean;
@@ -16353,6 +16354,7 @@ export interface operations {
                         description: string | null;
                         about: string | null;
                         disableRegistration: boolean;
+                        disableInactivity: boolean;
                         impressumUrl: string | null;
                         donationUrl: string | null;
                         maintainerEmail: string | null;
@@ -20339,6 +20341,7 @@ export interface operations {
             content: {
                 'application/json': {
                     disableRegistration?: boolean | null;
+                    disableInactivity?: boolean | null;
                     pinnedUsers?: string[] | null;
                     hiddenTags?: string[] | null;
                     blockedHosts?: string[] | null;

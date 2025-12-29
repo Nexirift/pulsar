@@ -16,6 +16,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</template>
 				</MkSwitch>
 
+				<MkSwitch :modelValue="disableInactivity" @update:modelValue="onChange_disableInactivity">
+					<template #label>{{ i18n.ts._serverSettings.disableInactivity }}</template>
+					<template #caption>
+						<div>{{ i18n.ts._serverSettings.disableInactivityDescription }}</div>
+						<div><i class="ti ti-alert-triangle" style="color: var(--MI_THEME-warn);"></i> {{ i18n.ts._serverSettings.disableInactivityWarning }}</div>
+					</template>
+				</MkSwitch>
+
 				<MkSwitch v-model="emailRequiredForSignup" @change="onChange_emailRequiredForSignup">
 					<template #label>{{ i18n.ts.emailRequiredForSignup }}</template>
 				</MkSwitch>
@@ -31,7 +39,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #label>{{ i18n.ts.bubbleTimeline }}</template>
 
 					<div class="_gaps">
-						<div v-if="!$i.policies.btlAvailable">
+						<div v-if="!$i?.policies.btlAvailable">
 							<i class="ti ti-alert-triangle"></i> {{ i18n.ts.bubbleTimelineMustBeEnabled }}
 						</div>
 
@@ -44,7 +52,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkFolder>
 
 				<MkFolder>
-					<template #prefix><i class="ti ti-link"></i></template>
+					<template #icon><i class="ph-link ph-bold ph-lg"></i></template>
 					<template #label>{{ i18n.ts.trustedLinkUrlPatterns }}</template>
 
 					<div class="_gaps">
@@ -71,7 +79,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkFolder>
 
 				<MkFolder>
-					<template #icon><i class="ti ti-message-exclamation"></i></template>
+					<template #icon><i class="ph-exclamation-mark ph-bold ph-lg"></i></template>
 					<template #label>{{ i18n.ts.sensitiveWords }}</template>
 
 					<div class="_gaps">
@@ -186,6 +194,7 @@ import SkPatternTest from '@/components/SkPatternTest.vue';
 import { $i } from '@/i';
 
 const enableRegistration = ref<boolean>(false);
+const disableInactivity = ref<boolean>(false);
 const emailRequiredForSignup = ref<boolean>(false);
 const approvalRequiredForSignup = ref<boolean>(false);
 const sensitiveWords = ref<string>('');
@@ -202,6 +211,7 @@ const mediaSilencedHosts = ref<string>('');
 async function init() {
 	const meta = await misskeyApi('admin/meta');
 	enableRegistration.value = !meta.disableRegistration;
+	disableInactivity.value = meta.disableInactivity;
 	emailRequiredForSignup.value = meta.emailRequiredForSignup;
 	approvalRequiredForSignup.value = meta.approvalRequiredForSignup;
 	sensitiveWords.value = meta.sensitiveWords.join('\n');
@@ -229,6 +239,24 @@ async function onChange_enableRegistration(value: boolean) {
 
 	os.apiWithDialog('admin/update-meta', {
 		disableRegistration: !value,
+	}).then(() => {
+		fetchInstance(true);
+	});
+}
+
+async function onChange_disableInactivity(value: boolean) {
+	if (value) {
+		const { canceled } = await os.confirm({
+			type: 'warning',
+			text: i18n.ts.acknowledgeNotesAndEnable,
+		});
+		if (canceled) return;
+	}
+
+	disableInactivity.value = value;
+
+	os.apiWithDialog('admin/update-meta', {
+		disableInactivity: value,
 	}).then(() => {
 		fetchInstance(true);
 	});

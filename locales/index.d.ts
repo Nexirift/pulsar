@@ -6465,6 +6465,18 @@ export interface Locale extends ILocale {
          * A longer description that will be displayed in the 'Instance Information' page, going in place of the regular instance description. Supports HTML.
          */
         "aboutInstanceDescription": string;
+        /**
+         * Ignore moderation inactivity
+         */
+        "disableInactivity": string;
+        /**
+         * Ignoring moderation inactivity carries risks. It is recommended to only enable it if you have a system in place to continuously monitor the server and respond immediately in case of any issues.
+         */
+        "disableInactivityWarning": string;
+        /**
+         * Disabling detection of moderation inactivity allows for continuous open registration without any interruptions.
+         */
+        "disableInactivityDescription": string;
     };
     "_accountMigration": {
         /**

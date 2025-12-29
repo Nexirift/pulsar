@@ -87,6 +87,7 @@ export class MetaEntityService {
 			privacyPolicyUrl: instance.privacyPolicyUrl,
 			inquiryUrl: instance.inquiryUrl,
 			disableRegistration: instance.disableRegistration,
+			disableInactivity: instance.disableInactivity,
 			emailRequiredForSignup: instance.emailRequiredForSignup,
 			approvalRequiredForSignup: instance.approvalRequiredForSignup,
 			enableHcaptcha: instance.enableHcaptcha,
