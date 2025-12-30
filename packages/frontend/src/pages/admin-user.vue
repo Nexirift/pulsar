@@ -181,7 +181,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkSwitch v-model="rejectQuotes" @update:modelValue="toggleRejectQuotes">{{ user.host == null ? i18n.ts.rejectQuotesLocalUser : i18n.ts.rejectQuotesRemoteUser }}</MkSwitch>
 
 						<MkSwitch
-							v-if="user.host == null && iAmModerator"
+							v-if="iAmModerator"
 							v-model="isEighteenPlusForced"
 							@update:modelValue="toggleisEighteenPlusForced"
 						>

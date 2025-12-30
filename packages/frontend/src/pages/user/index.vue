@@ -6,20 +6,41 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <PageWithHeader v-model:tab="tab" :displayBackButton="true" :tabs="headerTabs" :actions="headerActions" :swipable="isTouchUsing" :page="'user'">
 	<div v-if="user">
-		<XHome v-if="tab === 'home'" :user="user" @unfoldFiles="() => { tab = 'files'; }"/>
-		<div v-else-if="tab === 'notes'" class="_spacer" style="--MI_SPACER-w: 800px;">
-			<XTimeline :user="user"/>
+		<!-- Check if user is marked as 18+ but birthday indicates under 18 -->
+		<div v-if="user.isEighteenPlus && $i?.birthday && (() => {
+			const birth = new Date($i?.birthday);
+			const today = new Date();
+			let age = today.getFullYear() - birth.getFullYear();
+			const m = today.getMonth() - birth.getMonth();
+			if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+				age--;
+			}
+			return age < 18;
+		})()">
+			<Transition :name="prefer.s.animation ? '_transition_zoom' : ''" appear>
+				<div :class="[$style.root, $style.error]">
+					<p :style="{ fontSize: '48px' }">🔞</p>
+
+					<div style="opacity: 0.7;">{{ i18n.ts.userIs18PlusButYouAreUnderage }}</div>
+				</div>
+			</Transition>
 		</div>
-		<XFiles v-else-if="tab === 'files'" :user="user"/>
-		<XActivity v-else-if="tab === 'activity'" :user="user"/>
-		<XAchievements v-else-if="tab === 'achievements'" :user="user"/>
-		<XReactions v-else-if="tab === 'reactions'" :user="user"/>
-		<XClips v-else-if="tab === 'clips'" :user="user"/>
-		<XLists v-else-if="tab === 'lists'" :user="user"/>
-		<XPages v-else-if="tab === 'pages'" :user="user"/>
-		<XFlashs v-else-if="tab === 'flashs'" :user="user"/>
-		<XGallery v-else-if="tab === 'gallery'" :user="user"/>
-		<XRaw v-else-if="tab === 'raw'" :user="user"/>
+		<div v-else>
+			<XHome v-if="tab === 'home'" :user="user" @unfoldFiles="() => { tab = 'files'; }"/>
+			<div v-else-if="tab === 'notes'" class="_spacer" style="--MI_SPACER-w: 800px;">
+				<XTimeline :user="user"/>
+			</div>
+			<XFiles v-else-if="tab === 'files'" :user="user"/>
+			<XActivity v-else-if="tab === 'activity'" :user="user"/>
+			<XAchievements v-else-if="tab === 'achievements'" :user="user"/>
+			<XReactions v-else-if="tab === 'reactions'" :user="user"/>
+			<XClips v-else-if="tab === 'clips'" :user="user"/>
+			<XLists v-else-if="tab === 'lists'" :user="user"/>
+			<XPages v-else-if="tab === 'pages'" :user="user"/>
+			<XFlashs v-else-if="tab === 'flashs'" :user="user"/>
+			<XGallery v-else-if="tab === 'gallery'" :user="user"/>
+			<XRaw v-else-if="tab === 'raw'" :user="user"/>
+		</div>
 	</div>
 	<MkError v-else-if="error" @retry="fetchUser()"/>
 	<MkLoading v-else/>
@@ -38,6 +59,7 @@ import { serverContext, assertServerContext } from '@/server-context.js';
 import { isTouchUsing } from '@/utility/touch.js';
 import { useMuteOverrides } from '@/utility/check-word-mute';
 import { deepAssign } from '@/utility/merge';
+import { prefer } from '@/preferences';
 
 const XHome = defineAsyncComponent(() => import('./home.vue'));
 const XTimeline = defineAsyncComponent(() => import('./index.timeline.vue'));
@@ -174,3 +196,12 @@ definePage(() => ({
 	} : {},
 }));
 </script>
+
+
+<style lang="scss" module>
+.root {
+	position: relative;
+	text-align: center;
+	padding: 32px;
+}
+</style>

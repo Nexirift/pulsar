@@ -12397,6 +12397,10 @@ export interface Locale extends ILocale {
      */
     "withEighteenPlus": string;
     /**
+     * This user is marked as 18+ (adults only), but you have been identified as underage. Therefore, you cannot view their profile or posts.
+     */
+    "userIsEighteenPlusButYouAreUnderage": string;
+    /**
      * Require approval for new users
      */
     "approvalRequiredForSignup": string;

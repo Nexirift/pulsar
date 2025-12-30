@@ -19,6 +19,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<li v-if="user.isRenoteMuted">{{ i18n.ts.renoteMuted }}</li>
 		<li v-if="user.isBlocking">{{ i18n.ts.blocked }}</li>
 		<li v-if="user.isBlocked && $i.isModerator">{{ i18n.ts.blockingYou }}</li>
+		<li v-if="user.isEighteenPlus">18+ only</li>
 	</ul>
 	<div :class="$style.description">
 		<div v-if="user.description" :class="$style.mfm">
