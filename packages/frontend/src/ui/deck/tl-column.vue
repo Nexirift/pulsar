@@ -4,32 +4,25 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<XColumn :menu="menu" :column="column" :isStacked="isStacked" :refresher="async () => { await timeline?.reloadTimeline() }">
-	<template #header>
-		<i v-if="column.tl != null" :class="basicTimelineIconClass(column.tl)"/>
-		<span style="margin-left: 8px;">{{ column.name || (column.tl ? i18n.ts._timelines[column.tl] : null) || i18n.ts._deck._columns.tl }}</span>
-	</template>
+	<XColumn :menu="menu" :column="column" :isStacked="isStacked"
+		:refresher="async () => { await timeline?.reloadTimeline() }">
+		<template #header>
+			<i v-if="column.tl != null" :class="basicTimelineIconClass(column.tl)" />
+			<span style="margin-left: 8px;">{{ column.name || (column.tl ? i18n.ts._timelines[column.tl] : null) ||
+				i18n.ts._deck._columns.tl }}</span>
+		</template>
 
-	<div v-if="!isAvailableBasicTimeline(column.tl)" :class="$style.disabled">
-		<p :class="$style.disabledTitle">
-			<i class="ti ti-circle-minus"></i>
-			{{ i18n.ts._disabledTimeline.title }}
-		</p>
-		<p :class="$style.disabledDescription">{{ i18n.ts._disabledTimeline.description }}</p>
-	</div>
-	<MkTimeline
-		v-else-if="column.tl"
-		ref="timeline"
-		:key="column.tl + withRenotes + withReplies + onlyFiles"
-		:src="column.tl"
-		:withRenotes="withRenotes"
-		:withReplies="withReplies"
-		:withSensitive="withSensitive"
-		:withEighteenPlus="withEighteenPlus"
-		:onlyFiles="onlyFiles"
-		@note="onNote"
-	/>
-</XColumn>
+		<div v-if="!isAvailableBasicTimeline(column.tl)" :class="$style.disabled">
+			<p :class="$style.disabledTitle">
+				<i class="ti ti-circle-minus"></i>
+				{{ i18n.ts._disabledTimeline.title }}
+			</p>
+			<p :class="$style.disabledDescription">{{ i18n.ts._disabledTimeline.description }}</p>
+		</div>
+		<MkTimeline v-else-if="column.tl" ref="timeline" :key="column.tl + withRenotes + withReplies + onlyFiles"
+			:src="column.tl" :withRenotes="withRenotes" :withReplies="withReplies" :withSensitive="withSensitive"
+			:withAdultsOnly="withAdultsOnly" :onlyFiles="onlyFiles" @note="onNote" />
+	</XColumn>
 </template>
 
 <script lang="ts" setup>
@@ -58,7 +51,7 @@ const soundSetting = ref<SoundStore>(props.column.soundSetting ?? { type: null, 
 const withRenotes = ref(props.column.withRenotes ?? true);
 const withReplies = ref(props.column.withReplies ?? false);
 const withSensitive = ref(props.column.withSensitive ?? true);
-const withEighteenPlus = ref(props.column.withEighteenPlus ?? false);
+const withAdultsOnly = ref(props.column.withAdultsOnly ?? false);
 const onlyFiles = ref(props.column.onlyFiles ?? false);
 
 watch(withRenotes, v => {
@@ -79,9 +72,9 @@ watch(withSensitive, v => {
 	});
 });
 
-watch(withEighteenPlus, v => {
+watch(withAdultsOnly, v => {
 	updateColumn(props.column.id, {
-		withEighteenPlus: v,
+		withAdultsOnly: v,
 	});
 });
 
@@ -169,9 +162,18 @@ const menu = computed<MenuItem[]>(() => {
 		ref: withSensitive,
 	}, {
 		type: 'switch',
-		text: i18n.ts.withEighteenPlus,
-		ref: withEighteenPlus,
-		disabled: $i?.birthday ? (new Date().getFullYear() - new Date($i.birthday).getFullYear() < 18) : false,
+		text: i18n.ts.withAdultsOnly,
+		ref: withAdultsOnly,
+		disabled: $i?.birthday ? (() => {
+			const birth = new Date($i?.birthday);
+			const today = new Date();
+			let age = today.getFullYear() - birth.getFullYear();
+			const m = today.getMonth() - birth.getMonth();
+			if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+				age--;
+			}
+			return age < 18;
+		})() : false,
 	});
 
 	return menuItems;

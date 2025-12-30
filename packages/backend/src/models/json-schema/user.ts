@@ -176,7 +176,7 @@ export const packedUserLiteSchema = {
 			type: 'boolean',
 			nullable: false, optional: true,
 		},
-		isEighteenPlus: {
+		isAdultsOnly: {
 			type: 'boolean',
 			nullable: false, optional: true,
 		},

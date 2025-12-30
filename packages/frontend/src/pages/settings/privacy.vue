@@ -32,14 +32,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkSwitch>
 		</SearchMarker>
 
-		   <SearchMarker :keywords="['18+', 'adult', 'age restriction']">
+		   <SearchMarker :keywords="['18+', 'adults', 'age restriction', 'adults only', 'adult', 'adult only']">
 			   <div>
-				   <MkSwitch v-model="isEighteenPlus" @update:modelValue="save()" :disabled="isEighteenPlusForced">
-						<template #label><SearchLabel>{{ i18n.ts.markAccountAsEighteenPlus }}</SearchLabel></template>
+				   <MkSwitch v-model="isAdultsOnly" @update:modelValue="save()" :disabled="isAdultsOnlyForced">
+						<template #label><SearchLabel>{{ i18n.ts.markAccountAsAdultsOnly }}</SearchLabel></template>
 						<template #caption>
 							<div class="_gaps_s">
-								<SearchKeyword>{{ i18n.ts.markAccountAsEighteenPlusDescription }}</SearchKeyword>
-								<MkInfo v-if="isEighteenPlusForced" warn>{{ i18n.ts.eighteenPlusForcedMessage }}</MkInfo>
+								<SearchKeyword>{{ i18n.ts.markAccountAsAdultsOnlyDescription }}</SearchKeyword>
+								<MkInfo v-if="isAdultsOnlyForced" warn>{{ i18n.ts.settingCurrentlyForcedMessage }}</MkInfo>
 							</div>
 						</template>
 				   </MkSwitch>
@@ -273,8 +273,8 @@ const preventAiLearning = ref($i.preventAiLearning);
 const noindex = ref($i.noindex);
 const enableRss = ref($i.enableRss);
 const isExplorable = ref($i.isExplorable);
-const isEighteenPlus = ref($i.isEighteenPlus ?? false);
-const isEighteenPlusForced = ref($i.isEighteenPlusForced ?? false);
+const isAdultsOnly = ref($i.isAdultsOnly ?? false);
+const isAdultsOnlyForced = ref($i.isAdultsOnlyForced ?? false);
 const requireSigninToViewContents = ref($i.requireSigninToViewContents ?? false);
 const makeNotesFollowersOnlyBefore = ref($i.makeNotesFollowersOnlyBefore ?? null);
 const makeNotesHiddenBefore = ref($i.makeNotesHiddenBefore ?? null);
@@ -337,7 +337,7 @@ function save() {
 		   noindex: !!noindex.value,
 		   enableRss: !!enableRss.value,
 		   isExplorable: !!isExplorable.value,
-		   isEighteenPlus: !!isEighteenPlus.value,
+		   isAdultsOnly: !!isAdultsOnly.value,
 		   requireSigninToViewContents: !!requireSigninToViewContents.value,
 		   makeNotesFollowersOnlyBefore: makeNotesFollowersOnlyBefore.value,
 		   makeNotesHiddenBefore: makeNotesHiddenBefore.value,

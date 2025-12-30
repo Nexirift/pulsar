@@ -4,30 +4,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader ref="pageComponent" v-model:tab="src" :actions="headerActions" :tabs="$i ? headerTabs : headerTabsWhenNotLogin" :swipable="true" :displayMyAvatar="true">
-	<div class="_spacer" style="--MI_SPACER-w: 800px;">
-		<MkInfo v-if="isBasicTimeline(src) && !store.r.timelineTutorials.value[src]" style="margin-bottom: var(--MI-margin);" closable @close="closeTutorial()">
-			{{ i18n.ts._timelineDescription[src] }}
-		</MkInfo>
-		<MkPostForm v-if="prefer.r.showFixedPostForm.value" :class="$style.postForm" class="_panel" fixed style="margin-bottom: var(--MI-margin);"/>
-		<div v-if="queue > 0" :class="$style.new"><button class="_buttonPrimary" :class="$style.newButton" @click="top()">{{ i18n.ts.newNoteRecived }}</button></div>
-		<MkTimeline
-			ref="tlComponent"
-			:key="src + withRenotes + withBots + withReplies + onlyFiles + withSensitive + withEighteenPlus"
-			:class="$style.tl"
-			:src="src.split(':')[0]"
-			:list="src.split(':')[1]"
-			:withRenotes="withRenotes"
-			:withReplies="withReplies"
-			:withSensitive="withSensitive"
-			:withEighteenPlus="withEighteenPlus"
-			:onlyFiles="onlyFiles"
-			:withBots="withBots"
-			:sound="true"
-			@queue="queueUpdated"
-		/>
-	</div>
-</PageWithHeader>
+	<PageWithHeader ref="pageComponent" v-model:tab="src" :actions="headerActions"
+		:tabs="$i ? headerTabs : headerTabsWhenNotLogin" :swipable="true" :displayMyAvatar="true">
+		<div class="_spacer" style="--MI_SPACER-w: 800px;">
+			<MkInfo v-if="isBasicTimeline(src) && !store.r.timelineTutorials.value[src]"
+				style="margin-bottom: var(--MI-margin);" closable @close="closeTutorial()">
+				{{ i18n.ts._timelineDescription[src] }}
+			</MkInfo>
+			<MkPostForm v-if="prefer.r.showFixedPostForm.value" :class="$style.postForm" class="_panel" fixed
+				style="margin-bottom: var(--MI-margin);" />
+			<div v-if="queue > 0" :class="$style.new"><button class="_buttonPrimary" :class="$style.newButton"
+					@click="top()">{{ i18n.ts.newNoteRecived }}</button></div>
+			<MkTimeline ref="tlComponent"
+				:key="src + withRenotes + withBots + withReplies + onlyFiles + withSensitive + withAdultsOnly"
+				:class="$style.tl" :src="src.split(':')[0]" :list="src.split(':')[1]" :withRenotes="withRenotes"
+				:withReplies="withReplies" :withSensitive="withSensitive" :withAdultsOnly="withAdultsOnly"
+				:onlyFiles="onlyFiles" :withBots="withBots" :sound="true" @queue="queueUpdated" />
+		</div>
+	</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
@@ -73,8 +67,8 @@ const withRenotes = computed<boolean>({
 // computed内での無限ループを防ぐためのフラグ
 const localSocialTLFilterSwitchStore = ref<'withReplies' | 'onlyFiles' | false>(
 	store.r.tl.value.filter.withReplies ? 'withReplies' :
-	store.r.tl.value.filter.onlyFiles ? 'onlyFiles' :
-	false,
+		store.r.tl.value.filter.onlyFiles ? 'onlyFiles' :
+			false,
 );
 
 const withReplies = computed<boolean>({
@@ -119,9 +113,9 @@ const withSensitive = computed<boolean>({
 	set: (x) => saveTlFilter('withSensitive', x),
 });
 
-const withEighteenPlus = computed<boolean>({
-	get: () => store.r.tl.value.filter.withEighteenPlus,
-	set: (x) => saveTlFilter('withEighteenPlus', x),
+const withAdultsOnly = computed<boolean>({
+	get: () => store.r.tl.value.filter.withAdultsOnly,
+	set: (x) => saveTlFilter('withAdultsOnly', x),
 });
 
 watch(src, () => {
@@ -287,7 +281,7 @@ const router = useRouter();
 
 async function customizeTimelineTabs() {
 	const { canceled } = await os.popup(defineAsyncComponent(() => import('@/components/MkTimelineTabsSettings.vue')), {}, {
-		closed: () => {},
+		closed: () => { },
 	});
 }
 
@@ -324,9 +318,18 @@ const headerActions = computed(() => {
 					ref: withSensitive,
 				}, {
 					type: 'switch',
-					text: i18n.ts.withEighteenPlus,
-					ref: withEighteenPlus,
-					disabled: $i?.birthday ? (new Date().getFullYear() - new Date($i.birthday).getFullYear() < 18) : false,
+					text: i18n.ts.withAdultsOnly,
+					ref: withAdultsOnly,
+					disabled: $i?.birthday ? (() => {
+						const birth = new Date($i?.birthday);
+						const today = new Date();
+						let age = today.getFullYear() - birth.getFullYear();
+						const m = today.getMonth() - birth.getMonth();
+						if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+							age--;
+						}
+						return age < 18;
+					})() : false,
 				}, {
 					type: 'switch',
 					text: i18n.ts.fileAttachedOnly,
@@ -358,9 +361,9 @@ const headerActions = computed(() => {
 const headerTabs = computed(() => {
 	// Get user-configured timeline tabs in their preferred order
 	const tabs = prefer.r.timelineTabs?.value ?? PREF_DEF.timelineTabs.default;
-	
+
 	const resultTabs: Tab[] = [];
-	
+
 	// Add pinned user lists first
 	resultTabs.push(...prefer.r.pinnedUserLists.value.map(l => ({
 		key: 'list:' + l.id,
@@ -368,11 +371,11 @@ const headerTabs = computed(() => {
 		icon: 'ti ti-star',
 		iconOnly: prefer.r.timelineTabIconOnly.value && ('list:' + l.id) !== src.value,
 	})));
-	
+
 	// Process configured tabs
 	for (const tab of tabs) {
 		if (!tab.visible) continue;
-		
+
 		if (isBasicTimeline(tab.id)) {
 			// Basic timeline tabs
 			if (isAvailableBasicTimeline(tab.id as BasicTimelineType)) {
@@ -413,14 +416,14 @@ const headerTabs = computed(() => {
 			});
 		}
 	}
-	
+
 	return resultTabs;
 });
 
 const headerTabsWhenNotLogin = computed(() => {
 	// Get user-configured timeline tabs in their preferred order
 	const tabs = prefer.r.timelineTabs?.value ?? PREF_DEF.timelineTabs.default;
-	
+
 	return tabs
 		.filter(tab => tab.visible && isAvailableBasicTimeline(tab.id as BasicTimelineType))
 		.map(tab => ({

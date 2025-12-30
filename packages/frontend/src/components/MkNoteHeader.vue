@@ -18,14 +18,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 	<div :class="$style.info">
 		<div v-if="mock">
-			<template v-if="note.user && note.user.isEighteenPlus">
-				<span title="18+" style="margin-right: 0.25em;">🔞 •</span>
+			<template v-if="note.user && note.user.isAdultsOnly">
+				<span title="Adults Only" style="margin-right: 0.25em;">🔞 •</span>
 			</template>
 			<MkTime :time="note.createdAt" colored/>
 		</div>
 		<MkA v-else :to="notePage(note)">
-			<template v-if="note.user && note.user.isEighteenPlus">
-				<span title="18+" style="margin-right: 0.25em;">🔞 •</span>
+			<template v-if="note.user && note.user.isAdultsOnly">
+				<span title="Adults Only" style="margin-right: 0.25em;">🔞 •</span>
 			</template>
 			<MkTime :time="note.createdAt" colored/>
 		</MkA>

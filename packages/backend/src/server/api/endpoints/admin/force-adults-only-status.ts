@@ -14,7 +14,7 @@ export const meta = {
     tags: ['admin'],
     requireCredential: true,
     requireModerator: true,
-    kind: 'write:admin:force-eighteen-plus',
+    kind: 'write:admin:force-adults-only-status',
     secure: true,
 } as const;
 
@@ -36,15 +36,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
     ) {
         super(meta, paramDef, async (ps, me) => {
             const user = await this.cacheService.findUserById(ps.userId);
-            if (user.isEighteenPlusForced) return;
+            if (user.isAdultsOnlyForced) return;
 
             await this.usersRepository.update(user.id, {
-                isEighteenPlusForced: true,
+                isAdultsOnlyForced: true,
             });
 
             await this.cacheService.userByIdCache.delete(ps.userId);
 
-            await this.moderationLogService.log(me, 'forceEighteenPlus', {
+            await this.moderationLogService.log(me, 'forceAdultsOnly', {
                 userId: ps.userId,
                 userUsername: user.username,
                 userHost: user.host,

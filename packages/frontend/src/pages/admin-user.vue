@@ -182,10 +182,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 						<MkSwitch
 							v-if="iAmModerator"
-							v-model="isEighteenPlusForced"
-							@update:modelValue="toggleisEighteenPlusForced"
+							v-model="isAdultsOnlyForced"
+							@update:modelValue="toggleisAdultsOnlyForced"
 						>
-							{{ i18n.ts.forceEighteenPlus }}
+							{{ i18n.ts.forceAdultsOnly }}
 						</MkSwitch>
 
 						<MkSwitch v-model="markedAsNSFW" @update:modelValue="toggleNSFW">{{ i18n.ts.markAsNSFW }}</MkSwitch>
@@ -388,7 +388,7 @@ const approved = ref(false);
 const suspended = ref(false);
 const rejectQuotes = ref(false);
 const markedAsNSFW = ref(false);
-const isEighteenPlusForced = ref(false);
+const isAdultsOnlyForced = ref(false);
 const moderationNote = ref('');
 const mandatoryCW = ref<string | null>(null);
 const isSystem = computed(() => info.value?.isSystem ?? false);
@@ -419,10 +419,10 @@ const badges = computed(() => {
 			});
 		}
 
-		if (info.value.isEighteenPlus) {
+		if (info.value.isAdultsOnly) {
 			arr.push({
 				key: '18plus',
-				label: '18+',
+				label: 'Adults Only',
 				style: 'warning',
 			});
 		}
@@ -538,7 +538,7 @@ function createFetcher(withHint = true) {
 		silenced.value = _info.isSilenced;
 		approved.value = _info.approved;
 		markedAsNSFW.value = _info.alwaysMarkNsfw;
-		isEighteenPlusForced.value = _info.isEighteenPlusForced;
+		isAdultsOnlyForced.value = _info.isAdultsOnlyForced;
 		suspended.value = _info.isSuspended;
 		rejectQuotes.value = _user.rejectQuotes ?? false;
 		moderationNote.value = _info.moderationNote;
@@ -603,15 +603,15 @@ async function toggleNSFW(v) {
 	}
 }
 
-async function toggleisEighteenPlusForced(v) {
+async function toggleisAdultsOnlyForced(v) {
 	const confirm = await os.confirm({
 		type: 'warning',
 		text: v ? i18n.ts.nsfwConfirm : i18n.ts.unNsfwConfirm,
 	});
 	if (confirm.canceled) {
-		isEighteenPlusForced.value = !v;
+		isAdultsOnlyForced.value = !v;
 	} else {
-		await misskeyApi(v ? 'admin/force-eighteen-plus' : 'admin/unforce-eighteen-plus', { userId: props.userId });
+		await misskeyApi(v ? 'admin/force-adults-only-status' : 'admin/unforce-adults-only-status', { userId: props.userId });
 		await refreshUser();
 	}
 }

@@ -7,7 +7,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <PageWithHeader v-model:tab="tab" :displayBackButton="true" :tabs="headerTabs" :actions="headerActions" :swipable="isTouchUsing" :page="'user'">
 	<div v-if="user">
 		<!-- Check if user is marked as 18+ but birthday indicates under 18 -->
-		<div v-if="user.isEighteenPlus && $i?.birthday && (() => {
+		<div v-if="user.isAdultsOnly && $i?.birthday && (() => {
 			const birth = new Date($i?.birthday);
 			const today = new Date();
 			let age = today.getFullYear() - birth.getFullYear();

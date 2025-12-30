@@ -232,7 +232,7 @@ export const paramDef = {
 		mutedInstances: { type: 'array', items: {
 			type: 'string',
 		} },
-		isEighteenPlus: { type: 'boolean', nullable: true },
+		isAdultsOnly: { type: 'boolean', nullable: true },
 		notificationRecieveConfig: {
 			type: 'object',
 			nullable: false,
@@ -417,17 +417,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (typeof ps.speakAsCat === 'boolean') updates.speakAsCat = ps.speakAsCat;
 			if (typeof ps.injectFeaturedNote === 'boolean') profileUpdates.injectFeaturedNote = ps.injectFeaturedNote;
 			if (typeof ps.receiveAnnouncementEmail === 'boolean') profileUpdates.receiveAnnouncementEmail = ps.receiveAnnouncementEmail;
-			if (typeof ps.isEighteenPlus === 'boolean') {
-				if (user.isEighteenPlusForced) {
+			if (typeof ps.isAdultsOnly === 'boolean') {
+				if (user.isAdultsOnlyForced) {
 					// Block user from changing if forced
 					throw new ApiError({
 						message: 'This setting is currently forced by a moderator and cannot be changed.',
-						code: 'EIGHTEEN_PLUS_FORCED',
+						code: 'ADULT_ONLY_STATUS_FORCED',
 						id: 'e18f8e18-0000-0000-0000-000000000018',
 						httpStatusCode: 403,
 					});
 				}
-				updates.isEighteenPlus = ps.isEighteenPlus;
+				updates.isAdultsOnly = ps.isAdultsOnly;
 			}
 			if (typeof ps.alwaysMarkNsfw === 'boolean') {
 				policies ??= await this.roleService.getUserPolicies(user.id);

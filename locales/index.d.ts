@@ -12369,37 +12369,37 @@ export interface Locale extends ILocale {
      */
     "enableRssDescription": string;
     /**
-     * Mark this account as 18+
+     * Mark this account as adults only
      */
-    "markAccountAsEighteenPlus": string;
+    "markAccountAsAdultsOnly": string;
     /**
-     * Enable this if your profile or posts are intended only for adults (18+).
+     * Enable this if your profile or posts are intended only for adults.
      */
-    "markAccountAsEighteenPlusDescription": string;
+    "markAccountAsAdultsOnlyDescription": string;
     /**
      * This setting is currently forced by a moderator and cannot be changed.
      */
-    "eighteenPlusForcedMessage": string;
+    "settingCurrentlyForcedMessage": string;
     /**
-     * Force 18+ (adults only)
+     * Force adults only status
      */
-    "forceEighteenPlus": string;
+    "forceAdultsOnly": string;
     /**
-     * Are you sure you want to force this account to be 18+ (adults only)?
+     * Are you sure you want to force this account to be adults only?
      */
-    "forceEighteenPlusConfirm": string;
+    "forceAdultsOnlyConfirm": string;
     /**
-     * Are you sure you want to remove the forced 18+ (adults only) status from this account?
+     * Are you sure you want to remove the forced adults only status from this account?
      */
-    "unforceEighteenPlusConfirm": string;
+    "unforceAdultsOnlyConfirm": string;
     /**
-     * Show 18+ content
+     * Show adults only content
      */
-    "withEighteenPlus": string;
+    "withAdultsOnly": string;
     /**
-     * This user is marked as 18+ (adults only), but you have been identified as underage. Therefore, you cannot view their profile or posts.
+     * This user is marked as adults only, but you have been identified as underage. Therefore, you cannot view their profile or posts.
      */
-    "userIsEighteenPlusButYouAreUnderage": string;
+    "userisAdultsOnlyButYouAreUnderage": string;
     /**
      * Require approval for new users
      */

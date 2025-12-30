@@ -59,13 +59,13 @@ const props = withDefaults(defineProps<{
 	withReplies?: boolean;
 	withBots?: boolean;
 	withSensitive?: boolean;
-	withEighteenPlus?: boolean;
+	withAdultsOnly?: boolean;
 	onlyFiles?: boolean;
 }>(), {
 	withRenotes: true,
 	withReplies: false,
 	withSensitive: true,
-	withEighteenPlus: false,
+	withAdultsOnly: false,
 	onlyFiles: false,
 	withBots: true,
 });
@@ -77,7 +77,7 @@ const emit = defineEmits<{
 
 provide('inTimeline', true);
 provide('tl_withSensitive', computed(() => props.withSensitive));
-provide('tl_withEighteenPlus', computed(() => props.withEighteenPlus));
+provide('tl_withAdultsOnly', computed(() => props.withAdultsOnly));
 provide('inChannel', computed(() => props.src === 'channel'));
 
 type TimelineQueryType = {
@@ -302,7 +302,7 @@ watch(() => [props.list, props.antenna, props.channel, props.role, props.withRen
 // withSensitiveはクライアントで完結する処理のため、単にリロードするだけでOK
 watch(() => props.withSensitive, reloadTimeline);
 
-watch(() => props.withEighteenPlus, reloadTimeline);
+watch(() => props.withAdultsOnly, reloadTimeline);
 
 // 初回表示用
 refreshEndpointAndChannel();
@@ -336,8 +336,8 @@ function onNotesSlot({ items }: { items: Misskey.entities.Note[] }) {
 }
 
 const filteredNotes = computed(() => {
-  if (props.withEighteenPlus) return lastNotes.value;
-  return lastNotes.value.filter(n => !n.user?.isEighteenPlus);
+  if (props.withAdultsOnly) return lastNotes.value;
+  return lastNotes.value.filter(n => !n.user?.isAdultsOnly);
 });
 
 </script>

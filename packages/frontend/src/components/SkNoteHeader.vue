@@ -25,14 +25,14 @@ Header for a note in the Sharkey style, displaying info such as username and cre
 	<div :class="$style.section">
 		<div :class="$style.info">
 			<div v-if="mock">
-				<template v-if="note.user && note.user.isEighteenPlus">
-					<span title="18+" style="margin-right: 0.25em;">🔞 •</span>
+				<template v-if="note.user && note.user.isAdultsOnly">
+					<span title="Adults Only" style="margin-right: 0.25em;">🔞 •</span>
 				</template>
 				<MkTime :time="note.createdAt" colored/>
 			</div>
 			<MkA v-else :class="$style.time" :to="notePage(note)">
-				<template v-if="note.user && note.user.isEighteenPlus">
-					<span title="18+" style="margin-right: 0.25em;">🔞 •</span>
+				<template v-if="note.user && note.user.isAdultsOnly">
+					<span title="Adults Only" style="margin-right: 0.25em;">🔞 •</span>
 				</template>
 				<MkTime :time="note.createdAt" colored/>
 			</MkA>

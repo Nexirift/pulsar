@@ -10116,7 +10116,7 @@ export type components = {
             rejectQuotes?: boolean;
             isBot?: boolean;
             isCat?: boolean;
-            isEighteenPlus?: boolean;
+            isAdultsOnly?: boolean;
             speakAsCat?: boolean;
             isSilenced: boolean;
             bypassSilence: boolean;
@@ -37666,7 +37666,7 @@ export interface operations {
                     mutedWords?: unknown[];
                     hardMutedWords?: unknown[];
                     mutedInstances?: string[];
-                    isEighteenPlus?: boolean | null;
+                    isAdultsOnly?: boolean | null;
                     notificationRecieveConfig?: {
                         note?: Record<string, never>;
                         follow?: Record<string, never>;
