@@ -8,28 +8,30 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<MkPagination v-if="paginationQuery" ref="pagingComponent" :pagination="paginationQuery" @queue="emit('queue', $event)">
 		<template #empty><MkResult type="empty" :text="i18n.ts.noNotes"/></template>
 
-		<template #default="{ items: notes }">
-			<SkTransitionGroup
-				:class="[$style.root, { [$style.noGap]: noGap, '_gaps': !noGap, [$style.reverse]: paginationQuery.reversed }]"
-				:enterActiveClass="$style.transition_x_enterActive"
-				:leaveActiveClass="$style.transition_x_leaveActive"
-				:enterFromClass="$style.transition_x_enterFrom"
-				:leaveToClass="$style.transition_x_leaveTo"
-				:moveClass="$style.transition_x_move"
-				tag="div"
-			>
-				<div v-for="(note, i) in notes" :key="note.id" :class="{ '_gaps': !noGap }">
-					<DynamicNote :class="$style.note" :note="note as Misskey.entities.Note" :withHardMute="true" :data-scroll-anchor="note.id"/>
-					<MkAd v-if="note._shouldInsertAd_" :preferForms="['horizontal', 'horizontal-big']" :class="$style.ad"/>
-				</div>
-			</SkTransitionGroup>
-		</template>
+		   <template #default="slotProps">
+			   <SkTransitionGroup
+				   :class="[$style.root, { [$style.noGap]: noGap, '_gaps': !noGap, [$style.reverse]: paginationQuery.reversed }]"
+				   :enterActiveClass="$style.transition_x_enterActive"
+				   :leaveActiveClass="$style.transition_x_leaveActive"
+				   :enterFromClass="$style.transition_x_enterFrom"
+				   :leaveToClass="$style.transition_x_leaveTo"
+				   :moveClass="$style.transition_x_move"
+				   tag="div"
+			   >
+				   <!-- Update lastNotes from slot -->
+				   <template v-if="onNotesSlot(slotProps) || true"></template>
+				   <div v-for="(note, i) in filteredNotes" :key="note.id" :class="{ '_gaps': !noGap }">
+					   <DynamicNote :class="$style.note" :note="note as Misskey.entities.Note" :withHardMute="true" :data-scroll-anchor="note.id"/>
+					   <MkAd v-if="note._shouldInsertAd_" :preferForms="['horizontal', 'horizontal-big']" :class="$style.ad"/>
+				   </div>
+			   </SkTransitionGroup>
+		   </template>
 	</MkPagination>
 </component>
 </template>
 
 <script lang="ts" setup>
-import { computed, watch, onUnmounted, provide, useTemplateRef, TransitionGroup } from 'vue';
+import { computed, watch, onUnmounted, provide, useTemplateRef, TransitionGroup, inject, ref } from 'vue';
 import * as Misskey from 'misskey-js';
 import type { BasicTimelineType } from '@/timelines.js';
 import type { Paging } from '@/components/MkPagination.vue';
@@ -43,6 +45,8 @@ import DynamicNote from '@/components/DynamicNote.vue';
 import MkPagination from '@/components/MkPagination.vue';
 import { i18n } from '@/i18n.js';
 import SkTransitionGroup from '@/components/SkTransitionGroup.vue';
+import { checkMute } from '@/utility/check-word-mute.js';
+import { consoleLoggingIntegration } from '@sentry/vue';
 
 const props = withDefaults(defineProps<{
 	src: BasicTimelineType | 'mentions' | 'directs' | 'list' | 'antenna' | 'channel' | 'role';
@@ -55,11 +59,13 @@ const props = withDefaults(defineProps<{
 	withReplies?: boolean;
 	withBots?: boolean;
 	withSensitive?: boolean;
+	withEighteenPlus?: boolean;
 	onlyFiles?: boolean;
 }>(), {
 	withRenotes: true,
 	withReplies: false,
 	withSensitive: true,
+	withEighteenPlus: false,
 	onlyFiles: false,
 	withBots: true,
 });
@@ -71,6 +77,7 @@ const emit = defineEmits<{
 
 provide('inTimeline', true);
 provide('tl_withSensitive', computed(() => props.withSensitive));
+provide('tl_withEighteenPlus', computed(() => props.withEighteenPlus));
 provide('inChannel', computed(() => props.src === 'channel'));
 
 type TimelineQueryType = {
@@ -276,7 +283,6 @@ function updatePaginationQuery() {
 			params: query,
 		};
 	} else {
-		paginationQuery = null;
 	}
 }
 
@@ -295,6 +301,8 @@ watch(() => [props.list, props.antenna, props.channel, props.role, props.withRen
 
 // withSensitiveはクライアントで完結する処理のため、単にリロードするだけでOK
 watch(() => props.withSensitive, reloadTimeline);
+
+watch(() => props.withEighteenPlus, reloadTimeline);
 
 // 初回表示用
 refreshEndpointAndChannel();
@@ -318,6 +326,20 @@ function reloadTimeline() {
 defineExpose({
 	reloadTimeline,
 });
+
+// Helper to filter notes for 18+ if needed, similar to withSensitive
+const lastNotes = ref<Misskey.entities.Note[]>([]);
+
+// Watch for notes from MkPagination slot and update lastNotes
+function onNotesSlot({ items }: { items: Misskey.entities.Note[] }) {
+  lastNotes.value = items;
+}
+
+const filteredNotes = computed(() => {
+  if (props.withEighteenPlus) return lastNotes.value;
+  return lastNotes.value.filter(n => !n.user?.isEighteenPlus);
+});
+
 </script>
 
 <style lang="scss" module>

@@ -18,9 +18,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 	<div :class="$style.info">
 		<div v-if="mock">
+			<template v-if="note.user && note.user.isEighteenPlus">
+				<span title="18+" style="margin-right: 0.25em;">🔞 •</span>
+			</template>
 			<MkTime :time="note.createdAt" colored/>
 		</div>
 		<MkA v-else :to="notePage(note)">
+			<template v-if="note.user && note.user.isEighteenPlus">
+				<span title="18+" style="margin-right: 0.25em;">🔞 •</span>
+			</template>
 			<MkTime :time="note.createdAt" colored/>
 		</MkA>
 		<span v-if="note.visibility !== 'public'" style="margin-left: 0.5em;" :title="i18n.ts._visibility[note.visibility]">

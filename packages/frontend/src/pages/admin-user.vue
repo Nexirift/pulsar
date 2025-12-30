@@ -179,6 +179,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkSwitch v-model="silenced" @update:modelValue="toggleSilence">{{ i18n.ts.silence }}</MkSwitch>
 						<MkSwitch v-if="!isSystem" v-model="suspended" @update:modelValue="toggleSuspend">{{ i18n.ts.suspend }}</MkSwitch>
 						<MkSwitch v-model="rejectQuotes" @update:modelValue="toggleRejectQuotes">{{ user.host == null ? i18n.ts.rejectQuotesLocalUser : i18n.ts.rejectQuotesRemoteUser }}</MkSwitch>
+
+						<MkSwitch
+							v-if="user.host == null && iAmModerator"
+							v-model="isEighteenPlusForced"
+							@update:modelValue="toggleisEighteenPlusForced"
+						>
+							{{ i18n.ts.forceEighteenPlus }}
+						</MkSwitch>
+
 						<MkSwitch v-model="markedAsNSFW" @update:modelValue="toggleNSFW">{{ i18n.ts.markAsNSFW }}</MkSwitch>
 
 						<MkInput v-model="mandatoryCW" type="text" manualSave @update:modelValue="onMandatoryCWChanged">
@@ -379,6 +388,7 @@ const approved = ref(false);
 const suspended = ref(false);
 const rejectQuotes = ref(false);
 const markedAsNSFW = ref(false);
+const isEighteenPlusForced = ref(false);
 const moderationNote = ref('');
 const mandatoryCW = ref<string | null>(null);
 const isSystem = computed(() => info.value?.isSystem ?? false);
@@ -405,6 +415,14 @@ const badges = computed(() => {
 			arr.push({
 				key: 'silenced',
 				label: i18n.ts.silenced,
+				style: 'warning',
+			});
+		}
+
+		if (info.value.isEighteenPlus) {
+			arr.push({
+				key: '18plus',
+				label: '18+',
 				style: 'warning',
 			});
 		}
@@ -520,6 +538,7 @@ function createFetcher(withHint = true) {
 		silenced.value = _info.isSilenced;
 		approved.value = _info.approved;
 		markedAsNSFW.value = _info.alwaysMarkNsfw;
+		isEighteenPlusForced.value = _info.isEighteenPlusForced;
 		suspended.value = _info.isSuspended;
 		rejectQuotes.value = _user.rejectQuotes ?? false;
 		moderationNote.value = _info.moderationNote;
@@ -580,6 +599,19 @@ async function toggleNSFW(v) {
 		markedAsNSFW.value = !v;
 	} else {
 		await misskeyApi(v ? 'admin/nsfw-user' : 'admin/unnsfw-user', { userId: props.userId });
+		await refreshUser();
+	}
+}
+
+async function toggleisEighteenPlusForced(v) {
+	const confirm = await os.confirm({
+		type: 'warning',
+		text: v ? i18n.ts.nsfwConfirm : i18n.ts.unNsfwConfirm,
+	});
+	if (confirm.canceled) {
+		isEighteenPlusForced.value = !v;
+	} else {
+		await misskeyApi(v ? 'admin/force-eighteen-plus' : 'admin/unforce-eighteen-plus', { userId: props.userId });
 		await refreshUser();
 	}
 }

@@ -348,6 +348,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				noCrawle: profile.noCrawle,
 				preventAiLearning: profile.preventAiLearning,
 				alwaysMarkNsfw: profile.alwaysMarkNsfw,
+				isEighteenPlus: user.isEighteenPlusForced !== false ? true : user.isEighteenPlus,
+				isEighteenPlusForced: user.isEighteenPlusForced,
 				autoSensitive: profile.autoSensitive,
 				carefulBot: profile.carefulBot,
 				injectFeaturedNote: profile.injectFeaturedNote,

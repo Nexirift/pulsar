@@ -254,6 +254,18 @@ export class MiUser {
 
 	@Column('boolean', {
 		default: false,
+		comment: 'Whether the User is marked as 18+ (adults only, not NSFW).',
+	})
+	public isEighteenPlus: boolean;
+
+	@Column('boolean', {
+		default: false,
+		comment: 'Whether the User\'s 18+ status is forced by a moderator.',
+	})
+	public isEighteenPlusForced: boolean;
+
+	@Column('boolean', {
+		default: false,
 	})
 	public requireSigninToViewContents: boolean;
 

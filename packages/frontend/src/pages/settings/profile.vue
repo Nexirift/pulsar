@@ -228,6 +228,7 @@ const profile = reactive({
 	isBot: $i.isBot ?? false,
 	isCat: $i.isCat ?? false,
 	speakAsCat: $i.speakAsCat ?? false,
+	isEighteenPlus: $i.isEighteenPlus ?? false,
 });
 
 watch(() => profile, () => {
@@ -282,6 +283,7 @@ function save() {
 		isBot: !!profile.isBot,
 		isCat: !!profile.isCat,
 		speakAsCat: !!profile.speakAsCat,
+		isEighteenPlus: !!profile.isEighteenPlus,
 	}, undefined, {
 		'0b3f9f6a-2f4d-4b1f-9fb4-49d3a2fd7191': {
 			title: i18n.ts.yourNameContainsProhibitedWords,

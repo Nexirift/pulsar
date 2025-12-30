@@ -70,6 +70,7 @@ export * as 'admin/invite/create' from './endpoints/admin/invite/create.js';
 export * as 'admin/invite/list' from './endpoints/admin/invite/list.js';
 export * as 'admin/meta' from './endpoints/admin/meta.js';
 export * as 'admin/nsfw-user' from './endpoints/admin/nsfw-user.js';
+export * as 'admin/force-eighteen-plus' from './endpoints/admin/force-eighteen-plus.js';
 export * as 'admin/promo/create' from './endpoints/admin/promo/create.js';
 export * as 'admin/queue/clear' from './endpoints/admin/queue/clear.js';
 export * as 'admin/queue/deliver-delayed' from './endpoints/admin/queue/deliver-delayed.js';
@@ -114,6 +115,7 @@ export * as 'admin/system-webhook/show' from './endpoints/admin/system-webhook/s
 export * as 'admin/system-webhook/test' from './endpoints/admin/system-webhook/test.js';
 export * as 'admin/system-webhook/update' from './endpoints/admin/system-webhook/update.js';
 export * as 'admin/unnsfw-user' from './endpoints/admin/unnsfw-user.js';
+export * as 'admin/unforce-eighteen-plus' from './endpoints/admin/unforce-eighteen-plus.js';
 export * as 'admin/unset-user-avatar' from './endpoints/admin/unset-user-avatar.js';
 export * as 'admin/unset-user-banner' from './endpoints/admin/unset-user-banner.js';
 export * as 'admin/unsilence-user' from './endpoints/admin/unsilence-user.js';

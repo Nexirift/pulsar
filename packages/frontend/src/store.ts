@@ -75,6 +75,7 @@ export const store = markRaw(new Pizzax('base', {
 				withReplies: true,
 				withRenotes: true,
 				withSensitive: true,
+				withEighteenPlus: false,
 				onlyFiles: false,
 				withBots: true,
 			},

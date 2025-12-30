@@ -13,13 +13,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div v-if="queue > 0" :class="$style.new"><button class="_buttonPrimary" :class="$style.newButton" @click="top()">{{ i18n.ts.newNoteRecived }}</button></div>
 		<MkTimeline
 			ref="tlComponent"
-			:key="src + withRenotes + withBots + withReplies + onlyFiles + withSensitive"
+			:key="src + withRenotes + withBots + withReplies + onlyFiles + withSensitive + withEighteenPlus"
 			:class="$style.tl"
 			:src="src.split(':')[0]"
 			:list="src.split(':')[1]"
 			:withRenotes="withRenotes"
 			:withReplies="withReplies"
 			:withSensitive="withSensitive"
+			:withEighteenPlus="withEighteenPlus"
 			:onlyFiles="onlyFiles"
 			:withBots="withBots"
 			:sound="true"
@@ -116,6 +117,11 @@ watch([withReplies, onlyFiles], ([withRepliesTo, onlyFilesTo]) => {
 const withSensitive = computed<boolean>({
 	get: () => store.r.tl.value.filter.withSensitive,
 	set: (x) => saveTlFilter('withSensitive', x),
+});
+
+const withEighteenPlus = computed<boolean>({
+	get: () => store.r.tl.value.filter.withEighteenPlus,
+	set: (x) => saveTlFilter('withEighteenPlus', x),
 });
 
 watch(src, () => {
@@ -316,6 +322,11 @@ const headerActions = computed(() => {
 					type: 'switch',
 					text: i18n.ts.withSensitive,
 					ref: withSensitive,
+				}, {
+					type: 'switch',
+					text: i18n.ts.withEighteenPlus,
+					ref: withEighteenPlus,
+					disabled: $i?.birthday ? (new Date().getFullYear() - new Date($i.birthday).getFullYear() < 18) : false,
 				}, {
 					type: 'switch',
 					text: i18n.ts.fileAttachedOnly,

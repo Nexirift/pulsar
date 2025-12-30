@@ -25,6 +25,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		:withRenotes="withRenotes"
 		:withReplies="withReplies"
 		:withSensitive="withSensitive"
+		:withEighteenPlus="withEighteenPlus"
 		:onlyFiles="onlyFiles"
 		@note="onNote"
 	/>
@@ -44,6 +45,7 @@ import { i18n } from '@/i18n.js';
 import { hasWithReplies, isAvailableBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
 import { soundSettingsButton } from '@/ui/deck/tl-note-notification.js';
 import * as sound from '@/utility/sound.js';
+import { $i } from '@/i';
 
 const props = defineProps<{
 	column: Column;
@@ -56,6 +58,7 @@ const soundSetting = ref<SoundStore>(props.column.soundSetting ?? { type: null, 
 const withRenotes = ref(props.column.withRenotes ?? true);
 const withReplies = ref(props.column.withReplies ?? false);
 const withSensitive = ref(props.column.withSensitive ?? true);
+const withEighteenPlus = ref(props.column.withEighteenPlus ?? false);
 const onlyFiles = ref(props.column.onlyFiles ?? false);
 
 watch(withRenotes, v => {
@@ -73,6 +76,12 @@ watch(withReplies, v => {
 watch(withSensitive, v => {
 	updateColumn(props.column.id, {
 		withSensitive: v,
+	});
+});
+
+watch(withEighteenPlus, v => {
+	updateColumn(props.column.id, {
+		withEighteenPlus: v,
 	});
 });
 
@@ -158,6 +167,11 @@ const menu = computed<MenuItem[]>(() => {
 		type: 'switch',
 		text: i18n.ts.withSensitive,
 		ref: withSensitive,
+	}, {
+		type: 'switch',
+		text: i18n.ts.withEighteenPlus,
+		ref: withEighteenPlus,
+		disabled: $i?.birthday ? (new Date().getFullYear() - new Date($i.birthday).getFullYear() < 18) : false,
 	});
 
 	return menuItems;

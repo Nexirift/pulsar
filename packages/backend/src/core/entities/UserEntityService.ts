@@ -604,6 +604,7 @@ export class UserEntityService implements OnModuleInit {
 			}))) : [],
 			isBot: user.isBot,
 			isCat: user.isCat,
+			isEighteenPlus: user.isEighteenPlusForced !== false ? true : user.isEighteenPlus,
 			noindex: user.noindex,
 			enableRss: user.enableRss,
 			mandatoryCW: user.mandatoryCW,
@@ -742,6 +743,7 @@ export class UserEntityService implements OnModuleInit {
 				// alsoKnownAs moved from packedUserDetailedNotMeOnly for privacy
 				alsoKnownAs: alsoKnownAsIds,
 				skAlsoKnownAs: alsoKnownAs,
+				isEighteenPlusForced: user.isEighteenPlusForced,
 			} : {}),
 
 			...(opts.includeSecrets ? {

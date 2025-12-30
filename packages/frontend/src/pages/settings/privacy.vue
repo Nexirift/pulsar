@@ -32,6 +32,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</MkSwitch>
 		</SearchMarker>
 
+		   <SearchMarker :keywords="['18+', 'adult', 'age restriction']">
+			   <div>
+				   <MkSwitch v-model="isEighteenPlus" @update:modelValue="save()" :disabled="isEighteenPlusForced">
+						<template #label><SearchLabel>{{ i18n.ts.markAccountAsEighteenPlus }}</SearchLabel></template>
+						<template #caption>
+							<div class="_gaps_s">
+								<SearchKeyword>{{ i18n.ts.markAccountAsEighteenPlusDescription }}</SearchKeyword>
+								<MkInfo v-if="isEighteenPlusForced" warn>{{ i18n.ts.eighteenPlusForcedMessage }}</MkInfo>
+							</div>
+						</template>
+				   </MkSwitch>
+			   </div>
+		   </SearchMarker>
+
 		<SearchMarker :keywords="['following', 'visibility']">
 			<MkSelect v-model="followingVisibility" @update:modelValue="save()">
 				<template #label><SearchLabel>{{ i18n.ts.followingVisibility }}</SearchLabel></template>
@@ -259,6 +273,8 @@ const preventAiLearning = ref($i.preventAiLearning);
 const noindex = ref($i.noindex);
 const enableRss = ref($i.enableRss);
 const isExplorable = ref($i.isExplorable);
+const isEighteenPlus = ref($i.isEighteenPlus ?? false);
+const isEighteenPlusForced = ref($i.isEighteenPlusForced ?? false);
 const requireSigninToViewContents = ref($i.requireSigninToViewContents ?? false);
 const makeNotesFollowersOnlyBefore = ref($i.makeNotesFollowersOnlyBefore ?? null);
 const makeNotesHiddenBefore = ref($i.makeNotesHiddenBefore ?? null);
@@ -313,24 +329,25 @@ async function update_requireSigninToViewContents(value: boolean) {
 }
 
 function save() {
-	misskeyApi('i/update', {
-		isLocked: !!isLocked.value,
-		autoAcceptFollowed: !!autoAcceptFollowed.value,
-		noCrawle: !!noCrawle.value,
-		preventAiLearning: !!preventAiLearning.value,
-		noindex: !!noindex.value,
-		enableRss: !!enableRss.value,
-		isExplorable: !!isExplorable.value,
-		requireSigninToViewContents: !!requireSigninToViewContents.value,
-		makeNotesFollowersOnlyBefore: makeNotesFollowersOnlyBefore.value,
-		makeNotesHiddenBefore: makeNotesHiddenBefore.value,
-		hideOnlineStatus: !!hideOnlineStatus.value,
-		publicReactions: !!publicReactions.value,
-		followingVisibility: followingVisibility.value,
-		followersVisibility: followersVisibility.value,
-		chatScope: chatScope.value,
-		allowUnsignedFetch: allowUnsignedFetch.value,
-	});
+	   misskeyApi('i/update', {
+		   isLocked: !!isLocked.value,
+		   autoAcceptFollowed: !!autoAcceptFollowed.value,
+		   noCrawle: !!noCrawle.value,
+		   preventAiLearning: !!preventAiLearning.value,
+		   noindex: !!noindex.value,
+		   enableRss: !!enableRss.value,
+		   isExplorable: !!isExplorable.value,
+		   isEighteenPlus: !!isEighteenPlus.value,
+		   requireSigninToViewContents: !!requireSigninToViewContents.value,
+		   makeNotesFollowersOnlyBefore: makeNotesFollowersOnlyBefore.value,
+		   makeNotesHiddenBefore: makeNotesHiddenBefore.value,
+		   hideOnlineStatus: !!hideOnlineStatus.value,
+		   publicReactions: !!publicReactions.value,
+		   followingVisibility: followingVisibility.value,
+		   followersVisibility: followersVisibility.value,
+		   chatScope: chatScope.value,
+		   allowUnsignedFetch: allowUnsignedFetch.value,
+	   });
 }
 
 const headerActions = computed(() => []);

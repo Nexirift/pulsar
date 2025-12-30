@@ -176,6 +176,10 @@ export const packedUserLiteSchema = {
 			type: 'boolean',
 			nullable: false, optional: true,
 		},
+		isEighteenPlus: {
+			type: 'boolean',
+			nullable: false, optional: true,
+		},
 		speakAsCat: {
 			type: 'boolean',
 			nullable: false, optional: true,

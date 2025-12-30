@@ -12369,6 +12369,34 @@ export interface Locale extends ILocale {
      */
     "enableRssDescription": string;
     /**
+     * Mark this account as 18+
+     */
+    "markAccountAsEighteenPlus": string;
+    /**
+     * Enable this if your profile or posts are intended only for adults (18+).
+     */
+    "markAccountAsEighteenPlusDescription": string;
+    /**
+     * This setting is currently forced by a moderator and cannot be changed.
+     */
+    "eighteenPlusForcedMessage": string;
+    /**
+     * Force 18+ (adults only)
+     */
+    "forceEighteenPlus": string;
+    /**
+     * Are you sure you want to force this account to be 18+ (adults only)?
+     */
+    "forceEighteenPlusConfirm": string;
+    /**
+     * Are you sure you want to remove the forced 18+ (adults only) status from this account?
+     */
+    "unforceEighteenPlusConfirm": string;
+    /**
+     * Show 18+ content
+     */
+    "withEighteenPlus": string;
+    /**
      * Require approval for new users
      */
     "approvalRequiredForSignup": string;
