@@ -31,22 +31,22 @@
 		"directory": "packages/misskey-js"
 	},
 	"devDependencies": {
-		"@microsoft/api-extractor": "7.52.13",
-		"@misskey-dev/eslint-plugin": "2.1.0",
+		"@microsoft/api-extractor": "7.55.2",
+		"@misskey-dev/eslint-plugin": "2.2.0",
 		"@simplewebauthn/types": "12.0.0",
 		"@types/jest": "30.0.0",
-		"@types/node": "22.18.1",
-		"@typescript-eslint/eslint-plugin": "8.44.1",
-		"@typescript-eslint/parser": "8.44.1",
+		"@types/node": "25.0.3",
+		"@typescript-eslint/eslint-plugin": "8.51.0",
+		"@typescript-eslint/parser": "8.51.0",
 		"jest": "30.2.0",
 		"jest-fetch-mock": "3.0.3",
 		"jest-websocket-mock": "2.5.0",
-		"ts-jest": "29.4.5",
+		"ts-jest": "29.4.6",
 		"ts-node": "10.9.2",
 		"mock-socket": "9.3.1",
 		"ncp": "2.0.0",
 		"tsd": "0.33.0",
-		"typescript": "5.9.2"
+		"typescript": "5.9.3"
 	},
 	"files": [
 		"built"
