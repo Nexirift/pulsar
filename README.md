@@ -18,6 +18,15 @@ Nexirift Pulsar is a fork of Sharkey. Our main goal is to implement features tha
 - Added a toggle for the widgets sidebar
 - Fix revoked shared tokens causing an error
 - Fix users not showing up in some searches
+- Add a thumb-friendly account switcher (turtkey)
+- Add new role policies for:
+  - Maximum number of poll choices
+  - Maximum number of attachments per note
+  - Maximum note length
+  - Maximum content warning length
+- Add an adults only toggle with age gating (no ID verification!!)
+  - And an option for moderators to force it
+- Add a toggle for moderation inactivity detection
 
 # Sharkey README
 
