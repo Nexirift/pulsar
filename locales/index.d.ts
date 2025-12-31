@@ -7703,6 +7703,22 @@ export interface Locale extends ILocale {
              * Can view federation stats and details of remote instances
              */
             "canViewFederation": string;
+            /**
+             * Maximum number of poll choices
+             */
+            "pollChoicesLimit": string;
+            /**
+             * Maximum number of attachments per note
+             */
+            "attachmentsLimit": string;
+            /**
+             * Maximum note length
+             */
+            "maxNoteLength": string;
+            /**
+             * Maximum content warning length
+             */
+            "maxCwLength": string;
         };
         "_condition": {
             /**

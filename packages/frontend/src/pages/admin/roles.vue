@@ -246,19 +246,47 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkInput>
 					</MkFolder>
 
+					<MkFolder v-if="matchQuery([i18n.ts._role._options.avatarDecorationLimit, 'avatarDecorationLimit'])">
+						<template #label>{{ i18n.ts._role._options.avatarDecorationLimit }}</template>
+						<template #suffix>{{ policies.avatarDecorationLimit }}</template>
+						<MkInput v-model="avatarDecorationLimit" type="number" :min="0" :max="16" @update:modelValue="updateAvatarDecorationLimit">
+						</MkInput>
+					</MkFolder>
+
+					<MkFolder v-if="matchQuery([i18n.ts._role._options.pollChoicesLimit, 'pollChoicesLimit'])">
+						<template #label>{{ i18n.ts._role._options.pollChoicesLimit }}</template>
+						<template #suffix>{{ policies.pollChoicesLimit }}</template>
+						<MkInput v-model="policies.pollChoicesLimit" type="number">
+						</MkInput>
+					</MkFolder>
+
+					<MkFolder v-if="matchQuery([i18n.ts._role._options.attachmentsLimit, 'attachmentsLimit'])">
+						<template #label>{{ i18n.ts._role._options.attachmentsLimit }}</template>
+						<template #suffix>{{ policies.attachmentsLimit }}</template>
+						<MkInput v-model="policies.attachmentsLimit" type="number">
+						</MkInput>
+					</MkFolder>
+
+					<MkFolder v-if="matchQuery([i18n.ts._role._options.maxNoteLength, 'maxNoteLength'])">
+						<template #label>{{ i18n.ts._role._options.maxNoteLength }}</template>
+						<template #suffix>{{ policies.maxNoteLength }}</template>
+						<MkInput v-model="policies.maxNoteLength" type="number">
+						</MkInput>
+					</MkFolder>
+
+					<MkFolder v-if="matchQuery([i18n.ts._role._options.maxCwLength, 'maxCwLength'])">
+						<template #label>{{ i18n.ts._role._options.maxCwLength }}</template>
+						<template #suffix>{{ policies.maxCwLength }}</template>
+						<MkInput v-model="policies.maxCwLength" type="number">
+						</MkInput>
+					</MkFolder>
+
 					<MkFolder v-if="matchQuery([i18n.ts._role._options.canHideAds, 'canHideAds'])">
 						<template #label>{{ i18n.ts._role._options.canHideAds }}</template>
 						<template #suffix>{{ policies.canHideAds ? i18n.ts.yes : i18n.ts.no }}</template>
 						<MkSwitch v-model="policies.canHideAds">
 							<template #label>{{ i18n.ts.enable }}</template>
 						</MkSwitch>
-					</MkFolder>
-
-					<MkFolder v-if="matchQuery([i18n.ts._role._options.avatarDecorationLimit, 'avatarDecorationLimit'])">
-						<template #label>{{ i18n.ts._role._options.avatarDecorationLimit }}</template>
-						<template #suffix>{{ policies.avatarDecorationLimit }}</template>
-						<MkInput v-model="avatarDecorationLimit" type="number" :min="0" :max="16" @update:modelValue="updateAvatarDecorationLimit">
-						</MkInput>
 					</MkFolder>
 
 					<MkFolder v-if="matchQuery([i18n.ts._role._options.canImportAntennas, 'canImportAntennas'])">

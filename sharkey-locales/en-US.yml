@@ -277,6 +277,8 @@ _role:
     canViewFederation: "Can view federation stats and details of remote instances"
     pollChoicesLimit: "Maximum number of poll choices"
     attachmentsLimit: "Maximum number of attachments per note"
+    maxNoteLength: "Maximum note length"
+    maxCwLength: "Maximum content warning length"
   _condition:
     isLocked: "Private account"
     isExplorable: "Account is discoverable"

@@ -19,6 +19,7 @@ import { isQuote, isRenote } from '@/misc/is-renote.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { TimeService } from '@/global/TimeService.js';
 import { ApiError } from '../../error.js';
+import { RoleService } from '@/core/RoleService.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -198,6 +199,18 @@ export const meta = {
 			code: 'CONTAINS_TOO_MANY_MENTIONS',
 			id: '4de0363a-3046-481b-9b0f-feff3e211025',
 		},
+
+		tooManyPollChoices: {
+			message: 'You have specified too many choices for the poll.',
+			code: 'TOO_MANY_POLL_CHOICES',
+			id: 'c26a712d-3f43-4d99-a571-40b3ceeee0a2',
+		},
+
+		tooManyAttachments: {
+			message: 'You have attached too many files to your note.',
+			code: 'TOO_MANY_ATTACHMENTS',
+			id: '2d44ec3b-df46-4210-995d-9d48e754ab7a',
+		},
 	},
 } as const;
 
@@ -232,14 +245,12 @@ export const paramDef = {
 			type: 'array',
 			uniqueItems: true,
 			minItems: 1,
-			maxItems: 16,
 			items: { type: 'string', format: 'misskey:id' },
 		},
 		mediaIds: {
 			type: 'array',
 			uniqueItems: true,
 			minItems: 1,
-			maxItems: 16,
 			items: { type: 'string', format: 'misskey:id' },
 		},
 		poll: {
@@ -250,7 +261,6 @@ export const paramDef = {
 					type: 'array',
 					uniqueItems: true,
 					minItems: 2,
-					maxItems: 10,
 					items: { type: 'string', minLength: 1, maxLength: 150 },
 				},
 				multiple: { type: 'boolean' },
@@ -313,13 +323,30 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteEntityService: NoteEntityService,
 		private noteEditService: NoteEditService,
 		private readonly timeService: TimeService,
+		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			if (ps.text && ps.text.length > this.config.maxNoteLength) {
+			const policies = await this.roleService.getUserPolicies(me.id);
+			
+			const attachmentsLimit = policies.attachmentsLimit ?? 16;
+			const pollChoicesLimit = policies.pollChoicesLimit ?? 10;
+			const maxNoteLength = policies.maxNoteLength ?? this.config.maxNoteLength;
+			const maxCwLength = policies.maxCwLength ?? this.config.maxCwLength;
+
+			if (ps.text && ps.text.length > maxNoteLength) {
 				throw new ApiError(meta.errors.maxLength);
 			}
-			if (ps.cw && ps.cw.length > this.config.maxCwLength) {
+
+			if (ps.cw && ps.cw.length > maxCwLength) {
 				throw new ApiError(meta.errors.maxCwLength);
+			}
+
+			if (ps.fileIds && ps.fileIds.length > attachmentsLimit) {
+				throw new ApiError(meta.errors.tooManyAttachments);
+			}
+
+			if (ps.poll && ps.poll.choices && ps.poll.choices.length > pollChoicesLimit) {
+				throw new ApiError(meta.errors.tooManyPollChoices);
 			}
 
 			let visibleUsers: MiUser[] = [];

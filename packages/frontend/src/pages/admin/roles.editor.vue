@@ -286,7 +286,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							i18n.ts._role.useBaseValue }}</span>
 						<span v-else>{{ role.policies.chatAvailability.value === 'available' ? i18n.ts.yes :
 							role.policies.chatAvailability.value === 'readonly' ? i18n.ts.readonly : i18n.ts.no
-							}}</span>
+						}}</span>
 						<span :class="$style.priorityIndicator"><i
 								:class="getPriorityIcon(role.policies.chatAvailability)"></i></span>
 					</template>
@@ -460,7 +460,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<span v-if="role.policies.canManageAvatarDecorations.useDefault"
 							:class="$style.useDefaultLabel">{{ i18n.ts._role.useBaseValue }}</span>
 						<span v-else>{{ role.policies.canManageAvatarDecorations.value ? i18n.ts.yes : i18n.ts.no
-							}}</span>
+						}}</span>
 						<span :class="$style.priorityIndicator"><i
 								:class="getPriorityIcon(role.policies.canManageAvatarDecorations)"></i></span>
 					</template>
@@ -811,30 +811,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</MkFolder>
 
-				<MkFolder v-if="matchQuery([i18n.ts._role._options.canHideAds, 'canHideAds'])">
-					<template #label>{{ i18n.ts._role._options.canHideAds }}</template>
-					<template #suffix>
-						<span v-if="role.policies.canHideAds.useDefault" :class="$style.useDefaultLabel">{{
-							i18n.ts._role.useBaseValue }}</span>
-						<span v-else>{{ role.policies.canHideAds.value ? i18n.ts.yes : i18n.ts.no }}</span>
-						<span :class="$style.priorityIndicator"><i
-								:class="getPriorityIcon(role.policies.canHideAds)"></i></span>
-					</template>
-					<div class="_gaps">
-						<MkSwitch v-model="role.policies.canHideAds.useDefault" :readonly="readonly">
-							<template #label>{{ i18n.ts._role.useBaseValue }}</template>
-						</MkSwitch>
-						<MkSwitch v-model="role.policies.canHideAds.value"
-							:disabled="role.policies.canHideAds.useDefault" :readonly="readonly">
-							<template #label>{{ i18n.ts.enable }}</template>
-						</MkSwitch>
-						<MkRange v-model="role.policies.canHideAds.priority" :min="0" :max="2" :step="1" easing
-							:textConverter="(v) => v === 0 ? i18n.ts._role._priority.low : v === 1 ? i18n.ts._role._priority.middle : v === 2 ? i18n.ts._role._priority.high : ''">
-							<template #label>{{ i18n.ts._role.priority }}</template>
-						</MkRange>
-					</div>
-				</MkFolder>
-
 				<MkFolder v-if="matchQuery([i18n.ts._role._options.avatarDecorationLimit, 'avatarDecorationLimit'])">
 					<template #label>{{ i18n.ts._role._options.avatarDecorationLimit }}</template>
 					<template #suffix>
@@ -854,6 +830,130 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkInput>
 						<MkRange v-model="role.policies.avatarDecorationLimit.priority" :min="0" :max="2" :step="1"
 							easing
+							:textConverter="(v) => v === 0 ? i18n.ts._role._priority.low : v === 1 ? i18n.ts._role._priority.middle : v === 2 ? i18n.ts._role._priority.high : ''">
+							<template #label>{{ i18n.ts._role.priority }}</template>
+						</MkRange>
+					</div>
+				</MkFolder>
+
+				<MkFolder v-if="matchQuery([i18n.ts._role._options.pollChoicesLimit, 'pollChoicesLimit'])">
+					<template #label>{{ i18n.ts._role._options.pollChoicesLimit }}</template>
+					<template #suffix>
+						<span v-if="role.policies.pollChoicesLimit.useDefault" :class="$style.useDefaultLabel">{{
+							i18n.ts._role.useBaseValue }}</span>
+						<span v-else>{{ role.policies.pollChoicesLimit.value }}</span>
+						<span :class="$style.priorityIndicator"><i
+								:class="getPriorityIcon(role.policies.pollChoicesLimit)"></i></span>
+					</template>
+					<div class="_gaps">
+						<MkSwitch v-model="role.policies.pollChoicesLimit.useDefault" :readonly="readonly">
+							<template #label>{{ i18n.ts._role.useBaseValue }}</template>
+						</MkSwitch>
+						<MkInput v-model="role.policies.pollChoicesLimit.value"
+							:disabled="role.policies.pollChoicesLimit.useDefault" type="number" :readonly="readonly"
+							min="2">
+							<template #label>{{ i18n.ts._role._options.pollChoicesLimit }}</template>
+						</MkInput>
+						<MkRange v-model="role.policies.pollChoicesLimit.priority" :min="0" :max="2" :step="1" easing
+							:textConverter="(v) => v === 0 ? i18n.ts._role._priority.low : v === 1 ? i18n.ts._role._priority.middle : v === 2 ? i18n.ts._role._priority.high : ''">
+							<template #label>{{ i18n.ts._role.priority }}</template>
+						</MkRange>
+					</div>
+				</MkFolder>
+
+				<MkFolder v-if="matchQuery([i18n.ts._role._options.attachmentsLimit, 'attachmentsLimit'])">
+					<template #label>{{ i18n.ts._role._options.attachmentsLimit }}</template>
+					<template #suffix>
+						<span v-if="role.policies.attachmentsLimit.useDefault" :class="$style.useDefaultLabel">{{
+							i18n.ts._role.useBaseValue }}</span>
+						<span v-else>{{ role.policies.attachmentsLimit.value }}</span>
+						<span :class="$style.priorityIndicator"><i
+								:class="getPriorityIcon(role.policies.attachmentsLimit)"></i></span>
+					</template>
+					<div class="_gaps">
+						<MkSwitch v-model="role.policies.attachmentsLimit.useDefault" :readonly="readonly">
+							<template #label>{{ i18n.ts._role.useBaseValue }}</template>
+						</MkSwitch>
+						<MkInput v-model="role.policies.attachmentsLimit.value"
+							:disabled="role.policies.attachmentsLimit.useDefault" type="number" :readonly="readonly"
+							min="1">
+							<template #label>{{ i18n.ts._role._options.attachmentsLimit }}</template>
+						</MkInput>
+						<MkRange v-model="role.policies.attachmentsLimit.priority" :min="0" :max="2" :step="1" easing
+							:textConverter="(v) => v === 0 ? i18n.ts._role._priority.low : v === 1 ? i18n.ts._role._priority.middle : v === 2 ? i18n.ts._role._priority.high : ''">
+							<template #label>{{ i18n.ts._role.priority }}</template>
+						</MkRange>
+					</div>
+				</MkFolder>
+
+				<MkFolder v-if="matchQuery([i18n.ts._role._options.maxNoteLength, 'maxNoteLength'])">
+					<template #label>{{ i18n.ts._role._options.maxNoteLength }}</template>
+					<template #suffix>
+						<span v-if="role.policies.maxNoteLength.useDefault" :class="$style.useDefaultLabel">{{
+							i18n.ts._role.useBaseValue }}</span>
+						<span v-else>{{ role.policies.maxNoteLength.value }}</span>
+						<span :class="$style.priorityIndicator"><i
+								:class="getPriorityIcon(role.policies.maxNoteLength)"></i></span>
+					</template>
+					<div class="_gaps">
+						<MkSwitch v-model="role.policies.maxNoteLength.useDefault" :readonly="readonly">
+							<template #label>{{ i18n.ts._role.useBaseValue }}</template>
+						</MkSwitch>
+						<MkInput v-model="role.policies.maxNoteLength.value"
+							:disabled="role.policies.maxNoteLength.useDefault" type="number" :readonly="readonly"
+							min="1">
+							<template #label>{{ i18n.ts._role._options.maxNoteLength }}</template>
+						</MkInput>
+						<MkRange v-model="role.policies.maxNoteLength.priority" :min="0" :max="2" :step="1" easing
+							:textConverter="(v) => v === 0 ? i18n.ts._role._priority.low : v === 1 ? i18n.ts._role._priority.middle : v === 2 ? i18n.ts._role._priority.high : ''">
+							<template #label>{{ i18n.ts._role.priority }}</template>
+						</MkRange>
+					</div>
+				</MkFolder>
+
+				<MkFolder v-if="matchQuery([i18n.ts._role._options.maxCwLength, 'maxCwLength'])">
+					<template #label>{{ i18n.ts._role._options.maxCwLength }}</template>
+					<template #suffix>
+						<span v-if="role.policies.maxCwLength.useDefault" :class="$style.useDefaultLabel">{{
+							i18n.ts._role.useBaseValue }}</span>
+						<span v-else>{{ role.policies.maxCwLength.value }}</span>
+						<span :class="$style.priorityIndicator"><i
+								:class="getPriorityIcon(role.policies.maxCwLength)"></i></span>
+					</template>
+					<div class="_gaps">
+						<MkSwitch v-model="role.policies.maxCwLength.useDefault" :readonly="readonly">
+							<template #label>{{ i18n.ts._role.useBaseValue }}</template>
+						</MkSwitch>
+						<MkInput v-model="role.policies.maxCwLength.value"
+							:disabled="role.policies.maxCwLength.useDefault" type="number" :readonly="readonly"
+							min="1">
+							<template #label>{{ i18n.ts._role._options.maxCwLength }}</template>
+						</MkInput>
+						<MkRange v-model="role.policies.maxCwLength.priority" :min="0" :max="2" :step="1" easing
+							:textConverter="(v) => v === 0 ? i18n.ts._role._priority.low : v === 1 ? i18n.ts._role._priority.middle : v === 2 ? i18n.ts._role._priority.high : ''">
+							<template #label>{{ i18n.ts._role.priority }}</template>
+						</MkRange>
+					</div>
+				</MkFolder>
+
+				<MkFolder v-if="matchQuery([i18n.ts._role._options.canHideAds, 'canHideAds'])">
+					<template #label>{{ i18n.ts._role._options.canHideAds }}</template>
+					<template #suffix>
+						<span v-if="role.policies.canHideAds.useDefault" :class="$style.useDefaultLabel">{{
+							i18n.ts._role.useBaseValue }}</span>
+						<span v-else>{{ role.policies.canHideAds.value ? i18n.ts.yes : i18n.ts.no }}</span>
+						<span :class="$style.priorityIndicator"><i
+								:class="getPriorityIcon(role.policies.canHideAds)"></i></span>
+					</template>
+					<div class="_gaps">
+						<MkSwitch v-model="role.policies.canHideAds.useDefault" :readonly="readonly">
+							<template #label>{{ i18n.ts._role.useBaseValue }}</template>
+						</MkSwitch>
+						<MkSwitch v-model="role.policies.canHideAds.value"
+							:disabled="role.policies.canHideAds.useDefault" :readonly="readonly">
+							<template #label>{{ i18n.ts.enable }}</template>
+						</MkSwitch>
+						<MkRange v-model="role.policies.canHideAds.priority" :min="0" :max="2" :step="1" easing
 							:textConverter="(v) => v === 0 ? i18n.ts._role._priority.low : v === 1 ? i18n.ts._role._priority.middle : v === 2 ? i18n.ts._role._priority.high : ''">
 							<template #label>{{ i18n.ts._role.priority }}</template>
 						</MkRange>
@@ -1022,58 +1122,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 							<template #label>{{ i18n.ts.enable }}</template>
 						</MkSwitch>
 						<MkRange v-model="role.policies.canViewFederation.priority" :min="0" :max="2" :step="1" easing
-							:textConverter="(v) => v === 0 ? i18n.ts._role._priority.low : v === 1 ? i18n.ts._role._priority.middle : v === 2 ? i18n.ts._role._priority.high : ''">
-							<template #label>{{ i18n.ts._role.priority }}</template>
-						</MkRange>
-					</div>
-				</MkFolder>
-
-
-				<MkFolder v-if="matchQuery([i18n.ts._role._options.attachmentsLimit, 'attachmentsLimit'])">
-					<template #label>{{ i18n.ts._role._options.attachmentsLimit }}</template>
-					<template #suffix>
-						<span v-if="role.policies.attachmentsLimit.useDefault" :class="$style.useDefaultLabel">{{
-							i18n.ts._role.useBaseValue }}</span>
-						<span v-else>{{ role.policies.attachmentsLimit.value }}</span>
-						<span :class="$style.priorityIndicator"><i
-								:class="getPriorityIcon(role.policies.attachmentsLimit)"></i></span>
-					</template>
-					<div class="_gaps">
-						<MkSwitch v-model="role.policies.attachmentsLimit.useDefault" :readonly="readonly">
-							<template #label>{{ i18n.ts._role.useBaseValue }}</template>
-						</MkSwitch>
-						<MkInput v-model="role.policies.attachmentsLimit.value"
-							:disabled="role.policies.attachmentsLimit.useDefault" type="number" :readonly="readonly"
-							min="1">
-							<template #label>{{ i18n.ts._role._options.attachmentsLimit }}</template>
-						</MkInput>
-						<MkRange v-model="role.policies.attachmentsLimit.priority" :min="0" :max="2" :step="1"
-							easing
-							:textConverter="(v) => v === 0 ? i18n.ts._role._priority.low : v === 1 ? i18n.ts._role._priority.middle : v === 2 ? i18n.ts._role._priority.high : ''">
-							<template #label>{{ i18n.ts._role.priority }}</template>
-						</MkRange>
-					</div>
-				</MkFolder>
-
-				<MkFolder v-if="matchQuery([i18n.ts._role._options.pollChoicesLimit, 'pollChoicesLimit'])">
-					<template #label>{{ i18n.ts._role._options.pollChoicesLimit }}</template>
-					<template #suffix>
-						<span v-if="role.policies.pollChoicesLimit.useDefault" :class="$style.useDefaultLabel">{{
-							i18n.ts._role.useBaseValue }}</span>
-						<span v-else>{{ role.policies.pollChoicesLimit.value }}</span>
-						<span :class="$style.priorityIndicator"><i
-								:class="getPriorityIcon(role.policies.pollChoicesLimit)"></i></span>
-					</template>
-					<div class="_gaps">
-						<MkSwitch v-model="role.policies.pollChoicesLimit.useDefault" :readonly="readonly">
-							<template #label>{{ i18n.ts._role.useBaseValue }}</template>
-						</MkSwitch>
-						<MkInput v-model="role.policies.pollChoicesLimit.value"
-							:disabled="role.policies.pollChoicesLimit.useDefault" type="number" :readonly="readonly"
-							min="2">
-							<template #label>{{ i18n.ts._role._options.pollChoicesLimit }}</template>
-						</MkInput>
-						<MkRange v-model="role.policies.pollChoicesLimit.priority" :min="0" :max="2" :step="1" easing
 							:textConverter="(v) => v === 0 ? i18n.ts._role._priority.low : v === 1 ? i18n.ts._role._priority.middle : v === 2 ? i18n.ts._role._priority.high : ''">
 							<template #label>{{ i18n.ts._role.priority }}</template>
 						</MkRange>

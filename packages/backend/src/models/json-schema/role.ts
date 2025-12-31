@@ -280,6 +280,22 @@ export const packedRolePoliciesSchema = {
 			type: 'integer',
 			optional: false, nullable: false,
 		},
+		pollChoicesLimit: {
+			type: 'integer',
+			optional: false, nullable: false,
+		},
+		attachmentsLimit: {
+			type: 'integer',
+			optional: false, nullable: false,
+		},
+		maxNoteLength: {
+			type: 'integer',
+			optional: false, nullable: false,
+		},
+		maxCwLength: {
+			type: 'integer',
+			optional: false, nullable: false,
+		},
 		canImportAntennas: {
 			type: 'boolean',
 			optional: false, nullable: false,
@@ -315,14 +331,6 @@ export const packedRolePoliciesSchema = {
 		},
 		canViewFederation: {
 			type: 'boolean',
-			optional: false, nullable: false,
-		},
-		pollChoicesLimit: {
-			type: 'integer',
-			optional: false, nullable: false,
-		},
-		attachmentsLimit: {
-			type: 'integer',
 			optional: false, nullable: false,
 		},
 	},

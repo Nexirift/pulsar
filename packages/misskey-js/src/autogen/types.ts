@@ -11430,6 +11430,9 @@ export type components = {
             userEachUserListsLimit: number;
             rateLimitFactor: number;
             avatarDecorationLimit: number;
+            pollChoicesLimit: number;
+            attachmentsLimit: number;
+            maxNoteLength: number;
             canImportAntennas: boolean;
             canImportBlocking: boolean;
             canImportFollowing: boolean;
@@ -11440,8 +11443,6 @@ export type components = {
             chatAvailability: 'available' | 'readonly' | 'unavailable';
             canTrend: boolean;
             canViewFederation: boolean;
-            pollChoicesLimit: number;
-            attachmentsLimit: number;
         };
         ReversiGameLite: {
             /** Format: id */

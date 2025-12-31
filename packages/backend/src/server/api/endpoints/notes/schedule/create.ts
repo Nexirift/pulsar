@@ -26,6 +26,7 @@ import { MiScheduleNoteType } from '@/models/NoteSchedule.js';
 import { RoleService } from '@/core/RoleService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { ApiError } from '../../../error.js';
+import { Config } from '@/config.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -116,6 +117,18 @@ export const meta = {
 			code: 'CANNOT_RENOTE_OUTSIDE_OF_CHANNEL',
 			id: '33510210-8452-094c-6227-4a6c05d99f00',
 		},
+
+		tooManyPollChoices: {
+			message: 'You have specified too many choices for the poll.',
+			code: 'TOO_MANY_POLL_CHOICES',
+			id: 'c26a712d-3f43-4d99-a571-40b3ceeee0a2',
+		},
+
+		tooManyAttachments: {
+			message: 'You have attached too many files to your note.',
+			code: 'TOO_MANY_ATTACHMENTS',
+			id: '2d44ec3b-df46-4210-995d-9d48e754ab7a',
+		},
 	},
 } as const;
 
@@ -123,9 +136,11 @@ export const paramDef = {
 	type: 'object',
 	properties: {
 		visibility: { type: 'string', enum: ['public', 'home', 'followers', 'specified'], default: 'public' },
-		visibleUserIds: { type: 'array', uniqueItems: true, items: {
-			type: 'string', format: 'misskey:id',
-		} },
+		visibleUserIds: {
+			type: 'array', uniqueItems: true, items: {
+				type: 'string', format: 'misskey:id',
+			}
+		},
 		cw: { type: 'string', nullable: true, minLength: 1, maxLength: 100 },
 		reactionAcceptance: { type: 'string', nullable: true, enum: [null, 'likeOnly', 'likeOnlyForRemote', 'nonSensitiveOnly', 'nonSensitiveOnlyForLocalLikeOnlyForRemote'], default: null },
 		noExtractMentions: { type: 'boolean', default: false },
@@ -145,14 +160,12 @@ export const paramDef = {
 			type: 'array',
 			uniqueItems: true,
 			minItems: 1,
-			maxItems: 16,
 			items: { type: 'string', format: 'misskey:id' },
 		},
 		mediaIds: {
 			type: 'array',
 			uniqueItems: true,
 			minItems: 1,
-			maxItems: 16,
 			items: { type: 'string', format: 'misskey:id' },
 		},
 		poll: {
@@ -163,7 +176,6 @@ export const paramDef = {
 					type: 'array',
 					uniqueItems: true,
 					minItems: 2,
-					maxItems: 10,
 					items: { type: 'string', minLength: 1, maxLength: 50 },
 				},
 				multiple: { type: 'boolean' },
@@ -225,6 +237,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				visibleUsers = await this.usersRepository.findBy({
 					id: In(ps.visibleUserIds),
 				});
+			}
+
+			const policies = await this.roleService.getUserPolicies(me.id);
+			const attachmentsLimit = policies.attachmentsLimit ?? 16;
+			const pollChoicesLimit = policies.pollChoicesLimit ?? 10;
+
+			if (ps.fileIds && ps.fileIds.length > attachmentsLimit) {
+				throw new ApiError(meta.errors.tooManyAttachments);
+			}
+
+			if (ps.poll && ps.poll.choices && ps.poll.choices.length > pollChoicesLimit) {
+				throw new ApiError(meta.errors.tooManyPollChoices);
 			}
 
 			let files: MiDriveFile[] = [];

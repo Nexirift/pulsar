@@ -377,8 +377,10 @@ export class NoteCreateService implements OnApplicationShutdown {
 			data.localOnly = true;
 		}
 
+		const policies = await this.roleService.getUserPolicies(user.id);
+
 		const maxTextLength = user.host == null
-			? this.config.maxNoteLength
+			? policies.maxNoteLength ? policies.maxNoteLength : this.config.maxNoteLength
 			: this.config.maxRemoteNoteLength;
 
 		if (data.text) {
@@ -394,7 +396,7 @@ export class NoteCreateService implements OnApplicationShutdown {
 		}
 
 		const maxCwLength = user.host == null
-			? this.config.maxCwLength
+			? policies.maxCwLength ? policies.maxCwLength : this.config.maxCwLength
 			: this.config.maxRemoteCwLength;
 
 		if (data.cw) {

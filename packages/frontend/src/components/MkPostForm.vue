@@ -262,15 +262,17 @@ const textLength = computed((): number => {
 	return (text.value + imeText.value).length;
 });
 
-const maxTextLength = computed((): number => {
-	return instance ? instance.maxNoteTextLength : 1000;
+const maxTextLength = computed(() => {
+	return $i?.policies.maxNoteLength ? $i.policies.maxNoteLength : instance ? instance.maxNoteTextLength : 3000;
 });
 
 const cwTextLength = computed((): number => {
 	return cw.value?.length ?? 0;
 });
 
-const maxCwTextLength = computed(() => instance.maxCwLength);
+const maxCwTextLength = computed(() => {
+	return $i?.policies.maxCwLength ? $i.policies.maxCwLength : instance ? instance.maxCwLength : 500;
+});
 
 const canPost = computed((): boolean => {
 	return !props.mock && !posting.value && !posted.value &&

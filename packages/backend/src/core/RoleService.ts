@@ -72,6 +72,10 @@ export type RolePolicies = {
 	rateLimitFactor: number;
 	canImportNotes: boolean;
 	avatarDecorationLimit: number;
+	pollChoicesLimit: number;
+	attachmentsLimit: number;
+	maxNoteLength: number;
+	maxCwLength: number;
 	canImportAntennas: boolean;
 	canImportBlocking: boolean;
 	canImportFollowing: boolean;
@@ -80,8 +84,6 @@ export type RolePolicies = {
 	chatAvailability: 'available' | 'readonly' | 'unavailable';
 	canTrend: boolean;
 	canViewFederation: boolean;
-	pollChoicesLimit: number;
-	attachmentsLimit: number;
 };
 
 export const DEFAULT_POLICIES: RolePolicies = {
@@ -115,6 +117,10 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	rateLimitFactor: 1,
 	canImportNotes: true,
 	avatarDecorationLimit: 1,
+	pollChoicesLimit: 10,
+	attachmentsLimit: 16,
+	maxNoteLength: 3000,
+	maxCwLength: 500,
 	canImportAntennas: true,
 	canImportBlocking: true,
 	canImportFollowing: true,
@@ -123,8 +129,6 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	chatAvailability: 'available',
 	canTrend: true,
 	canViewFederation: true,
-	pollChoicesLimit: 10,
-	attachmentsLimit: 16,
 };
 
 // TODO cache sync fixes (and maybe events too?)
@@ -168,6 +172,10 @@ const DefaultPoliciesSchema: JSONSchemaType<RolePolicies> = {
 		rateLimitFactor: { type: 'number', minimum: 0.01 },
 		canImportNotes: { type: 'boolean' },
 		avatarDecorationLimit: { type: 'integer', minimum: 0 },
+		pollChoicesLimit: { type: 'integer', minimum: 2 },
+		attachmentsLimit: { type: 'integer', minimum: 1 },
+		maxNoteLength: { type: 'integer', minimum: 1 },
+		maxCwLength: { type: 'integer', minimum: 1 },
 		canImportAntennas: { type: 'boolean' },
 		canImportBlocking: { type: 'boolean' },
 		canImportFollowing: { type: 'boolean' },
@@ -176,8 +184,6 @@ const DefaultPoliciesSchema: JSONSchemaType<RolePolicies> = {
 		chatAvailability: { type: 'string', enum: ['available', 'readonly', 'unavailable'] },
 		canTrend: { type: 'boolean' },
 		canViewFederation: { type: 'boolean' },
-		pollChoicesLimit: { type: 'integer', minimum: 2 },
-		attachmentsLimit: { type: 'integer', minimum: 1 },
 	},
 };
 
@@ -192,21 +198,21 @@ const RoleSchema: JSONSchemaType<MiRole['policies']> = {
 				// type of their bit of the schema is all the same
 				[policy, value]: [string, JSONSchemaType<RolePolicies>['properties']['canTrend']]
 			) => [
-				policy,
-				{
-					type: 'object',
-					additionalProperties: false,
-					// we can't require `value` because the MiRole says `value:
-					// any` which includes undefined, so technically `value` is
-					// not really required
-					required: ['priority', 'useDefault'],
-					properties: {
-						priority: { type: 'integer', minimum: 0, maximum: 2 },
-						useDefault: { type: 'boolean' },
-						value,
+					policy,
+					{
+						type: 'object',
+						additionalProperties: false,
+						// we can't require `value` because the MiRole says `value:
+						// any` which includes undefined, so technically `value` is
+						// not really required
+						required: ['priority', 'useDefault'],
+						properties: {
+							priority: { type: 'integer', minimum: 0, maximum: 2 },
+							useDefault: { type: 'boolean' },
+							value,
+						},
 					},
-				},
-			],
+				],
 		),
 	),
 };
@@ -221,8 +227,8 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	private defaultPoliciesValidator: ValidateFunction<RolePolicies>;
 	private roleValidator: ValidateFunction<MiRole['policies']>;
 
-	public static AlreadyAssignedError = class extends Error {};
-	public static NotAssignedError = class extends Error {};
+	public static AlreadyAssignedError = class extends Error { };
+	public static NotAssignedError = class extends Error { };
 
 	constructor(
 		private moduleRef: ModuleRef,
@@ -510,7 +516,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	@bindThis
 	public async getUserAssigns(userOrId: MiUser | MiUser['id']) {
 		const now = this.timeService.now;
-		const userId = typeof(userOrId) === 'object' ? userOrId.id : userOrId;
+		const userId = typeof (userOrId) === 'object' ? userOrId.id : userOrId;
 		let assigns = await this.roleAssignmentByUserIdCache.fetch(userId, () => this.roleAssignmentsRepository.findBy({ userId }));
 		// 期限切れのロールを除外
 		assigns = assigns.filter(a => a.expiresAt == null || (a.expiresAt.getTime() > now));
@@ -520,11 +526,11 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	@bindThis
 	public async getUserRoles(userOrId: MiUser | MiUser['id']) {
 		const roles = await this.rolesCache.fetch(() => this.rolesRepository.findBy({}));
-		const userId = typeof(userOrId) === 'object' ? userOrId.id : userOrId;
+		const userId = typeof (userOrId) === 'object' ? userOrId.id : userOrId;
 		const followStats = await this.cacheService.getFollowStats(userId);
 		const assigns = await this.getUserAssigns(userOrId);
 		const assignedRoles = roles.filter(r => assigns.map(x => x.roleId).includes(r.id));
-		const user = typeof(userOrId) === 'object' ? userOrId : roles.some(r => r.target === 'conditional') ? await this.cacheService.findUserById(userOrId) : null;
+		const user = typeof (userOrId) === 'object' ? userOrId : roles.some(r => r.target === 'conditional') ? await this.cacheService.findUserById(userOrId) : null;
 		const matchedCondRoles = roles.filter(r => r.target === 'conditional' && this.evalCond(user!, assignedRoles, r.condFormula, followStats));
 
 		let allRoles = [...assignedRoles, ...matchedCondRoles];
@@ -549,7 +555,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 	@bindThis
 	public async getUserBadgeRoles(userOrId: MiUser | MiUser['id']) {
 		const now = this.timeService.now;
-		const userId = typeof(userOrId) === 'object' ? userOrId.id : userOrId;
+		const userId = typeof (userOrId) === 'object' ? userOrId.id : userOrId;
 		let assigns = await this.roleAssignmentByUserIdCache.fetch(userId, () => this.roleAssignmentsRepository.findBy({ userId }));
 		// 期限切れのロールを除外
 		assigns = assigns.filter(a => a.expiresAt == null || (a.expiresAt.getTime() > now));
@@ -559,7 +565,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 		const assignedBadgeRoles = assignedRoles.filter(r => r.asBadge);
 		const badgeCondRoles = roles.filter(r => r.asBadge && (r.target === 'conditional'));
 		if (badgeCondRoles.length > 0) {
-			const user = typeof(userOrId) === 'object' ? userOrId : roles.some(r => r.target === 'conditional') ? await this.cacheService.findUserById(userOrId) : null;
+			const user = typeof (userOrId) === 'object' ? userOrId : roles.some(r => r.target === 'conditional') ? await this.cacheService.findUserById(userOrId) : null;
 			const matchedBadgeCondRoles = badgeCondRoles.filter(r => this.evalCond(user!, assignedRoles, r.condFormula, followStats));
 			return [...assignedBadgeRoles, ...matchedBadgeCondRoles];
 		} else {
@@ -626,6 +632,10 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			rateLimitFactor: calc('rateLimitFactor', vs => Math.max(...vs)),
 			canImportNotes: calc('canImportNotes', vs => vs.some(v => v === true)),
 			avatarDecorationLimit: calc('avatarDecorationLimit', vs => Math.max(...vs)),
+			pollChoicesLimit: calc('pollChoicesLimit', vs => Math.max(...vs)),
+			attachmentsLimit: calc('attachmentsLimit', vs => Math.max(...vs)),
+			maxNoteLength: calc('maxNoteLength', vs => Math.max(...vs)),
+			maxCwLength: calc('maxCwLength', vs => Math.max(...vs)),
 			canImportAntennas: calc('canImportAntennas', vs => vs.some(v => v === true)),
 			canImportBlocking: calc('canImportBlocking', vs => vs.some(v => v === true)),
 			canImportFollowing: calc('canImportFollowing', vs => vs.some(v => v === true)),
@@ -634,8 +644,6 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			chatAvailability: calc('chatAvailability', aggregateChatAvailability),
 			canTrend: calc('canTrend', vs => vs.some(v => v === true)),
 			canViewFederation: calc('canViewFederation', vs => vs.some(v => v === true)),
-			pollChoicesLimit: calc('pollChoicesLimit', vs => Math.max(...vs)),
-			attachmentsLimit: calc('attachmentsLimit', vs => Math.max(...vs)),
 		};
 	}
 
