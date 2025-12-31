@@ -275,82 +275,126 @@ export async function openAccountMenu(opts: {
 	// TODO: $iのホストも比較したいけど通常null
 	const accountItems = (await getAccounts().then(accounts => accounts.filter(x => x.id !== $i.id))).map(a => createItem(a.host, a.id, a.username, a.user, a.token));
 
+
 	if (opts.withExtraOperation) {
-		menuItems.push({
-			type: 'link',
-			text: i18n.ts.profile,
-			to: `/@${$i.username}`,
-			avatar: $i,
-		}, {
-			type: 'divider',
-		});
-
-		if (opts.includeCurrentAccount) {
-			menuItems.push(createItem(host, $i.id, $i.username, $i, $i.token));
-		}
-
-		menuItems.push(...accountItems);
-
-		menuItems.push({
-			type: 'parent',
-			icon: 'ti ti-plus',
-			text: i18n.ts.addAccount,
-			children: [{
-				text: i18n.ts.existingAccount,
-				action: () => {
-					getAccountWithSigninDialog().then(res => {
-						if (res != null) {
-							success();
-						}
-					});
-				},
-			}, {
-				text: i18n.ts.createAccount,
-				action: () => {
-					getAccountWithSignupDialog().then(res => {
-						if (res != null) {
-							switchAccount(host, res.id);
-						}
-					});
-				},
-			}, {
-				text: i18n.ts.sharedAccount,
-				action: () => {
-					getAccountWithSharedAccessDialog().then((res) => {
-						if (res != null) {
-							os.success();
-						}
-					});
-				},
-			}],
-		}, {
-			type: 'divider',
-		});
-		if (opts.drawerMenuShowing) {
+		if (prefer.s.thumbFriendlyAccountMenu) {
 			menuItems.push({
+				type: 'parent',
+				icon: 'ti ti-plus',
+				text: i18n.ts.addAccount,
+				children: [{
+					text: i18n.ts.existingAccount,
+					action: () => {
+						getAccountWithSigninDialog().then(res => {
+							if (res != null) {
+								success();
+							}
+						});
+					},
+				}, {
+					text: i18n.ts.createAccount,
+					action: () => {
+						getAccountWithSignupDialog().then(res => {
+							if (res != null) {
+								switchAccount(host, res.id);
+							}
+						});
+					},
+				}, {
+					text: i18n.ts.sharedAccount,
+					action: () => {
+						getAccountWithSharedAccessDialog().then((res) => {
+							if (res != null) {
+								os.success();
+							}
+						});
+					},
+				}],
+			},
+			{
 				type: 'button' as const,
-				icon: 'ti ti-menu-2',
-				text: i18n.ts.menu,
-				action: () => {
-					if (opts.drawerMenuShowing) {
-						opts.drawerMenuShowing.value = true;
-					}
-				},
+				icon: 'ph-power ph-bold ph-lg',
+				text: i18n.ts.logout,
+				action: () => { signout(); },
+			}, {
+				type: 'link',
+				icon: 'ti ti-users',
+				text: i18n.ts.manageAccounts,
+				to: '/settings/accounts',
+			});
+			menuItems.push({
+				type: 'link',
+				text: i18n.ts.profile,
+				to: `/@${$i.username}`,
+				avatar: $i,
 			}, {
 				type: 'divider',
 			});
+
+			if (opts.includeCurrentAccount) {
+				menuItems.push(createItem(host, $i.id, $i.username, $i, $i.token));
+			}
+			menuItems.push(...accountItems);
+		} else {
+			menuItems.push({
+				type: 'link',
+				text: i18n.ts.profile,
+				to: `/@${$i.username}`,
+				avatar: $i,
+			}, {
+				type: 'divider',
+			});
+
+			if (opts.includeCurrentAccount) {
+				menuItems.push(createItem(host, $i.id, $i.username, $i, $i.token));
+			}
+
+			menuItems.push(...accountItems);
+
+			menuItems.push({
+				type: 'parent',
+				icon: 'ti ti-plus',
+				text: i18n.ts.addAccount,
+				children: [{
+					text: i18n.ts.existingAccount,
+					action: () => {
+						getAccountWithSigninDialog().then(res => {
+							if (res != null) {
+								success();
+							}
+						});
+					},
+				}, {
+					text: i18n.ts.createAccount,
+					action: () => {
+						getAccountWithSignupDialog().then(res => {
+							if (res != null) {
+								switchAccount(host, res.id);
+							}
+						});
+					},
+				}, {
+					text: i18n.ts.sharedAccount,
+					action: () => {
+						getAccountWithSharedAccessDialog().then((res) => {
+							if (res != null) {
+								os.success();
+							}
+						});
+					},
+				}],
+			}, {
+				type: 'link',
+				icon: 'ti ti-users',
+				text: i18n.ts.manageAccounts,
+				to: '/settings/accounts',
+			}, {
+				type: 'button' as const,
+				icon: 'ph-power ph-bold ph-lg',
+				text: i18n.ts.logout,
+				action: () => { signout(); },
+			});
 		}
-		menuItems.push({
-			type: 'link',
-			icon: 'ti ti-users',
-			text: i18n.ts.manageAccounts,
-			to: '/settings/accounts',
-		}, {
-			type: 'button' as const,
-			icon: 'ph-power ph-bold ph-lg',
-			text: i18n.ts.logout,
-			action: () => { signout(); },
-		});
 	} else {
 		if (opts.includeCurrentAccount) {
 			menuItems.push(createItem(host, $i.id, $i.username, $i, $i.token));

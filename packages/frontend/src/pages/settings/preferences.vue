@@ -157,6 +157,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 								</MkPreferenceContainer>
 							</SearchMarker>
 
+							<!-- dorm/turtkey: thumbFriendlyAccountMenu -->
+							<div class="_gaps_s">
+								<SearchMarker :keywords="['accounts', 'thumb', 'list', 'turtkey']">
+									<MkPreferenceContainer k="thumbFriendlyAccountMenu">
+										<MkSwitch v-model="thumbFriendlyAccountsMenu">
+											<template #label><SearchLabel>{{ i18n.ts.thumbFriendlyAccountMenu }}</SearchLabel></template>
+										</MkSwitch>
+									</MkPreferenceContainer>
+								</SearchMarker>
+							</div>
+
 							<SearchMarker :keywords="['collapse', 'uncollapse', 'un-collapse', 'cw', 'content', 'warning']">
 								<MkPreferenceContainer k="uncollapseCW">
 									<MkSwitch v-model="uncollapseCW">
@@ -1101,6 +1112,9 @@ const trustedDomains = prefer.model(
 // Inverted to map between "hide ads" and "force show ads"
 const hideAds = prefer.model('forceShowAds', x => !x, x => !x);
 
+// turtkey
+const thumbFriendlyAccountsMenu = prefer.model('thumbFriendlyAccountMenu');
+
 watch([
 	hemisphere,
 	enableInfiniteScroll,
@@ -1128,6 +1142,7 @@ watch([
 	enableHorizontalSwipe,
 	enablePullToRefresh,
 	noteDesign,
+	thumbFriendlyAccountsMenu,
 ], async () => {
 	await reloadAsk({ reason: i18n.ts.reloadToApplySetting, unison: true });
 });

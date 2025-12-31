@@ -11440,6 +11440,8 @@ export type components = {
             chatAvailability: 'available' | 'readonly' | 'unavailable';
             canTrend: boolean;
             canViewFederation: boolean;
+            pollChoicesLimit: number;
+            attachmentsLimit: number;
         };
         ReversiGameLite: {
             /** Format: id */

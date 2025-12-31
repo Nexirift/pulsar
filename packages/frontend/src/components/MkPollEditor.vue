@@ -17,7 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</button>
 		</li>
 	</ul>
-	<MkButton v-if="choices.length < 10" class="add" @click="add">{{ i18n.ts.add }}</MkButton>
+	<MkButton v-if="choices.length < pollChoicesLimit" class="add" @click="add">{{ i18n.ts.add }}</MkButton>
 	<MkButton v-else class="add" disabled>{{ i18n.ts._poll.noMore }}</MkButton>
 	<MkSwitch v-model="multiple">{{ i18n.ts._poll.canMultipleVote }}</MkSwitch>
 	<section>
@@ -61,6 +61,7 @@ import MkButton from './MkButton.vue';
 import { formatDateTimeString } from '@/utility/format-time-string.js';
 import { addTime } from '@/utility/time.js';
 import { i18n } from '@/i18n.js';
+import { $i } from '@/i';
 
 export type PollEditorModelValue = {
 	expiresAt: number | null;
@@ -77,6 +78,8 @@ const emit = defineEmits<{
 }>();
 
 const choices = ref(props.modelValue.choices);
+
+const pollChoicesLimit = $i?.policies?.pollChoicesLimit ?? 10;
 const multiple = ref(props.modelValue.multiple);
 const expiration = ref('infinite');
 const atDate = ref(formatDateTimeString(addTime(new Date(), 1, 'day'), 'yyyy-MM-dd'));

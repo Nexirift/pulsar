@@ -24,10 +24,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</Sortable>
 	<p
 		:class="[$style.remain, {
-			[$style.exceeded]: props.modelValue.length > 16,
+			[$style.exceeded]: props.modelValue.length > attachmentsLimit,
 		}]"
 	>
-		{{ props.modelValue.length }}/16
+		{{ props.modelValue.length }}/{{ attachmentsLimit }}
 	</p>
 </div>
 </template>
@@ -43,13 +43,18 @@ import { misskeyApi } from '@/utility/misskey-api.js';
 import { i18n } from '@/i18n.js';
 import { prefer } from '@/preferences.js';
 import { DI } from '@/di.js';
+import { $i } from '@/i';
 
 const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
+
 
 const props = defineProps<{
 	modelValue: Misskey.entities.DriveFile[];
 	detachMediaFn?: (id: string) => void;
 }>();
+
+// Use prop, fallback to instance policy, fallback to 16
+const attachmentsLimit = $i?.policies?.attachmentsLimit ?? 16;
 
 const mock = inject(DI.mock, false);
 

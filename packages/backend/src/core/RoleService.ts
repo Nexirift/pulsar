@@ -80,6 +80,8 @@ export type RolePolicies = {
 	chatAvailability: 'available' | 'readonly' | 'unavailable';
 	canTrend: boolean;
 	canViewFederation: boolean;
+	pollChoicesLimit: number;
+	attachmentsLimit: number;
 };
 
 export const DEFAULT_POLICIES: RolePolicies = {
@@ -121,6 +123,8 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	chatAvailability: 'available',
 	canTrend: true,
 	canViewFederation: true,
+	pollChoicesLimit: 10,
+	attachmentsLimit: 16,
 };
 
 // TODO cache sync fixes (and maybe events too?)
@@ -172,6 +176,8 @@ const DefaultPoliciesSchema: JSONSchemaType<RolePolicies> = {
 		chatAvailability: { type: 'string', enum: ['available', 'readonly', 'unavailable'] },
 		canTrend: { type: 'boolean' },
 		canViewFederation: { type: 'boolean' },
+		pollChoicesLimit: { type: 'integer', minimum: 2 },
+		attachmentsLimit: { type: 'integer', minimum: 1 },
 	},
 };
 
@@ -628,6 +634,8 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			chatAvailability: calc('chatAvailability', aggregateChatAvailability),
 			canTrend: calc('canTrend', vs => vs.some(v => v === true)),
 			canViewFederation: calc('canViewFederation', vs => vs.some(v => v === true)),
+			pollChoicesLimit: calc('pollChoicesLimit', vs => Math.max(...vs)),
+			attachmentsLimit: calc('attachmentsLimit', vs => Math.max(...vs)),
 		};
 	}
 

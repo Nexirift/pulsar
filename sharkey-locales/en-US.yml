@@ -115,6 +115,7 @@ forceAdultsOnlyConfirm: "Are you sure you want to force this account to be adult
 unforceAdultsOnlyConfirm: "Are you sure you want to remove the forced adults only status from this account?"
 withAdultsOnly: "Show adults only content"
 userisAdultsOnlyButYouAreUnderage: "This user is marked as adults only, but you have been identified as underage. Therefore, you cannot view their profile or posts."
+thumbFriendlyAccountsMenu: "Thumb-friendly accounts menu"
 sendErrorReportsDescription: "When turned on, detailed error information will be shared with Pulsar when a problem occurs, helping to improve the quality of Pulsar.\nThis will include information such the version of your OS, what browser you're using, your activity in Pulsar, etc."
 noInquiryUrlWarning: "Contact URL is not set."
 misskeyUpdated: "Pulsar has been updated!"
@@ -274,6 +275,8 @@ _role:
     scheduleNoteMax: "Maximum number of scheduled notes"
     canTrend: "Can appear in trending notes / users"
     canViewFederation: "Can view federation stats and details of remote instances"
+    pollChoicesLimit: "Maximum number of poll choices"
+    attachmentsLimit: "Maximum number of attachments per note"
   _condition:
     isLocked: "Private account"
     isExplorable: "Account is discoverable"

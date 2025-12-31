@@ -12401,6 +12401,10 @@ export interface Locale extends ILocale {
      */
     "userisAdultsOnlyButYouAreUnderage": string;
     /**
+     * Thumb-friendly accounts menu
+     */
+    "thumbFriendlyAccountsMenu": string;
+    /**
      * Require approval for new users
      */
     "approvalRequiredForSignup": string;

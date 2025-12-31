@@ -511,6 +511,11 @@ export const PREF_DEF = {
 	warnMissingAltText: {
 		default: true,
 	},
+
+	// dorm/turtkey: thumbFriendlyAccountMenu
+	thumbFriendlyAccountMenu: {
+		default: true
+	},
 	//#endregion
 
 	//#region hybrid options

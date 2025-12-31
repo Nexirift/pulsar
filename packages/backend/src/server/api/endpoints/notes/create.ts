@@ -7,7 +7,7 @@ import ms from 'ms';
 import { In } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import type { MiUser } from '@/models/User.js';
-import type { UsersRepository, NotesRepository, BlockingsRepository, DriveFilesRepository, ChannelsRepository } from '@/models/_.js';
+import type { UsersRepository, NotesRepository, BlockingsRepository, DriveFilesRepository, ChannelsRepository, RolesRepository } from '@/models/_.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
 import type { MiNote } from '@/models/Note.js';
 import type { MiChannel } from '@/models/Channel.js';
@@ -20,6 +20,7 @@ import { isQuote, isRenote } from '@/misc/is-renote.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { TimeService } from '@/global/TimeService.js';
 import { ApiError } from '../../error.js';
+import { RoleService } from '@/core/RoleService.js';
 
 export const meta = {
 	tags: ['notes'],
@@ -151,6 +152,18 @@ export const meta = {
 			code: 'QUOTE_DISABLED_FOR_USER',
 			id: '1c0ea108-d1e3-4e8e-aa3f-4d2487626153',
 		},
+
+		tooManyAttachments: {
+			message: 'You have attached too many files to your note.',
+			code: 'TOO_MANY_ATTACHMENTS',
+			id: '2d44ec3b-df46-4210-995d-9d48e754ab7a',
+		},
+
+		tooManyPollChoices: {
+			message: 'You have specified too many choices for the poll.',
+			code: 'TOO_MANY_POLL_CHOICES',
+			id: 'c26a712d-3f43-4d99-a571-40b3ceeee0a2',
+		},
 	},
 } as const;
 
@@ -182,14 +195,12 @@ export const paramDef = {
 			type: 'array',
 			uniqueItems: true,
 			minItems: 1,
-			maxItems: 16,
 			items: { type: 'string', format: 'misskey:id' },
 		},
 		mediaIds: {
 			type: 'array',
 			uniqueItems: true,
 			minItems: 1,
-			maxItems: 16,
 			items: { type: 'string', format: 'misskey:id' },
 		},
 		poll: {
@@ -200,7 +211,6 @@ export const paramDef = {
 					type: 'array',
 					uniqueItems: true,
 					minItems: 2,
-					maxItems: 10,
 					items: { type: 'string', minLength: 1, maxLength: 150 },
 				},
 				multiple: { type: 'boolean' },
@@ -263,6 +273,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private noteEntityService: NoteEntityService,
 		private noteCreateService: NoteCreateService,
 		private readonly timeService: TimeService,
+		private roleService: RoleService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			if (ps.text && ps.text.length > this.config.maxNoteLength) {
@@ -271,6 +282,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			if (ps.cw && ps.cw.length > this.config.maxCwLength) {
 				throw new ApiError(meta.errors.maxCwLength);
 			}
+
+			// --- Per-user policy enforcement ---
+			const policies = await this.roleService.getUserPolicies(me.id);
+			const attachmentsLimit = policies.attachmentsLimit ?? 16;
+			const pollChoicesLimit = policies.pollChoicesLimit ?? 10;
+			if (ps.fileIds && ps.fileIds.length > attachmentsLimit) {
+				throw new ApiError(meta.errors.tooManyAttachments);
+			}
+			if (ps.poll && ps.poll.choices && ps.poll.choices.length > pollChoicesLimit) {
+				throw new ApiError(meta.errors.tooManyPollChoices);
+			}
+			// ---
 
 			let visibleUsers: MiUser[] = [];
 			if (ps.visibleUserIds) {
