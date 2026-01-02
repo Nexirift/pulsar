@@ -33,7 +33,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #label>{{ i18n.ts.showBelowAvatar }}</template>
 				</MkSwitch>
 				<MkSwitch v-model="flipH">
-					<template #label>{{ i18n.ts.flip }}</template>
+					<template #label>{{ i18n.ts.flip }} (Horizontal)</template>
+				</MkSwitch>
+				<MkSwitch v-model="flipV">
+					<template #label>{{ i18n.ts.flip }} (Vertical)</template>
 				</MkSwitch>
 			</div>
 		</div>
@@ -73,6 +76,7 @@ const emit = defineEmits<{
 	(ev: 'attach', payload: {
 		angle: number;
 		flipH: boolean;
+		flipV: boolean;
 		offsetX: number;
 		offsetY: number;
 		showBelow: boolean;
@@ -80,6 +84,7 @@ const emit = defineEmits<{
 	(ev: 'update', payload: {
 		angle: number;
 		flipH: boolean;
+		flipV: boolean;
 		offsetX: number;
 		offsetY: number;
 		showBelow: boolean;
@@ -92,6 +97,7 @@ const exceeded = computed(() => ($i.policies.avatarDecorationLimit - $i.avatarDe
 const locked = computed(() => props.decoration.roleIdsThatCanBeUsedThisDecoration.length > 0 && !$i.roles.some(r => props.decoration.roleIdsThatCanBeUsedThisDecoration.includes(r.id)));
 const angle = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].angle : null) ?? 0);
 const flipH = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].flipH : null) ?? false);
+const flipV = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].flipV : null) ?? false);
 const offsetX = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].offsetX : null) ?? 0);
 const offsetY = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].offsetY : null) ?? 0);
 const showBelow = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].showBelow : null) ?? false);
@@ -102,6 +108,7 @@ const decorationsForPreview = computed(() => {
 		url: props.decoration.url,
 		angle: angle.value,
 		flipH: flipH.value,
+		flipV: flipV.value,
 		offsetX: offsetX.value,
 		offsetY: offsetY.value,
 		showBelow: showBelow.value,
@@ -124,6 +131,7 @@ async function update() {
 	emit('update', {
 		angle: angle.value,
 		flipH: flipH.value,
+		flipV: flipV.value,
 		offsetX: offsetX.value,
 		offsetY: offsetY.value,
 		showBelow: showBelow.value,
@@ -135,6 +143,7 @@ async function attach() {
 	emit('attach', {
 		angle: angle.value,
 		flipH: flipH.value,
+		flipV: flipV.value,
 		offsetX: offsetX.value,
 		offsetY: offsetY.value,
 		showBelow: showBelow.value,

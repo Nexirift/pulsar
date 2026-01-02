@@ -70,6 +70,7 @@ import type {
 	AdminFederationRefreshRemoteInstanceMetadataRequest,
 	AdminFederationRemoveAllFollowingRequest,
 	AdminFederationUpdateInstanceRequest,
+	AdminForceAdultsOnlyStatusRequest,
 	AdminForwardAbuseUserReportRequest,
 	AdminGenVapidKeysResponse,
 	AdminGetIndexStatsResponse,
@@ -140,6 +141,7 @@ import type {
 	AdminSystemWebhookTestRequest,
 	AdminSystemWebhookUpdateRequest,
 	AdminSystemWebhookUpdateResponse,
+	AdminUnforceAdultsOnlyStatusRequest,
 	AdminUnnsfwUserRequest,
 	AdminUnsetUserAvatarRequest,
 	AdminUnsetUserBannerRequest,
@@ -727,6 +729,7 @@ export type Endpoints = {
 	'admin/federation/refresh-remote-instance-metadata': { req: AdminFederationRefreshRemoteInstanceMetadataRequest; res: EmptyResponse };
 	'admin/federation/remove-all-following': { req: AdminFederationRemoveAllFollowingRequest; res: EmptyResponse };
 	'admin/federation/update-instance': { req: AdminFederationUpdateInstanceRequest; res: EmptyResponse };
+	'admin/force-adults-only-status': { req: AdminForceAdultsOnlyStatusRequest; res: EmptyResponse };
 	'admin/forward-abuse-user-report': { req: AdminForwardAbuseUserReportRequest; res: EmptyResponse };
 	'admin/gen-vapid-keys': { req: EmptyRequest; res: AdminGenVapidKeysResponse };
 	'admin/get-index-stats': { req: EmptyRequest; res: AdminGetIndexStatsResponse };
@@ -779,6 +782,7 @@ export type Endpoints = {
 	'admin/system-webhook/show': { req: AdminSystemWebhookShowRequest; res: AdminSystemWebhookShowResponse };
 	'admin/system-webhook/test': { req: AdminSystemWebhookTestRequest; res: EmptyResponse };
 	'admin/system-webhook/update': { req: AdminSystemWebhookUpdateRequest; res: AdminSystemWebhookUpdateResponse };
+	'admin/unforce-adults-only-status': { req: AdminUnforceAdultsOnlyStatusRequest; res: EmptyResponse };
 	'admin/unnsfw-user': { req: AdminUnnsfwUserRequest; res: EmptyResponse };
 	'admin/unset-user-avatar': { req: AdminUnsetUserAvatarRequest; res: EmptyResponse };
 	'admin/unset-user-banner': { req: AdminUnsetUserBannerRequest; res: EmptyResponse };

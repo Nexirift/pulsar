@@ -248,6 +248,9 @@ type AdminFederationRemoveAllFollowingRequest = operations['admin___federation__
 type AdminFederationUpdateInstanceRequest = operations['admin___federation___update-instance']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
+type AdminForceAdultsOnlyStatusRequest = operations['admin___force-adults-only-status']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
 type AdminForwardAbuseUserReportRequest = operations['admin___forward-abuse-user-report']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -456,6 +459,9 @@ type AdminSystemWebhookUpdateRequest = operations['admin___system-webhook___upda
 
 // @public (undocumented)
 type AdminSystemWebhookUpdateResponse = operations['admin___system-webhook___update']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type AdminUnforceAdultsOnlyStatusRequest = operations['admin___unforce-adults-only-status']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type AdminUnnsfwUserRequest = operations['admin___unnsfw-user']['requestBody']['content']['application/json'];
@@ -1603,6 +1609,7 @@ declare namespace entities {
         AdminFederationRefreshRemoteInstanceMetadataRequest,
         AdminFederationRemoveAllFollowingRequest,
         AdminFederationUpdateInstanceRequest,
+        AdminForceAdultsOnlyStatusRequest,
         AdminForwardAbuseUserReportRequest,
         AdminGenVapidKeysResponse,
         AdminGetIndexStatsResponse,
@@ -1673,6 +1680,7 @@ declare namespace entities {
         AdminSystemWebhookTestRequest,
         AdminSystemWebhookUpdateRequest,
         AdminSystemWebhookUpdateResponse,
+        AdminUnforceAdultsOnlyStatusRequest,
         AdminUnnsfwUserRequest,
         AdminUnsetUserAvatarRequest,
         AdminUnsetUserBannerRequest,

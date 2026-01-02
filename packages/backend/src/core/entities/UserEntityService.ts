@@ -597,6 +597,7 @@ export class UserEntityService implements OnModuleInit {
 				id: ud.id,
 				angle: ud.angle || undefined,
 				flipH: ud.flipH || undefined,
+				flipV: ud.flipV || undefined,
 				offsetX: ud.offsetX || undefined,
 				offsetY: ud.offsetY || undefined,
 				showBelow: ud.showBelow || undefined,

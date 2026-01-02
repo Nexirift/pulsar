@@ -470,6 +470,7 @@ export class WebhookTestService {
 				id: it.id,
 				angle: it.angle,
 				flipH: it.flipH,
+				flipV: it.flipV,
 				url: 'https://example.com/dummy-image001.png',
 				offsetX: it.offsetX,
 				offsetY: it.offsetY,

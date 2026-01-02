@@ -117,6 +117,10 @@ export const packedUserLiteSchema = {
 						type: 'boolean',
 						nullable: false, optional: true,
 					},
+					flipV: {
+						type: 'boolean',
+						nullable: false, optional: true,
+					},
 					url: {
 						type: 'string',
 						format: 'url',

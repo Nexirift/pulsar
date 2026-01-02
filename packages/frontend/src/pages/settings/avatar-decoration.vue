@@ -20,6 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						:decoration="avatarDecorations.find(d => d.id === avatarDecoration.id)"
 						:angle="avatarDecoration.angle"
 						:flipH="avatarDecoration.flipH"
+						:flipV="avatarDecoration.flipV"
 						:offsetX="avatarDecoration.offsetX"
 						:offsetY="avatarDecoration.offsetY"
 						:showBelow="avatarDecoration.showBelow"
@@ -79,6 +80,7 @@ function openDecoration(avatarDecoration, index?: number) {
 				id: avatarDecoration.id,
 				angle: payload.angle,
 				flipH: payload.flipH,
+				flipV: payload.flipV,
 				offsetX: payload.offsetX,
 				offsetY: payload.offsetY,
 				showBelow: payload.showBelow,
@@ -94,6 +96,7 @@ function openDecoration(avatarDecoration, index?: number) {
 				id: avatarDecoration.id,
 				angle: payload.angle,
 				flipH: payload.flipH,
+				flipV: payload.flipV,
 				offsetX: payload.offsetX,
 				offsetY: payload.offsetY,
 				showBelow: payload.showBelow,

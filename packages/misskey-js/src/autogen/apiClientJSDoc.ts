@@ -573,6 +573,18 @@ declare module '../api.js' {
     /**
      * No description provided.
      * 
+     * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+     * **Credential required**: *Yes* / **Permission**: *write:admin:force-adults-only-status*
+     */
+    request<E extends 'admin/force-adults-only-status', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
      * **Credential required**: *Yes* / **Permission**: *write:admin:resolve-abuse-user-report*
      */
     request<E extends 'admin/forward-abuse-user-report', P extends Endpoints[E]['req']>(
@@ -1143,6 +1155,18 @@ declare module '../api.js' {
      * **Credential required**: *Yes* / **Permission**: *write:admin:system-webhook*
      */
     request<E extends 'admin/system-webhook/update', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
+     * **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+     * **Credential required**: *Yes* / **Permission**: *write:admin:unforce-adults-only-status*
+     */
+    request<E extends 'admin/unforce-adults-only-status', P extends Endpoints[E]['req']>(
       endpoint: E,
       params: P,
       credential?: string | null,

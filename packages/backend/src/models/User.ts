@@ -182,6 +182,7 @@ export class MiUser {
 		id: string;
 		angle?: number;
 		flipH?: boolean;
+		flipV?: boolean;
 		offsetX?: number;
 		offsetY?: number;
 		showBelow?: boolean;

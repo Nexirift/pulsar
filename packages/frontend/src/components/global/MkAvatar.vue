@@ -106,7 +106,8 @@ function getDecorationAngle(decoration: Omit<Misskey.entities.UserDetailed['avat
 
 function getDecorationScale(decoration: Omit<Misskey.entities.UserDetailed['avatarDecorations'][number], 'id'>) {
 	const scaleX = decoration.flipH ? -1 : 1;
-	return scaleX === 1 ? undefined : `${scaleX} 1`;
+	const scaleY = decoration.flipV ? -1 : 1;
+	return scaleX === 1 && scaleY === 1 ? undefined : `${scaleX} ${scaleY}`;
 }
 
 function getDecorationOffset(decoration: Omit<Misskey.entities.UserDetailed['avatarDecorations'][number], 'id'>) {

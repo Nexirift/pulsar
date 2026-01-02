@@ -1130,6 +1130,29 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    '/admin/force-adults-only-status': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * admin/force-adults-only-status
+         * @description No description provided.
+         *
+         *     **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+         *     **Credential required**: *Yes* / **Permission**: *write:admin:force-adults-only-status*
+         */
+        post: operations['admin___force-adults-only-status'];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     '/admin/forward-abuse-user-report': {
         parameters: {
             query?: never;
@@ -2274,6 +2297,29 @@ export type paths = {
          *     **Credential required**: *Yes* / **Permission**: *write:admin:system-webhook*
          */
         post: operations['admin___system-webhook___update'];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    '/admin/unforce-adults-only-status': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * admin/unforce-adults-only-status
+         * @description No description provided.
+         *
+         *     **Internal Endpoint**: This endpoint is an API for the misskey mainframe and is not intended for use by third parties.
+         *     **Credential required**: *Yes* / **Permission**: *write:admin:unforce-adults-only-status*
+         */
+        post: operations['admin___unforce-adults-only-status'];
         delete?: never;
         options?: never;
         head?: never;
@@ -10098,6 +10144,7 @@ export type components = {
                 id: string;
                 angle?: number;
                 flipH?: boolean;
+                flipV?: boolean;
                 /** Format: url */
                 url: string;
                 offsetX?: number;
@@ -11433,6 +11480,7 @@ export type components = {
             pollChoicesLimit: number;
             attachmentsLimit: number;
             maxNoteLength: number;
+            maxCwLength: number;
             canImportAntennas: boolean;
             canImportBlocking: boolean;
             canImportFollowing: boolean;
@@ -15726,6 +15774,76 @@ export interface operations {
             };
         };
     };
+    'admin___force-adults-only-status': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    userId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
     'admin___forward-abuse-user-report': {
         parameters: {
             query?: never;
@@ -19865,6 +19983,76 @@ export interface operations {
                 content: {
                     'application/json': components['schemas']['SystemWebhook'];
                 };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    'admin___unforce-adults-only-status': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** Format: misskey:id */
+                    userId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (without any results) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Client error */
             400: {
@@ -37625,6 +37813,7 @@ export interface operations {
                         id: string;
                         angle?: number | null;
                         flipH?: boolean | null;
+                        flipV?: boolean | null;
                         offsetX?: number | null;
                         offsetY?: number | null;
                         showBelow?: boolean | null;
