@@ -137,6 +137,14 @@ export const packedMetaLiteSchema = {
 			type: 'string',
 			optional: false, nullable: true,
 		},
+		enableAltcha: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
+		altchaSiteKey: {
+			type: 'string',
+			optional: false, nullable: true,
+		},
 		enableFC: {
 			type: 'boolean',
 			optional: false, nullable: false,

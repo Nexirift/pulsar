@@ -75,6 +75,14 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			enableAltcha: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
+			altchaSiteKey: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 			enableFC: {
 				type: 'boolean',
 				optional: false, nullable: false,
@@ -237,6 +245,10 @@ export const meta = {
 				optional: false, nullable: true,
 			},
 			turnstileSecretKey: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
+			altchaSecretKey: {
 				type: 'string',
 				optional: false, nullable: true,
 			},
@@ -694,6 +706,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				recaptchaSiteKey: instance.recaptchaSiteKey,
 				enableTurnstile: instance.enableTurnstile,
 				turnstileSiteKey: instance.turnstileSiteKey,
+				enableAltcha: instance.enableAltcha,
+				altchaSiteKey: instance.altchaSiteKey,
 				enableFC: instance.enableFC,
 				fcSiteKey: instance.fcSiteKey,
 				enableTestcaptcha: instance.enableTestcaptcha,
@@ -732,6 +746,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				mcaptchaSecretKey: instance.mcaptchaSecretKey,
 				recaptchaSecretKey: instance.recaptchaSecretKey,
 				turnstileSecretKey: instance.turnstileSecretKey,
+				altchaSecretKey: instance.altchaSecretKey,
 				fcSecretKey: instance.fcSecretKey,
 				sensitiveMediaDetection: instance.sensitiveMediaDetection,
 				sensitiveMediaDetectionSensitivity: instance.sensitiveMediaDetectionSensitivity,

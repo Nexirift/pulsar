@@ -89,6 +89,9 @@ export const paramDef = {
 		enableTurnstile: { type: 'boolean' },
 		turnstileSiteKey: { type: 'string', nullable: true },
 		turnstileSecretKey: { type: 'string', nullable: true },
+		enableAltcha: { type: 'boolean' },
+		altchaSiteKey: { type: 'string', nullable: true },
+		altchaSecretKey: { type: 'string', nullable: true },
 		enableFC: { type: 'boolean' },
 		fcSiteKey: { type: 'string', nullable: true },
 		fcSecretKey: { type: 'string', nullable: true },
@@ -428,6 +431,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.turnstileSecretKey !== undefined) {
 				set.turnstileSecretKey = ps.turnstileSecretKey;
+			}
+
+			if (ps.enableAltcha !== undefined) {
+				set.enableAltcha = ps.enableAltcha;
+			}
+
+			if (ps.altchaSiteKey !== undefined) {
+				set.altchaSiteKey = ps.altchaSiteKey;
+			}
+
+			if (ps.altchaSecretKey !== undefined) {
+				set.altchaSecretKey = ps.altchaSecretKey;
 			}
 
 			if (ps.enableTestcaptcha !== undefined) {

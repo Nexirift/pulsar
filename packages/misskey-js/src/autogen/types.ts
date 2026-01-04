@@ -11599,6 +11599,8 @@ export type components = {
             recaptchaSiteKey: string | null;
             enableTurnstile: boolean;
             turnstileSiteKey: string | null;
+            enableAltcha: boolean;
+            altchaSiteKey: string | null;
             enableFC: boolean;
             fcSiteKey: string | null;
             enableAchievements: boolean | null;
@@ -16384,6 +16386,8 @@ export interface operations {
                         recaptchaSiteKey: string | null;
                         enableTurnstile: boolean;
                         turnstileSiteKey: string | null;
+                        enableAltcha: boolean;
+                        altchaSiteKey: string | null;
                         enableFC: boolean;
                         fcSiteKey: string | null;
                         enableTestcaptcha: boolean;
@@ -16416,6 +16420,7 @@ export interface operations {
                         mcaptchaSecretKey: string | null;
                         recaptchaSecretKey: string | null;
                         turnstileSecretKey: string | null;
+                        altchaSecretKey: string | null;
                         fcSecretKey: string | null;
                         sensitiveMediaDetection: string;
                         sensitiveMediaDetectionSensitivity: string;
@@ -20581,6 +20586,9 @@ export interface operations {
                     enableTurnstile?: boolean;
                     turnstileSiteKey?: string | null;
                     turnstileSecretKey?: string | null;
+                    enableAltcha?: boolean;
+                    altchaSiteKey?: string | null;
+                    altchaSecretKey?: string | null;
                     enableFC?: boolean;
                     fcSiteKey?: string | null;
                     fcSecretKey?: string | null;
