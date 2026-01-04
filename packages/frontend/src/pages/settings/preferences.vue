@@ -97,6 +97,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 									</MkSwitch>
 								</MkPreferenceContainer>
 							</SearchMarker>
+
+							<SearchMarker :keywords="['adults', 'only', '18+', 'nsfw', 'show', 'profiles', 'explore']">
+								<MkPreferenceContainer k="showAdultsOnlyProfiles">
+									<MkSwitch v-model="showAdultsOnlyProfiles" :disabled="isUnder18">
+										<template #label><SearchLabel>{{ i18n.ts.showAdultsOnlyProfiles }}</SearchLabel></template>
+										<template #caption>
+											<MkInfo warn v-if="isUnder18">{{ i18n.ts.cannotEnableAdultsOnlyProfilesUnder18 }}</MkInfo>
+										</template>
+									</MkSwitch>
+								</MkPreferenceContainer>
+							</SearchMarker>
 						</div>
 
 						<SearchMarker :keywords="['emoji', 'style', 'native', 'system', 'fluent', 'twemoji', 'tossface']">
@@ -1037,6 +1048,7 @@ const showFixedPostForm = prefer.model('showFixedPostForm');
 const showFixedPostFormInChannel = prefer.model('showFixedPostFormInChannel');
 const numberOfPageCache = prefer.model('numberOfPageCache');
 const enableInfiniteScroll = prefer.model('enableInfiniteScroll');
+const showAdultsOnlyProfiles = prefer.model('showAdultsOnlyProfiles');
 const useReactionPickerForContextMenu = prefer.model('useReactionPickerForContextMenu');
 const disableStreamingTimeline = prefer.model('disableStreamingTimeline');
 const useGroupedNotifications = prefer.model('useGroupedNotifications');
@@ -1114,6 +1126,26 @@ const hideAds = prefer.model('forceShowAds', x => !x, x => !x);
 
 // turtkey
 const thumbFriendlyAccountsMenu = prefer.model('thumbFriendlyAccountsMenu');
+
+// Computed property to check if user is under 18
+const isUnder18 = computed(() => {
+	if (!$i.birthday) return false;
+	const birthday = new Date($i.birthday);
+	const today = new Date();
+	let age = today.getFullYear() - birthday.getFullYear();
+	const monthDiff = today.getMonth() - birthday.getMonth();
+	if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthday.getDate())) {
+		age--;
+	}
+	return age < 18;
+});
+
+// Watch for age changes and disable adults-only profiles if user becomes underage
+watch(isUnder18, (newValue) => {
+	if (newValue && showAdultsOnlyProfiles.value) {
+		showAdultsOnlyProfiles.value = false;
+	}
+}, { immediate: true });
 
 watch([
 	hemisphere,

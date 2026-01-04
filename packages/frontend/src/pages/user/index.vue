@@ -21,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div :class="[$style.root, $style.error]">
 					<p :style="{ fontSize: '48px' }">🔞</p>
 
-					<div style="opacity: 0.7;">{{ i18n.ts.userIs18PlusButYouAreUnderage }}</div>
+					<div style="opacity: 0.7;">{{ i18n.ts.userisAdultsOnlyButYouAreUnderage }}</div>
 				</div>
 			</Transition>
 		</div>

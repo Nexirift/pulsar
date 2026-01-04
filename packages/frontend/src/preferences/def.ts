@@ -352,6 +352,9 @@ export const PREF_DEF = {
 	confirmWhenRevealingSensitiveMedia: {
 		default: false,
 	},
+	showAdultsOnlyProfiles: {
+		default: false,
+	},
 	contextMenu: {
 		default: 'app' as 'app' | 'appWithShift' | 'native',
 	},

@@ -115,6 +115,8 @@ forceAdultsOnlyConfirm: "Are you sure you want to force this account to be adult
 unforceAdultsOnlyConfirm: "Are you sure you want to remove the forced adults only status from this account?"
 withAdultsOnly: "Show adults only content"
 userisAdultsOnlyButYouAreUnderage: "This user is marked as adults only, but you have been identified as underage. Therefore, you cannot view their profile or posts."
+showAdultsOnlyProfiles: "Show 18+ profiles"
+cannotEnableAdultsOnlyProfilesUnder18: "You must be 18 or older to enable this setting."
 thumbFriendlyAccountsMenu: "Thumb-friendly accounts menu"
 sendErrorReportsDescription: "When turned on, detailed error information will be shared with Pulsar when a problem occurs, helping to improve the quality of Pulsar.\nThis will include information such the version of your OS, what browser you're using, your activity in Pulsar, etc."
 noInquiryUrlWarning: "Contact URL is not set."
@@ -408,6 +410,7 @@ _moderationLogTypes:
   addRelay: "Added a relay"
   removeRelay: "Removed a relay"
   restartMigration: "Restarted migration for a user"
+  forceAdultsOnly: "Forced adults only status"
 
 _mfm:
   uncommonFeature: "This is not a widespread feature, it may not display properly on most other fedi software, including other Misskey forks"

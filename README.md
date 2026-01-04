@@ -25,7 +25,9 @@ Nexirift Pulsar is a fork of Sharkey. Our main goal is to implement features tha
   - Maximum note length
   - Maximum content warning length
 - Add an adults only toggle with age gating (no ID verification!!)
-  - And an option for moderators to force it
+  - Toggle for moderators to force it upon users
+  - Toggle in timeline for showing and hiding that content
+  - Toggle in preferences to show and hide profiles
 - Add a toggle for moderation inactivity detection
 - Support for ALTCHA captcha services
   - Sentinel (untested) and custom supported

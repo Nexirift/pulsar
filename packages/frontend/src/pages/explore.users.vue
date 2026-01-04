@@ -13,19 +13,19 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<template v-if="tag == null">
 			<MkFoldableSection class="_margin" persistKey="explore-pinned-users">
 				<template #header><i class="ti ti-bookmark ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.pinnedUsers }}</template>
-				<MkUserList :pagination="pinnedUsers"/>
+				<MkUserList :pagination="pinnedUsers" :extractor="filterAdultsOnlyUsers"/>
 			</MkFoldableSection>
 			<MkFoldableSection class="_margin" persistKey="explore-popular-users">
 				<template #header><i class="ti ti-chart-line ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.popularUsers }}</template>
-				<MkUserList :pagination="popularUsers"/>
+				<MkUserList :pagination="popularUsers" :extractor="filterAdultsOnlyUsers"/>
 			</MkFoldableSection>
 			<MkFoldableSection class="_margin" persistKey="explore-recently-updated-users">
 				<template #header><i class="ph-chat-text ph-bold ph-lg ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.recentlyUpdatedUsers }}</template>
-				<MkUserList :pagination="recentlyUpdatedUsers"/>
+				<MkUserList :pagination="recentlyUpdatedUsers" :extractor="filterAdultsOnlyUsers"/>
 			</MkFoldableSection>
 			<MkFoldableSection class="_margin" persistKey="explore-recently-registered-users">
 				<template #header><i class="ti ti-plus ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.recentlyRegisteredUsers }}</template>
-				<MkUserList :pagination="recentlyRegisteredUsers"/>
+				<MkUserList :pagination="recentlyRegisteredUsers" :extractor="filterAdultsOnlyUsers"/>
 			</MkFoldableSection>
 		</template>
 	</div>
@@ -41,25 +41,25 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<MkFoldableSection v-if="tag != null" :key="`${tag}`" class="_margin">
 			<template #header><i class="ti ti-hash ti-fw" style="margin-right: 0.5em;"></i>{{ tag }}</template>
-			<MkUserList :pagination="tagUsers"/>
+			<MkUserList :pagination="tagUsers" :extractor="filterAdultsOnlyUsers"/>
 		</MkFoldableSection>
 
 		<template v-if="tag == null">
 			<MkFoldableSection class="_margin">
 				<template #header><i class="ti ti-chart-line ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.tsx.popularUsersLocal({ name: instance.name ?? host }) }}</template>
-				<MkUserList :pagination="popularUsersLocalF"/>
+				<MkUserList :pagination="popularUsersLocalF" :extractor="filterAdultsOnlyUsers"/>
 			</MkFoldableSection>
 			<MkFoldableSection class="_margin">
 				<template #header><i class="ti ti-chart-line ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.popularUsersGlobal }}</template>
-				<MkUserList :pagination="popularUsersF"/>
+				<MkUserList :pagination="popularUsersF" :extractor="filterAdultsOnlyUsers"/>
 			</MkFoldableSection>
 			<MkFoldableSection class="_margin">
 				<template #header><i class="ph-chat-text ph-bold ph-lg ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.recentlyUpdatedUsers }}</template>
-				<MkUserList :pagination="recentlyUpdatedUsersF"/>
+				<MkUserList :pagination="recentlyUpdatedUsersF" :extractor="filterAdultsOnlyUsers"/>
 			</MkFoldableSection>
 			<MkFoldableSection class="_margin">
 				<template #header><i class="ti ti-rocket ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts.recentlyDiscoveredUsers }}</template>
-				<MkUserList :pagination="recentlyRegisteredUsersF"/>
+				<MkUserList :pagination="recentlyRegisteredUsersF" :extractor="filterAdultsOnlyUsers"/>
 			</MkFoldableSection>
 		</template>
 	</div>
@@ -76,6 +76,8 @@ import MkTab from '@/components/MkTab.vue';
 import { misskeyApi } from '@/utility/misskey-api.js';
 import { instance } from '@/instance.js';
 import { i18n } from '@/i18n.js';
+import { $i } from '@/i.js';
+import { prefer } from '@/preferences.js';
 
 const props = defineProps<{
 	tag?: string | undefined;
@@ -85,6 +87,14 @@ const origin = ref('local');
 const tagsEl = useTemplateRef('tagsEl');
 const tagsLocal = ref<Misskey.entities.Hashtag[]>([]);
 const tagsRemote = ref<Misskey.entities.Hashtag[]>([]);
+
+// Filter out adults-only users based on preference setting
+function filterAdultsOnlyUsers(user: any): any | null {
+	if (user.isAdultsOnly && !prefer.s.showAdultsOnlyProfiles) {
+		return null;
+	}
+	return user;
+}
 
 watch(() => props.tag, () => {
 	if (tagsEl.value) tagsEl.value.toggleContent(props.tag == null);

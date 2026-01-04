@@ -11128,6 +11128,10 @@ export interface Locale extends ILocale {
          * Restarted migration for a user
          */
         "restartMigration": string;
+        /**
+         * Forced adults only status
+         */
+        "forceAdultsOnly": string;
     };
     "_fileViewer": {
         /**
@@ -12424,6 +12428,18 @@ export interface Locale extends ILocale {
      * This user is marked as adults only, but you have been identified as underage. Therefore, you cannot view their profile or posts.
      */
     "userisAdultsOnlyButYouAreUnderage": string;
+    /**
+     * Show 18+ profiles
+     */
+    "showAdultsOnlyProfiles": string;
+    /**
+     * Display profiles marked as 18+ in explore and search results.
+     */
+    "showAdultsOnlyProfilesDescription": string;
+    /**
+     * You must be 18 or older to enable this setting. Please set your birthday in your profile settings.
+     */
+    "cannotEnableAdultsOnlyProfilesUnder18": string;
     /**
      * Thumb-friendly accounts menu
      */
