@@ -12433,11 +12433,7 @@ export interface Locale extends ILocale {
      */
     "showAdultsOnlyProfiles": string;
     /**
-     * Display profiles marked as 18+ in explore and search results.
-     */
-    "showAdultsOnlyProfilesDescription": string;
-    /**
-     * You must be 18 or older to enable this setting. Please set your birthday in your profile settings.
+     * You must be 18 or older to enable this setting.
      */
     "cannotEnableAdultsOnlyProfilesUnder18": string;
     /**
