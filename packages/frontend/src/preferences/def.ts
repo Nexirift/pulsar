@@ -231,10 +231,10 @@ export const PREF_DEF = {
 		default: true,
 	},
 	showFixedPostForm: {
-		default: false,
+		default: true,
 	},
 	showFixedPostFormInChannel: {
-		default: false,
+		default: true,
 	},
 	timelineTabIconOnly: {
 		default: true,
