@@ -20,17 +20,11 @@ COPY --link . ./
 RUN git submodule update --init --recursive
 RUN pnpm config set fetch-retries 5
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
+	--mount=type=cache,target=/root/.cache/Cypress,sharing=locked \
 	pnpm i --frozen-lockfile --aggregate-output
 RUN pnpm build
-RUN node scripts/trim-deps.mjs
 RUN mv packages/frontend/assets sharkey-assets
 RUN mv packages/frontend-embed/assets sharkey-embed-assets
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
-	pnpm prune
-RUN rm -r node_modules packages/frontend packages/frontend-shared packages/frontend-embed packages/sw
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
-	pnpm i --prod --frozen-lockfile --aggregate-output
-RUN rm -rf .git
 
 FROM node:${NODE_VERSION}
 
