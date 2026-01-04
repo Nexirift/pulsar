@@ -8169,7 +8169,7 @@ export interface Locale extends ILocale {
     };
     "_aboutMisskey": {
         /**
-         * Pulsar is open-source software based on Misskey which has been in development by syuilo since 2014.
+         * Pulsar is open-source software based on Sharkey, a fork of Misskey which has been in development by syuilo since 2014.
          */
         "about": string;
         /**
@@ -12641,6 +12641,26 @@ export interface Locale extends ILocale {
      * There was a problem unsubscribing.
      */
     "unsubscribeError": string;
+    /**
+     * ALTCHA
+     */
+    "altcha": string;
+    /**
+     * Enable ALTCHA
+     */
+    "enableAltcha": string;
+    /**
+     * API Key (for Sentinel) or Challenge URL (for custom server)
+     */
+    "altchaSiteKey": string;
+    /**
+     * API Key Secret (for Sentinel), Verification URL, or HMAC Key (for local verification)
+     */
+    "altchaSecretKey": string;
+    /**
+     * Sentinel server URL (optional, leave empty for custom server)
+     */
+    "altchaInstanceUrl": string;
     "_flash": {
         /**
          * Flash Content Hidden

@@ -27,8 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkCaptcha v-if="instance.enableHcaptcha" ref="hcaptcha" v-model="hCaptchaResponse" provider="hcaptcha" :sitekey="instance.hcaptchaSiteKey"/>
 				<MkCaptcha v-if="instance.enableMcaptcha" ref="mcaptcha" v-model="mCaptchaResponse" provider="mcaptcha" :sitekey="instance.mcaptchaSiteKey" :instanceUrl="instance.mcaptchaInstanceUrl"/>
 				<MkCaptcha v-if="instance.enableRecaptcha" ref="recaptcha" v-model="reCaptchaResponse" provider="recaptcha" :sitekey="instance.recaptchaSiteKey"/>
-				<MkCaptcha v-if="instance.enableTurnstile" ref="turnstile" v-model="turnstileResponse" provider="turnstile" :sitekey="instance.turnstileSiteKey"/>
-				<MkCaptcha v-if="instance.enableFC" ref="fc" v-model="fcResponse" provider="fc" :sitekey="instance.fcSiteKey"/>
+				<MkCaptcha v-if="instance.enableTurnstile" ref="turnstile" v-model="turnstileResponse" provider="turnstile" :sitekey="instance.turnstileSiteKey"/>			<MkCaptcha v-if="instance.enableAltcha" ref="altcha" v-model="altchaResponse" provider="altcha" :sitekey="instance.altchaSiteKey" :instanceUrl="instance.altchaInstanceUrl"/>				<MkCaptcha v-if="instance.enableFC" ref="fc" v-model="fcResponse" provider="fc" :sitekey="instance.fcSiteKey"/>
 				<MkCaptcha v-if="instance.enableTestcaptcha" ref="testcaptcha" v-model="testcaptchaResponse" provider="testcaptcha"/>
 			</div>
 
@@ -86,6 +85,7 @@ const hCaptchaResponse = ref<string | null>(null);
 const mCaptchaResponse = ref<string | null>(null);
 const reCaptchaResponse = ref<string | null>(null);
 const turnstileResponse = ref<string | null>(null);
+const altchaResponse = ref<string | null>(null);
 const fcResponse = ref<string | null>(null);
 const testcaptchaResponse = ref<string | null>(null);
 
@@ -95,6 +95,7 @@ const captchaFailed = computed((): boolean => {
 		(instance.enableMcaptcha && !mCaptchaResponse.value) ||
 		(instance.enableRecaptcha && !reCaptchaResponse.value) ||
 		(instance.enableTurnstile && !turnstileResponse.value) ||
+		(instance.enableAltcha && !altchaResponse.value) ||
 		(instance.enableFC && !fcResponse.value) ||
 		(instance.enableTestcaptcha && !testcaptchaResponse.value)
 	);
@@ -114,6 +115,7 @@ function onSubmit() {
 			mCaptchaResponse: mCaptchaResponse.value,
 			reCaptchaResponse: reCaptchaResponse.value,
 			turnstileResponse: turnstileResponse.value,
+			altchaResponse: altchaResponse.value,
 			fcResponse: fcResponse.value,
 			testcaptchaResponse: testcaptchaResponse.value,
 		},

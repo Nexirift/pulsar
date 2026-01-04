@@ -70,6 +70,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkCaptcha v-if="instance.enableMcaptcha" ref="mcaptcha" v-model="mCaptchaResponse" :class="$style.captcha" provider="mcaptcha" :sitekey="instance.mcaptchaSiteKey" :instanceUrl="instance.mcaptchaInstanceUrl"/>
 			<MkCaptcha v-if="instance.enableRecaptcha" ref="recaptcha" v-model="reCaptchaResponse" :class="$style.captcha" provider="recaptcha" :sitekey="instance.recaptchaSiteKey"/>
 			<MkCaptcha v-if="instance.enableTurnstile" ref="turnstile" v-model="turnstileResponse" :class="$style.captcha" provider="turnstile" :sitekey="instance.turnstileSiteKey"/>
+			<MkCaptcha v-if="instance.enableAltcha" ref="altcha" v-model="altchaResponse" :class="$style.captcha" provider="altcha" :sitekey="instance.altchaSiteKey" :instanceUrl="instance.altchaInstanceUrl"/>
 			<MkCaptcha v-if="instance.enableFC" ref="fc" v-model="fcResponse" :class="$style.captcha" provider="fc" :sitekey="instance.fcSiteKey"/>
 			<MkCaptcha v-if="instance.enableTestcaptcha" ref="testcaptcha" v-model="testcaptchaResponse" :class="$style.captcha" provider="testcaptcha"/>
 			<MkButton type="submit" :disabled="shouldDisableSubmitting" large gradate rounded data-cy-signup-submit style="margin: 0 auto;">
@@ -134,6 +135,7 @@ const hCaptchaResponse = ref<string | null>(null);
 const mCaptchaResponse = ref<string | null>(null);
 const reCaptchaResponse = ref<string | null>(null);
 const turnstileResponse = ref<string | null>(null);
+const altchaResponse = ref<string | null>(null);
 const fcResponse = ref<string | null>(null);
 const testcaptchaResponse = ref<string | null>(null);
 const usernameAbortController = ref<null | AbortController>(null);
@@ -145,6 +147,7 @@ const shouldDisableSubmitting = computed((): boolean => {
 		instance.enableMcaptcha && !mCaptchaResponse.value ||
 		instance.enableRecaptcha && !reCaptchaResponse.value ||
 		instance.enableTurnstile && !turnstileResponse.value ||
+		instance.enableAltcha && !altchaResponse.value ||
 		instance.enableFC && !fcResponse.value ||
 		instance.enableTestcaptcha && !testcaptchaResponse.value ||
 		instance.emailRequiredForSignup && emailState.value !== 'ok' ||
@@ -275,6 +278,7 @@ async function onSubmit(): Promise<void> {
 		'm-captcha-response': mCaptchaResponse.value,
 		'g-recaptcha-response': reCaptchaResponse.value,
 		'turnstile-response': turnstileResponse.value,
+		'altcha-response': altchaResponse.value,
 		'frc-captcha-solution': fcResponse.value,
 		'testcaptcha-response': testcaptchaResponse.value,
 	};

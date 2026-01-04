@@ -4,6 +4,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { createHash, createHmac } from 'node:crypto';
 import { HttpRequestService } from '@/core/HttpRequestService.js';
 import { bindThis } from '@/decorators.js';
 import { MetaService } from '@/core/MetaService.js';
@@ -14,7 +15,7 @@ import { CaptchaError, captchaErrorCodes } from '@/misc/captcha-error.js';
 
 export { CaptchaError } from '@/misc/captcha-error.js';
 
-export const supportedCaptchaProviders = ['none', 'hcaptcha', 'mcaptcha', 'recaptcha', 'turnstile', 'fc', 'testcaptcha'] as const;
+export const supportedCaptchaProviders = ['none', 'hcaptcha', 'mcaptcha', 'recaptcha', 'turnstile', 'altcha', 'fc', 'testcaptcha'] as const;
 export type CaptchaProvider = typeof supportedCaptchaProviders[number];
 
 export type CaptchaSetting = {
@@ -35,6 +36,11 @@ export type CaptchaSetting = {
 	turnstile: {
 		siteKey: string | null;
 		secretKey: string | null;
+	}
+	altcha: {
+		siteKey: string | null;
+		secretKey: string | null;
+		instanceUrl: string | null;
 	}
 	fc: {
 		siteKey: string | null;
@@ -200,6 +206,104 @@ export class CaptchaService {
 	}
 
 	@bindThis
+	public async verifyAltcha(secret: string, instanceHost: string | null, response: string | null | undefined): Promise<void> {
+		if (response == null) {
+			throw new CaptchaError(captchaErrorCodes.noResponseProvided, 'altcha-failed: no response provided');
+		}
+
+		// Determine verification mode based on instanceHost and secret
+		if (instanceHost) {
+			// Sentinel mode: verify server signature via Sentinel API
+			const endpointUrl = new URL('/v1/verify/signature', instanceHost);
+			const result = await this.httpRequestService.send(endpointUrl.toString(), {
+				method: 'POST',
+				body: JSON.stringify({
+					payload: response,
+				}),
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			}, { throwErrorWhenResponseNotOk: false });
+
+			if (result.status !== 200) {
+				throw new CaptchaError(captchaErrorCodes.requestFailed, `altcha-request-failed: ${result.status}`);
+			}
+
+			const resp = await result.json() as { verified: boolean };
+
+			if (resp.verified !== true) {
+				throw new CaptchaError(captchaErrorCodes.verificationFailed, 'altcha-failed');
+			}
+		} else if (this.isUrl(secret)) {
+			// Custom server mode with external verification endpoint
+			try {
+				const result = await this.httpRequestService.send(secret, {
+					method: 'POST',
+					body: JSON.stringify({
+						payload: response,
+					}),
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				}, { throwErrorWhenResponseNotOk: false });
+
+				if (result.status !== 200) {
+					throw new CaptchaError(captchaErrorCodes.requestFailed, `altcha-request-failed: ${result.status}`);
+				}
+
+				const resp = await result.json() as { verified: boolean };
+
+				if (resp.verified !== true) {
+					throw new CaptchaError(captchaErrorCodes.verificationFailed, 'altcha-failed');
+				}
+			} catch (err) {
+				if (err instanceof CaptchaError) throw err;
+				throw new CaptchaError(captchaErrorCodes.verificationFailed, `altcha-failed: ${err}`);
+			}
+		} else {
+			// Custom server mode with local HMAC verification
+			try {
+				const payloadObj = JSON.parse(Buffer.from(response, 'base64').toString('utf-8'));
+				
+				// Verify HMAC signature
+				const expectedSignature = this.computeHmac(secret, payloadObj.challenge);
+				if (expectedSignature !== payloadObj.signature) {
+					throw new CaptchaError(captchaErrorCodes.verificationFailed, 'altcha-failed: invalid signature');
+				}
+
+				// Verify solution
+				const solutionHash = this.computeHash(payloadObj.salt + payloadObj.number);
+				if (solutionHash !== payloadObj.challenge) {
+					throw new CaptchaError(captchaErrorCodes.verificationFailed, 'altcha-failed: invalid solution');
+				}
+			} catch (err) {
+				if (err instanceof CaptchaError) throw err;
+				throw new CaptchaError(captchaErrorCodes.verificationFailed, `altcha-failed: ${err}`);
+			}
+		}
+	}
+
+	@bindThis
+	private isUrl(value: string): boolean {
+		try {
+			const url = new URL(value);
+			return url.protocol === 'http:' || url.protocol === 'https:';
+		} catch {
+			return false;
+		}
+	}
+
+	@bindThis
+	private computeHmac(secret: string, data: string): string {
+		return createHmac('sha256', secret).update(data).digest('hex');
+	}
+
+	@bindThis
+	private computeHash(data: string): string {
+		return createHash('sha256').update(data).digest('hex');
+	}
+
+	@bindThis
 	public async verifyTestcaptcha(response: string | null | undefined): Promise<void> {
 		if (response == null) {
 			throw new CaptchaError(captchaErrorCodes.noResponseProvided, 'testcaptcha-failed: no response provided');
@@ -234,6 +338,10 @@ export class CaptchaService {
 				provider = 'turnstile';
 				break;
 			}
+			case meta.enableAltcha: {
+				provider = 'altcha';
+				break;
+			}
 			case meta.enableTestcaptcha: {
 				provider = 'testcaptcha';
 				break;
@@ -266,6 +374,11 @@ export class CaptchaService {
 			turnstile: {
 				siteKey: meta.turnstileSiteKey,
 				secretKey: meta.turnstileSecretKey,
+			},
+			altcha: {
+				siteKey: meta.altchaSiteKey,
+				secretKey: meta.altchaSecretKey,
+				instanceUrl: meta.altchaInstanceUrl,
 			},
 			fc: {
 				siteKey: meta.fcSiteKey,
@@ -343,6 +456,15 @@ export class CaptchaService {
 				await this.verifyTurnstile(params.secret, params.captchaResult);
 				await this.updateMeta(provider, params);
 			},
+			altcha: async () => {
+				if (!params?.secret || !params.captchaResult) {
+					throw new CaptchaError(captchaErrorCodes.invalidParameters, 'altcha-failed: secret and captureResult are required');
+				}
+
+				// instanceUrl is optional - if not provided, custom server mode is used
+				await this.verifyAltcha(params.secret, params.instanceUrl ?? null, params.captchaResult);
+				await this.updateMeta(provider, params);
+			},
 			testcaptcha: async () => {
 				if (!params?.captchaResult) {
 					throw new CaptchaError(captchaErrorCodes.invalidParameters, 'turnstile-failed: captureResult are required');
@@ -391,6 +513,7 @@ export class CaptchaService {
 				('enableMcaptcha' | 'mcaptchaSitekey' | 'mcaptchaSecretKey' | 'mcaptchaInstanceUrl') |
 				('enableRecaptcha' | 'recaptchaSiteKey' | 'recaptchaSecretKey') |
 				('enableTurnstile' | 'turnstileSiteKey' | 'turnstileSecretKey') |
+				('enableAltcha' | 'altchaSiteKey' | 'altchaSecretKey' | 'altchaInstanceUrl') |
 				('enableTestcaptcha' | 'enableFC' | 'fcSiteKey' | 'fcSecretKey')
 			>
 		> = {
@@ -398,6 +521,7 @@ export class CaptchaService {
 			enableMcaptcha: provider === 'mcaptcha',
 			enableRecaptcha: provider === 'recaptcha',
 			enableTurnstile: provider === 'turnstile',
+			enableAltcha: provider === 'altcha',
 			enableTestcaptcha: provider === 'testcaptcha',
 			enableFC: provider === 'fc',
 		};
@@ -427,6 +551,12 @@ export class CaptchaService {
 			case 'turnstile': {
 				updateIfNotUndefined('turnstileSiteKey', params?.sitekey);
 				updateIfNotUndefined('turnstileSecretKey', params?.secret);
+				break;
+			}
+			case 'altcha': {
+				updateIfNotUndefined('altchaSiteKey', params?.sitekey);
+				updateIfNotUndefined('altchaSecretKey', params?.secret);
+				updateIfNotUndefined('altchaInstanceUrl', params?.instanceUrl);
 				break;
 			}
 			case 'fc': {

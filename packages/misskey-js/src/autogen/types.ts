@@ -13600,7 +13600,7 @@ export interface operations {
                 content: {
                     'application/json': {
                         /** @enum {string} */
-                        provider: 'none' | 'hcaptcha' | 'mcaptcha' | 'recaptcha' | 'turnstile' | 'fc' | 'testcaptcha';
+                        provider: 'none' | 'hcaptcha' | 'mcaptcha' | 'recaptcha' | 'turnstile' | 'altcha' | 'fc' | 'testcaptcha';
                         hcaptcha: {
                             siteKey: string | null;
                             secretKey: string | null;
@@ -13617,6 +13617,11 @@ export interface operations {
                         turnstile: {
                             siteKey: string | null;
                             secretKey: string | null;
+                        };
+                        altcha: {
+                            siteKey: string | null;
+                            secretKey: string | null;
+                            instanceUrl: string | null;
                         };
                         fc: {
                             siteKey: string | null;
@@ -13683,7 +13688,7 @@ export interface operations {
             content: {
                 'application/json': {
                     /** @enum {string} */
-                    provider: 'none' | 'hcaptcha' | 'mcaptcha' | 'recaptcha' | 'turnstile' | 'fc' | 'testcaptcha';
+                    provider: 'none' | 'hcaptcha' | 'mcaptcha' | 'recaptcha' | 'turnstile' | 'altcha' | 'fc' | 'testcaptcha';
                     captchaResult?: string | null;
                     sitekey?: string | null;
                     secret?: string | null;

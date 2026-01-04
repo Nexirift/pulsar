@@ -52,6 +52,14 @@ export const meta = {
 					secretKey: { type: 'string', nullable: true },
 				},
 			},
+			altcha: {
+				type: 'object',
+				properties: {
+					siteKey: { type: 'string', nullable: true },
+					secretKey: { type: 'string', nullable: true },
+					instanceUrl: { type: 'string', nullable: true },
+				},
+			},
 			fc: {
 				type: 'object',
 				properties: {

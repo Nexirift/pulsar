@@ -46,7 +46,7 @@ export type Captcha = {
 	}): void;
 };
 
-export type CaptchaProvider = 'hcaptcha' | 'recaptcha' | 'turnstile' | 'mcaptcha' | 'fc' | 'testcaptcha';
+export type CaptchaProvider = 'hcaptcha' | 'recaptcha' | 'turnstile' | 'mcaptcha' | 'altcha' | 'fc' | 'testcaptcha';
 
 type CaptchaContainer = {
 	readonly [_ in CaptchaProvider]?: Captcha;
@@ -83,6 +83,7 @@ const variable = computed(() => {
 		case 'recaptcha': return 'grecaptcha';
 		case 'turnstile': return 'turnstile';
 		case 'mcaptcha': return 'mcaptcha';
+		case 'altcha': return 'altcha';
 		case 'fc': return 'friendlyChallenge';
 		case 'testcaptcha': return 'testcaptcha';
 	}
@@ -95,6 +96,7 @@ const src = computed(() => {
 		case 'hcaptcha': return 'https://js.hcaptcha.com/1/api.js?render=explicit&recaptchacompat=off';
 		case 'recaptcha': return 'https://www.recaptcha.net/recaptcha/api.js?render=explicit';
 		case 'turnstile': return 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+		case 'altcha': return 'https://cdn.jsdelivr.net/npm/altcha@0.6.3/dist/altcha.min.js';
 		case 'fc': return 'https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.18/widget.min.js';
 		case 'mcaptcha': return null;
 		case 'testcaptcha': return null;
@@ -118,12 +120,23 @@ watch(() => [props.instanceUrl, props.sitekey, props.secretKey], async () => {
 if (loaded || props.provider === 'mcaptcha' || props.provider === 'testcaptcha') {
 	available.value = true;
 } else if (src.value !== null) {
-	(window.document.getElementById(scriptId.value) ?? window.document.head.appendChild(Object.assign(window.document.createElement('script'), {
+	const scriptElement = window.document.getElementById(scriptId.value) ?? window.document.head.appendChild(Object.assign(window.document.createElement('script'), {
 		async: true,
 		id: scriptId.value,
 		src: src.value,
-	})))
-		.addEventListener('load', () => available.value = true);
+		...(props.provider === 'altcha' ? { type: 'module' } : {}),
+	}));
+	scriptElement.addEventListener('load', () => {
+		available.value = true;
+		// For ALTCHA, we need to wait a bit for the custom element to be defined
+		if (props.provider === 'altcha') {
+			window.setTimeout(() => {
+				if (window.customElements && !window.customElements.get('altcha-widget')) {
+					console.warn('ALTCHA widget not registered after script load');
+				}
+			}, 100);
+		}
+	});
 }
 
 function reset() {
@@ -173,6 +186,20 @@ async function requestRender() {
 				key: props.sitekey,
 			},
 		});
+	} else if (props.provider === 'altcha' && captchaEl.value instanceof Element && props.sitekey) {
+		const widget = window.document.createElement('altcha-widget');
+		// If instanceUrl is provided, use Sentinel mode; otherwise use sitekey as the challenge URL
+		const challengeUrl = props.instanceUrl 
+			? `${props.instanceUrl}/v1/challenge?apiKey=${props.sitekey}`
+			: props.sitekey;
+		widget.setAttribute('challengeurl', challengeUrl);
+		widget.setAttribute('hidefooter', 'true');
+		widget.addEventListener('statechange', (ev: Event) => {
+			if ((ev as CustomEvent).detail?.state === 'verified') {
+				callback((ev as CustomEvent).detail?.payload);
+			}
+		});
+		captchaEl.value.appendChild(widget);
 	} else if (variable.value === 'friendlyChallenge' && captchaEl.value instanceof Element) {
 		new captcha.value.WidgetInstance(captchaEl.value, {
 			sitekey: props.sitekey,

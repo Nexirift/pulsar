@@ -115,6 +115,12 @@ export class SignupApiService {
 				});
 			}
 
+			if (this.meta.enableAltcha && this.meta.altchaSecretKey) {
+			await this.captchaService.verifyAltcha(this.meta.altchaSecretKey, this.meta.altchaInstanceUrl ?? null, body['altcha-response']).catch(err => {
+					throw new FastifyReplyError(400, String(err), err);
+				});
+			}
+
 			if (this.meta.enableFC && this.meta.fcSecretKey) {
 				await this.captchaService.verifyFriendlyCaptcha(this.meta.fcSecretKey, body['frc-captcha-solution']).catch(err => {
 					throw new FastifyReplyError(400, String(err), err);

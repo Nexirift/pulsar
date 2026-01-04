@@ -288,6 +288,29 @@ export class MiMeta {
 	@Column('boolean', {
 		default: false,
 	})
+	public enableAltcha: boolean;
+
+	@Column('varchar', {
+		length: 1024,
+		nullable: true,
+	})
+	public altchaSiteKey: string | null;
+
+	@Column('varchar', {
+		length: 1024,
+		nullable: true,
+	})
+	public altchaSecretKey: string | null;
+
+	@Column('varchar', {
+		length: 1024,
+		nullable: true,
+	})
+	public altchaInstanceUrl: string | null;
+
+	@Column('boolean', {
+		default: false,
+	})
 	public enableFC: boolean;
 
 	@Column('varchar', {
