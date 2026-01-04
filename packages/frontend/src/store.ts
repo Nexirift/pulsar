@@ -281,11 +281,11 @@ export const store = markRaw(new Pizzax('base', {
 	},
 	showFixedPostForm: {
 		where: 'device',
-		default: false,
+		default: true,
 	},
 	showFixedPostFormInChannel: {
 		where: 'device',
-		default: false,
+		default: true,
 	},
 	enableInfiniteScroll: {
 		where: 'device',

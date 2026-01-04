@@ -198,6 +198,7 @@ enableAltcha: "Enable ALTCHA"
 altchaSiteKey: "API Key (for Sentinel) or Challenge URL (for custom server)"
 altchaSecretKey: "API Key Secret (for Sentinel), Verification URL, or HMAC Key (for local verification)"
 altchaInstanceUrl: "Sentinel server URL (optional, leave empty for custom server)"
+noBackupsFound: "No backups found."
 _flash:
   contentHidden: "Flash Content Hidden"
   poweredByRuffle: "Powered by Ruffle."

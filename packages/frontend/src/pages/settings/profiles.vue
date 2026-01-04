@@ -6,7 +6,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <SearchMarker path="/settings/profiles" :label="i18n.ts._preferencesProfile.manageProfiles" :keywords="['profile', 'settings', 'preferences', 'manage']" icon="ti ti-settings-cog">
 	<div class="_gaps">
-		<MkFolder v-for="backup in backups">
+		<div v-if="backups.length === 0">
+			<MkInfo warn>{{ i18n.ts.noBackupsFound }}</MkInfo>
+		</div>
+		<MkFolder v-for="backup in backups" v-else :key="backup.name">
 			<template #label>{{ backup.name }}</template>
 			<MkButton danger @click="del(backup)">{{ i18n.ts.delete }}</MkButton>
 		</MkFolder>
@@ -26,6 +29,7 @@ import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import { prefer } from '@/preferences.js';
 import { deleteCloudBackup, listCloudBackups } from '@/preferences/utility.js';
+import MkInfo from '@/components/MkInfo.vue';
 
 const backups = await listCloudBackups();
 

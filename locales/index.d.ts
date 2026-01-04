@@ -12661,6 +12661,10 @@ export interface Locale extends ILocale {
      * Sentinel server URL (optional, leave empty for custom server)
      */
     "altchaInstanceUrl": string;
+    /**
+     * No backups found.
+     */
+    "noBackupsFound": string;
     "_flash": {
         /**
          * Flash Content Hidden

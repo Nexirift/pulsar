@@ -145,6 +145,7 @@ export const PREF_DEF = {
 			'favorites',
 			'drive',
 			'achievements',
+			'widgets',
 		],
 	},
 	mobileFooterMenu: {
@@ -197,7 +198,7 @@ export const PREF_DEF = {
 		default: true,
 	},
 	widgetsVisible: {
-		default: true,
+		default: false,
 	},
 	showReactionsCount: {
 		default: false,

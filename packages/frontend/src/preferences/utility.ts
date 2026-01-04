@@ -78,7 +78,7 @@ export function getPreferencesProfileMenu(): MenuItem[] {
 		type: 'divider',
 	}, {
 		type: 'link',
-		text: i18n.ts._preferencesProfile.manageProfiles + '...',
+		text: i18n.ts._preferencesProfile.manageProfiles,
 		icon: 'ti ti-settings-cog',
 		to: '/settings/profiles',
 	}];

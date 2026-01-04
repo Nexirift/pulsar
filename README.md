@@ -27,6 +27,15 @@ Nexirift Pulsar is a fork of Sharkey. Our main goal is to implement features tha
 - Add an adults only toggle with age gating (no ID verification!!)
   - And an option for moderators to force it
 - Add a toggle for moderation inactivity detection
+- Support for ALTCHA captcha services
+  - Sentinel (untested) and custom supported
+    - Requires { verified: true/false } on custom verify endpoints
+- Fixed preferences profile when nothing is backed up
+  - Also fixed the locale string missing
+- Apply better defaults for users coming from other sites
+  - Post form is shown on timeline by default
+  - Widgets are hidden with the toggle visible on the sidebar
+- Misskey locale fallback is now en-US and then ja-JP
 
 # Sharkey README
 
