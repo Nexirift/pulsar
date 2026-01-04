@@ -277,7 +277,7 @@ export async function openAccountMenu(opts: {
 
 
 	if (opts.withExtraOperation) {
-		if (prefer.s.thumbFriendlyAccountMenu) {
+		if (prefer.s.thumbFriendlyAccountsMenu) {
 			menuItems.push({
 				type: 'parent',
 				icon: 'ti ti-plus',

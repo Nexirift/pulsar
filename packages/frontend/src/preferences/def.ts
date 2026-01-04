@@ -512,8 +512,8 @@ export const PREF_DEF = {
 		default: true,
 	},
 
-	// dorm/turtkey: thumbFriendlyAccountMenu
-	thumbFriendlyAccountMenu: {
+	// dorm/turtkey: thumbFriendlyAccountsMenu
+	thumbFriendlyAccountsMenu: {
 		default: true
 	},
 	//#endregion

@@ -157,12 +157,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 								</MkPreferenceContainer>
 							</SearchMarker>
 
-							<!-- dorm/turtkey: thumbFriendlyAccountMenu -->
+							<!-- dorm/turtkey: thumbFriendlyAccountsMenu -->
 							<div class="_gaps_s">
 								<SearchMarker :keywords="['accounts', 'thumb', 'list', 'turtkey']">
-									<MkPreferenceContainer k="thumbFriendlyAccountMenu">
+									<MkPreferenceContainer k="thumbFriendlyAccountsMenu">
 										<MkSwitch v-model="thumbFriendlyAccountsMenu">
-											<template #label><SearchLabel>{{ i18n.ts.thumbFriendlyAccountMenu }}</SearchLabel></template>
+											<template #label><SearchLabel>{{ i18n.ts.thumbFriendlyAccountsMenu }}</SearchLabel></template>
 										</MkSwitch>
 									</MkPreferenceContainer>
 								</SearchMarker>
@@ -1113,7 +1113,7 @@ const trustedDomains = prefer.model(
 const hideAds = prefer.model('forceShowAds', x => !x, x => !x);
 
 // turtkey
-const thumbFriendlyAccountsMenu = prefer.model('thumbFriendlyAccountMenu');
+const thumbFriendlyAccountsMenu = prefer.model('thumbFriendlyAccountsMenu');
 
 watch([
 	hemisphere,
