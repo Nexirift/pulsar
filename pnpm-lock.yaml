@@ -283,7 +283,7 @@ importers:
         specifier: 3.0.2
         version: 3.0.2
       misskey-js:
-        specifier: link:../misskey-js
+        specifier: workspace:*
         version: link:../misskey-js
       misskey-reversi:
         specifier: workspace:*
@@ -765,7 +765,7 @@ importers:
         specifier: workspace:*
         version: link:../misskey-bubble-game
       misskey-js:
-        specifier: link:../misskey-js
+        specifier: workspace:*
         version: link:../misskey-js
       misskey-reversi:
         specifier: workspace:*
@@ -1079,7 +1079,7 @@ importers:
         specifier: npm:@transfem-org/sfm-js@0.26.1
         version: '@transfem-org/sfm-js@0.26.1'
       misskey-js:
-        specifier: link:../misskey-js
+        specifier: workspace:*
         version: link:../misskey-js
       punycode.js:
         specifier: 2.3.1
@@ -1227,7 +1227,7 @@ importers:
         specifier: 0.0.1
         version: 0.0.1
       misskey-js:
-        specifier: link:../misskey-js
+        specifier: workspace:*
         version: link:../misskey-js
       vue:
         specifier: 3.5.26
@@ -1496,7 +1496,7 @@ importers:
         specifier: 6.2.2
         version: 6.2.2
       misskey-js:
-        specifier: link:../misskey-js
+        specifier: workspace:*
         version: link:../misskey-js
     devDependencies:
       '@types/node':

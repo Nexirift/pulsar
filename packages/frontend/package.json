@@ -52,7 +52,7 @@
 		"katex": "0.16.22",
 		"matter-js": "0.20.0",
 		"misskey-bubble-game": "workspace:*",
-		"misskey-js": "link:../misskey-js",
+		"misskey-js": "workspace:*",
 		"misskey-reversi": "workspace:*",
 		"moment": "2.30.1",
 		"photoswipe": "5.4.4",
