@@ -30,6 +30,9 @@ type Log = {
 } | {
 	frame: number;
 	operation: 'surrender';
+} | {
+	frame: number;
+	operation: 'shake';
 };
 
 export class DropAndFusionGame extends EventEmitter<{
@@ -49,6 +52,7 @@ export class DropAndFusionGame extends EventEmitter<{
 	public readonly GAME_WIDTH = 450;
 	public readonly GAME_HEIGHT = 600;
 	public readonly DROP_COOLTIME = 30; // frame
+	public readonly SHAKE_COOLTIME = 1800; // frame (30 seconds at 60fps)
 	public readonly PLAYAREA_MARGIN = 25;
 	private STOCK_MAX = 4;
 	public readonly TICK_DELTA = 1000 / 60; // 60fps
@@ -77,6 +81,7 @@ export class DropAndFusionGame extends EventEmitter<{
 
 	private latestDroppedAt = 0; // frame
 	private latestFusionedAt = 0; // frame
+	private latestShakedAt = 0; // frame
 	private stock: { id: string; mono: Mono }[] = [];
 	private holding: { id: string; mono: Mono } | null = null;
 
@@ -410,6 +415,39 @@ export class DropAndFusionGame extends EventEmitter<{
 		this.emit('monoAdded', head.mono);
 	}
 
+	public shake() {
+		if (this.isGameOver) return;
+		if (this.frame - this.latestShakedAt < this.SHAKE_COOLTIME) return;
+
+		this.logs.push({
+			frame: this.frame,
+			operation: 'shake',
+		});
+
+		// Apply randomized upward force to all bodies (except walls and overflow collider)
+		for (const body of this.engine.world.bodies) {
+			if (body.label === '_wall_' || body.label === '_overflow_' || body.isStatic) continue;
+
+			// Randomize force strength - can be too weak (0.5x-0.8x) or too strong (1.2x-2.0x)
+			const forceMultiplier = this.rng() < 0.5 
+				? 0.5 + this.rng() * 0.3  // Too slow: 0.5-0.8
+				: 1.2 + this.rng() * 0.8; // Too fast: 1.2-2.0
+
+			const baseMass = body.mass;
+			const upwardForce = -0.015 * baseMass * forceMultiplier;
+
+			// Add slight horizontal randomization for chaotic effect
+			const horizontalVariance = (this.rng() - 0.5) * 0.003 * baseMass;
+
+			Matter.Body.applyForce(body, body.position, {
+				x: horizontalVariance,
+				y: upwardForce,
+			});
+		}
+
+		this.latestShakedAt = this.frame;
+	}
+
 	public hold() {
 		if (this.isGameOver) return;
 
@@ -455,6 +493,9 @@ export class DropAndFusionGame extends EventEmitter<{
 				case 'surrender':
 					_logs.push([frameDelta, 2]);
 					break;
+				case 'shake':
+					_logs.push([frameDelta, 3]);
+					break;
 			}
 		}
 
@@ -490,6 +531,12 @@ export class DropAndFusionGame extends EventEmitter<{
 					_logs.push({
 						frame,
 						operation: 'surrender',
+					});
+					break;
+				case 3:
+					_logs.push({
+						frame,
+						operation: 'shake',
 					});
 					break;
 			}

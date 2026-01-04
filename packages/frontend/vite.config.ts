@@ -12,6 +12,7 @@ import pluginJson5 from './vite.json5.js';
 import pluginCreateSearchIndex from './lib/vite-plugin-create-search-index.js';
 import type { UserConfig } from 'vite';
 import type { Options as SearchIndexOptions } from './lib/vite-plugin-create-search-index.js';
+import vueDevTools from 'vite-plugin-vue-devtools';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.json', '.json5', '.svg', '.sass', '.scss', '.css', '.vue', '.wasm'];
 
@@ -109,6 +110,7 @@ export function getConfig(): UserConfig {
 			pluginVue(),
 			pluginUnwindCssModuleClassName(),
 			pluginJson5(),
+			// vueDevTools(),
 			...pluginReplaceIcons(),
 			...process.env.NODE_ENV === 'production'
 				? [

@@ -47,7 +47,7 @@
 	],
 	"dependencies": {
 		"buraha": "0.0.1",
-		"misskey-js": "workspace:*",
+		"misskey-js": "link:../misskey-js",
 		"vue": "3.5.26"
 	}
 }

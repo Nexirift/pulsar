@@ -13,7 +13,7 @@
 	},
 	"dependencies": {
 		"idb-keyval": "6.2.2",
-		"misskey-js": "workspace:*"
+		"misskey-js": "link:../misskey-js"
 	},
 	"devDependencies": {
 		"@types/node": "25.0.3",

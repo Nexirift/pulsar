@@ -38,6 +38,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 				<div class="_woodenFrame _woodenFrameH">
 					<div class="_woodenFrameInner">
+						<MkButton inline small @click="shake" :disabled="shakeOnCooldown || isGameOver || replaying">{{ i18n.ts._bubbleGame.shake }} <span v-if="shakeOnCooldown">({{ shakeCooldownRemaining }}s)</span></MkButton>
+					</div>
+					<div class="_woodenFrameInner">
 						<MkButton inline small @click="hold">{{ i18n.ts._bubbleGame.hold }}</MkButton>
 						<img v-if="holdingStock" :src="getTextureImageUrl(holdingStock.mono)" style="width: 32px; margin-left: 8px; vertical-align: bottom;"/>
 					</div>
@@ -589,6 +592,16 @@ const replayPlaybackRate = ref(1);
 const currentFrame = ref(0);
 const bgmVolume = ref(prefer.s['game.dropAndFusion'].bgmVolume);
 const sfxVolume = ref(prefer.s['game.dropAndFusion'].sfxVolume);
+const shakeOnCooldown = computed(() => {
+	if (!game) return false;
+	// Use currentFrame.value to make this reactive
+	return currentFrame.value - game['latestShakedAt'] < game.SHAKE_COOLTIME;
+});
+const shakeCooldownRemaining = computed(() => {
+	if (!game || !shakeOnCooldown.value) return 0;
+	const framesRemaining = game.SHAKE_COOLTIME - (currentFrame.value - game['latestShakedAt']);
+	return Math.ceil(game.frameToMs(framesRemaining) / 1000);
+});
 
 watch(replayPlaybackRate, (newValue) => {
 	game.replayPlaybackRate = newValue;
@@ -677,6 +690,7 @@ function stopTicking() {
 
 function tick() {
 	const hasNextTick = game.tick();
+	currentFrame.value = game.frame;
 	if (!hasNextTick) stopTicking();
 }
 
@@ -764,6 +778,11 @@ function moveDropper(rect: DOMRect, x: number) {
 
 function hold() {
 	game.hold();
+}
+
+function shake() {
+	if (isGameOver.value || replaying.value) return;
+	game.shake();
 }
 
 async function surrender() {
