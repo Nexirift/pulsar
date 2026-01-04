@@ -5747,9 +5747,17 @@ export interface Locale extends ILocale {
          */
         "profileNameDescription2": string;
         /**
-         * プロファイルの管理
+         * Manage profiles
          */
         "manageProfiles": string;
+        /**
+         * Create new profile
+         */
+        "createNewProfile": string;
+        /**
+         * Create a new preferences profile with default settings. This WILL wipe your current preferences if not synced correctly.
+         */
+        "createNewProfileDescription": string;
     };
     "_preferencesBackup": {
         /**

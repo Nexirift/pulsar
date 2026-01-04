@@ -36,6 +36,7 @@ Nexirift Pulsar is a fork of Sharkey. Our main goal is to implement features tha
   - Post form is shown on timeline by default
   - Widgets are hidden with the toggle visible on the sidebar
 - Misskey locale fallback is now en-US and then ja-JP
+- Allow users to create new preference profiles
 
 # Sharkey README
 

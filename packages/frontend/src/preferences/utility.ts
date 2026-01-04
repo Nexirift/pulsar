@@ -4,7 +4,7 @@
  */
 
 import { ref, watch } from 'vue';
-import type { PreferencesProfile } from './manager.js';
+import { PreferencesManager, type PreferencesProfile } from './manager.js';
 import type { MenuItem } from '@/types/menu.js';
 import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
 import { i18n } from '@/i18n.js';
@@ -76,7 +76,13 @@ export function getPreferencesProfileMenu(): MenuItem[] {
 		},
 	}, {
 		type: 'divider',
-	}, {
+	}, { 
+		text: i18n.ts._preferencesProfile.createNewProfile,
+		icon: 'ti ti-plus',
+		action: () => {
+			createNewProfile();
+		},
+	},{
 		type: 'link',
 		text: i18n.ts._preferencesProfile.manageProfiles,
 		icon: 'ti ti-settings-cog',
@@ -106,6 +112,24 @@ async function renameProfile() {
 	if (canceled || name == null || name.trim() === '') return;
 
 	prefer.renameProfile(name);
+}
+
+export async function createNewProfile() {
+	const { canceled, result: name } = await os.inputText({
+		title: i18n.ts._preferencesProfile.createNewProfile,
+		text: i18n.ts._preferencesProfile.createNewProfileDescription,
+		placeholder: i18n.ts._preferencesProfile.profileName,
+	});
+	if (canceled) return;
+
+	const newProfile = PreferencesManager.newProfile();
+	if (name != null && name.trim() !== '') {
+		newProfile.name = name;
+	}
+	miLocalStorage.setItem('preferences', JSON.stringify(newProfile));
+	miLocalStorage.setItem('hidePreferencesRestoreSuggestion', 'true');
+	shouldSuggestRestoreBackup.value = false;
+	unisonReload();
 }
 
 function exportCurrentProfile() {

@@ -199,6 +199,10 @@ altchaSiteKey: "API Key (for Sentinel) or Challenge URL (for custom server)"
 altchaSecretKey: "API Key Secret (for Sentinel), Verification URL, or HMAC Key (for local verification)"
 altchaInstanceUrl: "Sentinel server URL (optional, leave empty for custom server)"
 noBackupsFound: "No backups found."
+_preferencesProfile:
+  manageProfiles: "Manage profiles"
+  createNewProfile: "Create new profile"
+  createNewProfileDescription: "Create a new preferences profile with default settings. This WILL wipe your current preferences if not synced correctly."
 _flash:
   contentHidden: "Flash Content Hidden"
   poweredByRuffle: "Powered by Ruffle."

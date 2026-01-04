@@ -6,6 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <SearchMarker path="/settings/profiles" :label="i18n.ts._preferencesProfile.manageProfiles" :keywords="['profile', 'settings', 'preferences', 'manage']" icon="ti ti-settings-cog">
 	<div class="_gaps">
+		<MkButton primary @click="createNew"><i class="ti ti-plus"></i> {{ i18n.ts._preferencesProfile.createNewProfile }}</MkButton>
 		<div v-if="backups.length === 0">
 			<MkInfo warn>{{ i18n.ts.noBackupsFound }}</MkInfo>
 		</div>
@@ -28,13 +29,17 @@ import { $i } from '@/i.js';
 import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import { prefer } from '@/preferences.js';
-import { deleteCloudBackup, listCloudBackups } from '@/preferences/utility.js';
+import { deleteCloudBackup, listCloudBackups, createNewProfile } from '@/preferences/utility.js';
 import MkInfo from '@/components/MkInfo.vue';
 
 const backups = await listCloudBackups();
 
 function del(backup) {
 	deleteCloudBackup(backup.name);
+}
+
+function createNew() {
+	createNewProfile();
 }
 
 const headerActions = computed(() => []);
