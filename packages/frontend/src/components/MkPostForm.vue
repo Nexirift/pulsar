@@ -79,6 +79,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<XPostFormAttaches v-model="files" @detach="detachFile" @changeSensitive="updateFileSensitive" @changeName="updateFileName" @replaceFile="replaceFile"/>
 	<MkPollEditor v-if="poll" v-model="poll" @destroyed="poll = null"/>
 	<MkScheduleEditor v-if="scheduleNote" v-model="scheduleNote" @destroyed="scheduleNote = null"/>
+	<div v-if="prefer.s.showPostFormLinkPreview && previewUrls.length > 0" :class="[$style.urlPreviewSection, '_gaps_s']">
+		<SkUrlPreviewGroup :sourceUrls="previewUrls" :compact="true" :detail="false" :showAsQuote="true" :showActions="false"/>
+	</div>
 	<MkNotePreview v-if="showPreview" :class="$style.preview" :text="text" :files="files" :poll="poll ?? undefined" :useCw="useCw" :cw="cw" :user="postAccount ?? $i"/>
 	<div v-if="showingOptions" style="padding: 8px 16px;">
 	</div>
@@ -114,6 +117,7 @@ import * as mfm from 'mfm-js';
 import * as Misskey from 'misskey-js';
 import insertTextAtCursor from 'insert-text-at-cursor';
 import { toASCII } from 'punycode.js';
+import { debounce } from 'throttle-debounce';
 import { host, url } from '@@/js/config.js';
 import { appendContentWarning } from '@@/js/append-content-warning.js';
 import type { ShallowRef } from 'vue';
@@ -151,6 +155,8 @@ import { gifPicker } from '@/utility/gif-picker.js';
 import { prefer } from '@/preferences.js';
 import { getPluginHandlers } from '@/plugin.js';
 import { DI } from '@/di.js';
+import SkUrlPreviewGroup from '@/components/SkUrlPreviewGroup.vue';
+import { extractUrlFromMfm } from '@/utility/extract-url-from-mfm.js';
 
 const $i = ensureSignin();
 
@@ -297,6 +303,25 @@ const canPost = computed((): boolean => {
 		(files.value.length <= 16) &&
 		(!poll.value || poll.value.choices.length >= 2);
 });
+
+const parsedMfm = computed(() => {
+	const fullText = (useCw.value && cw.value ? cw.value + '\n' : '') + text.value;
+	return fullText ? mfm.parse(fullText) : [];
+});
+
+const previewUrls = ref<string[]>([]);
+
+const updatePreviewUrls = debounce(500, () => {
+	if (!parsedMfm.value || parsedMfm.value.length === 0) {
+		previewUrls.value = [];
+		return;
+	}
+	previewUrls.value = extractUrlFromMfm(parsedMfm.value);
+});
+
+watch(parsedMfm, () => {
+	updatePreviewUrls();
+}, { immediate: true });
 
 const withHashtags = computed(store.makeGetterSetter('postFormWithHashtags'));
 const hashtags = computed(store.makeGetterSetter('postFormHashtags'));
@@ -1455,6 +1480,13 @@ defineExpose({
 	max-height: 150px;
 	overflow: auto;
 	background-size: auto auto;
+}
+
+.urlPreviewSection {
+	padding: 8px 16px;
+	margin: 8px 8px 0 8px;
+	border-radius: var(--MI-radius);
+	background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03));
 }
 
 .targetNote {

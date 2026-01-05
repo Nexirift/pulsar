@@ -45,7 +45,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 									</template>
 									<option :value="null">{{ i18n.ts.auto }}</option>
 									<option value="smartphone"><i class="ti ti-device-mobile" /> {{ i18n.ts.smartphone
-										}}</option>
+									}}</option>
 									<option value="tablet"><i class="ti ti-device-tablet" /> {{ i18n.ts.tablet }}
 									</option>
 									<option value="desktop"><i class="ti ti-device-desktop" /> {{ i18n.ts.desktop }}
@@ -204,20 +204,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 												<SearchLabel>{{ i18n.ts.mergeQuoteButtonWithBoost }}</SearchLabel>
 											</template>
 											<template #caption>
-												<SearchKeyword>{{ i18n.ts.mergeQuoteButtonWithBoostDescription }}
-												</SearchKeyword>
-											</template>
-										</MkSwitch>
-									</MkPreferenceContainer>
-								</SearchMarker>
-
-								<SearchMarker :keywords="['renote']">
-									<MkPreferenceContainer k="collapseRenotes">
-										<MkSwitch v-model="collapseRenotes">
-											<template #label>
-												<SearchLabel>{{ i18n.ts.collapseRenotes }}</SearchLabel>
-											</template>
-											<template #caption>
 												<SearchKeyword>{{ i18n.ts.collapseRenotesDescription }}</SearchKeyword>
 											</template>
 										</MkSwitch>
@@ -349,14 +335,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 											</option>
 											<!-- If one of the other options is selected show this as a blank other -->
 											<option v-if="!useCustomSearchEngine" value="">{{ i18n.ts.searchEngineOther
-												}}</option>
+											}}</option>
 										</MkSelect>
 
 										<div v-if="useCustomSearchEngine">
 											<MkInput v-model="searchEngine" :max="300" :manualSave="true">
 												<template #label>{{ i18n.ts.searchEngineCusomURI }}</template>
 												<template #caption>{{ i18n.ts.searchEngineCustomURIDescription
-													}}</template>
+												}}</template>
 											</MkInput>
 										</div>
 									</MkPreferenceContainer>
@@ -624,6 +610,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 										</MkSwitch>
 									</MkPreferenceContainer>
 								</SearchMarker>
+
+								<SearchMarker :keywords="['post', 'form', 'link', 'preview', 'url']">
+									<MkPreferenceContainer k="showPostFormLinkPreview">
+										<MkSwitch v-model="showPostFormLinkPreview">
+											<template #label>
+												<SearchLabel>{{ i18n.ts.showPostFormLinkPreview }}</SearchLabel>
+											</template>
+										</MkSwitch>
+									</MkPreferenceContainer>
+								</SearchMarker>
 							</div>
 
 							<SearchMarker v-slot="slotProps" :keywords="['default', 'note', 'visibility']">
@@ -779,7 +775,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 										</option>
 										<option value="rightBottom"><i class="ti ti-align-box-right-bottom"></i> {{
 											i18n.ts.rightBottom
-											}}</option>
+										}}</option>
 									</MkRadios>
 								</MkPreferenceContainer>
 							</SearchMarker>
@@ -953,7 +949,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 											</template>
 											<template #caption>{{
 												i18n.ts._settings.makeEveryTextElementsSelectable_description
-												}}</template>
+											}}</template>
 										</MkSwitch>
 									</MkPreferenceContainer>
 								</SearchMarker>
@@ -1329,7 +1325,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 													i18n.ts.remove }} ({{ getEmojiIndexLangName(lang) }})</MkButton>
 											<MkButton v-else @click="downloadEmojiIndex(lang)"><i
 													class="ti ti-download"></i> {{ getEmojiIndexLangName(lang) }}{{
-														store.r.additionalUnicodeEmojiIndexes.value[lang] ? ` (${i18n.ts.installed })` : '' }}</MkButton>
+														store.r.additionalUnicodeEmojiIndexes.value[lang] ? `
+												(${i18n.ts.installed})` : '' }}</MkButton>
 										</template>
 									</div>
 								</MkFolder>
@@ -1346,7 +1343,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 							class="ti ti-device-mobile"></i></template>{{
 								i18n.ts.mobileFooterMenu }}</FormLink>
 				<FormLink to="/settings/navbar"><template #icon><i class="ti ti-menu-2"></i></template>{{ i18n.ts.navbar
-					}}
+				}}
 				</FormLink>
 				<FormLink to="/settings/statusbar"><template #icon><i class="ti ti-rectangle"></i></template>{{
 					i18n.ts.statusbar }}
@@ -1416,6 +1413,7 @@ const loadRawImages = prefer.model('loadRawImages');
 const imageNewTab = prefer.model('imageNewTab');
 const showFixedPostForm = prefer.model('showFixedPostForm');
 const showFixedPostFormInChannel = prefer.model('showFixedPostFormInChannel');
+const showPostFormLinkPreview = prefer.model('showPostFormLinkPreview');
 const postFormButtons = ref({ ...prefer.s.postFormButtons });
 const mergeQuoteButtonWithBoost = prefer.model('mergeQuoteButtonWithBoost');
 const numberOfPageCache = prefer.model('numberOfPageCache');

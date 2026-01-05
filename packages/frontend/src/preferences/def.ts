@@ -236,6 +236,9 @@ export const PREF_DEF = {
 	showFixedPostFormInChannel: {
 		default: true,
 	},
+	showPostFormLinkPreview: {
+		default: true,
+	},
 	postFormButtons: {
 		default: {
 			attachFile: true,

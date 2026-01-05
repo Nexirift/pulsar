@@ -41,6 +41,10 @@ Nexirift Pulsar is a fork of Sharkey. Our main goal is to implement features tha
 - Allow users to create new preference profiles
 - Added a shake mechanic to the bubble game for fun :)
 - Add a GIF picker powered by the Tenor API
+- Customise (show/hide) posting form buttons
+- Option to merge quote and boost buttons
+- Fixed the queues not working and added an endpoint to update stuck counts
+- Add an option to show link previews in posting form
 
 # Sharkey README
 

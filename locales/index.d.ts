@@ -12125,6 +12125,10 @@ export interface Locale extends ILocale {
      */
     "combined": string;
     /**
+     * Show link previews in posting form
+     */
+    "showPostFormLinkPreview": string;
+    /**
      * Customize posting form buttons
      */
     "customizePostFormButtons": string;
