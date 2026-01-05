@@ -55,6 +55,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkButton primary @click="save_libre">Save</MkButton>
 					</div>
 				</MkFolder>
+
+				<MkFolder>
+					<template #label>{{ i18n.ts.gifPicker }}</template>
+
+					<div class="_gaps_m">
+						<MkSwitch v-model="enableTenor">
+							<template #label>{{ i18n.ts.enableTenor }}</template>
+						</MkSwitch>
+
+						<MkInput v-model="tenorApiKey">
+							<template #prefix><i class="ti ti-key"></i></template>
+							<template #label>{{ i18n.ts.tenorApiKey }}</template>
+							<template #caption>{{ i18n.ts.tenorApiKeyDescription }}</template>
+						</MkInput>
+
+						<MkInfo>{{ i18n.ts.gifPickerInfo }}</MkInfo>
+
+						<MkButton primary @click="save_tenor">Save</MkButton>
+					</div>
+				</MkFolder>
 			</div>
 		</FormSuspense>
 	</div>
@@ -66,6 +86,7 @@ import { ref, computed } from 'vue';
 import MkInput from '@/components/MkInput.vue';
 import MkButton from '@/components/MkButton.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
+import MkInfo from '@/components/MkInfo.vue';
 import FormSuspense from '@/components/form/suspense.vue';
 import * as os from '@/os.js';
 import { misskeyApi } from '@/utility/misskey-api.js';
@@ -81,6 +102,8 @@ const deeplFreeMode = ref<boolean>(false);
 const deeplFreeInstance = ref<string | null>('');
 const libreTranslateURL = ref<string | null>('');
 const libreTranslateKey = ref<string | null>('');
+const enableTenor = ref<boolean>(false);
+const tenorApiKey = ref<string | null>('');
 
 async function init() {
 	const meta = await misskeyApi('admin/meta');
@@ -91,6 +114,8 @@ async function init() {
 	deeplFreeInstance.value = meta.deeplFreeInstance;
 	libreTranslateURL.value = meta.libreTranslateURL;
 	libreTranslateKey.value = meta.libreTranslateKey;
+	enableTenor.value = (meta as any).enableTenor ?? false;
+	tenorApiKey.value = (meta as any).tenorApiKey ?? '';
 }
 
 async function saveTranslationTimeout() {
@@ -115,6 +140,15 @@ function save_libre() {
 	os.apiWithDialog('admin/update-meta', {
 		libreTranslateURL: libreTranslateURL.value,
 		libreTranslateKey: libreTranslateKey.value,
+	}).then(() => {
+		os.promiseDialog(fetchInstance(true));
+	});
+}
+
+function save_tenor() {
+	os.apiWithDialog('admin/update-meta', {
+		enableTenor: enableTenor.value,
+		tenorApiKey: tenorApiKey.value || null,
 	}).then(() => {
 		os.promiseDialog(fetchInstance(true));
 	});

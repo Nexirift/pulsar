@@ -367,30 +367,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</MkFolder>
 
 				<MkFolder>
-					<template #icon><i class="ph-gif ph-bold ph-lg"></i></template>
-					<template #label>{{ i18n.ts.gifPicker }}</template>
-					<template v-if="gifPickerForm.modified.value" #footer>
-						<MkFormFooter :form="gifPickerForm" />
-					</template>
-
-					<div class="_gaps">
-						<MkSwitch v-model="gifPickerForm.state.enableTenor">
-							<template #label>{{ i18n.ts.enableTenor }}<span
-									v-if="gifPickerForm.modifiedStates.enableTenor" class="_modified">{{
-										i18n.ts.modified }}</span></template>
-						</MkSwitch>
-						<MkInput v-model="gifPickerForm.state.tenorApiKey">
-							<template #prefix><i class="ti ti-key"></i></template>
-							<template #label>{{ i18n.ts.tenorApiKey }}<span
-									v-if="gifPickerForm.modifiedStates.tenorApiKey" class="_modified">{{
-										i18n.ts.modified }}</span></template>
-							<template #caption>{{ i18n.ts.tenorApiKeyDescription }}</template>
-						</MkInput>
-						<MkInfo>{{ i18n.ts.gifPickerInfo }}</MkInfo>
-					</div>
-				</MkFolder>
-
-				<MkFolder>
 					<template #icon><i class="ti ti-ghost"></i></template>
 					<template #label>{{ i18n.ts.proxyAccount }}</template>
 					<template v-if="proxyAccountForm.modified.value" #footer>
@@ -554,17 +530,6 @@ const federationForm = useForm({
 		federation: state.federation,
 		federationHosts: state.federationHosts.split('\n'),
 		deliverSuspendedSoftware: state.deliverSuspendedSoftware,
-	});
-	fetchInstance(true);
-});
-
-const gifPickerForm = useForm({
-	enableTenor: (meta as any).enableTenor ?? false,
-	tenorApiKey: (meta as any).tenorApiKey ?? '',
-}, async (state) => {
-	await os.apiWithDialog('admin/update-meta', {
-		enableTenor: state.enableTenor,
-		tenorApiKey: state.tenorApiKey || null,
 	});
 	fetchInstance(true);
 });
