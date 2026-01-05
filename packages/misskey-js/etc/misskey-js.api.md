@@ -248,6 +248,12 @@ type AdminFederationRemoveAllFollowingRequest = operations['admin___federation__
 type AdminFederationUpdateInstanceRequest = operations['admin___federation___update-instance']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
+type AdminFixUserCountsRequest = operations['admin___fix-user-counts']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminFixUserCountsResponse = operations['admin___fix-user-counts']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type AdminForceAdultsOnlyStatusRequest = operations['admin___force-adults-only-status']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -1609,6 +1615,8 @@ declare namespace entities {
         AdminFederationRefreshRemoteInstanceMetadataRequest,
         AdminFederationRemoveAllFollowingRequest,
         AdminFederationUpdateInstanceRequest,
+        AdminFixUserCountsRequest,
+        AdminFixUserCountsResponse,
         AdminForceAdultsOnlyStatusRequest,
         AdminForwardAbuseUserReportRequest,
         AdminGenVapidKeysResponse,

@@ -70,6 +70,8 @@ import type {
 	AdminFederationRefreshRemoteInstanceMetadataRequest,
 	AdminFederationRemoveAllFollowingRequest,
 	AdminFederationUpdateInstanceRequest,
+	AdminFixUserCountsRequest,
+	AdminFixUserCountsResponse,
 	AdminForceAdultsOnlyStatusRequest,
 	AdminForwardAbuseUserReportRequest,
 	AdminGenVapidKeysResponse,
@@ -733,6 +735,7 @@ export type Endpoints = {
 	'admin/federation/refresh-remote-instance-metadata': { req: AdminFederationRefreshRemoteInstanceMetadataRequest; res: EmptyResponse };
 	'admin/federation/remove-all-following': { req: AdminFederationRemoveAllFollowingRequest; res: EmptyResponse };
 	'admin/federation/update-instance': { req: AdminFederationUpdateInstanceRequest; res: EmptyResponse };
+	'admin/fix-user-counts': { req: AdminFixUserCountsRequest; res: AdminFixUserCountsResponse };
 	'admin/force-adults-only-status': { req: AdminForceAdultsOnlyStatusRequest; res: EmptyResponse };
 	'admin/forward-abuse-user-report': { req: AdminForwardAbuseUserReportRequest; res: EmptyResponse };
 	'admin/gen-vapid-keys': { req: EmptyRequest; res: AdminGenVapidKeysResponse };

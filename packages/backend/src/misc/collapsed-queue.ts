@@ -29,6 +29,7 @@ export class CollapsedQueue<V> {
 	private readonly limiter?: ReturnType<typeof promiseLimit<void>>;
 	private readonly jobs: Map<string, Job<V>> = new Map();
 	private readonly deferredKeys = new Set<string>();
+	private readonly locallyOwnedKeys = new Set<string>();  // Track keys we created locally
 
 	constructor(
 		private readonly internalEventService: InternalEventService,
@@ -67,17 +68,25 @@ export class CollapsedQueue<V> {
 		}
 
 		// Otherwise, create a new job
+		// Add job to map BEFORE starting timer to avoid race condition when timeout is 0
+		const jobValue = value;
 		const timer = this.timeService.startTimer(async () => {
 			const job = this.jobs.get(key);
-			if (!job) return;
+			if (!job) {
+				return;
+			}
 
 			this.jobs.delete(key);
+			this.locallyOwnedKeys.delete(key);  // Clean up local ownership
 			await this._perform(key, job.value);
 		}, this.timeout);
-		this.jobs.set(key, { value, timer });
+		this.jobs.set(key, { value: jobValue, timer });
+		this.locallyOwnedKeys.add(key);  // Mark as locally owned
 
 		// Mark as deferred so other processes will forward their state to us
-		await this.internalEventService.emit('collapsedQueueDefer', { name: this.name, key, deferred: true });
+		// Note: Don't await this to avoid timing issues where we receive our own event
+		this.internalEventService.emit('collapsedQueueDefer', { name: this.name, key, deferred: true }).catch(err => {
+		});
 	}
 
 	@bindThis
@@ -87,6 +96,7 @@ export class CollapsedQueue<V> {
 
 		this.timeService.stopTimer(job.timer);
 		this.jobs.delete(key);
+		this.locallyOwnedKeys.delete(key);  // Clean up local ownership
 		await this.internalEventService.emit('collapsedQueueDefer', { name: this.name, key, deferred: false });
 	}
 
@@ -125,6 +135,17 @@ export class CollapsedQueue<V> {
 	@bindThis
 	private async onDefer(data: { name: string, key: string, deferred: boolean }) {
 		if (data.name !== this.name) return;
+
+		// Don't process defer events for keys we own locally - this prevents us from canceling our own timers
+		if (this.locallyOwnedKeys.has(data.key)) {
+			return;
+		}
+
+		// IMPORTANT: Also ignore if we're being told something is deferred but we have a job for it
+		// This handles the case where our own event comes back after we've already processed it
+		if (data.deferred && this.jobs.has(data.key)) {
+			return;
+		}
 
 		// Check for and recover from de-sync conditions where multiple processes try to "own" the same job.
 		const job = this.jobs.get(data.key);

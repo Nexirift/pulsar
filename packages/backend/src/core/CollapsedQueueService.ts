@@ -93,7 +93,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 
 		const fiveMinuteInterval = this.envService.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0;
 		const oneMinuteInterval = this.envService.env.NODE_ENV !== 'test' ? 60 * 1000 : 0;
-
+		
 		this.updateInstanceQueue = new CollapsedQueue(
 			this.internalEventService,
 			this.timeService,
@@ -186,6 +186,8 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 			async (id, job) => {
 				// Have to check this because all properties are optional
 				if (job.updatedAt || job.lastActiveDate || job.notesCountDelta || job.followingCountDelta || job.followersCountDelta) {
+					this.logger.debug(`Processing updateUser for ${id}: notesCountDelta=${job.notesCountDelta}, followingCountDelta=${job.followingCountDelta}, followersCountDelta=${job.followersCountDelta}`);
+					
 					// Updating the user should implicitly mark them as active
 					const lastActiveDate = job.lastActiveDate ?? job.updatedAt;
 					const isWakingUp = lastActiveDate && (await this.cacheService.findUserById(id)).isHibernated;
@@ -206,6 +208,8 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 						await this.followingsRepository.update({ followerId: id }, { isFollowerHibernated: false });
 						await this.cacheService.hibernatedUserCache.set(id, false);
 					}
+					
+					this.logger.debug(`Completed updateUser for ${id}`);
 				}
 			},
 			{
