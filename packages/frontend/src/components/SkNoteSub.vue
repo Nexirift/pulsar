@@ -58,9 +58,6 @@ For example, when viewing a reply on the timeline, SkNoteSub will be used to dis
 				>
 					<i class="ph-quotes ph-bold ph-lg"></i>
 				</button>
-				<button v-else class="_button" :class="$style.noteFooterButton" disabled>
-					<i class="ph-prohibit ph-bold ph-lg"></i>
-				</button>
 				<button v-if="note.myReaction == null && note.reactionAcceptance !== 'likeOnly'" ref="likeButton" :class="$style.noteFooterButton" class="_button" @click.stop="like()">
 					<i class="ph-heart ph-bold ph-lg"></i>
 				</button>
