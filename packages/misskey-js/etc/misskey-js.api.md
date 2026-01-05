@@ -2154,6 +2154,10 @@ declare namespace entities {
         SwUnregisterRequest,
         SwUpdateRegistrationRequest,
         SwUpdateRegistrationResponse,
+        TenorFeaturedRequest,
+        TenorFeaturedResponse,
+        TenorSearchRequest,
+        TenorSearchResponse,
         TestRequest,
         TestResponse,
         UsernameAvailableRequest,
@@ -3815,6 +3819,18 @@ type SwUpdateRegistrationResponse = operations['sw___update-registration']['resp
 
 // @public (undocumented)
 type SystemWebhook = components['schemas']['SystemWebhook'];
+
+// @public (undocumented)
+type TenorFeaturedRequest = operations['tenor___featured']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type TenorFeaturedResponse = operations['tenor___featured']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type TenorSearchRequest = operations['tenor___search']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type TenorSearchResponse = operations['tenor___search']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type TestRequest = operations['test']['requestBody']['content']['application/json'];

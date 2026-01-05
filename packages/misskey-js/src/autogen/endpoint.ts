@@ -615,6 +615,10 @@ import type {
 	SwUnregisterRequest,
 	SwUpdateRegistrationRequest,
 	SwUpdateRegistrationResponse,
+	TenorFeaturedRequest,
+	TenorFeaturedResponse,
+	TenorSearchRequest,
+	TenorSearchResponse,
 	TestRequest,
 	TestResponse,
 	UsernameAvailableRequest,
@@ -1093,6 +1097,8 @@ export type Endpoints = {
 	'sw/show-registration': { req: SwShowRegistrationRequest; res: SwShowRegistrationResponse };
 	'sw/unregister': { req: SwUnregisterRequest; res: EmptyResponse };
 	'sw/update-registration': { req: SwUpdateRegistrationRequest; res: SwUpdateRegistrationResponse };
+	'tenor/featured': { req: TenorFeaturedRequest; res: TenorFeaturedResponse };
+	'tenor/search': { req: TenorSearchRequest; res: TenorSearchResponse };
 	'test': { req: TestRequest; res: TestResponse };
 	'username/available': { req: UsernameAvailableRequest; res: UsernameAvailableResponse };
 	'users': { req: UsersRequest; res: UsersResponse };

@@ -92,6 +92,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<button v-tooltip="i18n.ts.hashtags" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: withHashtags }]" @click="withHashtags = !withHashtags"><i class="ti ti-hash"></i></button>
 				<button v-if="postFormActions.length > 0" v-tooltip="i18n.ts.plugins" class="_button" :class="$style.footerButton" @click="showActions"><i class="ti ti-plug"></i></button>
 				<button v-tooltip="i18n.ts.emoji" :class="['_button', $style.footerButton]" @click="insertEmoji"><i class="ti ti-mood-happy"></i></button>
+				<button v-if="instance.enableTenor" v-tooltip="i18n.ts.gifPicker" :class="['_button', $style.footerButton]" @click="insertGif"><i class="ph-gif ph-bold ph-lg"></i></button>
 				<button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
 			</div>
 			<div :class="$style.footerRight">
@@ -138,6 +139,7 @@ import { instance } from '@/instance.js';
 import { ensureSignin, notesCount, incNotesCount } from '@/i.js';
 import { getAccounts, openAccountMenu as openAccountMenu_ } from '@/accounts.js';
 import { uploadFile } from '@/utility/upload.js';
+import { useStream } from '@/stream.js';
 import { deepClone } from '@/utility/clone.js';
 import MkRippleEffect from '@/components/MkRippleEffect.vue';
 import MkScheduleEditor from '@/components/MkScheduleEditor.vue';
@@ -145,6 +147,7 @@ import { miLocalStorage } from '@/local-storage.js';
 import { claimAchievement } from '@/utility/achievements.js';
 import { emojiPicker } from '@/utility/emoji-picker.js';
 import { mfmFunctionPicker } from '@/utility/mfm-function-picker.js';
+import { gifPicker } from '@/utility/gif-picker.js';
 import { prefer } from '@/preferences.js';
 import { getPluginHandlers } from '@/plugin.js';
 import { DI } from '@/di.js';
@@ -1125,6 +1128,37 @@ async function insertMfmFunction(ev: MouseEvent) {
 		ev.currentTarget ?? ev.target,
 		textareaEl.value,
 		text,
+	);
+}
+
+async function insertGif(ev: MouseEvent) {
+	if (props.mock) return;
+	
+	const target = ev.currentTarget ?? ev.target;
+	if (target == null) return;
+
+	gifPicker.show(
+		target as HTMLElement,
+		gifUrl => {
+			// Upload GIF from URL instead of inserting URL as text
+			const marker = Math.random().toString();
+			const connection = useStream().useChannel('main');
+			connection.on('urlUploadFinished', urlResponse => {
+				if (urlResponse.marker === marker) {
+					files.value.push(urlResponse.file);
+					connection.dispose();
+				}
+			});
+
+			misskeyApi('drive/files/upload-from-url', {
+				url: gifUrl,
+				folderId: prefer.s.uploadFolder,
+				marker,
+			});
+		},
+		() => {
+			nextTick(() => focus());
+		},
 	);
 }
 

@@ -120,6 +120,7 @@ export class NodeinfoServerService {
 					enableTurnstile: meta.enableTurnstile,
 					enableAltcha: meta.enableAltcha,
 					enableFC: meta.enableFC,
+					enableTenor: meta.enableTenor,
 					maxNoteTextLength: this.config.maxNoteLength,
 					maxRemoteNoteTextLength: this.config.maxRemoteNoteLength,
 					maxCwLength: this.config.maxCwLength,

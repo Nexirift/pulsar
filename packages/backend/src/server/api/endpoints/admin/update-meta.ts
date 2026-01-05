@@ -92,6 +92,8 @@ export const paramDef = {
 		enableAltcha: { type: 'boolean' },
 		altchaSiteKey: { type: 'string', nullable: true },
 		altchaSecretKey: { type: 'string', nullable: true },
+		enableTenor: { type: 'boolean' },
+		tenorApiKey: { type: 'string', nullable: true },
 		enableFC: { type: 'boolean' },
 		fcSiteKey: { type: 'string', nullable: true },
 		fcSecretKey: { type: 'string', nullable: true },
@@ -443,6 +445,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.altchaSecretKey !== undefined) {
 				set.altchaSecretKey = ps.altchaSecretKey;
+			}
+
+			if (ps.enableTenor !== undefined) {
+				set.enableTenor = ps.enableTenor;
+			}
+
+			if (ps.tenorApiKey !== undefined) {
+				set.tenorApiKey = ps.tenorApiKey;
 			}
 
 			if (ps.enableTestcaptcha !== undefined) {
@@ -832,6 +842,8 @@ function sanitize(meta: Partial<MiMeta>): Partial<MiMeta> {
 		mcaptchaSecretKey: '<redacted>',
 		recaptchaSecretKey: '<redacted>',
 		turnstileSecretKey: '<redacted>',
+		altchaSecretKey: '<redacted>',
+		tenorApiKey: '<redacted>',
 		fcSecretKey: '<redacted>',
 		smtpPass: '<redacted>',
 		swPrivateKey: '<redacted>',

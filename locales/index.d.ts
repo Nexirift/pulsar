@@ -13833,6 +13833,26 @@ export interface Locale extends ILocale {
      * Background queue
      */
     "backgroundQueue": string;
+    /**
+     * GIF Picker
+     */
+    "gifPicker": string;
+    /**
+     * Enable GIF picker
+     */
+    "enableTenor": string;
+    /**
+     * Tenor API Key
+     */
+    "tenorApiKey": string;
+    /**
+     * Get your API key from Google Tenor API
+     */
+    "tenorApiKeyDescription": string;
+    /**
+     * The GIF picker allows users to search and insert GIFs from Tenor directly into their posts. An API key is required to use this feature.
+     */
+    "gifPickerInfo": string;
     "_header": {
         /**
          * Browse

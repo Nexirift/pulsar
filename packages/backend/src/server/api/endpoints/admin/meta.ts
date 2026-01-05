@@ -95,6 +95,10 @@ export const meta = {
 				type: 'boolean',
 				optional: false, nullable: false,
 			},
+			enableTenor: {
+				type: 'boolean',
+				optional: false, nullable: false,
+			},
 			swPublickey: {
 				type: 'string',
 				optional: false, nullable: true,
@@ -711,6 +715,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				enableFC: instance.enableFC,
 				fcSiteKey: instance.fcSiteKey,
 				enableTestcaptcha: instance.enableTestcaptcha,
+				enableTenor: instance.enableTenor,
 				swPublickey: instance.swPublicKey,
 				themeColor: instance.themeColor,
 				mascotImageUrl: instance.mascotImageUrl,
@@ -748,6 +753,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				turnstileSecretKey: instance.turnstileSecretKey,
 				altchaSecretKey: instance.altchaSecretKey,
 				fcSecretKey: instance.fcSecretKey,
+				tenorApiKey: instance.tenorApiKey,
 				sensitiveMediaDetection: instance.sensitiveMediaDetection,
 				sensitiveMediaDetectionSensitivity: instance.sensitiveMediaDetectionSensitivity,
 				setSensitiveFlagAutomatically: instance.setSensitiveFlagAutomatically,

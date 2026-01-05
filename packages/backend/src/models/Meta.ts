@@ -319,6 +319,18 @@ export class MiMeta {
 	})
 	public fcSiteKey: string | null;
 
+
+	@Column('boolean', {
+		default: false,
+	})
+	public enableTenor: boolean;
+
+	@Column('varchar', {
+		length: 1024,
+		nullable: true,
+	})
+	public tenorApiKey: string | null;
+
 	@Column('varchar', {
 		length: 1024,
 		nullable: true,
@@ -657,7 +669,7 @@ export class MiMeta {
 	public robotsTxt: string | null;
 
 	@Column('jsonb', {
-		default: { },
+		default: {},
 	})
 	public policies: Record<string, any>;
 

@@ -23,6 +23,7 @@ import { claimAchievement, claimedAchievements } from '@/utility/achievements.js
 import { initializeSw } from '@/utility/initialize-sw.js';
 import { deckStore } from '@/ui/deck/deck-store.js';
 import { emojiPicker } from '@/utility/emoji-picker.js';
+import { gifPicker } from '@/utility/gif-picker.js';
 import { mainRouter } from '@/router.js';
 import { setFavIconDot } from '@/utility/favicon-dot.js';
 import { makeHotkey } from '@/utility/hotkey.js';
@@ -66,6 +67,7 @@ export async function mainBoot() {
 
 	reactionPicker.init();
 	emojiPicker.init();
+	gifPicker.init();
 
 	if (isClientUpdated && $i) {
 		const { dispose } = popup(defineAsyncComponent(() => import('@/components/MkUpdated.vue')), {}, {

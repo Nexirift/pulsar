@@ -4627,6 +4627,28 @@ declare module '../api.js' {
     ): Promise<SwitchCaseResponseType<E, P>>;
 
     /**
+     * No description provided.
+     * 
+     * **Credential required**: *No*
+     */
+    request<E extends 'tenor/featured', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
+     * No description provided.
+     * 
+     * **Credential required**: *No*
+     */
+    request<E extends 'tenor/search', P extends Endpoints[E]['req']>(
+      endpoint: E,
+      params: P,
+      credential?: string | null,
+    ): Promise<SwitchCaseResponseType<E, P>>;
+
+    /**
      * Endpoint for testing input validation.
      * 
      * **Credential required**: *No*

@@ -153,6 +153,10 @@ export const packedMetaLiteSchema = {
 			type: 'string',
 			optional: false, nullable: true,
 		},
+		enableTenor: {
+			type: 'boolean',
+			optional: false, nullable: false,
+		},
 		enableAchievements: {
 			type: 'boolean',
 			optional: false, nullable: true,
@@ -416,6 +420,10 @@ export const packedMetaDetailedOnlySchema = {
 					optional: false, nullable: false,
 				},
 				turnstile: {
+					type: 'boolean',
+					optional: false, nullable: false,
+				},
+				altcha: {
 					type: 'boolean',
 					optional: false, nullable: false,
 				},

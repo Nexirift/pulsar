@@ -384,6 +384,8 @@ export * as 'reset-db' from './endpoints/reset-db.js';
 export * as 'reset-password' from './endpoints/reset-password.js';
 export * as 'retention' from './endpoints/retention.js';
 export * as 'reversi/cancel-match' from './endpoints/reversi/cancel-match.js';
+export * as 'tenor/search' from './endpoints/tenor/search.js';
+export * as 'tenor/featured' from './endpoints/tenor/featured.js';
 export * as 'reversi/games' from './endpoints/reversi/games.js';
 export * as 'reversi/invitations' from './endpoints/reversi/invitations.js';
 export * as 'reversi/match' from './endpoints/reversi/match.js';

@@ -769,6 +769,13 @@ restartMigrationDescription: "Account migration was last attempted {date}. If th
 restartMigrationConfirm: "Are you sure you want to restart this account migration?"
 
 backgroundQueue: "Background queue"
+
+gifPicker: "GIF Picker"
+enableTenor: "Enable GIF picker"
+tenorApiKey: "Tenor API Key"
+tenorApiKeyDescription: "Get your API key from Google Tenor API"
+gifPickerInfo: "The GIF picker allows users to search and insert GIFs from Tenor directly into their posts. An API key is required to use this feature."
+
 _header:
   browse: "Browse"
   manage: "Manage"

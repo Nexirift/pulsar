@@ -9340,6 +9340,50 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    '/tenor/featured': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * tenor/featured
+         * @description No description provided.
+         *
+         *     **Credential required**: *No*
+         */
+        post: operations['tenor___featured'];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    '/tenor/search': {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * tenor/search
+         * @description No description provided.
+         *
+         *     **Credential required**: *No*
+         */
+        post: operations['tenor___search'];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     '/test': {
         parameters: {
             query?: never;
@@ -11603,6 +11647,7 @@ export type components = {
             altchaSiteKey: string | null;
             enableFC: boolean;
             fcSiteKey: string | null;
+            enableTenor: boolean;
             enableAchievements: boolean | null;
             robotsTxt: string | null;
             enableTestcaptcha: boolean;
@@ -11686,6 +11731,7 @@ export type components = {
                 globalTimeline: boolean;
                 hcaptcha: boolean;
                 turnstile: boolean;
+                altcha: boolean;
                 recaptcha: boolean;
                 objectStorage: boolean;
                 serviceWorker: boolean;
@@ -16391,6 +16437,7 @@ export interface operations {
                         enableFC: boolean;
                         fcSiteKey: string | null;
                         enableTestcaptcha: boolean;
+                        enableTenor: boolean;
                         swPublickey: string | null;
                         /** @default /assets/ai.png */
                         mascotImageUrl: string | null;
@@ -20589,6 +20636,8 @@ export interface operations {
                     enableAltcha?: boolean;
                     altchaSiteKey?: string | null;
                     altchaSecretKey?: string | null;
+                    enableTenor?: boolean;
+                    tenorApiKey?: string | null;
                     enableFC?: boolean;
                     fcSiteKey?: string | null;
                     fcSecretKey?: string | null;
@@ -46097,6 +46146,185 @@ export interface operations {
                         userId: string;
                         endpoint: string;
                         sendReadMessage: boolean;
+                    };
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    tenor___featured: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                'application/json': {
+                    /** @default 30 */
+                    limit?: number;
+                    pos?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        results: {
+                            id: string;
+                            url: string;
+                            preview: string;
+                            title: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Client error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Authentication error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Forbidden error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description I'm Ai */
+            418: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+            /** @description Internal server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': components['schemas']['Error'];
+                };
+            };
+        };
+    };
+    tenor___search: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                'application/json': {
+                    q: string;
+                    /** @default 30 */
+                    limit?: number;
+                    pos?: string | null;
+                };
+            };
+        };
+        responses: {
+            /** @description OK (with results) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    'application/json': {
+                        results: {
+                            id: string;
+                            url: string;
+                            preview: string;
+                            title: string;
+                        }[];
                     };
                 };
             };
