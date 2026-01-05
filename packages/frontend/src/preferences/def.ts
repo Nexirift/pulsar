@@ -236,6 +236,23 @@ export const PREF_DEF = {
 	showFixedPostFormInChannel: {
 		default: true,
 	},
+	postFormButtons: {
+		default: {
+			attachFile: true,
+			poll: true,
+			useCw: true,
+			mention: false,
+			hashtags: false,
+			emoji: true,
+			gifPicker: true,
+			mfmFunction: true,
+			preview: true,
+			mfmCheatsheet: true,
+		} as Record<string, boolean>,
+	},
+	mergeQuoteButtonWithBoost: {
+		default: true,
+	},
 	timelineTabIconOnly: {
 		default: true,
 	},

@@ -140,7 +140,7 @@ Displays a note in the Sharkey style. Used to show the "main" note in a given co
 					<i class="ti ti-ban"></i>
 				</button>
 				<button
-					v-if="canRenote && !props.mock && !$i?.rejectQuotes"
+					v-if="canRenote && !props.mock && !$i?.rejectQuotes && !prefer.r.mergeQuoteButtonWithBoost.value"
 					ref="quoteButton"
 					:class="$style.footerButton"
 					class="_button"
@@ -466,7 +466,7 @@ function boostVisibility(forceMenu: boolean = false) {
 	if (!prefer.s.showVisibilitySelectorOnBoost && !forceMenu) {
 		renote(prefer.s.visibilityOnBoost);
 	} else {
-		os.popupMenu(boostMenuItems(appearNote, renote), renoteButton.value);
+		os.popupMenu(boostMenuItems(appearNote, renote, quote), renoteButton.value);
 	}
 }
 

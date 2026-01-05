@@ -31,7 +31,7 @@ export function visibilityIsAtLeast(a: Visibility | string, b: Visibility | stri
 	return smallerVisibility(a, b) === b;
 }
 
-export function boostMenuItems(appearNote: Ref<Misskey.entities.Note>, renote: (v: Visibility, l: boolean) => void): MenuItem[] {
+export function boostMenuItems(appearNote: Ref<Misskey.entities.Note>, renote: (v: Visibility, l: boolean) => void, quote?: () => void): MenuItem[] {
 	const localOnly = ref(prefer.s.rememberNoteVisibility ? store.s.localOnly : prefer.s.defaultNoteLocalOnly);
 	const effectiveVisibility = (
 		appearNote.value.channel?.isSensitive
@@ -50,6 +50,18 @@ export function boostMenuItems(appearNote: Ref<Misskey.entities.Note>, renote: (
 			},
 		} as MenuItem);
 	}
+
+	// Add quote option if merge is enabled and quote callback is provided
+	if (prefer.s.mergeQuoteButtonWithBoost && quote) {
+		menuItems.push({
+			type: 'button',
+			icon: 'ph-quotes ph-bold ph-lg',
+			text: i18n.ts.quote,
+			action: quote,
+		} as MenuItem);
+		menuItems.push({ type: 'divider' });
+	}
+
 	if (visibilityIsAtLeast(effectiveVisibility, 'home')) {
 		menuItems.push({
 			type: 'button',
@@ -71,7 +83,7 @@ export function boostMenuItems(appearNote: Ref<Misskey.entities.Note>, renote: (
 		} as MenuItem);
 	}
 
-	return [
+	const items: MenuItem[] = [
 		...menuItems,
 		{
 			type: 'switch',
@@ -80,6 +92,8 @@ export function boostMenuItems(appearNote: Ref<Misskey.entities.Note>, renote: (
 			ref: localOnly,
 		} as MenuItem,
 	];
+
+	return items;
 }
 
 export function computeRenoteTooltip(note: ComputedRef<Misskey.entities.Note>): ComputedRef<string> {

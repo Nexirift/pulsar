@@ -155,7 +155,7 @@ Detailed view of a note in the Sharkey style. Used when opening a note onto its 
 				<i class="ti ti-ban"></i>
 			</button>
 			<button
-				v-if="canRenote && !$i?.rejectQuotes"
+				v-if="canRenote && !$i?.rejectQuotes && !prefer.r.mergeQuoteButtonWithBoost.value"
 				ref="quoteButton"
 				class="_button"
 				:class="$style.noteFooterButton"

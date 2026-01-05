@@ -149,7 +149,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<i class="ti ti-ban"></i>
 			</button>
 			<button
-				v-if="canRenote && !$i?.rejectQuotes"
+				v-if="canRenote && !$i?.rejectQuotes && !prefer.r.mergeQuoteButtonWithBoost.value"
 				ref="quoteButton"
 				class="_button"
 				:class="$style.noteFooterButton"
@@ -472,7 +472,7 @@ function boostVisibility(forceMenu: boolean = false) {
 	if (!prefer.s.showVisibilitySelectorOnBoost && !forceMenu) {
 		renote(prefer.s.visibilityOnBoost);
 	} else {
-		os.popupMenu(boostMenuItems(appearNote, renote), renoteButton.value);
+		os.popupMenu(boostMenuItems(appearNote, renote, quote), renoteButton.value);
 	}
 }
 

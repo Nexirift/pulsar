@@ -12125,6 +12125,62 @@ export interface Locale extends ILocale {
      */
     "combined": string;
     /**
+     * Customize posting form buttons
+     */
+    "customizePostFormButtons": string;
+    /**
+     * Choose which buttons to show in the posting form footer
+     */
+    "postFormButtonsDescription": string;
+    /**
+     * Attach file button
+     */
+    "postFormButtonAttachFile": string;
+    /**
+     * Poll button
+     */
+    "postFormButtonPoll": string;
+    /**
+     * Content warning button
+     */
+    "postFormButtonUseCw": string;
+    /**
+     * Mention button
+     */
+    "postFormButtonMention": string;
+    /**
+     * Hashtags button
+     */
+    "postFormButtonHashtags": string;
+    /**
+     * Emoji picker button
+     */
+    "postFormButtonEmoji": string;
+    /**
+     * GIF picker button
+     */
+    "postFormButtonGifPicker": string;
+    /**
+     * MFM function button
+     */
+    "postFormButtonMfmFunction": string;
+    /**
+     * Preview button
+     */
+    "postFormButtonPreview": string;
+    /**
+     * MFM cheatsheet button
+     */
+    "postFormButtonMfmCheatsheet": string;
+    /**
+     * Merge quote button with boost button
+     */
+    "mergeQuoteButtonWithBoost": string;
+    /**
+     * Show quote option in boost menu instead of as a separate button
+     */
+    "mergeQuoteButtonWithBoostDescription": string;
+    /**
      * Mobile footer menu
      */
     "mobileFooterMenu": string;
