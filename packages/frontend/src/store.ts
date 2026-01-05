@@ -72,7 +72,7 @@ export const store = markRaw(new Pizzax('base', {
 			src: 'home' as 'home' | 'local' | 'social' | 'global' | 'bubble' | `list:${string}`,
 			userList: null as Misskey.entities.UserList | null,
 			filter: {
-				withReplies: true,
+				withReplies: false,
 				withRenotes: true,
 				withSensitive: true,
 				withAdultsOnly: false,
