@@ -103,6 +103,7 @@ export class MetaEntityService {
 			turnstileSiteKey: instance.turnstileSiteKey,
 			enableAltcha: instance.enableAltcha,
 			altchaSiteKey: instance.altchaSiteKey,
+			altchaInstanceUrl: instance.altchaInstanceUrl,
 			enableFC: instance.enableFC,
 			fcSiteKey: instance.fcSiteKey,
 			enableTestcaptcha: instance.enableTestcaptcha,

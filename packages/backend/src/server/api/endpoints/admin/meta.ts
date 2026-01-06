@@ -83,6 +83,10 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			altchaInstanceUrl: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 			enableFC: {
 				type: 'boolean',
 				optional: false, nullable: false,
@@ -712,6 +716,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				turnstileSiteKey: instance.turnstileSiteKey,
 				enableAltcha: instance.enableAltcha,
 				altchaSiteKey: instance.altchaSiteKey,
+				altchaInstanceUrl: instance.altchaInstanceUrl,
 				enableFC: instance.enableFC,
 				fcSiteKey: instance.fcSiteKey,
 				enableTestcaptcha: instance.enableTestcaptcha,

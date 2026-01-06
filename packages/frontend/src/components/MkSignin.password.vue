@@ -63,6 +63,7 @@ export type PwResponse = {
 		mCaptchaResponse: string | null;
 		reCaptchaResponse: string | null;
 		turnstileResponse: string | null;
+		altchaResponse: string | null;
 		fcResponse: string | null;
 		testcaptchaResponse: string | null;
 	};

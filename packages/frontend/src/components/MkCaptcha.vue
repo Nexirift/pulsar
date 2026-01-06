@@ -60,7 +60,7 @@ declare global {
 
 const props = defineProps<{
 	provider: CaptchaProvider;
-	sitekey: string | null; // null will show error on request
+	sitekey?: string | null; // null will show error on request
 	secretKey?: string | null;
 	instanceUrl?: string | null;
 	modelValue?: string | null;

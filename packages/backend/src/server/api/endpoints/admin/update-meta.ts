@@ -92,6 +92,7 @@ export const paramDef = {
 		enableAltcha: { type: 'boolean' },
 		altchaSiteKey: { type: 'string', nullable: true },
 		altchaSecretKey: { type: 'string', nullable: true },
+		altchaInstanceUrl: { type: 'string', nullable: true },
 		enableTenor: { type: 'boolean' },
 		tenorApiKey: { type: 'string', nullable: true },
 		enableFC: { type: 'boolean' },
@@ -445,6 +446,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.altchaSecretKey !== undefined) {
 				set.altchaSecretKey = ps.altchaSecretKey;
+			}
+
+			if (ps.altchaInstanceUrl !== undefined) {
+				set.altchaInstanceUrl = ps.altchaInstanceUrl;
 			}
 
 			if (ps.enableTenor !== undefined) {

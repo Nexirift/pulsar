@@ -190,6 +190,7 @@ async function onPasswordSubmitted(pw: PwResponse) {
 			'g-recaptcha-response': pw.captcha.reCaptchaResponse,
 			'frc-captcha-solution': pw.captcha.fcResponse,
 			'turnstile-response': pw.captcha.turnstileResponse,
+			'altcha-response': pw.captcha.altchaResponse,
 			'testcaptcha-response': pw.captcha.testcaptchaResponse,
 		});
 	}

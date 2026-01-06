@@ -11667,6 +11667,7 @@ export type components = {
             turnstileSiteKey: string | null;
             enableAltcha: boolean;
             altchaSiteKey: string | null;
+            altchaInstanceUrl: string | null;
             enableFC: boolean;
             fcSiteKey: string | null;
             enableTenor: boolean;
@@ -16533,6 +16534,7 @@ export interface operations {
                         turnstileSiteKey: string | null;
                         enableAltcha: boolean;
                         altchaSiteKey: string | null;
+                        altchaInstanceUrl: string | null;
                         enableFC: boolean;
                         fcSiteKey: string | null;
                         enableTestcaptcha: boolean;
@@ -20735,6 +20737,7 @@ export interface operations {
                     enableAltcha?: boolean;
                     altchaSiteKey?: string | null;
                     altchaSecretKey?: string | null;
+                    altchaInstanceUrl?: string | null;
                     enableTenor?: boolean;
                     tenorApiKey?: string | null;
                     enableFC?: boolean;
