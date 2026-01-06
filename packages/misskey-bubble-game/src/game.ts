@@ -429,8 +429,8 @@ export class DropAndFusionGame extends EventEmitter<{
 			if (body.label === '_wall_' || body.label === '_overflow_' || body.isStatic) continue;
 
 			// Randomize force strength - can be too weak (0.5x-0.8x) or too strong (1.2x-2.0x)
-			const forceMultiplier = this.rng() < 0.5 
-				? 0.5 + this.rng() * 0.3  // Too slow: 0.5-0.8
+			const forceMultiplier = this.rng() < 0.5
+				? 0.5 + this.rng() * 0.3 // Too slow: 0.5-0.8
 				: 1.2 + this.rng() * 0.8; // Too fast: 1.2-2.0
 
 			const baseMass = body.mass;

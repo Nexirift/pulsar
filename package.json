@@ -6,7 +6,7 @@
 		"type": "git",
 		"url": "https://code.nexirift.com/Nexirift/pulsar.git"
 	},
-	"packageManager": "pnpm@10.26.2",
+	"packageManager": "pnpm@10.27.0",
 	"workspaces": [
 		"packages/frontend-shared",
 		"packages/frontend",
