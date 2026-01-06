@@ -14,7 +14,7 @@ export function genOpenapiSpec(config: Config, includeSelfRef = false) {
 
 		info: {
 			version: config.version,
-			title: 'Pulssar API',
+			title: 'Pulsar API',
 		},
 
 		externalDocs: {
