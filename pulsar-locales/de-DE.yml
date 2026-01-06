@@ -1,0 +1,62 @@
+---
+introMisskey: "Willkommen! Pulsar ist eine dezentralisierte Open-Source Microblogging-Platform.\nVerfasse „Notizen“ um mitzuteilen, was gerade passiert oder um Ereignisse mit anderen zu teilen. 📡\nMit „Reaktionen“ kannst du außerdem schnell deine Gefühle über Notizen anderer Benutzer zum Ausdruck bringen. 👍\nEine neue Welt wartet auf dich! 🚀"
+poweredByMisskeyDescription: "{name} wird durch die Open-Source-Plattform <b>Pulsar</b> betrieben, die auf Misskey basiert (meist als \"Misskey-Instanz\" bezeichnet)."
+flagAsBotDescription: "Aktiviere diese Option, falls dieses Benutzerkonto durch ein Programm gesteuert wird. Falls aktiviert, agiert es als Flag für andere Entwickler zur Verhinderung von endlosen Kettenreaktionen mit anderen Bots und lässt Pulsars interne Systeme dieses Benutzerkonto als Bot behandeln."
+intro: "Pulsar ist installiert! Lass uns nun ein Administratorkonto einrichten."
+aboutMisskey: "Über Pulsar"
+useSoundOnlyWhenActive: "Gebe nur Ton aus, wenn Pulsar aktiv ist"
+scratchpadDescription: "Die Testumgebung bietet einen Bereich für AiScript-Experimente. Dort kannst du AiScript schreiben, ausführen sowie dessen Auswirkungen auf Pulsar überprüfen."
+sendErrorReportsDescription: "Ist diese Option aktiviert, so werden beim Auftreten von Fehlern detaillierte Fehlerinformationen an Pulsar weitergegeben, was zur Verbesserung der Qualität von Pulsar beiträgt.\nEnthalten in diesen Informationen sind u.a. die Version deines Betriebssystems, welchen Browser du verwendest und ein Verlauf deiner Aktivitäten innerhalb Pulsar."
+misskeyUpdated: "Pulsar wurde aktualisiert!"
+didYouLikeMisskey: "Gefällt dir Pulsar?"
+pleaseDonate: "Pulsar ist die kostenlose Software, die von {host} verwendet wird. Wir würden uns über Spenden freuen, damit dessen Entwicklung weitergeführt werden kann!"
+goToMisskey: "Zu Pulsar"
+repositoryUrlDescription: "Wenn es ein Repository gibt, in dem der Quellcode öffentlich zugänglich ist, gib dessen URL ein. Wenn du Pulsar unverändert verwendest (ohne Änderungen am Quellcode), gib bitte https://code.nexirift.com/Nexirift/pulsar ein."
+_initialAccountSetting:
+  youCanContinueTutorial: "Du kannst mit dem Tutorial von {name} (Pulsar) fortfahren, oder auch abbrechen und gleich anfangen Pulsar zu verwenden."
+_initialTutorial:
+  _landing:
+    description: "Hier kannst du die Grundlagen und Funktionen von Pulsar lernen."
+  _note:
+    description: "Beiträge auf Pulsar heißen \"Notizen\". Notizen werden chronologisch in der Chronik angeordnet und in Echtzeit aktualisiert."
+  _timeline:
+    description1: "Pulsar verfügt über mehrere Chroniken (einige können je nach den Richtlinien des Servers nicht verfügbar sein)."
+  _postNote:
+    description1: "Wenn du eine Notiz auf Pulsar veröffentlichst, stehen dir verschiedene Optionen zur Verfügung. Die Oberfläche sieht folgendermaßen aus."
+  _done:
+    description: "Die hier beschriebenen Funktionen sind nur ein kleiner Teil dessen, was Pulsar zu bieten hat; um mehr darüber zu erfahren, wie du Pulsar verwenden kannst, besuche bitte {link}."
+_accountMigration:
+  moveAccountDescription: "Hierdurch wird dein Konto zu einem anderen migriert.\n ・Follower von diesem Konto werden automatisch auf das neue Konto migriert\n ・Dieses Konto wird allen Nutzern, denen es derzeit folgt, nicht mehr folgen\n ・Mit diesem Konto können keine neuen Notizen usw. erstellt werden\n\nWährend die Migration der Follower automatisch erfolgt, muss die Migration der Konten, denen du folgst, manuell vorbereitet werden. Exportiere hierzu die Liste der gefolgten Nutzer über das Einstellungsmenu, und importiere diese Liste im neuen Konto. Das gleiche Verfahren gilt für erstellte Listen und stummgeschaltete oder blockierte Nutzer.\n\n(Diese Erklärung gilt für Pulsar v13.12.0 oder später. Die Funktionsweise andere ActivityPub-Software, beispielsweise Mastodon,  kann hiervon abweichen.)"
+_achievements:
+  _types:
+    _notes1:
+      title: "Hallo Pulsar!"
+      flavor: "Hab eine schöne Zeit mit Pulsar!"
+    _login1000:
+      flavor: "Danke, dass du Pulsar nutzt!"
+    _iLoveMisskey:
+      title: "I Love Pulsar"
+      description: "Sende \"I ❤ #Pulsar\""
+      flavor: "Danke, dass du Pulsar verwendest! - vom Entwicklerteam"
+    _client30min:
+      description: "Habe Pulsar für mindestens 30 Minuten geöffnet"
+    _client60min:
+      title: "Munter mit Pulsar"
+      description: "Habe Pulsar für mindestens 60 Minuten geöffnet"
+    _brainDiver:
+      flavor: "Pulsar-Pulsar La-Tu-Ma"
+    _tutorialCompleted:
+      title: "Pulsar Grundkurs-Diplom"
+_aboutMisskey:
+  about: "Pulsar ist Open-Source-Software basiert auf Misskey welche von syuilo seit 2014 entwickelt wird."
+  thisIsModifiedVersion: "{name} benutzt eine modifizierte Version des originalen Pulsar."
+  translation: "Pulsar übersetzen"
+  donate_Pulsar: "An Pulsar spenden"
+_soundSettings:
+  driveFileDurationWarnDescription: "Lange Töne können die Verwendung von Pulsar stören. Trotzdem fortfahren?"
+_mfm:
+  intro: "MFM ist eine Auszeichnungssprache, die bei Misskey, Pulsar, Firefish, Akkoma und anderen verwendet wird und an vielen Stellen eingesetzt werden kann. Hier kannst du eine Liste aller verfügbaren MFM-Syntaxen einsehen."
+  dummy: "Pulsar erweitert die Welt des Fediverse"
+_urlPreviewSetting:
+  summaryProxyDescription: "Generierung von Vorschaubildern mit Summaly Proxy anstelle von Pulsar selbst."
+robotsTxtDescription: "Wenn hier Einträge hinzugefügt werden, wird die mit Pulsar mitgelieferte Standard-Robots.txt überschrieben."

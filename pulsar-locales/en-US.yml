@@ -1,0 +1,133 @@
+---
+blockedInstances: "Blocked instances"
+combined: "Combined"
+securityKeyAndPasskey: "Security keys and passkeys"
+passwordLessLoginDescription: "Allows password-less login using a security key or passkey only."
+showPostFormLinkPreview: "Show link previews in posting form"
+customizePostFormButtons: "Customize posting form buttons"
+postFormButtonsDescription: "Choose which buttons to show in the posting form footer"
+postFormButtonAttachFile: "Attach file button"
+postFormButtonPoll: "Poll button"
+postFormButtonUseCw: "Content warning button"
+postFormButtonMention: "Mention button"
+postFormButtonHashtags: "Hashtags button"
+postFormButtonEmoji: "Emoji picker button"
+postFormButtonGifPicker: "GIF picker button"
+postFormButtonMfmFunction: "MFM function button"
+postFormButtonPreview: "Preview button"
+postFormButtonMfmCheatsheet: "MFM cheatsheet button"
+mergeQuoteButtonWithBoost: "Merge quote button with boost button"
+mergeQuoteButtonWithBoostDescription: "Show quote option in boost menu instead of as a separate button"
+mobileFooterMenu: "Mobile footer menu"
+useSecurityKey: "Please follow your browser's or device's instructions to use your security or passkey."
+_settings:
+  showAccountMenuOnAvatarClick: "Show account menu on avatar click"
+  showAccountMenuOnAvatarClickDescription: "When enabled on mobile, clicking your avatar in the page header will open the account menu. When disabled, it will open the drawer menu. A menu button will be added to the account menu to access the drawer menu."
+  mobileFooterMenuInfo: "The mobile footer menu is displayed at the bottom of the screen on mobile devices."
+  widgetsNavbarInfo: "On desktop, the widgets button toggles the right sidebar. On mobile, add it to the footer menu to open the widgets drawer."
+_initialTutorial:
+  _landing:
+    description: "Here, you can learn the basics of using Pulsar and its features."
+  _note:
+    description: "Posts on Pulsar are called 'Notes.' Notes are arranged chronologically on the timeline and are updated in real-time."
+  _timeline:
+    description1: "Pulsar provides multiple timelines based on usage (some may not be available depending on the server's policies)."
+    customizeTabs: "Customize timeline tabs"
+    customizeTabsDescription: "Show, hide, and reorder timeline tabs to customize your timeline experience."
+    timelineTabs: "Timeline tabs"
+    iconOnlyTabs: "Show icon only tabs"
+    iconOnlyTabsDescription: "Show only icons for timeline tabs to save space. The selected tab will still show it's label."
+  _postNote:
+    description1: "When posting a note on Pulsar, various options are available. The posting form looks like this."
+  _done:
+    description: "The functions introduced here are just a small part. For a more detailed understanding of using Pulsar, please refer to {link}."
+introMisskey: "Welcome! Pulsar is an open source, decentralized microblogging service.\nCreate \"notes\" to share your thoughts with everyone around you. 📡\nWith \"reactions\", you can also quickly express your feelings about everyone's notes. 👍\nLet's explore a new world! 🚀"
+poweredByMisskeyDescription: "{name} is one of the services powered by the open source platform <b>Pulsar</b> which is based on Sharkey, a fork of Misskey (referred to as a \"Misskey instance\")."
+flagAsBotDescription: "Enable this option if this account is controlled by a program. If enabled, it will act as a flag for other developers to prevent endless interaction chains with other bots and adjust Pulsar's internal systems to treat this account as a bot."
+intro: "Installation of Pulsar has been finished! Please create an admin user."
+aboutMisskey: "About Pulsar"
+useSoundOnlyWhenActive: "Output sounds only if Pulsar is active."
+scratchpadDescription: "The Scratchpad provides an environment for AiScript experiments. You can write, execute, and check the results of it interacting with Pulsar in it."
+i18nInfoPulsar: "Pulsar specific changes are translated in its own {link}."
+markAccountAsAdultsOnly: "Mark this account as adults only"
+markAccountAsAdultsOnlyDescription: "Enable this if your profile or posts are intended only for adults."
+settingCurrentlyForcedMessage: "This setting is currently forced by a moderator and cannot be changed."
+forceAdultsOnly: "Force adults only status"
+forceAdultsOnlyConfirm: "Are you sure you want to force this account to be adults only?"
+unforceAdultsOnlyConfirm: "Are you sure you want to remove the forced adults only status from this account?"
+withAdultsOnly: "Show adults only content"
+userisAdultsOnlyButYouAreUnderage: "This user is marked as adults only, but you have been identified as underage. Therefore, you cannot view their profile or posts."
+showAdultsOnlyProfiles: "Show 18+ profiles"
+cannotEnableAdultsOnlyProfilesUnder18: "You must be 18 or older to enable this setting."
+thumbFriendlyAccountsMenu: "Thumb-friendly accounts menu"
+sendErrorReportsDescription: "When turned on, detailed error information will be shared with Pulsar when a problem occurs, helping to improve the quality of Pulsar.\nThis will include information such the version of your OS, what browser you're using, your activity in Pulsar, etc."
+misskeyUpdated: "Pulsar has been updated!"
+didYouLikeMisskey: "Have you taken a liking to Pulsar?"
+pleaseDonate: "{host} uses the free software, Pulsar. We would highly appreciate your donations so development of Pulsar can continue!"
+goToMisskey: "To Pulsar"
+repositoryUrlDescription: "If there is a repository where the source code is publicly available, enter its URL. If you are using Pulsar as-is (without any changes to the source code), enter https://code.nexirift.com/Nexirift/pulsar."
+altcha: "ALTCHA"
+enableAltcha: "Enable ALTCHA"
+altchaSiteKey: "API Key (for Sentinel) or Challenge URL (for custom server)"
+altchaSecretKey: "API Key Secret (for Sentinel), Verification URL, or HMAC Key (for local verification)"
+altchaInstanceUrl: "Sentinel server URL (optional, leave empty for custom server)"
+noBackupsFound: "No backups found."
+_preferencesProfile:
+  manageProfiles: "Manage profiles"
+  createNewProfile: "Create new profile"
+  createNewProfileDescription: "Create a new preferences profile with default settings. This WILL wipe your current preferences if not synced correctly."
+_initialAccountSetting:
+  youCanContinueTutorial: "You can proceed to a tutorial on how to use {name} (Pulsar) or you can exit the setup here and start using it immediately."
+_serverSettings:
+  deliverSuspendedSoftwareDescription: "You can specify a range of names and versions of the server's software to stop delivery for vulnerability or other reasons. This version information is provided by the server and is not guaranteed to be reliable. A semver range specification can be used to specify the version, but specifying >= 2024.3.1 will not include custom versions such as 2024.3.1-custom.0, so it is recommended that a prerelease specification be used, such as >= 2024.3.1-0. Specifying * will match any name or version, even when the server doesn't provide one. You can also provide a regular expression like /^Pulsar-/i or /^1-/"
+  disableInactivity: "Ignore moderation inactivity"
+  disableInactivityWarning: "Ignoring moderation inactivity carries risks. It is recommended to only enable it if you have a system in place to continuously monitor the server and respond immediately in case of any issues."
+  disableInactivityDescription: "Disabling detection of moderation inactivity allows for continuous open registration without any interruptions."
+_accountMigration:
+  moveAccountDescription: "This will migrate your account to a different one.\n　・Followers from this account will automatically be migrated to the new account\n　・This account will unfollow all users it is currently following\n　・You will be unable to create new notes etc. on this account\n\nWhile migration of followers is automatic, you must manually prepare some steps to migrate the list of users you are following. To do so, carry out a follows export that you will later import on the new account in the settings menu. The same procedure applies to your lists as well as your muted and blocked users.\n\n(This explanation applies to Pulsar v13.12.0 and later. Other ActivityPub software, such as Mastodon, might function differently.)"
+_bubbleGame:
+  shake: "Shake"
+_achievements:
+  _types:
+    _notes1:
+      flavor: "Have a good time with Pulsar!"
+    _login1000:
+      flavor: "Thank you for using Pulsar!"
+    _iLoveMisskey:
+      title: "I Love Pulsar"
+      description: "Post \"I ❤ #Pulsar\""
+      flavor: "Pulsar's development team greatly appreciates your support!"
+    _client30min:
+      description: "Keep Pulsar opened for at least 30 minutes"
+    _client60min:
+      title: "No \"Miss\" in Pulsar"
+      description: "Keep Pulsar opened for at least 60 minutes"
+    _brainDiver:
+      flavor: "Pulsar-Pulsar La-Tu-Ma"
+    _tutorialCompleted:
+      title: "Pulsar Elementary Course Diploma"
+_role:
+  _options:
+    pollChoicesLimit: "Maximum number of poll choices"
+    attachmentsLimit: "Maximum number of attachments per note"
+    maxNoteLength: "Maximum note length"
+    maxCwLength: "Maximum content warning length"
+_aboutMisskey:
+  about: "Pulsar is open-source software based on Sharkey, a fork of Misskey which has been in development by syuilo since 2014."
+  thisIsModifiedVersion: "{name} uses a modified version of the original Pulsar."
+  translation: "Translate Pulsar"
+_soundSettings:
+  driveFileDurationWarnDescription: "Long audio may disrupt using Pulsar. Still continue?"
+_moderationLogTypes:
+  forceAdultsOnly: "Forced adults only status"
+_mfm:
+  intro: "MFM is a markup language used on Misskey, Pulsar, Firefish, Akkoma, and more that can be used in many places. Here you can view a list of all available MFM syntax."
+  dummy: "Pulsar expands the world of the Fediverse"
+_urlPreviewSetting:
+  summaryProxyDescription: "Generate previews using Summaly Proxy, instead of Pulsar itself."
+robotsTxtDescription: "Adding entries here will override the default robots.txt packaged with Pulsar."
+gifPicker: "GIF Picker"
+enableTenor: "Enable GIF picker"
+tenorApiKey: "Tenor API Key"
+tenorApiKeyDescription: "Get your API key from Google Tenor API"
+gifPickerInfo: "The GIF picker allows users to search and insert GIFs from Tenor directly into their posts. An API key is required to use this feature."

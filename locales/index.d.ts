@@ -25,7 +25,7 @@ export interface Locale extends ILocale {
      */
     "introMisskey": string;
     /**
-     * {name} is one of the services powered by the open source platform <b>Pulsar</b> which is based on Misskey (referred to as a "Misskey instance").
+     * {name} is one of the services powered by the open source platform <b>Pulsar</b> which is based on Sharkey, a fork of Misskey (referred to as a "Misskey instance").
      */
     "poweredByMisskeyDescription": ParameterizedString<"name">;
     /**
@@ -4894,7 +4894,7 @@ export interface Locale extends ILocale {
      */
     "repositoryUrl": string;
     /**
-     * If there is a repository where the source code is publicly available, enter its URL. If you are using Pulsar as-is (without any changes to the source code), enter https://github.com/Nexirift/pulsar.
+     * If there is a repository where the source code is publicly available, enter its URL. If you are using Pulsar as-is (without any changes to the source code), enter https://code.nexirift.com/Nexirift/pulsar.
      */
     "repositoryUrlDescription": string;
     /**
@@ -6237,6 +6237,10 @@ export interface Locale extends ILocale {
              */
             "description3": ParameterizedString<"link">;
             /**
+             * You can view notes from connected servers picked by your admins.
+             */
+            "bubble": string;
+            /**
              * Customize timeline tabs
              */
             "customizeTabs": string;
@@ -6248,10 +6252,6 @@ export interface Locale extends ILocale {
              * Timeline tabs
              */
             "timelineTabs": string;
-            /**
-             * You can view notes from connected servers picked by your admins.
-             */
-            "bubble": string;
             /**
              * Show icon only tabs
              */
@@ -8245,13 +8245,13 @@ export interface Locale extends ILocale {
          */
         "projectMembers": string;
         /**
-         * Pulsar original
+         * Sharkey original
          */
-        "original_Pulsar": string;
+        "original_sharkey": string;
         /**
-         * Donate to Pulsar
+         * Donate to Sharkey
          */
-        "donate_Pulsar": string;
+        "donate_sharkey": string;
         /**
          * Testers
          */
@@ -12121,74 +12121,6 @@ export interface Locale extends ILocale {
         "serverHostPlaceholder": string;
     };
     /**
-     * Combined
-     */
-    "combined": string;
-    /**
-     * Show link previews in posting form
-     */
-    "showPostFormLinkPreview": string;
-    /**
-     * Customize posting form buttons
-     */
-    "customizePostFormButtons": string;
-    /**
-     * Choose which buttons to show in the posting form footer
-     */
-    "postFormButtonsDescription": string;
-    /**
-     * Attach file button
-     */
-    "postFormButtonAttachFile": string;
-    /**
-     * Poll button
-     */
-    "postFormButtonPoll": string;
-    /**
-     * Content warning button
-     */
-    "postFormButtonUseCw": string;
-    /**
-     * Mention button
-     */
-    "postFormButtonMention": string;
-    /**
-     * Hashtags button
-     */
-    "postFormButtonHashtags": string;
-    /**
-     * Emoji picker button
-     */
-    "postFormButtonEmoji": string;
-    /**
-     * GIF picker button
-     */
-    "postFormButtonGifPicker": string;
-    /**
-     * MFM function button
-     */
-    "postFormButtonMfmFunction": string;
-    /**
-     * Preview button
-     */
-    "postFormButtonPreview": string;
-    /**
-     * MFM cheatsheet button
-     */
-    "postFormButtonMfmCheatsheet": string;
-    /**
-     * Merge quote button with boost button
-     */
-    "mergeQuoteButtonWithBoost": string;
-    /**
-     * Show quote option in boost menu instead of as a separate button
-     */
-    "mergeQuoteButtonWithBoostDescription": string;
-    /**
-     * Mobile footer menu
-     */
-    "mobileFooterMenu": string;
-    /**
      * Approvals
      */
     "approvals": string;
@@ -12445,9 +12377,9 @@ export interface Locale extends ILocale {
      */
     "abuseMarkAsResolved": string;
     /**
-     * Pulsar specific changes are translated in its own {link}.
+     * Sharkey specific changes are translated in its own {link}.
      */
-    "i18nInfoPulsar": ParameterizedString<"link">;
+    "i18nInfoSharkey": ParameterizedString<"link">;
     /**
      * Show instance ticker on replies
      */
@@ -12488,50 +12420,6 @@ export interface Locale extends ILocale {
      * Generate an RSS feed containing your basic profile details and public notes. Users can subscribe to the feed without a follow request or approval.
      */
     "enableRssDescription": string;
-    /**
-     * Mark this account as adults only
-     */
-    "markAccountAsAdultsOnly": string;
-    /**
-     * Enable this if your profile or posts are intended only for adults.
-     */
-    "markAccountAsAdultsOnlyDescription": string;
-    /**
-     * This setting is currently forced by a moderator and cannot be changed.
-     */
-    "settingCurrentlyForcedMessage": string;
-    /**
-     * Force adults only status
-     */
-    "forceAdultsOnly": string;
-    /**
-     * Are you sure you want to force this account to be adults only?
-     */
-    "forceAdultsOnlyConfirm": string;
-    /**
-     * Are you sure you want to remove the forced adults only status from this account?
-     */
-    "unforceAdultsOnlyConfirm": string;
-    /**
-     * Show adults only content
-     */
-    "withAdultsOnly": string;
-    /**
-     * This user is marked as adults only, but you have been identified as underage. Therefore, you cannot view their profile or posts.
-     */
-    "userisAdultsOnlyButYouAreUnderage": string;
-    /**
-     * Show 18+ profiles
-     */
-    "showAdultsOnlyProfiles": string;
-    /**
-     * You must be 18 or older to enable this setting.
-     */
-    "cannotEnableAdultsOnlyProfilesUnder18": string;
-    /**
-     * Thumb-friendly accounts menu
-     */
-    "thumbFriendlyAccountsMenu": string;
     /**
      * Require approval for new users
      */
@@ -12753,30 +12641,6 @@ export interface Locale extends ILocale {
      * There was a problem unsubscribing.
      */
     "unsubscribeError": string;
-    /**
-     * ALTCHA
-     */
-    "altcha": string;
-    /**
-     * Enable ALTCHA
-     */
-    "enableAltcha": string;
-    /**
-     * API Key (for Sentinel) or Challenge URL (for custom server)
-     */
-    "altchaSiteKey": string;
-    /**
-     * API Key Secret (for Sentinel), Verification URL, or HMAC Key (for local verification)
-     */
-    "altchaSecretKey": string;
-    /**
-     * Sentinel server URL (optional, leave empty for custom server)
-     */
-    "altchaInstanceUrl": string;
-    /**
-     * No backups found.
-     */
-    "noBackupsFound": string;
     "_flash": {
         /**
          * Flash Content Hidden
@@ -13893,6 +13757,156 @@ export interface Locale extends ILocale {
      * Background queue
      */
     "backgroundQueue": string;
+    "_header": {
+        /**
+         * Browse
+         */
+        "browse": string;
+        /**
+         * Manage
+         */
+        "manage": string;
+    };
+    /**
+     * Combined
+     */
+    "combined": string;
+    /**
+     * Show link previews in posting form
+     */
+    "showPostFormLinkPreview": string;
+    /**
+     * Customize posting form buttons
+     */
+    "customizePostFormButtons": string;
+    /**
+     * Choose which buttons to show in the posting form footer
+     */
+    "postFormButtonsDescription": string;
+    /**
+     * Attach file button
+     */
+    "postFormButtonAttachFile": string;
+    /**
+     * Poll button
+     */
+    "postFormButtonPoll": string;
+    /**
+     * Content warning button
+     */
+    "postFormButtonUseCw": string;
+    /**
+     * Mention button
+     */
+    "postFormButtonMention": string;
+    /**
+     * Hashtags button
+     */
+    "postFormButtonHashtags": string;
+    /**
+     * Emoji picker button
+     */
+    "postFormButtonEmoji": string;
+    /**
+     * GIF picker button
+     */
+    "postFormButtonGifPicker": string;
+    /**
+     * MFM function button
+     */
+    "postFormButtonMfmFunction": string;
+    /**
+     * Preview button
+     */
+    "postFormButtonPreview": string;
+    /**
+     * MFM cheatsheet button
+     */
+    "postFormButtonMfmCheatsheet": string;
+    /**
+     * Merge quote button with boost button
+     */
+    "mergeQuoteButtonWithBoost": string;
+    /**
+     * Show quote option in boost menu instead of as a separate button
+     */
+    "mergeQuoteButtonWithBoostDescription": string;
+    /**
+     * Mobile footer menu
+     */
+    "mobileFooterMenu": string;
+    /**
+     * Pulsar specific changes are translated in its own {link}.
+     */
+    "i18nInfoPulsar": ParameterizedString<"link">;
+    /**
+     * Mark this account as adults only
+     */
+    "markAccountAsAdultsOnly": string;
+    /**
+     * Enable this if your profile or posts are intended only for adults.
+     */
+    "markAccountAsAdultsOnlyDescription": string;
+    /**
+     * This setting is currently forced by a moderator and cannot be changed.
+     */
+    "settingCurrentlyForcedMessage": string;
+    /**
+     * Force adults only status
+     */
+    "forceAdultsOnly": string;
+    /**
+     * Are you sure you want to force this account to be adults only?
+     */
+    "forceAdultsOnlyConfirm": string;
+    /**
+     * Are you sure you want to remove the forced adults only status from this account?
+     */
+    "unforceAdultsOnlyConfirm": string;
+    /**
+     * Show adults only content
+     */
+    "withAdultsOnly": string;
+    /**
+     * This user is marked as adults only, but you have been identified as underage. Therefore, you cannot view their profile or posts.
+     */
+    "userisAdultsOnlyButYouAreUnderage": string;
+    /**
+     * Show 18+ profiles
+     */
+    "showAdultsOnlyProfiles": string;
+    /**
+     * You must be 18 or older to enable this setting.
+     */
+    "cannotEnableAdultsOnlyProfilesUnder18": string;
+    /**
+     * Thumb-friendly accounts menu
+     */
+    "thumbFriendlyAccountsMenu": string;
+    /**
+     * ALTCHA
+     */
+    "altcha": string;
+    /**
+     * Enable ALTCHA
+     */
+    "enableAltcha": string;
+    /**
+     * API Key (for Sentinel) or Challenge URL (for custom server)
+     */
+    "altchaSiteKey": string;
+    /**
+     * API Key Secret (for Sentinel), Verification URL, or HMAC Key (for local verification)
+     */
+    "altchaSecretKey": string;
+    /**
+     * Sentinel server URL (optional, leave empty for custom server)
+     */
+    "altchaInstanceUrl": string;
+    /**
+     * No backups found.
+     */
+    "noBackupsFound": string;
     /**
      * GIF Picker
      */
@@ -13913,16 +13927,6 @@ export interface Locale extends ILocale {
      * The GIF picker allows users to search and insert GIFs from Tenor directly into their posts. An API key is required to use this feature.
      */
     "gifPickerInfo": string;
-    "_header": {
-        /**
-         * Browse
-         */
-        "browse": string;
-        /**
-         * Manage
-         */
-        "manage": string;
-    };
 }
 declare const locales: {
     [lang: string]: Locale;

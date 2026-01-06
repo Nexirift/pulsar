@@ -1,0 +1,55 @@
+---
+introMisskey: "ようこそ！Pulsarは、オープンソースの分散型マイクロブログサービスです。\n「ノート」を作成して、いま起こっていることを共有したり、あなたについて皆に発信しよう📡\n「リアクション」機能で、皆のノートに素早く反応を追加することもできます👍\n新しい世界を探検しよう🚀"
+poweredByMisskeyDescription: "{name}は、オープンソースのプラットフォーム<b>Pulsar</b>のサーバーのひとつです。"
+flagAsBotDescription: "このアカウントがプログラムによって運用される場合は、このフラグをオンにします。オンにすると、反応の連鎖を防ぐためのフラグとして他の開発者に役立ったり、Pulsarのシステム上での扱いがBotに合ったものになります。"
+intro: "Pulsarのインストールが完了しました！管理者アカウントを作成しましょう。"
+aboutMisskey: "Pulsarについて"
+useSoundOnlyWhenActive: "Pulsarがアクティブな時のみサウンドを出力する"
+scratchpadDescription: "スクラッチパッドは、AiScriptの実験環境を提供します。Pulsarと対話するコードの記述、実行、結果の確認ができます。"
+i18nInfo: "Pulsarは有志によって様々な言語に翻訳されています。{link}で翻訳に協力できます。"
+sendErrorReportsDescription: "オンにすると、問題が発生したときにエラーの詳細情報がPulsarに共有され、ソフトウェアの品質向上に役立てることができます。エラー情報には、OSのバージョン、ブラウザの種類、行動履歴などが含まれます。"
+misskeyUpdated: "Pulsarが更新されました！"
+didYouLikeMisskey: "Pulsarを気に入っていただけましたか？"
+pleaseDonate: "Pulsarは{host}が使用している無料のソフトウェアです。これからも開発を続けられるように、ぜひ寄付をお願いします！"
+goToMisskey: "Pulsarへ"
+repositoryUrlDescription: "ソースコードが公開されているリポジトリがある場合、そのURLを記入します。Pulsarを現状のまま（ソースコードにいかなる変更も加えずに）使用している場合は https://code.nexirift.com/Nexirift/pulsar と記入します。"
+_initialAccountSetting:
+  youCanContinueTutorial: "このまま{name}(Pulsar)の使い方についてのチュートリアルに進むこともできますが、ここで中断してすぐに使い始めることもできます。"
+_initialTutorial:
+  _landing:
+    description: "ここでは、Pulsarの基本的な使い方や機能を確認できます。"
+  _note:
+    description: "Pulsarでの投稿は「ノート」と呼びます。ノートはタイムラインに時系列で並んでいて、リアルタイムで更新されていきます。"
+  _timeline:
+    description1: "Pulsarには、使い方に応じて複数のタイムラインが用意されています（サーバーによってはいずれかが無効になっていることがあります）。"
+  _postNote:
+    description1: "Pulsarにノートを投稿する際には、様々なオプションの設定が可能です。投稿フォームはこのようになっています。"
+  _done:
+    description: "ここで紹介した機能はほんの一部にすぎません。Pulsarの使い方をより詳しく知るには、{link}をご覧ください。"
+_accountMigration:
+  moveAccountDescription: "新しいアカウントへ移行します。\n　・フォロワーが新しいアカウントを自動でフォローします\n　・このアカウントからのフォローは全て解除されます\n　・このアカウントではノートの作成などができなくなります\n\nフォロワーの移行は自動ですが、フォローの移行は手動で行う必要があります。移行前にこのアカウントでフォローエクスポートし、移行後すぐに移行先アカウントでインポートを行なってください。\nリスト・ミュート・ブロックについても同様ですので、手動で移行する必要があります。\n\n（この説明はこのサーバー（Pulsar v13.12.0以降）の仕様です。Mastodonなどの他のActivityPubソフトウェアでは挙動が異なる場合があります。）"
+_achievements:
+  _types:
+    _notes1:
+      flavor: "良いPulsarライフを！"
+    _login1000:
+      flavor: "Pulsarを使ってくれてありがとう！"
+    _iLoveMisskey:
+      title: "I Love Pulsar"
+      description: "\"I ❤ #Pulsar\"を投稿した"
+      flavor: "Pulsarを使ってくださりありがとうございます！ by 開発チーム"
+    _client60min:
+      title: "Pulsarの見すぎ"
+    _tutorialCompleted:
+      title: "Pulsar初心者講座 修了証"
+_aboutMisskey:
+  about: "Pulsarは、Misskeyをベースにしたオープンソースのソフトウェアです。"
+  original_Pulsar: "Pulsar オリジナル"
+  thisIsModifiedVersion: "{name}はオリジナルのPulsarを改変したバージョンを使用しています。"
+  translation: "Pulsarを翻訳"
+  donate_Pulsar: "Pulsarに寄付"
+_soundSettings:
+  driveFileDurationWarnDescription: "長い音声を使用するとPulsarの使用に支障をきたす可能性があります。それでも続行しますか？"
+_mfm:
+  intro: "MFM はMisskey, Pulsar, Firefish, Akkomaなど、多くの場所で使用できるマークアップ言語です。ここでは、利用できるMFM構文の一覧をご覧いただけます。"
+  dummy: "PulsarでFediverseの世界が広がります"

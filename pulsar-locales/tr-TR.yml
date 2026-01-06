@@ -1,0 +1,63 @@
+---
+introMisskey: "Hoş geldiniz! Pulsar, açık kaynaklı, merkeziyetsiz bir mikroblog servisidir.\n\"Notlar\" oluşturarak düşüncelerinizi çevrenizdeki herkesle paylaşabilirsiniz. 📡\n\"Tepkiler\" ile de başkalarının notlarına duygularınızı hızlıca ifade edebilirsiniz. 👍\nHaydi, yeni bir dünyayı keşfedelim! 🚀"
+poweredByMisskeyDescription: "{name}, Misskey tabanlı <b>Pulsar</b> açık kaynak platformu üzerinde çalışan servislerden biridir (\"Misskey sunucusu\" olarak da anılır)."
+flagAsBotDescription: "Bu hesabın bir program tarafından kontrol edildiğini belirtmek için etkinleştirin. Etkinleştirildiğinde, diğer botlarla sonsuz etkileşim döngülerini önlemek ve Pulsar’in iç sistemlerinin bu hesabı bot olarak ele almasını sağlamak için bir işaret olarak kullanılır."
+intro: "Pulsar kurulumu tamamlandı! Lütfen bir yönetici hesabı oluşturun."
+aboutMisskey: "Pulsar Hakkında"
+useSoundOnlyWhenActive: "Yalnızca Pulsar aktif olduğunda ses çıkar"
+scratchpadDescription: "Scratchpad, AiScript denemeleri için bir ortam sunar. Burada kod yazabilir, çalıştırabilir ve Pulsar ile etkileşimini görebilirsiniz."
+i18nInfoPulsar: "Pulsar'e özel değişiklikler kendi {link} içinde çevrilmiştir."
+sendErrorReportsDescription: "Açık olduğunda, bir sorun meydana geldiğinde Pulsar'e ayrıntılı hata bilgileri gönderilir. Bu, Pulsar'in kalitesini artırmaya yardımcı olur.\nGönderilecek bilgiler; işletim sistemi sürümünüz, tarayıcı türünüz, Pulsar’deki aktiviteleriniz vb. olabilir."
+misskeyUpdated: "Pulsar güncellendi!"
+didYouLikeMisskey: "Pulsar’i beğendiniz mi?"
+pleaseDonate: "{host}, Pulsar açık kaynak yazılımını kullanmaktadır. Pulsar'in gelişiminin devamı için bağışlarınızı memnuniyetle kabul ederiz!"
+goToMisskey: "Pulsar’e git"
+repositoryUrlDescription: "Eğer kaynak kodun halka açık olduğu bir depo varsa URL’sini girin. Pulsar’i olduğu gibi kullanıyorsanız (kaynakta değişiklik yapmadan) şu adresi girin: https://code.nexirift.com/Nexirift/pulsar."
+_initialAccountSetting:
+  youCanContinueTutorial: "{name} (Pulsar) kullanımına dair eğitime devam edebilir veya buradan çıkıp doğrudan kullanmaya başlayabilirsiniz."
+_initialTutorial:
+  _landing:
+    description: "Burada Pulsar’i ve özelliklerini kullanmanın temellerini öğrenebilirsiniz."
+  _note:
+    description: "Pulsar’deki gönderilere 'Not' denir. Notlar, zaman tünelinde kronolojik olarak sıralanır ve gerçek zamanlı olarak güncellenir."
+  _timeline:
+    description1: "Pulsar, kullanım amacına göre birden fazla zaman tüneli sunar (bazıları sunucu politikalarına bağlı olarak mevcut olmayabilir)."
+  _postNote:
+    description1: "Pulsar’de not gönderirken çeşitli seçenekler mevcuttur. Gönderi formu şu şekildedir."
+  _done:
+    description: "Burada tanıtılan özellikler sadece küçük bir kısmıdır. Pulsar’i daha detaylı öğrenmek için {link} adresine göz atabilirsiniz."
+_accountMigration:
+  moveAccountDescription: "Hesabınızı başka bir hesaba taşıyacaktır.\n　・Bu hesaptaki takipçiler otomatik olarak yeni hesaba taşınır\n　・Bu hesap şu anda takip ettiği tüm kullanıcıları takipten çıkarır\n　・Bu hesapla yeni not vb. oluşturamazsınız\n\nTakipçilerin taşınması otomatik olsa da, takip ettiğiniz kullanıcıların listesini taşımak için bazı adımları manuel olarak hazırlamanız gerekir. Bunun için ayarlardan takip edilenleri dışa aktarın ve yeni hesabınıza içe aktarın. Aynı prosedür listeleriniz, sessize alınanlar ve engellenen kullanıcılar için de geçerlidir.\n\n(Bu açıklama Pulsar v13.12.0 ve sonrası için geçerlidir. Mastodon gibi diğer ActivityPub yazılımlarında işleyiş farklı olabilir.)"
+_achievements:
+  _types:
+    _notes1:
+      flavor: "Pulsar ile iyi eğlenceler!"
+    _login1000:
+      flavor: "Pulsar’i kullandığınız için teşekkürler!"
+    _iLoveMisskey:
+      title: "I Love Pulsar"
+      description: "\"I ❤ #Pulsar\" gönder"
+      flavor: "Pulsar geliştirme ekibi desteğiniz için minnettar!"
+    _client30min:
+      description: "Pulsar’i en az 30 dakika açık tut"
+    _client60min:
+      title: "No \"Miss\" in Pulsar"
+      description: "Pulsar’i en az 60 dakika açık tut"
+    _brainDiver:
+      flavor: "Pulsar-Pulsar La-Tu-Ma"
+    _tutorialCompleted:
+      title: "Pulsar Temel Kurs Diploması"
+_aboutMisskey:
+  about: "Pulsar, 2014’ten beri syuilo tarafından geliştirilen Misskey tabanlı açık kaynaklı bir yazılımdır."
+  original_Pulsar: "Pulsar orijinal"
+  thisIsModifiedVersion: "{name}, orijinal Pulsar’in değiştirilmiş bir sürümünü kullanıyor."
+  translation: "Pulsar’i çevir"
+  donate_Pulsar: "Pulsar’e bağış yap"
+_soundSettings:
+  driveFileDurationWarnDescription: "Uzun ses dosyaları Pulsar kullanımını bozabilir. Yine de devam edilsin mi?"
+_mfm:
+  intro: "MFM; Misskey, Pulsar, Firefish, Akkoma ve daha birçok yerde kullanılan bir biçimlendirme dilidir. Birçok yerde kullanılabilir. Burada mevcut tüm MFM sözdizimlerinin listesini görebilirsiniz."
+  dummy: "Pulsar, Fediverse dünyasını genişletir"
+_urlPreviewSetting:
+  summaryProxyDescription: "Önizlemeleri Pulsar yerine Summaly Proxy kullanarak oluşturur."
+robotsTxtDescription: "Buraya eklenen girdiler, Pulsar ile gelen varsayılan robots.txt dosyasını geçersiz kılar."

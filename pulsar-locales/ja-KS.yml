@@ -1,0 +1,45 @@
+---
+introMisskey: "ようお越し！Pulsarは、オープンソースの分散型マイクロブログサービスやねん。\n「ノート」を作って、いま起こっとることを共有したり、あんたについて皆に発信しよう📡\n「ツッコミ」機能で、皆のノートに素早く反応を追加したりもできるで✌\nほな、新しい世界を探検しよか🚀"
+poweredByMisskeyDescription: "{name}は、オープンソースのプラットフォーム<b>Pulsar</b>のサーバーのひとつなんやで。"
+flagAsBotDescription: "もしこのアカウントをプログラム使うて運用するんやったら、このフラグをオンにしてや。オンにすれば、反応がバーッて連鎖せんように開発者が使うたり、Pulsarのシステム上での扱いがBotに合ったもんになるからな。"
+intro: "Pulsarのインストールが完了したで！管理者アカウントを作ってや。"
+aboutMisskey: "Pulsarってなんや？"
+useSoundOnlyWhenActive: "Pulsarがアクティブなときだけ音出す"
+scratchpadDescription: "スクラッチパッドではAiScriptを色々試すことができるんや。Pulsarに対して色々できるコードを書いて動かしてみたり、結果を見たりできるで。"
+sendErrorReportsDescription: "オンにしたら、なんか変なことが起きたとき、詳しいのが全部Pulsarに送られて、ソフトウェアをもっと良うするで。エラー情報には、OSのバージョン、ブラウザの種類、行動履歴なんかが含まれるな。"
+misskeyUpdated: "Pulsarが更新されたで！\nモデレーターの人らに感謝せなあかんで"
+didYouLikeMisskey: "Pulsar気に入ってくれた？"
+pleaseDonate: "Pulsarは{host}が使うとる無料のソフトウェアやで。これからも開発を続けれるように、寄付したってな～。"
+goToMisskey: "Pulsarへ"
+_initialAccountSetting:
+  youCanContinueTutorial: "こんまま{name}(Pulsar)の使い方のチュートリアルにも行けるけど、ここでやめてすぐに使い始めてもええで。"
+_initialTutorial:
+  _landing:
+    description: "ここでは、Pulsarのカンタンな使い方とか機能を確かめれんで。"
+  _note:
+    description: "Pulsarでの投稿は「ノート」って呼ばれてんで。ノートは順々にタイムラインに載ってて、リアルタイムで新しくなってってんで。"
+  _timeline:
+    description1: "Pulsarには、いろいろタイムラインがあんで（ただ、サーバーによっては無効化されてるところもあるな）。"
+  _postNote:
+    description1: "Pulsarにノートを投稿するとき、いろんなオプションが付けれるで。投稿画面はこんな感じや。"
+_achievements:
+  _types:
+    _notes1:
+      flavor: "Pulsarを楽しんでな～"
+    _login1000:
+      flavor: "Pulsarようさん使てもろておおきにな！"
+    _iLoveMisskey:
+      title: "Pulsar好きやねん"
+      description: "\"I ❤ #Pulsar\"を投稿した"
+      flavor: "Pulsarを使ってくれておおきにな～ by 開発チーム"
+    _client60min:
+      title: "Pulsarの見過ぎや！"
+    _tutorialCompleted:
+      title: "Pulsarひよっこ講座 修了証"
+_aboutMisskey:
+  about: "Pulsarは、Misskeyをベースにしたオープンソースなソフトウェアや。"
+  thisIsModifiedVersion: "{name}はオリジナルのPulsarをいじったバージョンをつこうてるで。"
+  translation: "Pulsarを翻訳"
+  donate: "Pulsarに寄付"
+_soundSettings:
+  driveFileDurationWarnDescription: "長い音使うたらPulsar使うのに良うないかもしれへんで。それでもええか？"
