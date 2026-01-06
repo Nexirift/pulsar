@@ -23,7 +23,9 @@
 		"lint": "pnpm typecheck && pnpm eslint",
 		"jest": "node --no-experimental-require-module --experimental-vm-modules --experimental-import-meta-resolve node_modules/jest/bin/jest.js --coverage --detectOpenHandles",
 		"test": "pnpm jest && pnpm tsd",
-		"update-autogen-code": "pnpm --filter misskey-js-type-generator generate && ncp generator/built/autogen src/autogen"
+		"update-autogen-code": "pnpm --filter misskey-js-type-generator generate && ncp generator/built/autogen src/autogen",
+		"prepublishOnly": "pnpm pkg set name=@nexirift/pulsar-js",
+		"postpublish": "pnpm pkg set name=misskey-js"
 	},
 	"repository": {
 		"type": "git",
@@ -41,10 +43,10 @@
 		"jest": "30.2.0",
 		"jest-fetch-mock": "3.0.3",
 		"jest-websocket-mock": "2.5.0",
-		"ts-jest": "29.4.6",
-		"ts-node": "10.9.2",
 		"mock-socket": "9.3.1",
 		"ncp": "2.0.0",
+		"ts-jest": "29.4.6",
+		"ts-node": "10.9.2",
 		"tsd": "0.33.0",
 		"typescript": "5.9.3"
 	},
@@ -54,5 +56,8 @@
 	"dependencies": {
 		"eventemitter3": "5.0.1",
 		"reconnecting-websocket": "4.4.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }
