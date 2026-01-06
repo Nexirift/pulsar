@@ -1,103 +1,67 @@
-# Nexirift Pulsar
+**🌎 **Pulsar** is an open source, decentralized social media platform that's free forever! 🚀**
 
-Nexirift Pulsar is a fork of Sharkey. Our main goal is to implement features that our users want.
+We aim to provide a community-oriented experience for our social media platform, [Nexirift](https://nexirift.com).
 
-## Changes
+### Notice
 
-- Bottom navigation bar customisation
-	- Post button now floats (hides in a chat)
-- Fixed random "test" notification
-- Requires adminstrator to view emails
-- New "Combined" profile view
-	- Has pinned posts, posts (no replies), and boosts
-- Chat shown in navbar by default
-	- On both the desktop and mobile ones
-- Allow timeline tabs to be customised
-	- Show or hide labels for all tabs
-- Post form textarea resizes automatically
-- Added a toggle for the widgets sidebar
-- Fix revoked shared tokens causing an error
-- Fix users not showing up in some searches
-- Add a thumb-friendly account switcher (turtkey)
-- Add new role policies for:
+GitHub is NOT the official place to contribute correctly. Please visit our own instance at [code.nexirift.com/Nexirift/pulsar](https://code.nexirift.com/Nexirift/pulsar). Issues and pull requests are still accepted on GitHub but we highly advise you to not do that as this may change in the future.
+
+---
+
+## ✨ Changes
+
+- 🎨 Bottom navigation bar customisation
+  - Post button now floats (hides in a chat)
+- 🐛 Fixed random "test" notification
+- 🔒 Requires adminstrator to view emails
+- 📊 New "Combined" profile view
+  - Has pinned posts, posts (no replies), and boosts
+- 💬 Chat shown in navbar by default
+  - On both the desktop and mobile ones
+- ⚙️ Allow timeline tabs to be customised
+  - Show or hide labels for all tabs
+- 📝 Post form textarea resizes automatically
+- 🎛️ Added a toggle for the widgets sidebar
+- 🐛 Fixed revoked shared tokens causing an error
+- 🐛 Fixed users not showing up in some searches
+- 📱 Added a thumb-friendly account switcher (turtkey)
+- 👮 Added new role policies for:
   - Maximum number of poll choices
   - Maximum number of attachments per note
   - Maximum note length
   - Maximum content warning length
-- Add an adults only toggle with age gating (no ID verification!!)
+- 🔞 Added an adults only toggle with age gating (no ID verification!!)
   - Toggle for moderators to force it upon users
   - Toggle in timeline for showing and hiding that content
   - Toggle in preferences to show and hide profiles
-- Add a toggle for moderation inactivity detection
-- Support for ALTCHA captcha services
+- 🚨 Add a toggle for moderation inactivity detection
+- 🤖 Support for ALTCHA captcha services
   - Sentinel (untested) and custom supported
-    - Requires { verified: true/false } on custom verify endpoints
-- Fixed preferences profile when nothing is backed up
+  - Requires { verified: true/false } on custom verify endpoints
+- 🐛 Fixed preferences profile when nothing is backed up
   - Also fixed the locale string missing
-- Apply better defaults for users coming from other sites
+- ⭐ Applied better defaults for users coming from other sites
   - Post form is shown on timeline by default
   - Widgets are hidden with the toggle visible on the sidebar
-- Misskey locale fallback is now en-US and then ja-JP
-- Allow users to create new preference profiles
-- Added a shake mechanic to the bubble game for fun :)
-- Add a GIF picker powered by the Tenor API
-- Customise (show/hide) posting form buttons
-- Option to merge quote and boost buttons
-- Fixed the queues not working and added an endpoint to update stuck counts
-- Add an option to show link previews in posting form
-
-# Sharkey README
-
-<div align="center">
-<a href="https://joinsharkey.org/">
-	<img src="https://activitypub.software/TransFem-org/Sharkey/-/raw/develop/packages/frontend/assets/sharkey.svg" alt="Sharkey logo" style="border-radius:50%" width="300"/>
-</a>
-
-**🌎 **[Sharkey](https://joinsharkey.org/)** is an open source, decentralized social media platform that's free forever! 🚀**
-
----
-
-<a href="https://docs.joinsharkey.org/docs/install/fresh/">
-		<img src="https://custom-icon-badges.herokuapp.com/badge/create_an-instance-FBD53C?logoColor=FBD53C&style=for-the-badge&logo=server&labelColor=363B40" alt="create an instance"/></a>
-
-<a href="./CONTRIBUTING.Sharkey.md">
-		<img src="https://custom-icon-badges.herokuapp.com/badge/become_a-contributor-A371F7?logoColor=A371F7&style=for-the-badge&logo=git-merge&labelColor=363B40" alt="become a contributor"/></a>
-
-<a href="https://discord.gg/6VgKmEqHNk">
-		<img src="https://custom-icon-badges.herokuapp.com/badge/join_the-community-5865F2?logoColor=5865F2&style=for-the-badge&logo=discord&labelColor=363B40" alt="join the community"/></a>
-
-<a href="https://opencollective.com/sharkey">
-		<img src="https://custom-icon-badges.herokuapp.com/badge/donate-81ACF4?logoColor=81ACF4&style=for-the-badge&logo=opencollective&labelColor=363B40" alt="donate"/></a>
-
----
-
-</div>
-
-<div>
-
-<a href="https://joinsharkey.org/"><img src="assets/sharkey.webp" align="right" height="520px"/></a>
-
-## ✨ Features
-- **ActivityPub support**\
-Not on Sharkey? No problem! Not only can Sharkey instances talk to each other, but you can make friends with people on other networks like Mastodon and Pixelfed!
-- **Federated Backgrounds and Music status**\
-You can add a background to your profile as well as a music status via ListenBrainz, show everyone what music you are currently listening to
-- **Mastodon API**\
-Sharkey implements the Mastodon API unlike normal Misskey
-- **UI/UX Improvements**\
-Sharkey makes some UI/UX improvements to make it easier to navigate
-- **Sign-Up Approval**\
-With Sharkey, you can enable sign-ups, subject to manual moderator approval and mandatory user-provided reasons for joining.
-- **Rich Web UI**\
-       Sharkey has a rich and easy to use Web UI!
-       It is highly customizable, from changing the layout and adding widgets to making custom themes.
-       Furthermore, plugins can be created using AiScript, an original programming language.
-- And much more...
-
-</div>
-
-<div style="clear: both;"></div>
+  - Replies are hidden in the timeline by default
+- 🌐 Misskey locale fallback is now en-US and then ja-JP
+- 👤 Allow users to create new preference profiles
+- 🎮 Added a shake mechanic to the bubble game for fun :)
+- 🎬 Added a GIF picker powered by the Tenor API
+- 🎨 Customise (show/hide) posting form buttons
+- 🔗 Option to merge quote and boost buttons
+- 🐛 Fixed the queues not working and added an endpoint to update stuck counts
+- 🔗 Added an option to show link previews in posting form
+- 📜 Scrollbars added on sign up and sign in dialogs
 
 ## Documentation
 
-Sharkey Documentation can be found at [Sharkey Documentation](https://docs.joinsharkey.org/docs/install/fresh/)
+Sharkey (not Pulsar) Documentation can be found at [Sharkey Documentation](https://docs.joinsharkey.org/docs/install/fresh/). 99% of the instructions, guides, information, etc. is the same or similar. Subsitute Sharkey for Pulsar in references like the Docker Compose file.
+
+## Acknowledgements
+
+Pulsar would never exist without the amazing contributors working on both [Sharkey](https://activitypub.software/TransFem-org/Sharkey) and [Misskey](https://github.com/misskey-dev/misskey).
+
+Please consider donating to them by visting their respective donation pages -> [Sharkey](https://opencollective.com/sharkey) and [Misskey](https://misskey-hub.net/en/docs/donate).
+
+If you donate to Nexirift, we plan to donate a portion to Sharkey and Misskey after we cover our bills.
