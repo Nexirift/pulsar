@@ -61,7 +61,7 @@ function onLogin(res: Misskey.entities.SigninFlowResponse & { finished: true }) 
 
 <style lang="scss" module>
 .root {
-	overflow: auto;
+	overflow: hidden;
 	margin: auto;
 	position: relative;
 	width: 100%;
@@ -71,6 +71,8 @@ function onLogin(res: Misskey.entities.SigninFlowResponse & { finished: true }) 
 	box-sizing: border-box;
 	background: var(--MI_THEME-panel);
 	border-radius: var(--MI-radius);
+	display: flex;
+	flex-direction: column;
 }
 
 .header {
@@ -86,6 +88,7 @@ function onLogin(res: Misskey.entities.SigninFlowResponse & { finished: true }) 
 	backdrop-filter: var(--MI-blur, blur(15px));
 	background: color(from var(--MI_THEME-bg) srgb r g b / 0.5);
 	z-index: 1;
+	flex-shrink: 0;
 }
 
 .headerText {
@@ -103,5 +106,7 @@ function onLogin(res: Misskey.entities.SigninFlowResponse & { finished: true }) 
 .content {
 	padding: 32px;
 	box-sizing: border-box;
+	overflow-y: auto;
+	flex: 1;
 }
 </style>

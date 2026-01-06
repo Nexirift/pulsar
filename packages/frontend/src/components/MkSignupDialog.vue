@@ -13,7 +13,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 >
 	<template #header>{{ i18n.ts.signup }}</template>
 
-	<div style="overflow-x: clip;">
+	<div :class="$style.content">
 		<Transition
 			mode="out-in"
 			:enterActiveClass="$style.transition_x_enterActive"
@@ -76,6 +76,11 @@ function onApprovalPending() {
 </script>
 
 <style lang="scss" module>
+.content {
+	overflow-x: clip;
+	height: 100%;
+}
+
 .transition_x_enterActive,
 .transition_x_leaveActive {
 	transition: opacity 0.3s cubic-bezier(0,0,.35,1), transform 0.3s cubic-bezier(0,0,.35,1);
