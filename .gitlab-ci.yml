@@ -169,6 +169,7 @@ frontend_tests:
         - 'eslint/**/*'
         - 'locales/**/*'
         - 'sharkey-locales/**/*'
+        - 'pulsar-locales/**/*'
         - 'cypress/**/*'
         - 'assets/**/*'
 

@@ -1,6 +1,6 @@
 services:
   web:
-#   image: registry.activitypub.software/transfem-org/sharkey:latest
+#   image: code.nexirift.com/nexirift/pulsar:latest
     build: .
     restart: always
     links:
@@ -22,8 +22,8 @@ services:
     environment:
       - NODE_OPTIONS="--max-old-space-size=8192"
     volumes:
-      - ./files:/sharkey/files
-      - ./.config:/sharkey/.config:ro
+      - ./files:/pulsar/files
+      - ./.config:/pulsar/.config:ro
 
   redis:
     restart: always

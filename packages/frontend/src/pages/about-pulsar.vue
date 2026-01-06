@@ -28,10 +28,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<div v-if="$i != null" style="text-align: center;">
 					<MkButton primary rounded inline @click="iLoveMisskey">I <Mfm text="$[jelly ❤]"/> #Pulsar</MkButton>
 				</div>
-				<FormSection v-if="instance.repositoryUrl !== 'https://github.com/Nexirift/pulsar'">
+				<FormSection v-if="instance.repositoryUrl !== 'https://code.nexirift.com/Nexirift/pulsar'">
 					<div class="_gaps_s">
 						<MkInfo>
-							{{ i18n.tsx._aboutMisskey.thisIsModifiedVersion({ name: instance.name ?? '' }) }}
+							{{ i18n.tsx._aboutMisskey.thisIsModifiedVersion({ name: instance.name ?? instanceHost }) }}
 						</MkInfo>
 						<FormLink v-if="instance.repositoryUrl" :to="instance.repositoryUrl" external>
 							<template #icon><i class="ti ti-code"></i></template>
@@ -50,7 +50,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 				<FormSection>
 					<div class="_gaps_s">
-						<FormLink to="https://github.com/Nexirift/pulsar" external>
+						<FormLink to="https://code.nexirift.com/Nexirift/pulsar" external>
 							<template #icon><i class="ph-code ph-bold ph-lg"></i></template>
 							{{ i18n.ts._aboutMisskey.source }} (Pulsar)
 							<template #suffix>GitHub</template>
@@ -132,6 +132,8 @@ type Section = {
 	}[],
 };
 
+const instanceHost = new URL(instance.uri).host;
+
 const thereIsTreasure = ref($i && !claimedAchievements.includes('foundTreasure'));
 
 let easterEggReady = false;
@@ -147,7 +149,7 @@ const everyone = ref<Section[]>([
 		heading: i18n.ts._aboutMisskey.projectMembers + " (Pulsar)",
 		link: {
 			label: i18n.ts._aboutMisskey.allContributors,
-			url: 'https://github.com/Nexirift/pulsar/graphs/contributors',
+			url: 'https://code.nexirift.com/Nexirift/pulsargraphs/contributors',
 		},
 		people: fisher_yates([
 			{

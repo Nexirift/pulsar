@@ -475,14 +475,14 @@ export class MiMeta {
 
 	@Column('varchar', {
 		length: 1024,
-		default: 'https://github.com/Nexirift/pulsar',
+		default: 'https://code.nexirift.com/Nexirift/pulsar',
 		nullable: true,
 	})
 	public repositoryUrl: string | null;
 
 	@Column('varchar', {
 		length: 1024,
-		default: 'https://github.com/Nexirift/pulsar/issues/new',
+		default: 'https://code.nexirift.com/Nexirift/pulsar/issues/new',
 		nullable: true,
 	})
 	public feedbackUrl: string | null;
