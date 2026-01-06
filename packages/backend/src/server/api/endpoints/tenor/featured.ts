@@ -77,7 +77,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			try {
 				const url = new URL('https://tenor.googleapis.com/v2/featured');
 				url.searchParams.set('key', instance.tenorApiKey);
-				url.searchParams.set('client_key', 'sharkey');
+				url.searchParams.set('client_key', 'pulsar');
 				url.searchParams.set('limit', ps.limit.toString());
 				url.searchParams.set('media_filter', 'gif,tinygif');
 				if (ps.pos) {

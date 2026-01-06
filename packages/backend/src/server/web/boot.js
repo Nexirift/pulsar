@@ -86,7 +86,7 @@
 
 	//#region Theme
 	const theme = localStorage.getItem('theme');
-	const themeFontFaceName = 'sharkey-theme-font-face';
+	const themeFontFaceName = 'pulsar-theme-font-face';
 	if (theme) {
 		let existingFontFace;
 		document.fonts.forEach((v) => { if (v.family === themeFontFaceName) existingFontFace = v;});
@@ -249,7 +249,7 @@
 			font-family: BIZ UDGothic, Roboto, HelveticaNeue, Arial, sans-serif;
 		}
 
-		#sharkey_app,
+		#pulsar_app,
 		#splash {
 			display: none !important;
 		}

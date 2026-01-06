@@ -33,5 +33,5 @@ export default async function build() {
 
 	await mkdirPromise;
 
-	pack.pipe(createWriteStream(resolve(cwd, 'built', 'tarball', `sharkey-${meta.version}.tar.gz`)));
+	pack.pipe(createWriteStream(resolve(cwd, 'built', 'tarball', `pulsar-${meta.version}.tar.gz`)));
 }

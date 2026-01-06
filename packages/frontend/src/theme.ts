@@ -90,7 +90,7 @@ export async function removeTheme(theme: Theme): Promise<void> {
 	prefer.commit('themes', themes);
 }
 
-const themeFontFaceName = 'sharkey-theme-font-face';
+const themeFontFaceName = 'pulsar-theme-font-face';
 
 let timeout: number | null = null;
 

@@ -34,18 +34,16 @@ const themeColor = chalk.hex('#86b300');
 function greet(logger: Logger, bootLogger: Logger, envOption: EnvOption) {
 	if (!envOption.quiet) {
 		//#region Misskey logo
-		logger.info(themeColor(' _____ _                _              '));
-		logger.info(themeColor('/  ___| |              | |             '));
-		logger.info(themeColor('\\ `--.| |__   __ _ _ __| | _____ _   _ '));
-		logger.info(themeColor(' `--. \\ \'_ \\ / _` | \'__| |/ / _ \\ | | |'));
-		logger.info(themeColor('/\\__/ / | | | (_| | |  |   <  __/ |_| |'));
-		logger.info(themeColor('\\____/|_| |_|\\__,_|_|  |_|\\_\\___|\\__, |'));
-		logger.info(themeColor('                                  __/ |'));
-		logger.info(themeColor('                                 |___/ '));
+		logger.info(themeColor('  ______   __  __     __         ______     ______     ______   '));
+		logger.info(themeColor(' /\\  == \\ /\\ \\/\\ \\   /\\ \\       /\\  ___\\   /\\  __ \\   /\\  == \\  '));
+		logger.info(themeColor(' \\ \\  _-/ \\ \\ \\_\\ \\  \\ \\ \\____  \\ \\___  \\  \\ \\  __ \\  \\ \\  __<  '));
+		logger.info(themeColor('  \\ \\_\\    \\ \\_____\\  \\ \\_____\\  \\/\\_____\\  \\ \\_\\ \\_\\  \\ \\_\\ \\_\\'));
+		logger.info(themeColor('   \\/_/     \\/_____/   \\/_____/   \\/_____/   \\/_/\\/_/   \\/_/ /_/'));
+		logger.info('');
 		//#endregion
 
 		logger.info(' Pulsar is an open-source decentralized microblogging platform.');
-		logger.info(chalk.rgb(255, 136, 0)(' Pulsar is built on Sharkey. If you like Sharkey, please donate to support development. https://opencollective.com/sharkey'));
+		logger.info(chalk.rgb(255, 136, 0)(' Pulsar is built on Sharkey. If you like Pulsar, please donate to support Sharkey\'s development. https://opencollective.com/sharkey'));
 
 		logger.info('');
 		logger.info(chalkTemplate`--- ${os.hostname()} {gray (PID: ${process.pid.toString()})} ---`);

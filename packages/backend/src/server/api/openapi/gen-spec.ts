@@ -14,12 +14,12 @@ export function genOpenapiSpec(config: Config, includeSelfRef = false) {
 
 		info: {
 			version: config.version,
-			title: 'Misskey API',
+			title: 'Pulssar API',
 		},
 
 		externalDocs: {
 			description: 'Repository',
-			url: 'https://activitypub.software/TransFem-org/Sharkey',
+			url: 'https://code.nexirift.com/Nexirift/pulsar',
 		},
 
 		servers: [{

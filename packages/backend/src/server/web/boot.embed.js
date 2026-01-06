@@ -126,7 +126,7 @@
 			<div>${reload}</div>
 		</button>`;
 		addStyle(`
-		#sharkey_app,
+		#pulsar_app,
 		#splash {
 			display: none !important;
 		}
