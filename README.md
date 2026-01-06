@@ -1,4 +1,6 @@
-**🌎 **Pulsar** is an open source, decentralized social media platform that's free forever! 🚀**
+# Pulsar
+
+Pulsar is an open source, decentralized social media platform that's free forever! 🚀
 
 We aim to provide a community-oriented experience for our social media platform, [Nexirift](https://nexirift.com).
 
