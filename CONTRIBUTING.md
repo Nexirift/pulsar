@@ -1,5 +1,5 @@
 This file is a copy of [Misskey's
-CONTRIBUTING.md](https://github.com/misskey-dev/misskey/blob/develop/CONTRIBUTING.md),
+CONTRIBUTING.md](https://github.com/misskey-dev/misskey/src/branch/develop/CONTRIBUTING.md),
 kept for compatibility. For Sharkey's contribution guide, see
 [CONTRIBUTING.Sharkey.md](CONTRIBUTING.Sharkey.md).
 

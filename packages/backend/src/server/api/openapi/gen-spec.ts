@@ -97,7 +97,7 @@ export function genOpenapiSpec(config: Config, includeSelfRef = false) {
 			description: desc,
 			externalDocs: {
 				description: 'Source code',
-				url: `https://code.nexirift.com/Nexirift/pulsar/blob/main/packages/backend/src/server/api/endpoints/${endpoint.name}.ts`,
+				url: `https://code.nexirift.com/Nexirift/pulsar/src/branch/develop/packages/backend/src/server/api/endpoints/${endpoint.name}.ts`,
 			},
 			...(endpoint.meta.tags ? {
 				tags: [endpoint.meta.tags[0]],

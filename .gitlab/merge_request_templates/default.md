@@ -6,7 +6,7 @@
 %{all_commits}
 
 # **Contribution Guidelines**
-By submitting this merge request, you agree to follow our [Contribution Guidelines](https://code.nexirift.com/Nexirift/pulsar/blob/develop/CONTRIBUTING.Sharkey.md)
+By submitting this merge request, you agree to follow our [Contribution Guidelines](https://code.nexirift.com/Nexirift/pulsar/src/branch/develop/CONTRIBUTING.Sharkey.md)
 - [ ] I agree to follow this project's Contribution Guidelines
 - [ ] I have made sure to test this merge request
 

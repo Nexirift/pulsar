@@ -1,7 +1,7 @@
 <!-- 💖 Thanks for taking the time to fill out this bug report!
 💁 Having trouble with deployment? [Ask the support chat.](mailto:support@nexirift.com)
-🔒 Found a security vulnerability? [Please disclose it responsibly.](https://code.nexirift.com/Nexirift/pulsar/blob/develop/SECURITY.md)
-🤝 By submitting this feature request, you agree to follow our [Contribution Guidelines.](https://code.nexirift.com/Nexirift/pulsar/blob/develop/CONTRIBUTING.md) -->
+🔒 Found a security vulnerability? [Please disclose it responsibly.](https://code.nexirift.com/Nexirift/pulsar/src/branch/develop/SECURITY.md)
+🤝 By submitting this feature request, you agree to follow our [Contribution Guidelines.](https://code.nexirift.com/Nexirift/pulsar/src/branch/develop/CONTRIBUTING.md) -->
 
 # **What feature would you like implemented?**
 <!-- Please give us a brief description of what you'd like. -->
@@ -16,6 +16,6 @@
 <!-- What instance of Pulsar are you using? -->
 
 # **Contribution Guidelines**
-By submitting this issue, you agree to follow our [Contribution Guidelines](https://code.nexirift.com/Nexirift/pulsar/blob/develop/CONTRIBUTING.Sharkey.md)
+By submitting this issue, you agree to follow our [Contribution Guidelines](https://code.nexirift.com/Nexirift/pulsar/src/branch/develop/CONTRIBUTING.Sharkey.md)
 - [ ] I agree to follow this project's Contribution Guidelines
 - [ ] I have searched the issue tracker for similar requests, and this is not a duplicate.
