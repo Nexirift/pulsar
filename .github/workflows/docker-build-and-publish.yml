@@ -8,18 +8,13 @@ name: Docker Build and Publish
 on:
   workflow_dispatch:
   push:
-    # branches:
-    #   - main
-    #   - develop
-    #   - stable
+    branches:
+      - main
+      - develop
+      - stable
+      - ptb
     tags:
       - '*'
-  #push:
-  #  branches: [ "main" ]
-  #  # Publish semver tags as releases.
-  #  tags: [ 'v*.*.*' ]
-  #pull_request:
-  #  branches: [ "main" ]
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -47,6 +42,21 @@ jobs:
       - name: Extract version from package.json
         id: package-version
         run: echo "VERSION=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+
+      # Determine version tag based on whether this is a tag or branch push
+      - name: Determine version tag
+        id: version-tag
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            # This is a tag push - use version as-is for stable releases
+            echo "VERSION_TAG=${{ steps.package-version.outputs.VERSION }}" >> $GITHUB_OUTPUT
+            echo "IS_TAG=true" >> $GITHUB_OUTPUT
+          else
+            # This is a branch push - append git hash
+            GIT_HASH=$(git rev-parse --short HEAD)
+            echo "VERSION_TAG=${{ steps.package-version.outputs.VERSION }}-${GIT_HASH}" >> $GITHUB_OUTPUT
+            echo "IS_TAG=false" >> $GITHUB_OUTPUT
+          fi
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
@@ -80,9 +90,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ steps.package-version.outputs.VERSION }}
-            type=raw,value=main
-            type=raw,value=latest
+            type=raw,value=${{ steps.version-tag.outputs.VERSION_TAG }}
+            type=raw,value=${{ github.ref_name }},enable=${{ steps.version-tag.outputs.IS_TAG == 'false' }}
+            type=raw,value=latest,enable=${{ steps.version-tag.outputs.IS_TAG == 'true' }}
 
       # Lowercase the image name for cache reference
       - name: Set lowercase image name
