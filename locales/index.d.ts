@@ -11156,6 +11156,10 @@ export interface Locale extends ILocale {
          * Forced adults only status
          */
         "forceAdultsOnly": string;
+        /**
+         * Removed force adults only status
+         */
+        "unforceAdultsOnly": string;
     };
     "_fileViewer": {
         /**

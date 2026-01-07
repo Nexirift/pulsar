@@ -606,7 +606,7 @@ async function toggleNSFW(v) {
 async function toggleisAdultsOnlyForced(v) {
 	const confirm = await os.confirm({
 		type: 'warning',
-		text: v ? i18n.ts.nsfwConfirm : i18n.ts.unNsfwConfirm,
+		text: v ? i18n.ts.forceAdultsOnlyConfirm : i18n.ts.unforceAdultsOnlyConfirm,
 	});
 	if (confirm.canceled) {
 		isAdultsOnlyForced.value = !v;

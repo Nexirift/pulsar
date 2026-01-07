@@ -133,6 +133,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-else-if="log.type === 'removeRelay'">: {{ log.info.inbox }}</span>
 		<span v-else-if="log.type === 'restartMigration'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
 		<span v-else-if="log.type === 'forceAdultsOnly'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
+		<span v-else-if="log.type === 'unforceAdultsOnly'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
 	</template>
 	<template #icon>
 		<i v-if="log.type === 'updateServerSettings'" class="ti ti-settings"></i>
@@ -178,7 +179,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="log.type === 'deleteGalleryPost'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'deleteChatRoom'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'restartMigration'" class="ph-airplane-takeoff ph-bold ph-lg"></i>
-		<span v-else-if="log.type === 'forceAdultsOnly'">🔞</span>
+		<span v-else-if="log.type === 'forceAdultsOnly' || log.type === 'unforceAdultsOnly'">🔞</span>
 	</template>
 	<template #suffix>
 		<MkTime :time="log.createdAt"/>

@@ -120,6 +120,7 @@ _soundSettings:
   driveFileDurationWarnDescription: "Long audio may disrupt using Pulsar. Still continue?"
 _moderationLogTypes:
   forceAdultsOnly: "Forced adults only status"
+  unforceAdultsOnly: "Removed force adults only status"
 _mfm:
   intro: "MFM is a markup language used on Misskey, Pulsar, Firefish, Akkoma, and more that can be used in many places. Here you can view a list of all available MFM syntax."
   dummy: "Pulsar expands the world of the Fediverse"
