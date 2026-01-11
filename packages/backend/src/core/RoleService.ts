@@ -84,6 +84,7 @@ export type RolePolicies = {
 	chatAvailability: 'available' | 'readonly' | 'unavailable';
 	canTrend: boolean;
 	canViewFederation: boolean;
+	canCreateApp: 'anonymous' | 'loggedIn' | 'disabled';
 };
 
 export const DEFAULT_POLICIES: RolePolicies = {
@@ -129,6 +130,7 @@ export const DEFAULT_POLICIES: RolePolicies = {
 	chatAvailability: 'available',
 	canTrend: true,
 	canViewFederation: true,
+	canCreateApp: 'anonymous',
 };
 
 // TODO cache sync fixes (and maybe events too?)
@@ -184,6 +186,7 @@ const DefaultPoliciesSchema: JSONSchemaType<RolePolicies> = {
 		chatAvailability: { type: 'string', enum: ['available', 'readonly', 'unavailable'] },
 		canTrend: { type: 'boolean' },
 		canViewFederation: { type: 'boolean' },
+		canCreateApp: { type: 'string', enum: ['anonymous', 'loggedIn', 'disabled'] },
 	},
 };
 
@@ -196,23 +199,23 @@ const RoleSchema: JSONSchemaType<MiRole['policies']> = {
 			(
 				// I picked `canTrend` here, but any policy name is fine, the
 				// type of their bit of the schema is all the same
-				[policy, value]: [string, JSONSchemaType<RolePolicies>['properties']['canTrend']]
+				[policy, value]: [string, JSONSchemaType<RolePolicies>['properties']['canTrend']],
 			) => [
-					policy,
-					{
-						type: 'object',
-						additionalProperties: false,
-						// we can't require `value` because the MiRole says `value:
-						// any` which includes undefined, so technically `value` is
-						// not really required
-						required: ['priority', 'useDefault'],
-						properties: {
-							priority: { type: 'integer', minimum: 0, maximum: 2 },
-							useDefault: { type: 'boolean' },
-							value,
-						},
+				policy,
+				{
+					type: 'object',
+					additionalProperties: false,
+					// we can't require `value` because the MiRole says `value:
+					// any` which includes undefined, so technically `value` is
+					// not really required
+					required: ['priority', 'useDefault'],
+					properties: {
+						priority: { type: 'integer', minimum: 0, maximum: 2 },
+						useDefault: { type: 'boolean' },
+						value,
 					},
-				],
+				},
+			],
 		),
 	),
 };
@@ -601,6 +604,16 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			return 'unavailable';
 		}
 
+		function aggregateCanCreateApp(vs: RolePolicies['canCreateApp'][]) {
+			// If any role allows creation, allow it. Otherwise fall back to base policy levels.
+			// If base is 'disabled', deny unless role explicitly allows
+			// If base is 'loggedIn', require auth but allow if user is logged in
+			// If base is 'anonymous', allow everyone
+			if (vs.some(v => v === 'anonymous')) return 'anonymous';
+			if (vs.some(v => v === 'loggedIn')) return 'loggedIn';
+			return 'disabled';
+		}
+
 		return {
 			gtlAvailable: calc('gtlAvailable', vs => vs.some(v => v === true)),
 			btlAvailable: calc('btlAvailable', vs => vs.some(v => v === true)),
@@ -644,6 +657,7 @@ export class RoleService implements OnApplicationShutdown, OnModuleInit {
 			chatAvailability: calc('chatAvailability', aggregateChatAvailability),
 			canTrend: calc('canTrend', vs => vs.some(v => v === true)),
 			canViewFederation: calc('canViewFederation', vs => vs.some(v => v === true)),
+			canCreateApp: calc('canCreateApp', aggregateCanCreateApp),
 		};
 	}
 

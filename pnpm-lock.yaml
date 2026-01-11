@@ -283,7 +283,7 @@ importers:
         specifier: 3.0.2
         version: 3.0.2
       misskey-js:
-        specifier: workspace:*
+        specifier: file:../misskey-js
         version: link:../misskey-js
       misskey-reversi:
         specifier: workspace:*
@@ -765,7 +765,7 @@ importers:
         specifier: workspace:*
         version: link:../misskey-bubble-game
       misskey-js:
-        specifier: workspace:*
+        specifier: file:../misskey-js
         version: link:../misskey-js
       misskey-reversi:
         specifier: workspace:*
@@ -1079,7 +1079,7 @@ importers:
         specifier: npm:@transfem-org/sfm-js@0.26.1
         version: '@transfem-org/sfm-js@0.26.1'
       misskey-js:
-        specifier: workspace:*
+        specifier: file:../misskey-js
         version: link:../misskey-js
       punycode.js:
         specifier: 2.3.1
@@ -1227,7 +1227,7 @@ importers:
         specifier: 0.0.1
         version: 0.0.1
       misskey-js:
-        specifier: workspace:*
+        specifier: file:../misskey-js
         version: link:../misskey-js
       vue:
         specifier: 3.5.26
@@ -1496,7 +1496,7 @@ importers:
         specifier: 6.2.2
         version: 6.2.2
       misskey-js:
-        specifier: workspace:*
+        specifier: file:../misskey-js
         version: link:../misskey-js
     devDependencies:
       '@types/node':
@@ -11599,6 +11599,9 @@ packages:
   vue-component-type-helpers@3.2.1:
     resolution: {integrity: sha512-gKV7XOkQl4urSuLHNY1tnVQf7wVgtb/mKbRyxSLWGZUY9RK7aDPhBenTjm+i8ZFe0zC2PZeHMPtOZXZfyaFOzQ==}
 
+  vue-component-type-helpers@3.2.2:
+    resolution: {integrity: sha512-x8C2nx5XlUNM0WirgfTkHjJGO/ABBxlANZDtHw2HclHtQnn+RFPTnbjMJn8jHZW4TlUam0asHcA14lf1C6Jb+A==}
+
   vue-demi@0.14.10:
     resolution: {integrity: sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==}
     engines: {node: '>=12'}
@@ -16010,7 +16013,7 @@ snapshots:
       storybook: 9.1.8(@testing-library/dom@10.4.0)(bufferutil@4.1.0)(msw@2.11.3(@types/node@22.18.1)(typescript@5.9.2))(prettier@3.6.2)(utf-8-validate@6.0.6)(vite@7.1.7(@types/node@22.18.1)(sass@1.93.2)(terser@5.44.1)(tsx@4.20.5))
       type-fest: 2.19.0
       vue: 3.5.21(typescript@5.9.2)
-      vue-component-type-helpers: 3.2.1
+      vue-component-type-helpers: 3.2.2
 
   '@stylistic/eslint-plugin@5.6.1(eslint@9.39.2)':
     dependencies:
@@ -24614,6 +24617,8 @@ snapshots:
   vue-component-type-helpers@3.0.8: {}
 
   vue-component-type-helpers@3.2.1: {}
+
+  vue-component-type-helpers@3.2.2: {}
 
   vue-demi@0.14.10(vue@3.5.21(typescript@5.9.2)):
     dependencies:

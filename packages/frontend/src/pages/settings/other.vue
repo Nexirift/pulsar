@@ -106,10 +106,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 						<MkSwitch v-model="devMode">
 							<template #label>{{ i18n.ts.devMode }}</template>
 						</MkSwitch>
+
+						<MkButton primary @click="router.push('/settings/oauth-apps')">
+							<i class="ti ti-plug"></i> {{ i18n.ts._settings.oauthApps }}
+						</MkButton>
 					</div>
 				</MkFolder>
 			</SearchMarker>
 		</div>
+
+		<hr>
 
 		<hr>
 
@@ -146,8 +152,10 @@ import { prefer } from '@/preferences.js';
 import MkRolePreview from '@/components/MkRolePreview.vue';
 import { signout } from '@/signout.js';
 import { migrateOldSettings } from '@/pref-migrate.js';
+import { useRouter } from '@/router';
 
 const $i = ensureSignin();
+const router = useRouter();
 
 const reportError = prefer.model('reportError');
 const skipNoteRender = prefer.model('skipNoteRender');

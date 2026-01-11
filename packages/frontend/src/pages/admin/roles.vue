@@ -87,6 +87,21 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</MkSelect>
 					</MkFolder>
 
+					<MkFolder v-if="matchQuery([i18n.ts._role._options.canCreateApp, 'canCreateApp'])">
+						<template #label>{{ i18n.ts._role._options.canCreateApp }}</template>
+					<template #suffix>{{ 
+						policies.canCreateApp === 'anonymous' ? i18n.ts.all :
+						policies.canCreateApp === 'loggedIn' ? i18n.ts.loggedInOnly :
+						i18n.ts.disabled
+					}}</template>
+					<MkSelect v-model="policies.canCreateApp">
+						<template #label>{{ i18n.ts.permission }}</template>
+						<option value="anonymous">{{ i18n.ts.all }}</option>
+						<option value="loggedIn">{{ i18n.ts.loggedInOnly }}</option>
+						<option value="disabled">{{ i18n.ts.disabled }}</option>
+					</MkSelect>
+					</MkFolder>
+
 					<MkFolder v-if="matchQuery([i18n.ts._role._options.mentionMax, 'mentionLimit'])">
 						<template #label>{{ i18n.ts._role._options.mentionMax }}</template>
 						<template #suffix>{{ policies.mentionLimit }}</template>

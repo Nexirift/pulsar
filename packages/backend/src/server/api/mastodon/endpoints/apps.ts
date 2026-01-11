@@ -92,23 +92,32 @@ export class ApiAppsMastodon {
 				}
 			}
 
-			const client = this.clientService.getClient(_request);
-			const appData = await client.registerApp(body.client_name, {
-				scopes: Array.from(pushScope),
-				redirect_uri: body.redirect_uris,
-				website: body.website,
-			});
+			try {
+				const client = this.clientService.getClient(_request);
+				const appData = await client.registerApp(body.client_name, {
+					scopes: Array.from(pushScope),
+					redirect_uri: body.redirect_uris,
+					website: body.website,
+				});
 
-			const response = {
-				id: Math.floor(Math.random() * 100).toString(),
-				name: appData.name,
-				website: body.website,
-				redirect_uri: body.redirect_uris,
-				client_id: Buffer.from(appData.url || '').toString('base64'),
-				client_secret: appData.clientSecret,
-			};
+				const response = {
+					id: Math.floor(Math.random() * 100).toString(),
+					name: appData.name,
+					website: body.website,
+					redirect_uri: body.redirect_uris,
+					client_id: Buffer.from(appData.url || '').toString('base64'),
+					client_secret: appData.clientSecret,
+				};
 
-			return reply.send(response);
+				return reply.send(response);
+			} catch (error: any) {
+				// Handle permission denied errors
+				if (error?.message?.includes('permission') || error?.code === 'PERMISSION_DENIED') {
+					return reply.code(403).send({ error: 'PERMISSION_DENIED', error_description: 'You do not have permission to create an OAuth application' });
+				}
+				// Re-throw other errors
+				throw error;
+			}
 		});
 
 		fastify.get('/v1/apps/verify_credentials', async (_request, reply) => {

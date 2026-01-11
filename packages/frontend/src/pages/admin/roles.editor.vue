@@ -308,6 +308,34 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</MkFolder>
 
+				<MkFolder v-if="matchQuery([i18n.ts._role._options.canCreateApp, 'canCreateApp'])">
+					<template #label>{{ i18n.ts._role._options.canCreateApp }}</template>
+					<template #suffix>
+						<span v-if="role.policies.canCreateApp.useDefault" :class="$style.useDefaultLabel">{{ i18n.ts._role.useBaseValue }}</span>
+						<span v-else>{{ 
+							role.policies.canCreateApp.value === 'anonymous' ? i18n.ts.all :
+							role.policies.canCreateApp.value === 'loggedIn' ? i18n.ts.loggedInOnly :
+							i18n.ts.disabled
+						}}</span>
+						<span :class="$style.priorityIndicator"><i :class="getPriorityIcon(role.policies.canCreateApp)"></i></span>
+					</template>
+					<div class="_gaps">
+						<MkSwitch v-model="role.policies.canCreateApp.useDefault" :readonly="readonly">
+							<template #label>{{ i18n.ts._role.useBaseValue }}</template>
+						</MkSwitch>
+						<MkSelect v-model="role.policies.canCreateApp.value" :disabled="role.policies.canCreateApp.useDefault" :readonly="readonly">
+							<template #label>{{ i18n.ts.permission }}</template>
+							<option value="anonymous">{{ i18n.ts.all }}</option>
+							<option value="loggedIn">{{ i18n.ts.loggedInOnly }}</option>
+							<option value="disabled">{{ i18n.ts.disabled }}</option>
+						</MkSelect>
+						<MkRange v-model="role.policies.canCreateApp.priority" :min="0" :max="2" :step="1" easing
+							:textConverter="(v) => v === 0 ? i18n.ts._role._priority.low : v === 1 ? i18n.ts._role._priority.middle : v === 2 ? i18n.ts._role._priority.high : ''">
+							<template #label>{{ i18n.ts._role.priority }}</template>
+						</MkRange>
+					</div>
+				</MkFolder>
+
 				<MkFolder v-if="matchQuery([i18n.ts._role._options.mentionMax, 'mentionLimit'])">
 					<template #label>{{ i18n.ts._role._options.mentionMax }}</template>
 					<template #suffix>

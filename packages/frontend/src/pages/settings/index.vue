@@ -140,11 +140,11 @@ const menuDef = computed<SuperMenuDef[]>(() => [{
 		to: '/settings/mute-block',
 		active: currentPage.value?.route.name === 'mute-block',
 	}, {
-		icon: 'ti ti-link',
-		text: i18n.ts._settings.serviceConnection,
-		to: '/settings/connect',
-		active: currentPage.value?.route.name === 'connect',
-	}, {
+		   icon: 'ti ti-link',
+		   text: i18n.ts._settings.serviceConnection,
+		   to: '/settings/connect',
+		   active: currentPage.value?.route.name === 'connect',
+	   }, {
 		icon: 'ti ti-package',
 		text: i18n.ts._settings.accountData,
 		to: '/settings/account-data',
