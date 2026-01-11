@@ -6,12 +6,10 @@
 import { createApp, defineAsyncComponent } from 'vue';
 import { common } from './common.js';
 import { emojiPicker } from '@/utility/emoji-picker.js';
-import { gifPicker } from '@/utility/gif-picker.js';
 import UiMinimum from '@/ui/minimum.vue';
 
 export async function subBoot() {
 	const { isClientUpdated } = await common(async () => createApp(UiMinimum));
 
 	emojiPicker.init();
-	gifPicker.init();
 }

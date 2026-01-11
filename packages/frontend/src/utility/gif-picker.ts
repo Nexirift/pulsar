@@ -11,42 +11,22 @@ import { popup } from '@/os.js';
  * GIF ピッカーを表示する
  */
 class GifPicker {
-	private src: Ref<HTMLElement | null> = ref(null);
-	private manualShowing = ref(false);
-	private onChosen?: (gifUrl: string) => void;
-	private onClosed?: () => void;
-
-	constructor() {
-		// nop
-	}
-
-	public async init() {
+	public async show(
+		src: HTMLElement,
+		onChosen?: (gifUrl: string) => void,
+		onClosed?: () => void,
+	) {
 		await popup(defineAsyncComponent(() => import('@/components/MkGifPickerDialog.vue')), {
-			src: this.src,
-			manualShowing: this.manualShowing,
+			src: ref(src),
+			manualShowing: ref(true),
 		}, {
 			done: gifUrl => {
-				if (this.onChosen) this.onChosen(gifUrl);
-			},
-			close: () => {
-				this.manualShowing.value = false;
+				if (onChosen) onChosen(gifUrl);
 			},
 			closed: () => {
-				this.src.value = null;
-				if (this.onClosed) this.onClosed();
+				if (onClosed) onClosed();
 			},
 		});
-	}
-
-	public show(
-		src: HTMLElement,
-		onChosen?: GifPicker['onChosen'],
-		onClosed?: GifPicker['onClosed'],
-	) {
-		this.src.value = src;
-		this.manualShowing.value = true;
-		this.onChosen = onChosen;
-		this.onClosed = onClosed;
 	}
 }
 
