@@ -112,8 +112,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				userId: session.userId,
 			});
 
-			// Delete session
-			await this.authSessionsRepository.delete(session.id);
+			// Don't delete session - keep it for potential reuse
+			// This prevents "NO_SUCH_SESSION" errors when users revisit auth URLs
+			// await this.authSessionsRepository.delete(session.id);
 
 			return {
 				accessToken: accessToken.token,
