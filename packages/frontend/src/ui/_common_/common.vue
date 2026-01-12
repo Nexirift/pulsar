@@ -88,6 +88,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</div>
 </SkTransitionGroup>
 
+<XOfflineBanner/>
+
 <XStreamIndicator/>
 
 <div v-if="pendingApiRequestsCount > 0" id="wait"></div>
@@ -104,6 +106,7 @@ import { defineAsyncComponent, ref, TransitionGroup } from 'vue';
 import * as Misskey from 'misskey-js';
 import { swInject } from './sw-inject.js';
 import XNotification from './notification.vue';
+import XOfflineBanner from './offline-banner.vue';
 import { popups } from '@/os.js';
 import { pendingApiRequestsCount } from '@/utility/misskey-api.js';
 import { uploads } from '@/utility/upload.js';
@@ -115,7 +118,6 @@ import { prefer } from '@/preferences.js';
 import { globalEvents } from '@/events.js';
 import XDrawerMenu from '@/ui/_common_/navbar-for-mobile.vue';
 import SkTransitionGroup from '@/components/SkTransitionGroup.vue';
-
 const XStreamIndicator = defineAsyncComponent(() => import('./stream-indicator.vue'));
 const XUpload = defineAsyncComponent(() => import('./upload.vue'));
 const SkOneko = defineAsyncComponent(() => import('@/components/SkOneko.vue'));

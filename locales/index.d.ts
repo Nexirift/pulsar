@@ -11586,6 +11586,10 @@ export interface Locale extends ILocale {
          * Unable to connect to the server
          */
         "header": string;
+        /**
+         * You are currently offline
+         */
+        "banner": string;
     };
     "_urlPreviewSetting": {
         /**

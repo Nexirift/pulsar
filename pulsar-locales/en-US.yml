@@ -138,6 +138,8 @@ _notification:
   appAuthorized: "An application was authorized"
   _types:
     appAuthorized: "You have authorized the application \"{appName}\"."
+_offlineScreen:
+  banner: "You are currently offline"
 robotsTxtDescription: "Adding entries here will override the default robots.txt packaged with Pulsar."
 gifPicker: "GIF Picker"
 enableTenor: "Enable GIF picker"

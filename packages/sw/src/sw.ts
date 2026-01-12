@@ -53,6 +53,16 @@ globalThis.addEventListener('fetch', ev => {
 	ev.respondWith(
 		fetch(ev.request)
 			.catch(async () => {
+				// Try to serve from cache first
+				const cache = await caches.open(swLang.cacheName);
+				const cachedResponse = await cache.match(ev.request);
+				
+				if (cachedResponse) {
+					// Serve cached content - the offline banner will appear in the UI
+					return cachedResponse;
+				}
+				
+				// If no cache available, show offline screen as fallback
 				const html = await offlineContentHTML();
 				return new Response(html, {
 					status: 200,
