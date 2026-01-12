@@ -26,6 +26,10 @@ export const packedAppSchema = {
 				optional: false, nullable: false,
 			},
 		},
+		clientId: {
+			type: 'string',
+			optional: false, nullable: false,
+		},
 		secret: {
 			type: 'string',
 			optional: true, nullable: false,

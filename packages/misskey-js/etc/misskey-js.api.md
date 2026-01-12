@@ -2046,6 +2046,11 @@ declare namespace entities {
         MuteListResponse,
         MyAppsRequest,
         MyAppsResponse,
+        MyAppsDeleteRequest,
+        MyAppsRotateSecretRequest,
+        MyAppsRotateSecretResponse,
+        MyAppsUpdateRequest,
+        MyAppsUpdateResponse,
         NotesRequest,
         NotesResponse,
         NotesBubbleTimelineRequest,
@@ -3190,10 +3195,25 @@ type MuteListResponse = operations['mute___list']['responses']['200']['content']
 type Muting = components['schemas']['Muting'];
 
 // @public (undocumented)
+type MyAppsDeleteRequest = operations['my___apps___delete']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
 type MyAppsRequest = operations['my___apps']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
 type MyAppsResponse = operations['my___apps']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type MyAppsRotateSecretRequest = operations['my___apps___rotate-secret']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type MyAppsRotateSecretResponse = operations['my___apps___rotate-secret']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type MyAppsUpdateRequest = operations['my___apps___update']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type MyAppsUpdateResponse = operations['my___apps___update']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type Note = components['schemas']['Note'];

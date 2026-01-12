@@ -107,6 +107,11 @@ export type MiNotification = {
 	id: string;
 	createdAt: string;
 } | {
+	type: 'appAuthorized';
+	id: string;
+	createdAt: string;
+	appName: string;
+} | {
 	type: 'app';
 	id: string;
 	createdAt: string;

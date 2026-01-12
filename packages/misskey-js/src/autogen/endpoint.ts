@@ -501,6 +501,11 @@ import type {
 	MuteListResponse,
 	MyAppsRequest,
 	MyAppsResponse,
+	MyAppsDeleteRequest,
+	MyAppsRotateSecretRequest,
+	MyAppsRotateSecretResponse,
+	MyAppsUpdateRequest,
+	MyAppsUpdateResponse,
 	NotesRequest,
 	NotesResponse,
 	NotesBubbleTimelineRequest,
@@ -1021,6 +1026,9 @@ export type Endpoints = {
 	'mute/delete': { req: MuteDeleteRequest; res: EmptyResponse };
 	'mute/list': { req: MuteListRequest; res: MuteListResponse };
 	'my/apps': { req: MyAppsRequest; res: MyAppsResponse };
+	'my/apps/delete': { req: MyAppsDeleteRequest; res: EmptyResponse };
+	'my/apps/rotate-secret': { req: MyAppsRotateSecretRequest; res: MyAppsRotateSecretResponse };
+	'my/apps/update': { req: MyAppsUpdateRequest; res: MyAppsUpdateResponse };
 	'notes': { req: NotesRequest; res: NotesResponse };
 	'notes/bubble-timeline': { req: NotesBubbleTimelineRequest; res: NotesBubbleTimelineResponse };
 	'notes/children': { req: NotesChildrenRequest; res: NotesChildrenResponse };

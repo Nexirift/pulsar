@@ -10511,6 +10511,10 @@ export interface Locale extends ILocale {
              * The import has been completed
              */
             "importCompleted": string;
+            /**
+             * You have authorized the application "{appName}"
+             */
+            "appAuthorized": ParameterizedString<"appName">;
         };
         "_actions": {
             /**
@@ -10554,6 +10558,10 @@ export interface Locale extends ILocale {
          * Shared access login
          */
         "sharedAccessLogin": string;
+        /**
+         * Application authorized
+         */
+        "appAuthorized": string;
     };
     "_deck": {
         /**
@@ -13959,6 +13967,94 @@ export interface Locale extends ILocale {
      * The GIF picker allows users to search and insert GIFs from Tenor directly into their posts. An API key is required to use this feature.
      */
     "gifPickerInfo": string;
+    /**
+     * My OAuth Apps
+     */
+    "myApps": string;
+    /**
+     * You haven't created any OAuth applications yet.
+     */
+    "noOAuthAppsCreated": string;
+    /**
+     * Create OAuth App
+     */
+    "createApp": string;
+    /**
+     * Create New OAuth App
+     */
+    "createNewApp": string;
+    /**
+     * Edit OAuth App
+     */
+    "editApp": string;
+    /**
+     * Delete OAuth App
+     */
+    "deleteApp": string;
+    /**
+     * Are you sure you want to delete "{name}"? This action cannot be undone.
+     */
+    "deleteAppConfirm": ParameterizedString<"name">;
+    /**
+     * OAuth App Created
+     */
+    "appCreated": string;
+    /**
+     * Your app "{name}" has been created successfully.
+     *
+     * Client ID:
+     * {id}
+     *
+     * Client Secret:
+     * {secret}
+     *
+     * Please save the client secret in a secure location. You will not be able to view it again.
+     */
+    "appCreatedMessage": ParameterizedString<"name" | "id" | "secret">;
+    /**
+     * Client ID
+     */
+    "clientId": string;
+    /**
+     * Client Secret
+     */
+    "clientSecret": string;
+    /**
+     * Click to Reveal
+     */
+    "clickToReveal": string;
+    /**
+     * Rotate Client Secret
+     */
+    "rotateClientSecret": string;
+    /**
+     * Are you sure you want to rotate the client secret? This will invalidate the current secret and all existing access tokens for this app. Users will need to re-authorize.
+     */
+    "rotateClientSecretConfirm": string;
+    /**
+     * Client secret rotated successfully.
+     *
+     * New secret: {secret}
+     *
+     * Please save this in a secure location.
+     */
+    "rotateClientSecretSuccess": ParameterizedString<"secret">;
+    /**
+     * Callback URL
+     */
+    "callbackUrl": string;
+    /**
+     * Revoke All Access
+     */
+    "revokeAllAccessTokensForThisApp": string;
+    /**
+     * Are you sure you want to revoke all your access tokens for this app? This will log you out from all sessions using this app.
+     */
+    "confirmRevokeAllTokensForApp": string;
+    /**
+     * Select the permissions this application needs. You can modify these later.
+     */
+    "selectPermissions": string;
 }
 declare const locales: {
     [lang: string]: Locale;

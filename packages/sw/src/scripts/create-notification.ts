@@ -236,6 +236,12 @@ async function composeNotification(data: PushNotificationDataMap[keyof PushNotif
 						data,
 					}];
 
+				case 'appAuthorized':
+					return [i18n.tsx._notification.appAuthorized({ appName: data.body.appName }), {
+						badge: iconUrl('plus'),
+						data,
+					}];
+
 				case 'app':
 					return [data.body.header ?? data.body.body, {
 						body: data.body.header ? data.body.body : '',

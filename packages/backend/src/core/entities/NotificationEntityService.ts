@@ -203,6 +203,9 @@ export class NotificationEntityService implements OnModuleInit {
 				header: notification.customHeader,
 				icon: notification.customIcon,
 			} : {}),
+			...(notification.type === 'appAuthorized' ? {
+				appName: notification.appName,
+			} : {}),
 			...(notification.type === 'sharedAccessGranted' ? {
 				permCount: notification.permCount,
 				rank: notification.rank,

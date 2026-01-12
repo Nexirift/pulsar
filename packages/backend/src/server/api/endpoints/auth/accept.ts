@@ -11,6 +11,7 @@ import { IdService } from '@/core/IdService.js';
 import { TimeService } from '@/global/TimeService.js';
 import { secureRndstr } from '@/misc/secure-rndstr.js';
 import { DI } from '@/di-symbols.js';
+import { NotificationService } from '@/core/NotificationService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -57,6 +58,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		private idService: IdService,
 		private readonly timeService: TimeService,
+		private notificationService: NotificationService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Fetch token
@@ -101,6 +103,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			await this.authSessionsRepository.update(session.id, {
 				userId: me.id,
 			});
+
+			// Get app details to send notification
+			const app = await this.appsRepository.findOneBy({ id: session.appId });
+			if (app) {
+				// Send notification to the user that they authorized an application
+				this.notificationService.createNotification(me.id, 'appAuthorized', { appName: app.name });
+			}
 		});
 	}
 }

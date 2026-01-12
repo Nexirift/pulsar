@@ -103,6 +103,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #label><SearchLabel>{{ i18n.ts.developer }}</SearchLabel></template>
 
 					<div class="_gaps_m">
+						<FormLink to="/settings/my-apps">
+							<template #icon><i class="ti ti-api"></i></template>{{ i18n.ts.myApps }}
+						</FormLink>
+
 						<MkSwitch v-model="devMode">
 							<template #label>{{ i18n.ts.devMode }}</template>
 						</MkSwitch>

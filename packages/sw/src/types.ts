@@ -40,6 +40,7 @@ export type PushNotificationDataMap = {
 export type BadgeNames =
 	| 'null'
 	| 'antenna'
+	| 'apps'
 	| 'arrow-back-up'
 	| 'at'
 	| 'bell'

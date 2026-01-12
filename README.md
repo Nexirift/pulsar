@@ -55,8 +55,11 @@ GitHub is NOT the official place to contribute correctly. Please visit our own i
 - 🐛 Fixed the queues not working and added an endpoint to update stuck counts
 - 🔗 Added an option to show link previews in posting form
 - 📜 Scrollbars added on sign up and sign in dialogs
-- 🐛 Fixed the Mastodon app sign-in flow errors
 - 🔗 Added ability to host link verification files for mobile apps
+- 🔑 OAuth applications improvements
+  - 🛠️ New OAuth applications management page for developers
+  - 🐛 Fixed the Mastodon app sign-in flow errors
+  - 🔔 Notification when an application is authorized
 
 ## Documentation
 
