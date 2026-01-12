@@ -142,25 +142,50 @@ ctx.addEventListener('push', (ev: PushEvent) => {
 		includeUncontrolled: true,
 		type: 'window',
 	}).then(async () => {
-		const data: PushNotificationDataMap[keyof PushNotificationDataMap] = ev.data?.json();
+		try {
+			if (!ev.data) {
+				console.error('Push event has no data');
+				return;
+			}
 
-		switch (data.type) {
-			// case 'driveFileCreated':
-			case 'notification':
-			case 'unreadAntennaNote':
-			case 'newChatMessage':
-				// 1日以上経過している場合は無視
-				if (Date.now() - data.dateTime > 1000 * 60 * 60 * 24) break;
+			const data: PushNotificationDataMap[keyof PushNotificationDataMap] = ev.data.json();
 
-				return createNotification(data);
-			case 'readAllNotifications':
-				await ctx.registration.getNotifications()
-					.then((notifications: Notification[]) => notifications.forEach((n: Notification) => n.tag !== 'read_notification' && n.close()));
-				break;
+			if (_DEV_) {
+				console.log('Push notification received:', data);
+			}
+
+			if (!data || !data.type) {
+				console.error('Invalid push notification data:', data);
+				return;
+			}
+
+			switch (data.type) {
+				// case 'driveFileCreated':
+				case 'notification':
+				case 'unreadAntennaNote':
+				case 'newChatMessage':
+					// 1日以上経過している場合は無視
+					if (Date.now() - data.dateTime > 1000 * 60 * 60 * 24) {
+						if (_DEV_) {
+							console.log('Ignoring old notification', data);
+						}
+						break;
+					}
+
+					return await createNotification(data);
+				case 'readAllNotifications':
+					await ctx.registration.getNotifications()
+						.then((notifications: Notification[]) => notifications.forEach((n: Notification) => n.tag !== 'read_notification' && n.close()));
+					break;
+			}
+
+			//await createEmptyNotification();
+			return;
+		} catch (error) {
+			console.error('Error processing push notification:', error);
+			// Don't show a notification if there's an error - browser will show default message
+			return;
 		}
-
-		//await createEmptyNotification();
-		return;
 	}));
 });
 
