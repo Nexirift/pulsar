@@ -34,7 +34,6 @@ html
 		link(rel='icon' href= icon || '/favicon.ico')
 		link(rel='apple-touch-icon' href= appleTouchIcon || '/apple-touch-icon.png')
 		link(rel='manifest' href='/manifest.json')
-		link(rel='serviceworker' href='/sw.js')
 		link(rel='search' type='application/opensearchdescription+xml' title=(title || "Pulsar") href=`${baseUrl}/opensearch.xml`)
 		link(rel='prefetch' href=serverErrorImageUrl)
 		link(rel='prefetch' href=infoImageUrl)
@@ -85,6 +84,42 @@ html
 
 		script
 			include ../boot.js
+
+		script.
+			// Register Service Worker
+			if ('serviceWorker' in navigator) {
+				navigator.serviceWorker.register('/sw.js', {
+					scope: '/',
+					type: 'classic',
+					updateViaCache: 'none'
+				}).then(function(registration) {
+					console.info('[SW] Service Worker registered:', registration);
+					return navigator.serviceWorker.ready;
+				}).then(function(registration) {
+					if (registration.active) {
+						registration.active.postMessage({
+							msg: 'initialize',
+							lang: '#{lang}'
+						});
+						console.info('[SW] Initialization message sent');
+					}
+					registration.addEventListener('updatefound', function() {
+						var newWorker = registration.installing;
+						if (newWorker) {
+							newWorker.addEventListener('statechange', function() {
+								if (newWorker.state === 'activated') {
+									console.info('[SW] Service Worker updated and activated');
+								}
+							});
+						}
+					});
+					navigator.serviceWorker.addEventListener('controllerchange', function() {
+						console.info('[SW] Service Worker controller changed');
+					});
+				}).catch(function(error) {
+					console.error('[SW] Service Worker registration failed:', error);
+				});
+			}
 
 	body
 		noscript: p
