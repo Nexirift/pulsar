@@ -18,8 +18,16 @@ const ASSETS_CACHE_NAME = `pulsar-assets-${_VERSION_}`;
 // Type assertion for ServiceWorker context
 const ctx = globalThis as unknown as ServiceWorkerGlobalScope;
 
-ctx.addEventListener('install', () => {
-	// ev.waitUntil(globalThis.skipWaiting());
+ctx.addEventListener('install', (ev) => {
+	ev.waitUntil(
+		caches.open(CACHE_NAME).then((cache) => {
+			return cache.addAll([
+				'/',
+				'/index.html',
+				'/manifest.json',
+			]);
+		}).then(() => ctx.skipWaiting()),
+	);
 });
 
 ctx.addEventListener('activate', ev => {
