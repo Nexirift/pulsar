@@ -15,11 +15,14 @@ import * as swos from '@/scripts/operations.js';
 const CACHE_NAME = `pulsar-pages-${_VERSION_}`;
 const ASSETS_CACHE_NAME = `pulsar-assets-${_VERSION_}`;
 
-globalThis.addEventListener('install', () => {
+// Type assertion for ServiceWorker context
+const ctx = globalThis as unknown as ServiceWorkerGlobalScope;
+
+ctx.addEventListener('install', () => {
 	// ev.waitUntil(globalThis.skipWaiting());
 });
 
-globalThis.addEventListener('activate', ev => {
+ctx.addEventListener('activate', ev => {
 	ev.waitUntil(
 		caches.keys()
 			.then(cacheNames => Promise.all(
@@ -27,7 +30,7 @@ globalThis.addEventListener('activate', ev => {
 					.filter((v) => v !== swLang.cacheName && v !== CACHE_NAME && v !== ASSETS_CACHE_NAME)
 					.map(name => caches.delete(name)),
 			))
-			.then(() => globalThis.clients.claim()),
+			.then(() => ctx.clients.claim()),
 	);
 });
 
@@ -116,9 +119,9 @@ globalThis.addEventListener('fetch', (ev) => {
 	}
 });
 
-globalThis.addEventListener('push', ev => {
+ctx.addEventListener('push', (ev: PushEvent) => {
 	// クライアント取得
-	ev.waitUntil(globalThis.clients.matchAll({
+	ev.waitUntil(ctx.clients.matchAll({
 		includeUncontrolled: true,
 		type: 'window',
 	}).then(async () => {
@@ -134,8 +137,8 @@ globalThis.addEventListener('push', ev => {
 
 				return createNotification(data);
 			case 'readAllNotifications':
-				await globalThis.registration.getNotifications()
-					.then(notifications => notifications.forEach(n => n.tag !== 'read_notification' && n.close()));
+				await ctx.registration.getNotifications()
+					.then((notifications: Notification[]) => notifications.forEach((n: Notification) => n.tag !== 'read_notification' && n.close()));
 				break;
 		}
 
@@ -144,7 +147,7 @@ globalThis.addEventListener('push', ev => {
 	}));
 });
 
-globalThis.addEventListener('notificationclick', (ev: ServiceWorkerGlobalScopeEventMap['notificationclick']) => {
+ctx.addEventListener('notificationclick', (ev: NotificationEvent) => {
 	ev.waitUntil((async (): Promise<void> => {
 		if (_DEV_) {
 			console.log('notificationclick', ev.action, ev.notification.data);
@@ -217,8 +220,8 @@ globalThis.addEventListener('notificationclick', (ev: ServiceWorkerGlobalScopeEv
 			default:
 				switch (action) {
 					case 'markAllAsRead':
-						await globalThis.registration.getNotifications()
-							.then(notifications => notifications.forEach(n => n.tag !== 'read_notification' && n.close()));
+						await ctx.registration.getNotifications()
+							.then((notifications: Notification[]) => notifications.forEach((n: Notification) => n.tag !== 'read_notification' && n.close()));
 						await get<Pick<Misskey.entities.SignupResponse, 'id' | 'token'>[]>('accounts').then(accounts => {
 							return Promise.all((accounts ?? []).map(async account => {
 								await swos.sendMarkAllAsRead(account.id);
@@ -242,7 +245,7 @@ globalThis.addEventListener('notificationclick', (ev: ServiceWorkerGlobalScopeEv
 	})());
 });
 
-globalThis.addEventListener('notificationclose', (ev: ServiceWorkerGlobalScopeEventMap['notificationclose']) => {
+ctx.addEventListener('notificationclose', (ev: NotificationEvent) => {
 	const data: PushNotificationDataMap[keyof PushNotificationDataMap] = ev.notification.data;
 
 	ev.waitUntil((async (): Promise<void> => {
@@ -253,7 +256,7 @@ globalThis.addEventListener('notificationclose', (ev: ServiceWorkerGlobalScopeEv
 	})());
 });
 
-globalThis.addEventListener('message', (ev: ServiceWorkerGlobalScopeEventMap['message']) => {
+ctx.addEventListener('message', (ev: ExtendableMessageEvent) => {
 	ev.waitUntil((async (): Promise<void> => {
 		switch (ev.data) {
 			case 'clear':
