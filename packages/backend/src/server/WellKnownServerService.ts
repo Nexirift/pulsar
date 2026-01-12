@@ -200,6 +200,34 @@ fastify.get('/.well-known/change-password', async (request, reply) => {
 			}
 		});
 
+		// Apple App Site Association for PWA Window Controls Overlay
+		fastify.get('/.well-known/apple-app-site-association', async (request, reply) => {
+			reply.header('Content-Type', 'application/json');
+			reply.header('Cache-Control', 'max-age=300'); // 5 minutes
+			
+			try {
+				const data = this.meta.appleAppSiteAssociation === '' ? '{}' : this.meta.appleAppSiteAssociation;
+				return JSON.parse(data);
+			} catch (e) {
+				// If parsing fails, return empty object
+				return {};
+			}
+		});
+
+		// Google Asset Links for PWA Window Controls Overlay
+		fastify.get('/.well-known/assetlinks.json', async (request, reply) => {
+			reply.header('Content-Type', 'application/json');
+			reply.header('Cache-Control', 'max-age=300'); // 5 minutes
+			
+			try {
+				const data = this.meta.androidAssetLinks === '' ? '[]' : this.meta.androidAssetLinks;
+				return JSON.parse(data);
+			} catch (e) {
+				// If parsing fails, return empty array
+				return [];
+			}
+		});
+
 		done();
 	}
 }

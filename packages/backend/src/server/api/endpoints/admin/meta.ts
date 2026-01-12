@@ -425,6 +425,14 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: false,
 			},
+			appleAppSiteAssociation: {
+				type: 'string',
+				optional: false, nullable: false,
+			},
+			androidAssetLinks: {
+				type: 'string',
+				optional: false, nullable: false,
+			},
 			policies: {
 				type: 'object',
 				optional: false, nullable: false,
@@ -809,6 +817,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				bannedEmailDomains: instance.bannedEmailDomains,
 				policies: { ...DEFAULT_POLICIES, ...instance.policies },
 				manifestJsonOverride: instance.manifestJsonOverride,
+				appleAppSiteAssociation: instance.appleAppSiteAssociation,
+				androidAssetLinks: instance.androidAssetLinks,
 				enableFanoutTimeline: instance.enableFanoutTimeline,
 				enableFanoutTimelineDbFallback: instance.enableFanoutTimelineDbFallback,
 				perLocalUserUserTimelineCacheMax: instance.perLocalUserUserTimelineCacheMax,

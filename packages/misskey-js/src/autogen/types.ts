@@ -16611,6 +16611,8 @@ export interface operations {
                         robotsTxt: string | null;
                         enableIdenticonGeneration: boolean;
                         manifestJsonOverride: string;
+                        appleAppSiteAssociation: string;
+                        androidAssetLinks: string;
                         policies: Record<string, never>;
                         enableFanoutTimeline: boolean;
                         enableFanoutTimelineDbFallback: boolean;
@@ -20810,6 +20812,8 @@ export interface operations {
                     preservedUsernames?: string[];
                     bubbleInstances?: string[];
                     manifestJsonOverride?: string;
+                    appleAppSiteAssociation?: string;
+                    androidAssetLinks?: string;
                     enableFanoutTimeline?: boolean;
                     enableFanoutTimelineDbFallback?: boolean;
                     perLocalUserUserTimelineCacheMax?: number;

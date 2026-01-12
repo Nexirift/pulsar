@@ -167,6 +167,8 @@ export const paramDef = {
 		preservedUsernames: { type: 'array', items: { type: 'string' } },
 		bubbleInstances: { type: 'array', items: { type: 'string' } },
 		manifestJsonOverride: { type: 'string' },
+		appleAppSiteAssociation: { type: 'string' },
+		androidAssetLinks: { type: 'string' },
 		enableFanoutTimeline: { type: 'boolean' },
 		enableFanoutTimelineDbFallback: { type: 'boolean' },
 		perLocalUserUserTimelineCacheMax: { type: 'integer' },
@@ -738,6 +740,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.manifestJsonOverride !== undefined) {
 				set.manifestJsonOverride = ps.manifestJsonOverride;
+			}
+
+			if (ps.appleAppSiteAssociation !== undefined) {
+				set.appleAppSiteAssociation = ps.appleAppSiteAssociation;
+			}
+
+			if (ps.androidAssetLinks !== undefined) {
+				set.androidAssetLinks = ps.androidAssetLinks;
 			}
 
 			if (ps.enableFanoutTimeline !== undefined) {

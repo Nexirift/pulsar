@@ -86,6 +86,10 @@ _serverSettings:
   disableInactivity: "Ignore moderation inactivity"
   disableInactivityWarning: "Ignoring moderation inactivity carries risks. It is recommended to only enable it if you have a system in place to continuously monitor the server and respond immediately in case of any issues."
   disableInactivityDescription: "Disabling detection of moderation inactivity allows for continuous open registration without any interruptions."
+  appleAppSiteAssociation: "Apple App Site Association"
+  appleAppSiteAssociationDescription: "Configuration for Apple's app link verification. Used for PWA Window Controls Overlay and deep linking."
+  androidAssetLinks: "Android Asset Links"
+  androidAssetLinksDescription: "Configuration for Google's Digital Asset Links. Used for PWA Window Controls Overlay and deep linking."
 _accountMigration:
   moveAccountDescription: "This will migrate your account to a different one.\n　・Followers from this account will automatically be migrated to the new account\n　・This account will unfollow all users it is currently following\n　・You will be unable to create new notes etc. on this account\n\nWhile migration of followers is automatic, you must manually prepare some steps to migrate the list of users you are following. To do so, carry out a follows export that you will later import on the new account in the settings menu. The same procedure applies to your lists as well as your muted and blocked users.\n\n(This explanation applies to Pulsar v13.12.0 and later. Other ActivityPub software, such as Mastodon, might function differently.)"
 _bubbleGame:

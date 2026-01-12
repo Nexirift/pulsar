@@ -686,6 +686,18 @@ export class MiMeta {
 	public manifestJsonOverride: string;
 
 	@Column('varchar', {
+		length: 8192,
+		default: '{}',
+	})
+	public appleAppSiteAssociation: string;
+
+	@Column('varchar', {
+		length: 8192,
+		default: '[]',
+	})
+	public androidAssetLinks: string;
+
+	@Column('varchar', {
 		length: 1024,
 		array: true,
 		default: '{}',

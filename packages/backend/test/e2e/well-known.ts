@@ -101,4 +101,26 @@ describe('.well-known', () => {
 		assert.strictEqual(serverInfo.authorization_endpoint, `${origin}/oauth/authorize`);
 		assert.strictEqual(serverInfo.token_endpoint, `${origin}/oauth/token`);
 	});
+
+	test('apple-app-site-association', async () => {
+		const res = await relativeFetch('.well-known/apple-app-site-association');
+		assert.ok(res.ok);
+		assert.strictEqual(res.headers.get('Content-Type'), 'application/json; charset=utf-8');
+		assert.strictEqual(res.headers.get('Access-Control-Allow-Origin'), '*');
+
+		const data = await res.json();
+		// Should return empty object by default
+		assert.ok(typeof data === 'object');
+	});
+
+	test('assetlinks.json', async () => {
+		const res = await relativeFetch('.well-known/assetlinks.json');
+		assert.ok(res.ok);
+		assert.strictEqual(res.headers.get('Content-Type'), 'application/json; charset=utf-8');
+		assert.strictEqual(res.headers.get('Access-Control-Allow-Origin'), '*');
+
+		const data = await res.json();
+		// Should return empty array by default
+		assert.ok(Array.isArray(data));
+	});
 });

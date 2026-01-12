@@ -103,6 +103,16 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkTextarea v-model="manifestJsonOverride">
 					<template #label>{{ i18n.ts._serverSettings.manifestJsonOverride }}</template>
 				</MkTextarea>
+
+				<MkTextarea v-model="appleAppSiteAssociation">
+					<template #label>{{ i18n.ts._serverSettings.appleAppSiteAssociation }}</template>
+					<template #caption>{{ i18n.ts._serverSettings.appleAppSiteAssociationDescription }}</template>
+				</MkTextarea>
+
+				<MkTextarea v-model="androidAssetLinks">
+					<template #label>{{ i18n.ts._serverSettings.androidAssetLinks }}</template>
+					<template #caption>{{ i18n.ts._serverSettings.androidAssetLinksDescription }}</template>
+				</MkTextarea>
 			</div>
 		</FormSuspense>
 	</div>
@@ -148,6 +158,8 @@ const notFoundImageUrl = ref<string | null>(null);
 const repositoryUrl = ref<string | null>(null);
 const feedbackUrl = ref<string | null>(null);
 const manifestJsonOverride = ref<string>('{}');
+const appleAppSiteAssociation = ref<string>('{}');
+const androidAssetLinks = ref<string>('[]');
 
 async function init() {
 	const meta = await misskeyApi('admin/meta');
@@ -167,6 +179,8 @@ async function init() {
 	repositoryUrl.value = meta.repositoryUrl;
 	feedbackUrl.value = meta.feedbackUrl;
 	manifestJsonOverride.value = meta.manifestJsonOverride === '' ? '{}' : JSON.stringify(JSON.parse(meta.manifestJsonOverride), null, '\t');
+	appleAppSiteAssociation.value = meta.appleAppSiteAssociation === '' ? '{}' : JSON.stringify(JSON.parse(meta.appleAppSiteAssociation), null, '\t');
+	androidAssetLinks.value = meta.androidAssetLinks === '' ? '[]' : JSON.stringify(JSON.parse(meta.androidAssetLinks), null, '\t');
 }
 
 function save() {
@@ -186,6 +200,8 @@ function save() {
 		repositoryUrl: repositoryUrl.value === '' ? null : repositoryUrl.value,
 		feedbackUrl: feedbackUrl.value === '' ? null : feedbackUrl.value,
 		manifestJsonOverride: manifestJsonOverride.value === '' ? '{}' : JSON.stringify(JSON5.parse(manifestJsonOverride.value)),
+		appleAppSiteAssociation: appleAppSiteAssociation.value === '' ? '{}' : JSON.stringify(JSON5.parse(appleAppSiteAssociation.value)),
+		androidAssetLinks: androidAssetLinks.value === '' ? '[]' : JSON.stringify(JSON5.parse(androidAssetLinks.value)),
 	}).then(() => {
 		fetchInstance(true);
 	});

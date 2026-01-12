@@ -5752,66 +5752,6 @@ export interface Locale extends ILocale {
          * On desktop, the widgets button toggles the right sidebar. On mobile, add it to the footer menu to open the widgets drawer.
          */
         "widgetsNavbarInfo": string;
-        /**
-         * OAuth applications
-         */
-        "oauthApps": string;
-        /**
-         * Create and manage OAuth applications. Each application receives a unique Client ID and secret for authentication.
-         */
-        "oauthAppsInfo": string;
-        /**
-         * Create OAuth app
-         */
-        "createOAuthApp": string;
-        /**
-         * Application name
-         */
-        "oauthAppName": string;
-        /**
-         * OAuth application created successfully
-         */
-        "oauthAppCreated": string;
-        /**
-         * OAuth application deleted successfully
-         */
-        "oauthAppDeleted": string;
-        /**
-         * Failed to load OAuth applications
-         */
-        "failedToLoadOAuthApps": string;
-        /**
-         * Failed to create OAuth application
-         */
-        "failedToCreateOAuthApp": string;
-        /**
-         * Failed to delete OAuth application
-         */
-        "failedToDeleteOAuthApp": string;
-        /**
-         * Are you sure you want to delete this OAuth application? This action cannot be undone.
-         */
-        "confirmDeleteOAuthApp": string;
-        /**
-         * Are you sure you want to rotate the client secret? Any clients using the old secret will need to be updated.
-         */
-        "confirmRotateSecret": string;
-        /**
-         * Rotate secret
-         */
-        "rotateSecret": string;
-        /**
-         * Client secret rotated successfully
-         */
-        "secretRotated": string;
-        /**
-         * Failed to rotate client secret
-         */
-        "failedToRotateSecret": string;
-        /**
-         * Redirect URI
-         */
-        "redirectUri": string;
     };
     "_preferencesProfile": {
         /**
@@ -6569,6 +6509,22 @@ export interface Locale extends ILocale {
          * Disabling detection of moderation inactivity allows for continuous open registration without any interruptions.
          */
         "disableInactivityDescription": string;
+        /**
+         * Apple App Site Association
+         */
+        "appleAppSiteAssociation": string;
+        /**
+         * Configuration for Apple's app link verification. Used for PWA Window Controls Overlay and deep linking.
+         */
+        "appleAppSiteAssociationDescription": string;
+        /**
+         * Android Asset Links
+         */
+        "androidAssetLinks": string;
+        /**
+         * Configuration for Google's Digital Asset Links. Used for PWA Window Controls Overlay and deep linking.
+         */
+        "androidAssetLinksDescription": string;
     };
     "_accountMigration": {
         /**
