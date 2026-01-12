@@ -163,28 +163,27 @@ ctx.addEventListener('push', (ev: PushEvent) => {
 				// case 'driveFileCreated':
 				case 'notification':
 				case 'unreadAntennaNote':
-				case 'newChatMessage':
+				case 'newChatMessage': {
 					// 1日以上経過している場合は無視
 					if (Date.now() - data.dateTime > 1000 * 60 * 60 * 24) {
 						if (_DEV_) {
 							console.log('Ignoring old notification', data);
 						}
-						break;
+						return; // Return without showing notification for old items
 					}
 
-					return await createNotification(data);
+					await createNotification(data);
+					return;
+				}
 				case 'readAllNotifications':
 					await ctx.registration.getNotifications()
 						.then((notifications: Notification[]) => notifications.forEach((n: Notification) => n.tag !== 'read_notification' && n.close()));
-					break;
+					return; // Return after closing notifications
 			}
-
-			//await createEmptyNotification();
-			return;
 		} catch (error) {
 			console.error('Error processing push notification:', error);
-			// Don't show a notification if there's an error - browser will show default message
-			return;
+			// Re-throw to ensure the event handler knows it failed
+			throw error;
 		}
 	}));
 });
