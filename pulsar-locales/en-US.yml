@@ -135,9 +135,9 @@ _mfm:
 _urlPreviewSetting:
   summaryProxyDescription: "Generate previews using Summaly Proxy, instead of Pulsar itself."
 _notification:
-  appAuthorized: "Application authorized"
+  appAuthorized: "An application was authorized"
   _types:
-    appAuthorized: "You have authorized the application \"{appName}\""
+    appAuthorized: "You have authorized the application \"{appName}\"."
 robotsTxtDescription: "Adding entries here will override the default robots.txt packaged with Pulsar."
 gifPicker: "GIF Picker"
 enableTenor: "Enable GIF picker"

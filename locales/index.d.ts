@@ -10512,7 +10512,7 @@ export interface Locale extends ILocale {
              */
             "importCompleted": string;
             /**
-             * You have authorized the application "{appName}"
+             * You have authorized the application "{appName}".
              */
             "appAuthorized": ParameterizedString<"appName">;
         };
@@ -10559,7 +10559,7 @@ export interface Locale extends ILocale {
          */
         "sharedAccessLogin": string;
         /**
-         * Application authorized
+         * An application was authorized
          */
         "appAuthorized": string;
     };
