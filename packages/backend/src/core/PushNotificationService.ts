@@ -28,6 +28,40 @@ type PushNotificationsTypes = {
 	newChatMessage: Packed<'ChatMessage'>;
 };
 
+// Helper function to retry operations with DNS failures
+async function retryWithBackoff<T>(
+	operation: () => Promise<T>,
+	maxRetries: number = 3,
+	initialDelay: number = 1000,
+): Promise<T> {
+	let lastError: any;
+	
+	for (let attempt = 0; attempt < maxRetries; attempt++) {
+		try {
+			return await operation();
+		} catch (err: any) {
+			lastError = err;
+			
+			// Check if it's a DNS error that might succeed on retry
+			const isDnsError = err.code === 'EAI_AGAIN' || 
+				err.code === 'ENOTFOUND' || 
+				err.code === 'ETIMEDOUT' ||
+				err.code === 'ECONNREFUSED' ||
+				err.message?.includes('getaddrinfo');
+			
+			if (!isDnsError || attempt === maxRetries - 1) {
+				throw err;
+			}
+			
+			// Exponential backoff
+			const delay = initialDelay * Math.pow(2, attempt);
+			await new Promise(resolve => setTimeout(resolve, delay));
+		}
+	}
+	
+	throw lastError;
+}
+
 // Reduce length because push message servers have character limits
 function truncateBody<T extends keyof PushNotificationsTypes>(type: T, body: PushNotificationsTypes[T]): PushNotificationsTypes[T] {
 	if (typeof body !== 'object') return body;
@@ -115,13 +149,15 @@ export class PushNotificationService {
 			};
 
 			try {
-				await push.sendNotification(pushSubscription, JSON.stringify({
-					type,
-					body: (type === 'notification' || type === 'unreadAntennaNote') ? truncateBody(type, body) : body,
-					userId,
-					dateTime: this.timeService.now,
-				}), {
-					proxy: this.config.proxy,
+				await retryWithBackoff(async () => {
+					return await push.sendNotification(pushSubscription, JSON.stringify({
+						type,
+						body: (type === 'notification' || type === 'unreadAntennaNote') ? truncateBody(type, body) : body,
+						userId,
+						dateTime: this.timeService.now,
+					}), {
+						proxy: this.config.proxy,
+					});
 				});
 				this.logger.debug(`Push notification sent successfully to ${subscription.endpoint}`);
 			} catch (err: any) {
@@ -145,10 +181,22 @@ export class PushNotificationService {
 					errorDetails.stack = err.stack;
 				}
 
-				this.logger.error(
-					`Failed to send push notification: ${err.statusCode ? `HTTP ${err.statusCode}` : err.message || err.name || 'Unknown error'}`,
-					errorDetails,
-				);
+				// Special handling for DNS errors
+				const isDnsError = err.code === 'EAI_AGAIN' || 
+					err.code === 'ENOTFOUND' || 
+					err.message?.includes('getaddrinfo');
+				
+				if (isDnsError) {
+					this.logger.error(
+						`DNS resolution failed for push notification endpoint (this may indicate DNS or network issues)`,
+						errorDetails,
+					);
+				} else {
+					this.logger.error(
+						`Failed to send push notification: ${err.statusCode ? `HTTP ${err.statusCode}` : err.message || err.name || 'Unknown error'}`,
+						errorDetails,
+					);
+				}
 
 				if (err.statusCode === 410) {
 					this.logger.info(`Removing expired subscription for user ${userId}`);
