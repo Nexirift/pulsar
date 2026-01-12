@@ -12,6 +12,9 @@ import { createNotification } from '@/scripts/create-notification.js';
 import { swLang } from '@/scripts/lang.js';
 import * as swos from '@/scripts/operations.js';
 
+const CACHE_NAME = `pulsar-pages-${_VERSION_}`;
+const ASSETS_CACHE_NAME = `pulsar-assets-${_VERSION_}`;
+
 globalThis.addEventListener('install', () => {
 	// ev.waitUntil(globalThis.skipWaiting());
 });
@@ -21,7 +24,7 @@ globalThis.addEventListener('activate', ev => {
 		caches.keys()
 			.then(cacheNames => Promise.all(
 				cacheNames
-					.filter((v) => v !== swLang.cacheName)
+					.filter((v) => v !== swLang.cacheName && v !== CACHE_NAME && v !== ASSETS_CACHE_NAME)
 					.map(name => caches.delete(name)),
 			))
 			.then(() => globalThis.clients.claim()),
@@ -39,39 +42,78 @@ async function offlineContentHTML() {
 	return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta content="width=device-width,initial-scale=1"name="viewport"><title>${messages.title}</title><style>body{background-color:#0c1210;color:#dee7e4;font-family:Hiragino Maru Gothic Pro,BIZ UDGothic,Roboto,HelveticaNeue,Arial,sans-serif;line-height:1.35;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px;box-sizing:border-box}.icon{max-width:120px;width:100%;height:auto;margin-bottom:20px;}.message{text-align:center;font-size:20px;font-weight:700;margin-bottom:20px}.version{text-align:center;font-size:90%;margin-bottom:20px}button{padding:7px 14px;min-width:100px;font-weight:700;font-family:Hiragino Maru Gothic Pro,BIZ UDGothic,Roboto,HelveticaNeue,Arial,sans-serif;line-height:1.35;border-radius:99rem;background-color:#b4e900;color:#192320;border:none;cursor:pointer;-webkit-tap-highlight-color:transparent}button:hover{background-color:#c6ff03}</style></head><body><svg class="icon"fill="none"height="24"stroke="currentColor"stroke-linecap="round"stroke-linejoin="round"stroke-width="2"viewBox="0 0 24 24"width="24"xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z"fill="none"stroke="none"/><path d="M9.58 5.548c.24 -.11 .492 -.207 .752 -.286c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 .957 -.383 1.824 -1.003 2.454m-2.997 1.033h-11.343c-2.572 -.004 -4.657 -2.011 -4.657 -4.487c0 -2.475 2.085 -4.482 4.657 -4.482c.13 -.582 .37 -1.128 .7 -1.62"/><path d="M3 3l18 18"/></svg><div class="message">${messages.header}</div><div class="version">v${_VERSION_}</div><button onclick="reloadPage()">${messages.reload}</button><script>function reloadPage(){location.reload(!0)}</script></body></html>`;
 }
 
-globalThis.addEventListener('fetch', ev => {
+globalThis.addEventListener('fetch', (ev) => {
+	const fetchEvent = ev as FetchEvent;
+	const url = new URL(fetchEvent.request.url);
+	
+	// Only handle requests from our origin
+	if (url.origin !== globalThis.location.origin) return;
+
+	// Check if it's an HTML request
 	let isHTMLRequest = false;
-	if (ev.request.headers.get('sec-fetch-dest') === 'document') {
+	if (fetchEvent.request.headers.get('sec-fetch-dest') === 'document') {
 		isHTMLRequest = true;
-	} else if (ev.request.headers.get('accept')?.includes('/html')) {
+	} else if (fetchEvent.request.headers.get('accept')?.includes('/html')) {
 		isHTMLRequest = true;
-	} else if (ev.request.url.endsWith('/')) {
+	} else if (fetchEvent.request.url.endsWith('/')) {
 		isHTMLRequest = true;
 	}
 
-	if (!isHTMLRequest) return;
-	ev.respondWith(
-		fetch(ev.request)
-			.catch(async () => {
-				// Try to serve from cache first
-				const cache = await caches.open(swLang.cacheName);
-				const cachedResponse = await cache.match(ev.request);
-				
-				if (cachedResponse) {
-					// Serve cached content - the offline banner will appear in the UI
-					return cachedResponse;
-				}
-				
-				// If no cache available, show offline screen as fallback
-				const html = await offlineContentHTML();
-				return new Response(html, {
-					status: 200,
-					headers: {
-						'content-type': 'text/html',
-					},
+	// Check if it's an asset request (CSS, JS, fonts, images)
+	const isAsset = /\.(js|css|woff2?|ttf|otf|eot|svg|png|jpg|jpeg|gif|webp|ico)$/i.test(url.pathname);
+
+	if (isHTMLRequest) {
+		// Network-first strategy for HTML pages
+		fetchEvent.respondWith(
+			fetch(fetchEvent.request)
+				.then(async response => {
+					// Cache the successful response
+					if (response.ok) {
+						const cache = await caches.open(CACHE_NAME);
+						cache.put(fetchEvent.request, response.clone());
+					}
+					return response;
+				})
+				.catch(async () => {
+					// Try to serve from cache first
+					const cache = await caches.open(CACHE_NAME);
+					const cachedResponse = await cache.match(fetchEvent.request);
+					
+					if (cachedResponse) {
+						// Serve cached content - the offline banner will appear in the UI
+						return cachedResponse;
+					}
+					
+					// If no cache available, show offline screen as fallback
+					const html = await offlineContentHTML();
+					return new Response(html, {
+						status: 200,
+						headers: {
+							'content-type': 'text/html',
+						},
+					});
+				}),
+		);
+	} else if (isAsset) {
+		// Cache-first strategy for assets
+		fetchEvent.respondWith(
+			caches.open(ASSETS_CACHE_NAME).then(cache => {
+				return cache.match(fetchEvent.request).then(cachedResponse => {
+					if (cachedResponse) {
+						return cachedResponse;
+					}
+					
+					return fetch(fetchEvent.request).then(response => {
+						// Only cache successful responses
+						if (response.ok) {
+							cache.put(fetchEvent.request, response.clone());
+						}
+						return response;
+					});
 				});
 			}),
-	);
+		);
+	}
 });
 
 globalThis.addEventListener('push', ev => {
