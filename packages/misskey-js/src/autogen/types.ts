@@ -16624,6 +16624,7 @@ export interface operations {
                         notFoundImageUrl: string | null;
                         iconUrl: string | null;
                         app192IconUrl: string | null;
+                        app300IconUrl: string | null;
                         app512IconUrl: string | null;
                         sidebarLogoUrl: string | null;
                         enableEmail: boolean;
@@ -20784,6 +20785,7 @@ export interface operations {
                     notFoundImageUrl?: string | null;
                     iconUrl?: string | null;
                     app192IconUrl?: string | null;
+                    app300IconUrl?: string | null;
                     app512IconUrl?: string | null;
                     sidebarLogoUrl?: string | null;
                     backgroundImageUrl?: string | null;

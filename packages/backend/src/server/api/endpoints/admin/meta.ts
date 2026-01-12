@@ -136,6 +136,10 @@ export const meta = {
 				type: 'string',
 				optional: false, nullable: true,
 			},
+			app300IconUrl: {
+				type: 'string',
+				optional: false, nullable: true,
+			},
 			app512IconUrl: {
 				type: 'string',
 				optional: false, nullable: true,
@@ -738,6 +742,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				infoImageUrl: instance.infoImageUrl,
 				iconUrl: instance.iconUrl,
 				app192IconUrl: instance.app192IconUrl,
+				app300IconUrl: instance.app300IconUrl,
 				app512IconUrl: instance.app512IconUrl,
 				sidebarLogoUrl: instance.sidebarLogoUrl,
 				backgroundImageUrl: instance.backgroundImageUrl,

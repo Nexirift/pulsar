@@ -165,6 +165,12 @@ export class MiMeta {
 		length: 1024,
 		nullable: true,
 	})
+	public app300IconUrl: string | null;
+
+	@Column('varchar', {
+		length: 1024,
+		nullable: true,
+	})
 	public app512IconUrl: string | null;
 
 	@Column('varchar', {
@@ -318,7 +324,6 @@ export class MiMeta {
 		nullable: true,
 	})
 	public fcSiteKey: string | null;
-
 
 	@Column('boolean', {
 		default: false,

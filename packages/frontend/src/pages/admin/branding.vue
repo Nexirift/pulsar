@@ -24,6 +24,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</template>
 				</MkInput>
 
+				<MkInput v-model="app300IconUrl" type="url">
+					<template #prefix><i class="ti ti-link"></i></template>
+					<template #label>{{ i18n.ts._serverSettings.iconUrl }} (App/300px)</template>
+					<template #caption>
+						<div>{{ i18n.tsx._serverSettings.appIconDescription({ host: instance.name ?? host }) }}</div>
+						<div>({{ i18n.ts._serverSettings.appIconUsageExample }})</div>
+						<div>{{ i18n.ts._serverSettings.appIconStyleRecommendation }}</div>
+						<div><strong>{{ i18n.tsx._serverSettings.appIconResolutionMustBe({ resolution: '300x300px' }) }}</strong></div>
+					</template>
+				</MkInput>
+
 				<MkInput v-model="app512IconUrl" type="url">
 					<template #prefix><i class="ti ti-link"></i></template>
 					<template #label>{{ i18n.ts._serverSettings.iconUrl }} (App/512px)</template>
@@ -145,6 +156,7 @@ import MkColorInput from '@/components/MkColorInput.vue';
 const iconUrl = ref<string | null>(null);
 const sidebarLogoUrl = ref<string | null>(null);
 const app192IconUrl = ref<string | null>(null);
+const app300IconUrl = ref<string | null>(null);
 const app512IconUrl = ref<string | null>(null);
 const bannerUrl = ref<string | null>(null);
 const backgroundImageUrl = ref<string | null>(null);
@@ -166,6 +178,7 @@ async function init() {
 	iconUrl.value = meta.iconUrl;
 	sidebarLogoUrl.value = meta.sidebarLogoUrl;
 	app192IconUrl.value = meta.app192IconUrl;
+	app300IconUrl.value = meta.app300IconUrl;
 	app512IconUrl.value = meta.app512IconUrl;
 	bannerUrl.value = meta.bannerUrl;
 	backgroundImageUrl.value = meta.backgroundImageUrl;
@@ -188,6 +201,7 @@ function save() {
 		iconUrl: iconUrl.value,
 		sidebarLogoUrl: sidebarLogoUrl.value,
 		app192IconUrl: app192IconUrl.value,
+		app300IconUrl: app300IconUrl.value,
 		app512IconUrl: app512IconUrl.value,
 		bannerUrl: bannerUrl.value,
 		backgroundImageUrl: backgroundImageUrl.value,

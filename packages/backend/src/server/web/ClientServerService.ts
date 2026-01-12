@@ -149,17 +149,17 @@ export class ClientServerService {
 			}, {
 				// 空文字列の場合右辺を使いたいため
 				 
-				'src': this.meta.app512IconUrl || '/static-assets/icons/512.png',
-				'sizes': '512x512',
+				'src': this.meta.app300IconUrl || '/static-assets/icons/512.png',
+				'sizes': '300x300',
 				'type': 'image/png',
-				'purpose': 'maskable',
+				'purpose': 'any',
 			}, {
 				// 空文字列の場合右辺を使いたいため
 				 
 				'src': this.meta.app512IconUrl || '/static-assets/icons/512.png',
-				'sizes': '300x300',
+				'sizes': '512x512',
 				'type': 'image/png',
-				'purpose': 'any',
+				'purpose': 'maskable',
 			}],
 			'shortcuts': [
 				{
