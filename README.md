@@ -60,6 +60,7 @@ GitHub is NOT the official place to contribute correctly. Please visit our own i
   - 🛠️ New OAuth applications management page for developers
   - 🐛 Fixed the Mastodon app sign-in flow errors
   - 🔔 Notification when an application is authorized
+- 📱 Improved PWA `manifest.json` capabilities
 
 ## Documentation
 
