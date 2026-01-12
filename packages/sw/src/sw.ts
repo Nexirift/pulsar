@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { get } from 'idb-keyval';
+import { get, set } from 'idb-keyval';
 import * as Misskey from 'misskey-js';
 import type { PushNotificationDataMap } from '@/types.js';
 import type { I18n } from '@@/js/i18n.js';
@@ -14,6 +14,15 @@ import * as swos from '@/scripts/operations.js';
 
 const CACHE_NAME = `pulsar-pages-${_VERSION_}`;
 const ASSETS_CACHE_NAME = `pulsar-assets-${_VERSION_}`;
+const PENDING_ACTIONS_KEY = 'pendingActions';
+
+interface PendingAction {
+	id: string;
+	type: 'note' | 'reaction' | 'renote' | 'follow' | 'unfollow';
+	data: any;
+	timestamp: number;
+	accountId: string;
+}
 
 // Type assertion for ServiceWorker context
 const ctx = globalThis as unknown as ServiceWorkerGlobalScope;
@@ -288,3 +297,177 @@ ctx.addEventListener('message', (ev: ExtendableMessageEvent) => {
 		}
 	})());
 });
+
+// Background Sync - for offline actions
+ctx.addEventListener('sync', (ev) => {
+	const syncEvent = ev as ExtendableEvent & { tag: string };
+	if (_DEV_) {
+		console.log('[SW] Background sync event:', syncEvent.tag);
+	}
+	
+	syncEvent.waitUntil((async () => {
+		// Handle different sync tags
+		switch (syncEvent.tag) {
+			case 'sync-notes':
+			case 'sync-actions':
+				// Sync pending notes and actions when back online
+				if (_DEV_) console.log('[SW] Syncing pending actions...');
+				await syncPendingActions();
+				break;
+			case 'sync-notifications':
+				// Sync notification state
+				if (_DEV_) console.log('[SW] Syncing notifications...');
+				await syncNotificationRead();
+				break;
+			default:
+				if (_DEV_) console.log('[SW] Unknown sync tag:', syncEvent.tag);
+		}
+	})());
+});
+
+// Periodic Background Sync - for periodic updates
+ctx.addEventListener('periodicsync', (ev) => {
+	const periodicEvent = ev as ExtendableEvent & { tag: string };
+	if (_DEV_) {
+		console.log('[SW] Periodic sync event:', periodicEvent.tag);
+	}
+	
+	periodicEvent.waitUntil((async () => {
+		// Handle different periodic sync tags
+		switch (periodicEvent.tag) {
+			case 'update-timeline':
+				// Periodically check for timeline updates
+				if (_DEV_) console.log('[SW] Checking for timeline updates...');
+				await checkForUpdates('timeline');
+				break;
+			case 'update-notifications':
+				// Periodically check for new notifications
+				if (_DEV_) console.log('[SW] Checking for new notifications...');
+				await checkForUpdates('notifications');
+				break;
+			default:
+				if (_DEV_) console.log('[SW] Unknown periodic sync tag:', periodicEvent.tag);
+		}
+	})());
+});
+
+// Sync pending actions that were created while offline
+async function syncPendingActions() {
+	try {
+		const actions = await get<PendingAction[]>(PENDING_ACTIONS_KEY) || [];
+		if (actions.length === 0) return;
+
+		if (_DEV_) console.log(`[SW] Found ${actions.length} pending actions to sync`);
+
+		const successfulIds: string[] = [];
+
+		for (const action of actions) {
+			try {
+				switch (action.type) {
+					case 'note':
+						await swos.api('notes/create', action.accountId, action.data);
+						if (_DEV_) console.log('[SW] Synced note:', action.id);
+						successfulIds.push(action.id);
+						break;
+					case 'reaction':
+						await swos.api('notes/reactions/create', action.accountId, action.data);
+						if (_DEV_) console.log('[SW] Synced reaction:', action.id);
+						successfulIds.push(action.id);
+						break;
+					case 'renote':
+						await swos.api('notes/create', action.accountId, { renoteId: action.data.noteId });
+						if (_DEV_) console.log('[SW] Synced renote:', action.id);
+						successfulIds.push(action.id);
+						break;
+					case 'follow':
+						await swos.api('following/create', action.accountId, { userId: action.data.userId });
+						if (_DEV_) console.log('[SW] Synced follow:', action.id);
+						successfulIds.push(action.id);
+						break;
+					case 'unfollow':
+						await swos.api('following/delete', action.accountId, { userId: action.data.userId });
+						if (_DEV_) console.log('[SW] Synced unfollow:', action.id);
+						successfulIds.push(action.id);
+						break;
+				}
+			} catch (error) {
+				console.error('[SW] Failed to sync action:', action.id, error);
+				// Keep failed actions for retry
+			}
+		}
+
+		// Remove successfully synced actions
+		if (successfulIds.length > 0) {
+			const remainingActions = actions.filter(a => !successfulIds.includes(a.id));
+			await set(PENDING_ACTIONS_KEY, remainingActions);
+			if (_DEV_) console.log(`[SW] Synced ${successfulIds.length} actions, ${remainingActions.length} remaining`);
+		}
+	} catch (error) {
+		console.error('[SW] Error syncing pending actions:', error);
+	}
+}
+
+// Sync read notifications
+async function syncNotificationRead() {
+	try {
+		const accounts = await get<Pick<Misskey.entities.SignupResponse, 'id' | 'token'>[]>('accounts');
+		if (!accounts || accounts.length === 0) return;
+
+		for (const account of accounts) {
+			try {
+				await swos.sendMarkAllAsRead(account.id);
+				if (_DEV_) console.log('[SW] Synced notification read state for account:', account.id);
+			} catch (error) {
+				console.error('[SW] Failed to sync notifications for account:', account.id, error);
+			}
+		}
+	} catch (error) {
+		console.error('[SW] Error syncing notification read state:', error);
+	}
+}
+
+// Check for updates and notify clients
+async function checkForUpdates(type: 'timeline' | 'notifications') {
+	try {
+		const accounts = await get<Pick<Misskey.entities.SignupResponse, 'id' | 'token'>[]>('accounts');
+		if (!accounts || accounts.length === 0) return;
+
+		const clients = await ctx.clients.matchAll({ type: 'window', includeUncontrolled: true });
+
+		for (const account of accounts) {
+			try {
+				if (type === 'notifications') {
+					// Check for unread notifications
+					const response = await swos.api('i/notifications', account.id, { limit: 1, includeTypes: ['follow', 'mention', 'reply', 'renote', 'quote', 'reaction'] });
+					if (response && Array.isArray(response) && response.length > 0) {
+						// Notify clients about new notifications
+						for (const client of clients) {
+							client.postMessage({
+								type: 'notification-update',
+								hasNew: true,
+							});
+						}
+						if (_DEV_) console.log('[SW] Found new notifications for account:', account.id);
+					}
+				} else if (type === 'timeline') {
+					// Check for timeline updates
+					const response = await swos.api('notes/timeline', account.id, { limit: 1 });
+					if (response && Array.isArray(response) && response.length > 0) {
+						// Notify clients about timeline updates
+						for (const client of clients) {
+							client.postMessage({
+								type: 'timeline-update',
+								hasNew: true,
+							});
+						}
+						if (_DEV_) console.log('[SW] Found timeline updates for account:', account.id);
+					}
+				}
+			} catch (error) {
+				console.error(`[SW] Failed to check ${type} for account:`, account.id, error);
+			}
+		}
+	} catch (error) {
+		console.error(`[SW] Error checking for ${type} updates:`, error);
+	}
+}

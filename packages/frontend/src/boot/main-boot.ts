@@ -20,7 +20,7 @@ import { store } from '@/store.js';
 import { reactionPicker } from '@/utility/reaction-picker.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { claimAchievement, claimedAchievements } from '@/utility/achievements.js';
-import { initializeSw } from '@/utility/initialize-sw.js';
+// import { initializeSw } from '@/utility/initialize-sw.js';
 import { deckStore } from '@/ui/deck/deck-store.js';
 import { emojiPicker } from '@/utility/emoji-picker.js';
 import { mainRouter } from '@/router.js';
@@ -421,5 +421,6 @@ export async function mainBoot() {
 	} as const satisfies Keymap;
 	window.document.addEventListener('keydown', makeHotkey(keymap), { passive: false });
 
-	initializeSw();
+	// This is now handled by base.pug
+	// initializeSw();
 }
