@@ -25,6 +25,42 @@
 			"purpose": "any"
 		}
 	],
+	"shortcuts": [
+		{
+			"name": "Notifications",
+			"short_name": "Notifications",
+			"description": "View your notifications",
+			"url": "/my/notifications",
+			"icons": [
+				{
+					"src": "/static-assets/icons/192.png",
+					"sizes": "192x192"
+				}
+			]
+		},
+		{
+			"name": "Compose",
+			"short_name": "Compose",
+			"description": "Create a new post",
+			"url": "/share",
+			"icons": [
+				{
+					"src": "/static-assets/icons/192.png",
+					"sizes": "192x192"
+				}
+			]
+		}
+	],
+	"launch_handler": {
+		"client_mode": "navigate-existing"
+	},
+	"display_override": ["window-controls-overlay", "standalone"],
+	"edge_side_panel": {
+		"preferred_width": 400
+	},
+	"note_taking": {
+		"new_note_url": "/share"
+	},
 	"share_target": {
 		"action": "/share/",
 		"method": "GET",

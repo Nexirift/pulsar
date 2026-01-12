@@ -128,39 +128,71 @@ export class ClientServerService {
 	private async manifestHandler(reply: FastifyReply) {
 		let manifest = {
 			// 空文字列の場合右辺を使いたいため
-			// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+			 
 			'short_name': this.meta.shortName || this.meta.name || this.config.host,
 			// 空文字列の場合右辺を使いたいため
-			// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+			 
 			'name': this.meta.name || this.config.host,
 			'start_url': '/',
 			'display': 'standalone',
 			'background_color': '#313a42',
 			// 空文字列の場合右辺を使いたいため
-			// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+			 
 			'theme_color': this.meta.themeColor || '#86b300',
 			'icons': [{
 				// 空文字列の場合右辺を使いたいため
-				// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+				 
 				'src': this.meta.app192IconUrl || '/static-assets/icons/192.png',
 				'sizes': '192x192',
 				'type': 'image/png',
 				'purpose': 'maskable',
 			}, {
 				// 空文字列の場合右辺を使いたいため
-				// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+				 
 				'src': this.meta.app512IconUrl || '/static-assets/icons/512.png',
 				'sizes': '512x512',
 				'type': 'image/png',
 				'purpose': 'maskable',
 			}, {
 				// 空文字列の場合右辺を使いたいため
-				// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+				 
 				'src': this.meta.app512IconUrl || '/static-assets/icons/512.png',
 				'sizes': '300x300',
 				'type': 'image/png',
 				'purpose': 'any',
 			}],
+			'shortcuts': [
+				{
+					'name': 'Notifications',
+					'short_name': 'Notifications',
+					'description': 'View your notifications',
+					'url': '/my/notifications',
+					'icons': [{
+						'src': this.meta.app192IconUrl || '/static-assets/icons/192.png',
+						'sizes': '192x192',
+					}],
+				},
+				{
+					'name': 'Compose',
+					'short_name': 'Compose',
+					'description': 'Create a new post',
+					'url': '/share',
+					'icons': [{
+						'src': this.meta.app192IconUrl || '/static-assets/icons/192.png',
+						'sizes': '192x192',
+					}],
+				},
+			],
+			'launch_handler': {
+				'client_mode': 'navigate-existing',
+			},
+			'display_override': ['window-controls-overlay', 'standalone'],
+			'edge_side_panel': {
+				'preferred_width': 400,
+			},
+			'note_taking': {
+				'new_note_url': '/share',
+			},
 			'share_target': {
 				'action': '/share/',
 				'method': 'GET',
