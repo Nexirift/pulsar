@@ -125,12 +125,30 @@ export class PushNotificationService {
 				});
 				this.logger.debug(`Push notification sent successfully to ${subscription.endpoint}`);
 			} catch (err: any) {
-				this.logger.error(`Failed to send push notification: status=${err.statusCode}, endpoint=${subscription.endpoint}`, {
+				// Log the full error with all available details
+				const errorDetails: any = {
+					endpoint: subscription.endpoint,
 					statusCode: err.statusCode,
-					headers: err.headers,
-					body: err.body,
 					message: err.message,
-				});
+					name: err.name,
+					code: err.code,
+				};
+
+				// Include HTTP-specific details if available
+				if (err.statusCode) {
+					errorDetails.headers = err.headers;
+					errorDetails.body = err.body;
+				}
+
+				// Include stack trace for non-HTTP errors
+				if (!err.statusCode) {
+					errorDetails.stack = err.stack;
+				}
+
+				this.logger.error(
+					`Failed to send push notification: ${err.statusCode ? `HTTP ${err.statusCode}` : err.message || err.name || 'Unknown error'}`,
+					errorDetails,
+				);
 
 				if (err.statusCode === 410) {
 					this.logger.info(`Removing expired subscription for user ${userId}`);
