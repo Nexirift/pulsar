@@ -14,6 +14,8 @@ import type { MiMeta, MiSwSubscription, SwSubscriptionsRepository } from '@/mode
 import { bindThis } from '@/decorators.js';
 import { CacheManagementService, type ManagedQuantumKVCache } from '@/global/CacheManagementService.js';
 import { TimeService } from '@/global/TimeService.js';
+import { LoggerService } from '@/core/LoggerService.js';
+import type { Logger } from '@/logger.js';
 
 // Defined also packages/sw/types.ts#L13
 type PushNotificationsTypes = {
@@ -50,6 +52,7 @@ function truncateBody<T extends keyof PushNotificationsTypes>(type: T, body: Pus
 @Injectable()
 export class PushNotificationService {
 	private readonly subscriptionsCache: ManagedQuantumKVCache<MiSwSubscription[]>;
+	private logger: Logger;
 
 	constructor(
 		@Inject(DI.config)
@@ -66,8 +69,10 @@ export class PushNotificationService {
 
 		private readonly timeService: TimeService,
 
+		loggerService: LoggerService,
 		cacheManagementService: CacheManagementService,
 	) {
+		this.logger = loggerService.getLogger('push-notification');
 		this.subscriptionsCache = cacheManagementService.createQuantumKVCache<MiSwSubscription[]>('userSwSubscriptions', {
 			lifetime: 1000 * 60 * 60 * 1, // 1h
 			fetcher: async userId => await this.swSubscriptionsRepository.findBy({ userId }),
@@ -78,7 +83,10 @@ export class PushNotificationService {
 
 	@bindThis
 	public async pushNotification<T extends keyof PushNotificationsTypes>(userId: string, type: T, body: PushNotificationsTypes[T]) {
-		if (!this.meta.enableServiceWorker || this.meta.swPublicKey == null || this.meta.swPrivateKey == null) return;
+		if (!this.meta.enableServiceWorker || this.meta.swPublicKey == null || this.meta.swPrivateKey == null) {
+			this.logger.warn('Push notifications are disabled or not configured properly');
+			return;
+		}
 
 		// アプリケーションの連絡先と、サーバーサイドの鍵ペアの情報を登録
 		push.setVapidDetails(this.config.url,
@@ -87,10 +95,16 @@ export class PushNotificationService {
 
 		const subscriptions = await this.subscriptionsCache.fetch(userId);
 
-		for (const subscription of subscriptions) {
+		if (subscriptions.length === 0) {
+			this.logger.debug(`No push subscriptions found for user ${userId}`);
+			return;
+		}
+
+		// Send all notifications concurrently and handle failures individually
+		const promises = subscriptions.map(async (subscription) => {
 			if ([
 				'readAllNotifications',
-			].includes(type) && !subscription.sendReadMessage) continue;
+			].includes(type) && !subscription.sendReadMessage) return;
 
 			const pushSubscription = {
 				endpoint: subscription.endpoint,
@@ -100,30 +114,38 @@ export class PushNotificationService {
 				},
 			};
 
-			push.sendNotification(pushSubscription, JSON.stringify({
-				type,
-				body: (type === 'notification' || type === 'unreadAntennaNote') ? truncateBody(type, body) : body,
-				userId,
-				dateTime: this.timeService.now,
-			}), {
-				proxy: this.config.proxy,
-			}).catch((err: any) => {
-				//swLogger.info(err.statusCode);
-				//swLogger.info(err.headers);
-				//swLogger.info(err.body);
+			try {
+				await push.sendNotification(pushSubscription, JSON.stringify({
+					type,
+					body: (type === 'notification' || type === 'unreadAntennaNote') ? truncateBody(type, body) : body,
+					userId,
+					dateTime: this.timeService.now,
+				}), {
+					proxy: this.config.proxy,
+				});
+				this.logger.debug(`Push notification sent successfully to ${subscription.endpoint}`);
+			} catch (err: any) {
+				this.logger.error(`Failed to send push notification: status=${err.statusCode}, endpoint=${subscription.endpoint}`, {
+					statusCode: err.statusCode,
+					headers: err.headers,
+					body: err.body,
+					message: err.message,
+				});
 
 				if (err.statusCode === 410) {
-					this.swSubscriptionsRepository.delete({
+					this.logger.info(`Removing expired subscription for user ${userId}`);
+					await this.swSubscriptionsRepository.delete({
 						userId: userId,
 						endpoint: subscription.endpoint,
 						auth: subscription.auth,
 						publickey: subscription.publickey,
-					}).then(async () => {
-						await this.refreshCache(userId);
 					});
+					await this.refreshCache(userId);
 				}
-			});
-		}
+			}
+		});
+
+		await Promise.allSettled(promises);
 	}
 
 	@bindThis
