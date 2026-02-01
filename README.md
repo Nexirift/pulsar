@@ -4,7 +4,7 @@ Pulsar is an open source, decentralized social media platform that's free foreve
 
 We aim to provide a community-oriented experience for our social media platform, [Nexirift](https://nexirift.com).
 
-### Notice
+## Notice
 
 GitHub is NOT the official place to contribute correctly. Please visit our own instance at [code.nexirift.com/Nexirift/pulsar](https://code.nexirift.com/Nexirift/pulsar). Issues and pull requests are still accepted on GitHub but we highly advise you to not do that as this may change in the future.
 
