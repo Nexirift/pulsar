@@ -28796,6 +28796,8 @@ export interface operations {
                     marker?: string | null;
                     /** @default false */
                     force?: boolean;
+                    /** @default false */
+                    isForImport?: boolean;
                 };
             };
         };
