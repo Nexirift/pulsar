@@ -34,8 +34,9 @@ const menuIndicated = computed(() => {
 
 const rootElHeight = ref(0);
 
-const isInChat = computed(() => {
-	return mainRouter.currentRoute.value.path.startsWith("/chat");
+const isInNonPostingAreas = computed(() => {
+	const pattern = /^\/(admin|settings|chat|games|bubble-game|reversi)/;
+	return pattern.test(mainRouter.currentRoute.value.path);
 });
 
 function handleItemClick(item: string) {
@@ -106,7 +107,7 @@ watch(
 		</div>
 
 		<button
-			v-if="!isInChat"
+			v-if="!isInNonPostingAreas"
 			:class="$style.floatingPost"
 			class="_button"
 			@click="os.post()"
