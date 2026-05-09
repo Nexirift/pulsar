@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { getCurrentInstance } from 'vue';
-import type { ComponentInternalInstance } from 'vue';
+import { getCurrentInstance } from "vue";
+import type { ComponentInternalInstance } from "vue";
 
 export function isDebuggerEnabled(id: number): boolean {
 	try {
@@ -16,7 +16,7 @@ export function isDebuggerEnabled(id: number): boolean {
 
 export function switchDebuggerEnabled(id: number, enabled: boolean): void {
 	if (enabled) {
-		localStorage.setItem(`DEBUG_${id}`, '');
+		localStorage.setItem(`DEBUG_${id}`, "");
 	} else {
 		localStorage.removeItem(`DEBUG_${id}`);
 	}

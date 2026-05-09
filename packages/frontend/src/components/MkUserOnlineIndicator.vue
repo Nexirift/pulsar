@@ -4,21 +4,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div
-	v-tooltip="text"
-	:class="[$style.root, {
-		[$style.status_online]: user.onlineStatus === 'online',
-		[$style.status_active]: user.onlineStatus === 'active',
-		[$style.status_offline]: user.onlineStatus === 'offline',
-		[$style.status_unknown]: user.onlineStatus === 'unknown',
-	}]"
-></div>
+	<div
+		v-tooltip="text"
+		:class="[
+			$style.root,
+			{
+				[$style.status_online]: user.onlineStatus === 'online',
+				[$style.status_active]: user.onlineStatus === 'active',
+				[$style.status_offline]: user.onlineStatus === 'offline',
+				[$style.status_unknown]: user.onlineStatus === 'unknown',
+			},
+		]"
+	></div>
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
-import * as Misskey from 'misskey-js';
-import { i18n } from '@/i18n.js';
+import { computed } from "vue";
+import * as Misskey from "misskey-js";
+import { i18n } from "@/i18n.js";
 
 const props = defineProps<{
 	user: Misskey.entities.User;
@@ -26,10 +29,14 @@ const props = defineProps<{
 
 const text = computed(() => {
 	switch (props.user.onlineStatus) {
-		case 'online': return i18n.ts.online;
-		case 'active': return i18n.ts.active;
-		case 'offline': return i18n.ts.offline;
-		case 'unknown': return i18n.ts.unknown;
+		case "online":
+			return i18n.ts.online;
+		case "active":
+			return i18n.ts.active;
+		case "offline":
+			return i18n.ts.offline;
+		case "unknown":
+			return i18n.ts.unknown;
 	}
 });
 </script>
@@ -40,7 +47,9 @@ const text = computed(() => {
 
 	// sharkey: the comment mentions something about 100% radius not behaving correctly on blink.
 	// couldn't reproduce, assuming the 120% here was just an old workaround
-	border-radius: var(--MI-radius-full); // Blinkのバグか知らんけど、100%ぴったりにすると何故か若干楕円でレンダリングされる
+	border-radius: var(
+		--MI-radius-full
+	); // Blinkのバグか知らんけど、100%ぴったりにすると何故か若干楕円でレンダリングされる
 
 	&.status_online {
 		background: #58d4c9;

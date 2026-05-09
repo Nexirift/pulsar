@@ -4,23 +4,30 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkA v-user-preview="canonical" :class="[$style.root, { [$style.isMe]: isMe }]" :to="url" :behavior="navigationBehavior">
-	<img :class="$style.icon" :src="avatarUrl" alt="">
-	<span>
-		<span>@{{ username }}</span>
-		<span v-if="(host != localHost)" :class="$style.host">@{{ toUnicode(host) }}</span>
-	</span>
-</MkA>
+	<MkA
+		v-user-preview="canonical"
+		:class="[$style.root, { [$style.isMe]: isMe }]"
+		:to="url"
+		:behavior="navigationBehavior"
+	>
+		<img :class="$style.icon" :src="avatarUrl" alt="" />
+		<span>
+			<span>@{{ username }}</span>
+			<span v-if="host != localHost" :class="$style.host"
+				>@{{ toUnicode(host) }}</span
+			>
+		</span>
+	</MkA>
 </template>
 
 <script lang="ts" setup>
-import { toUnicode } from 'punycode.js';
-import { computed } from 'vue';
-import { host as localHost } from '@@/js/config.js';
-import type { MkABehavior } from '@/components/global/MkA.vue';
-import { $i } from '@/i.js';
-import { getStaticImageUrl } from '@/utility/media-proxy.js';
-import { prefer } from '@/preferences.js';
+import { toUnicode } from "punycode.js";
+import { computed } from "vue";
+import { host as localHost } from "@@/js/config.js";
+import type { MkABehavior } from "@/components/global/MkA.vue";
+import { $i } from "@/i.js";
+import { getStaticImageUrl } from "@/utility/media-proxy.js";
+import { prefer } from "@/preferences.js";
 
 const props = defineProps<{
 	username: string;
@@ -28,17 +35,22 @@ const props = defineProps<{
 	navigationBehavior?: MkABehavior;
 }>();
 
-const canonical = props.host === localHost ? `@${props.username}` : `@${props.username}@${toUnicode(props.host)}`;
+const canonical =
+	props.host === localHost
+		? `@${props.username}`
+		: `@${props.username}@${toUnicode(props.host)}`;
 
 const url = `/${canonical}`;
 
-const isMe = $i && (
-	`@${props.username}@${toUnicode(props.host)}` === `@${$i.username}@${toUnicode(localHost)}`.toLowerCase()
-);
+const isMe =
+	$i &&
+	`@${props.username}@${toUnicode(props.host)}` ===
+		`@${$i.username}@${toUnicode(localHost)}`.toLowerCase();
 
-const avatarUrl = computed(() => prefer.s.disableShowingAnimatedImages || prefer.s.dataSaver.avatar
-	? getStaticImageUrl(`/avatar/@${props.username}@${props.host}`)
-	: `/avatar/@${props.username}@${props.host}`,
+const avatarUrl = computed(() =>
+	prefer.s.disableShowingAnimatedImages || prefer.s.dataSaver.avatar
+		? getStaticImageUrl(`/avatar/@${props.username}@${props.host}`)
+		: `/avatar/@${props.username}@${props.host}`,
 );
 </script>
 

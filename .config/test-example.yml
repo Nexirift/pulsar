@@ -1,4 +1,4 @@
-url: 'http://misskey.local'
+url: "http://misskey.local"
 
 setupPassword: example_password_please_change_this_or_you_will_get_hacked
 
@@ -10,7 +10,7 @@ db:
   port: 5432
   db: test-misskey
   user: postgres
-  pass: ''
+  pass: ""
 redis:
   host: 127.0.0.1
   port: 6379

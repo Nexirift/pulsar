@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { computed } from 'vue';
-import type { Ref, ComputedRef } from 'vue';
+import { computed } from "vue";
+import type { Ref, ComputedRef } from "vue";
 
 export function getDateText(dateInstance: Date) {
 	const date = dateInstance.getDate();
@@ -12,45 +12,50 @@ export function getDateText(dateInstance: Date) {
 	return `${month.toString()}/${date.toString()}`;
 }
 
-export type DateSeparetedTimelineItem<T> = {
-	id: string;
-	type: 'item';
-	data: T;
-} | {
-	id: string;
-	type: 'date';
-	prev: Date;
-	prevText: string;
-	next: Date;
-	nextText: string;
-};
+export type DateSeparetedTimelineItem<T> =
+	| {
+			id: string;
+			type: "item";
+			data: T;
+	  }
+	| {
+			id: string;
+			type: "date";
+			prev: Date;
+			prevText: string;
+			next: Date;
+			nextText: string;
+	  };
 
-export function makeDateSeparatedTimelineComputedRef<T extends { id: string; createdAt: string; }>(items: Ref<T[]> | ComputedRef<T[]>) {
+export function makeDateSeparatedTimelineComputedRef<
+	T extends { id: string; createdAt: string },
+>(items: Ref<T[]> | ComputedRef<T[]>) {
 	return computed<DateSeparetedTimelineItem<T>[]>(() => {
 		const tl: DateSeparetedTimelineItem<T>[] = [];
 		for (let i = 0; i < items.value.length; i++) {
 			const item = items.value[i];
 
 			const date = new Date(item.createdAt);
-			const nextDate = items.value[i + 1] ? new Date(items.value[i + 1].createdAt) : null;
+			const nextDate = items.value[i + 1]
+				? new Date(items.value[i + 1].createdAt)
+				: null;
 
 			tl.push({
 				id: item.id,
-				type: 'item',
+				type: "item",
 				data: item,
 			});
 
 			if (
 				i !== items.value.length - 1 &&
-					nextDate != null && (
-					date.getFullYear() !== nextDate.getFullYear() ||
-						date.getMonth() !== nextDate.getMonth() ||
-						date.getDate() !== nextDate.getDate()
-				)
+				nextDate != null &&
+				(date.getFullYear() !== nextDate.getFullYear() ||
+					date.getMonth() !== nextDate.getMonth() ||
+					date.getDate() !== nextDate.getDate())
 			) {
 				tl.push({
 					id: `date-${item.id}`,
-					type: 'date',
+					type: "date",
 					prev: date,
 					prevText: getDateText(date),
 					next: nextDate,

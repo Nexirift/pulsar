@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import promiseLimit from 'promise-limit';
-import type { TimeService, TimerHandle } from '@/global/TimeService.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
-import { bindThis } from '@/decorators.js';
-import { Serialized } from '@/types.js';
+import promiseLimit from "promise-limit";
+import type { TimeService, TimerHandle } from "@/global/TimeService.js";
+import { InternalEventService } from "@/global/InternalEventService.js";
+import { bindThis } from "@/decorators.js";
+import { Serialized } from "@/types.js";
 
 type Job<V> = {
 	value: V;
@@ -29,7 +29,7 @@ export class CollapsedQueue<V> {
 	private readonly limiter?: ReturnType<typeof promiseLimit<void>>;
 	private readonly jobs: Map<string, Job<V>> = new Map();
 	private readonly deferredKeys = new Set<string>();
-	private readonly locallyOwnedKeys = new Set<string>();  // Track keys we created locally
+	private readonly locallyOwnedKeys = new Set<string>(); // Track keys we created locally
 
 	constructor(
 		private readonly internalEventService: InternalEventService,
@@ -37,26 +37,40 @@ export class CollapsedQueue<V> {
 		public readonly name: string,
 		private readonly timeout: number,
 		private readonly collapse: (oldValue: V, newValue: V) => V,
-		private readonly perform: (key: string, value: V) => Promise<void | unknown>,
+		private readonly perform: (
+			key: string,
+			value: V,
+		) => Promise<void | unknown>,
 		private readonly opts?: {
-			onError?: (queue: CollapsedQueue<V>, error: unknown) => void | Promise<void>,
-			concurrency?: number,
-			redisParser?: (data: Serialized<V>) => V,
+			onError?: (
+				queue: CollapsedQueue<V>,
+				error: unknown,
+			) => void | Promise<void>;
+			concurrency?: number;
+			redisParser?: (data: Serialized<V>) => V;
 		},
 	) {
 		if (opts?.concurrency) {
 			this.limiter = promiseLimit<void>(opts.concurrency);
 		}
 
-		this.internalEventService.on('collapsedQueueDefer', this.onDefer, { ignoreLocal: true });
-		this.internalEventService.on('collapsedQueueEnqueue', this.onEnqueue, { ignoreLocal: true });
+		this.internalEventService.on("collapsedQueueDefer", this.onDefer, {
+			ignoreLocal: true,
+		});
+		this.internalEventService.on("collapsedQueueEnqueue", this.onEnqueue, {
+			ignoreLocal: true,
+		});
 	}
 
 	@bindThis
 	async enqueue(key: string, value: V) {
 		// If deferred, then send it out to the owning process
 		if (this.deferredKeys.has(key)) {
-			await this.internalEventService.emit('collapsedQueueEnqueue', { name: this.name, key, value });
+			await this.internalEventService.emit("collapsedQueueEnqueue", {
+				name: this.name,
+				key,
+				value,
+			});
 			return;
 		}
 
@@ -77,16 +91,17 @@ export class CollapsedQueue<V> {
 			}
 
 			this.jobs.delete(key);
-			this.locallyOwnedKeys.delete(key);  // Clean up local ownership
+			this.locallyOwnedKeys.delete(key); // Clean up local ownership
 			await this._perform(key, job.value);
 		}, this.timeout);
 		this.jobs.set(key, { value: jobValue, timer });
-		this.locallyOwnedKeys.add(key);  // Mark as locally owned
+		this.locallyOwnedKeys.add(key); // Mark as locally owned
 
 		// Mark as deferred so other processes will forward their state to us
 		// Note: Don't await this to avoid timing issues where we receive our own event
-		this.internalEventService.emit('collapsedQueueDefer', { name: this.name, key, deferred: true }).catch(err => {
-		});
+		this.internalEventService
+			.emit("collapsedQueueDefer", { name: this.name, key, deferred: true })
+			.catch((err) => {});
 	}
 
 	@bindThis
@@ -96,8 +111,12 @@ export class CollapsedQueue<V> {
 
 		this.timeService.stopTimer(job.timer);
 		this.jobs.delete(key);
-		this.locallyOwnedKeys.delete(key);  // Clean up local ownership
-		await this.internalEventService.emit('collapsedQueueDefer', { name: this.name, key, deferred: false });
+		this.locallyOwnedKeys.delete(key); // Clean up local ownership
+		await this.internalEventService.emit("collapsedQueueDefer", {
+			name: this.name,
+			key,
+			deferred: false,
+		});
 	}
 
 	@bindThis
@@ -109,12 +128,18 @@ export class CollapsedQueue<V> {
 		const entries = Array.from(this.jobs.entries());
 		this.jobs.clear();
 
-		return await Promise.all(entries.map(([key, job]) => this._perform(key, job.value)));
+		return await Promise.all(
+			entries.map(([key, job]) => this._perform(key, job.value)),
+		);
 	}
 
 	private async _perform(key: string, value: V) {
 		try {
-			await this.internalEventService.emit('collapsedQueueDefer', { name: this.name, key, deferred: false });
+			await this.internalEventService.emit("collapsedQueueDefer", {
+				name: this.name,
+				key,
+				deferred: false,
+			});
 
 			if (this.limiter) {
 				await this.limiter(async () => {
@@ -133,7 +158,11 @@ export class CollapsedQueue<V> {
 
 	//#region Events from other processes
 	@bindThis
-	private async onDefer(data: { name: string, key: string, deferred: boolean }) {
+	private async onDefer(data: {
+		name: string;
+		key: string;
+		deferred: boolean;
+	}) {
 		if (data.name !== this.name) return;
 
 		// Don't process defer events for keys we own locally - this prevents us from canceling our own timers
@@ -154,7 +183,11 @@ export class CollapsedQueue<V> {
 				// If another process tries to claim our job, then give it to them and queue our latest state.
 				this.timeService.stopTimer(job.timer);
 				this.jobs.delete(data.key);
-				await this.internalEventService.emit('collapsedQueueEnqueue', { name: this.name, key: data.key, value: job.value });
+				await this.internalEventService.emit("collapsedQueueEnqueue", {
+					name: this.name,
+					key: data.key,
+					value: job.value,
+				});
 			} else {
 				// If another process tries to release our job, then just continue.
 				return;
@@ -169,14 +202,14 @@ export class CollapsedQueue<V> {
 	}
 
 	@bindThis
-	private async onEnqueue(data: { name: string, key: string, value: unknown }) {
+	private async onEnqueue(data: { name: string; key: string; value: unknown }) {
 		if (data.name !== this.name) return;
 
 		// Only enqueue if not deferred
 		if (!this.deferredKeys.has(data.key)) {
 			const value = this.opts?.redisParser
 				? this.opts.redisParser(data.value as Serialized<V>)
-				: data.value as V;
+				: (data.value as V);
 
 			await this.enqueue(data.key, value);
 		}
@@ -184,8 +217,8 @@ export class CollapsedQueue<V> {
 	//#endregion
 
 	async dispose() {
-		this.internalEventService.off('collapsedQueueDefer', this.onDefer);
-		this.internalEventService.off('collapsedQueueEnqueue', this.onEnqueue);
+		this.internalEventService.off("collapsedQueueDefer", this.onDefer);
+		this.internalEventService.off("collapsedQueueEnqueue", this.onEnqueue);
 
 		return await this.performAllNow();
 	}

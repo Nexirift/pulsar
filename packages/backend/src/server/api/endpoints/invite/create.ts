@@ -3,37 +3,38 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { MoreThan } from 'typeorm';
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { RegistrationTicketsRepository } from '@/models/_.js';
-import { InviteCodeEntityService } from '@/core/entities/InviteCodeEntityService.js';
-import { IdService } from '@/core/IdService.js';
-import { RoleService } from '@/core/RoleService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { DI } from '@/di-symbols.js';
-import { generateInviteCode } from '@/misc/generate-invite-code.js';
-import { ApiError } from '../../error.js';
+import { MoreThan } from "typeorm";
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { RegistrationTicketsRepository } from "@/models/_.js";
+import { InviteCodeEntityService } from "@/core/entities/InviteCodeEntityService.js";
+import { IdService } from "@/core/IdService.js";
+import { RoleService } from "@/core/RoleService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { DI } from "@/di-symbols.js";
+import { generateInviteCode } from "@/misc/generate-invite-code.js";
+import { ApiError } from "../../error.js";
 
 export const meta = {
-	tags: ['meta'],
+	tags: ["meta"],
 
 	requireCredential: true,
-	requiredRolePolicy: 'canInvite',
-	kind: 'write:invite-codes',
+	requiredRolePolicy: "canInvite",
+	kind: "write:invite-codes",
 
 	errors: {
 		exceededCreateLimit: {
-			message: 'You have exceeded the limit for creating an invitation code.',
-			code: 'EXCEEDED_LIMIT_OF_CREATE_INVITE_CODE',
-			id: '8b165dd3-6f37-4557-8db1-73175d63c641',
+			message: "You have exceeded the limit for creating an invitation code.",
+			code: "EXCEEDED_LIMIT_OF_CREATE_INVITE_CODE",
+			id: "8b165dd3-6f37-4557-8db1-73175d63c641",
 		},
 	},
 
 	res: {
-		type: 'object',
-		optional: false, nullable: false,
-		ref: 'InviteCode',
+		type: "object",
+		optional: false,
+		nullable: false,
+		ref: "InviteCode",
 	},
 
 	// 2 calls per second
@@ -44,13 +45,14 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {},
 	required: [],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.registrationTicketsRepository)
 		private registrationTicketsRepository: RegistrationTicketsRepository,
@@ -65,7 +67,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (policies.inviteLimit) {
 				const count = await this.registrationTicketsRepository.countBy({
-					id: MoreThan(this.idService.gen(this.timeService.now - (policies.inviteLimitCycle * 1000 * 60))),
+					id: MoreThan(
+						this.idService.gen(
+							this.timeService.now - policies.inviteLimitCycle * 1000 * 60,
+						),
+					),
 					createdById: me.id,
 				});
 
@@ -78,7 +84,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				id: this.idService.gen(),
 				createdBy: me,
 				createdById: me.id,
-				expiresAt: policies.inviteExpirationTime ? new Date(this.timeService.now + (policies.inviteExpirationTime * 1000 * 60)) : null,
+				expiresAt: policies.inviteExpirationTime
+					? new Date(
+							this.timeService.now + policies.inviteExpirationTime * 1000 * 60,
+						)
+					: null,
 				code: generateInviteCode(this.timeService.now),
 			});
 

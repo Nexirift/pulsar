@@ -3,39 +3,39 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { SystemWebhookEntityService } from '@/core/entities/SystemWebhookEntityService.js';
-import { systemWebhookEventTypes } from '@/models/SystemWebhook.js';
-import { SystemWebhookService } from '@/core/SystemWebhookService.js';
+import { Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { SystemWebhookEntityService } from "@/core/entities/SystemWebhookEntityService.js";
+import { systemWebhookEventTypes } from "@/models/SystemWebhook.js";
+import { SystemWebhookService } from "@/core/SystemWebhookService.js";
 
 export const meta = {
-	tags: ['admin', 'system-webhook'],
+	tags: ["admin", "system-webhook"],
 
 	requireCredential: true,
 	requireModerator: true,
 	secure: true,
-	kind: 'write:admin:system-webhook',
+	kind: "write:admin:system-webhook",
 
 	res: {
-		type: 'array',
+		type: "array",
 		items: {
-			type: 'object',
-			ref: 'SystemWebhook',
+			type: "object",
+			ref: "SystemWebhook",
 		},
 	},
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
 		isActive: {
-			type: 'boolean',
+			type: "boolean",
 		},
 		on: {
-			type: 'array',
+			type: "array",
 			items: {
-				type: 'string',
+				type: "string",
 				enum: systemWebhookEventTypes,
 			},
 		},
@@ -44,7 +44,8 @@ export const paramDef = {
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		private systemWebhookService: SystemWebhookService,
 		private systemWebhookEntityService: SystemWebhookEntityService,

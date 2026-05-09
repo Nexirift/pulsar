@@ -4,15 +4,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="[$style.root, accented ? $style.accented : null]"></div>
+	<div :class="[$style.root, accented ? $style.accented : null]"></div>
 </template>
 
 <script lang="ts" setup>
-const props = withDefaults(defineProps<{
-	accented?: boolean;
-}>(), {
-	accented: false,
-});
+const props = withDefaults(
+	defineProps<{
+		accented?: boolean;
+	}>(),
+	{
+		accented: false,
+	},
+);
 </script>
 
 <style lang="scss" module>
@@ -31,9 +34,18 @@ const props = withDefaults(defineProps<{
 	height: 200px;
 	margin-bottom: -200px;
 
-	background-image: linear-gradient(transparent 60%, transparent 100%), radial-gradient(var(--c) var(--dot-size), transparent var(--dot-size)), radial-gradient(var(--c) var(--dot-size), transparent var(--dot-size));
-	background-position: 0 0, 0 0, var(--offset) var(--offset);
-	background-size: 100% 100%, var(--gap-size) var(--gap-size), var(--gap-size) var(--gap-size);
+	background-image:
+		linear-gradient(transparent 60%, transparent 100%),
+		radial-gradient(var(--c) var(--dot-size), transparent var(--dot-size)),
+		radial-gradient(var(--c) var(--dot-size), transparent var(--dot-size));
+	background-position:
+		0 0,
+		0 0,
+		var(--offset) var(--offset);
+	background-size:
+		100% 100%,
+		var(--gap-size) var(--gap-size),
+		var(--gap-size) var(--gap-size);
 	mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
 	pointer-events: none;
 }

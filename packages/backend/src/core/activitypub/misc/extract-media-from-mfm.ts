@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { parse, inspect, extract } from 'mfm-js';
-import type { IApDocument } from '@/core/activitypub/type.js';
-import type { MfmNode, MfmText } from 'mfm-js';
+import { parse, inspect, extract } from "mfm-js";
+import type { IApDocument } from "@/core/activitypub/type.js";
+import type { MfmNode, MfmText } from "mfm-js";
 
 /**
  * Finds MFM notes representing inline media and returns them as simulated AP documents.
@@ -18,32 +18,30 @@ export function extractMediaFromMfm(mfm: string): IApDocument[] {
 
 	const attachments = new Map<string, IApDocument>();
 
-	inspect(nodes, node => {
-		if (node.type === 'link' && node.props.image) {
+	inspect(nodes, (node) => {
+		if (node.type === "link" && node.props.image) {
 			const alt: string[] = [];
 
-			inspect(node.children, node => {
+			inspect(node.children, (node) => {
 				switch (node.type) {
-					case 'text':
+					case "text":
 						alt.push(node.props.text);
 						break;
-					case 'unicodeEmoji':
+					case "unicodeEmoji":
 						alt.push(node.props.emoji);
 						break;
-					case 'emojiCode':
-						alt.push(':');
+					case "emojiCode":
+						alt.push(":");
 						alt.push(node.props.name);
-						alt.push(':');
+						alt.push(":");
 						break;
 				}
 			});
 
 			attachments.set(node.props.url, {
-				type: 'Image',
+				type: "Image",
 				url: node.props.url,
-				name: alt.length > 0
-					? alt.join('')
-					: null,
+				name: alt.length > 0 ? alt.join("") : null,
 			});
 		}
 	});

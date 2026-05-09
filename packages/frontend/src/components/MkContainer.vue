@@ -4,63 +4,100 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div ref="rootEl" class="_panel" :class="[$style.root, { [$style.naked]: naked, [$style.thin]: thin, [$style.scrollable]: scrollable }]">
-	<header v-if="showHeader" ref="headerEl" :class="$style.header">
-		<div :class="$style.title">
-			<span :class="$style.titleIcon"><slot name="icon"></slot></span>
-			<slot name="header"></slot>
-		</div>
-		<div :class="$style.headerSub">
-			<slot name="func" :buttonStyleClass="$style.headerButton"></slot>
-			<button v-if="foldable" :class="$style.headerButton" class="_button" @click="() => showBody = !showBody">
-				<template v-if="showBody"><i class="ti ti-chevron-up"></i></template>
-				<template v-else><i class="ti ti-chevron-down"></i></template>
-			</button>
-		</div>
-	</header>
-	<Transition
-		:enterActiveClass="prefer.s.animation ? $style.transition_toggle_enterActive : ''"
-		:leaveActiveClass="prefer.s.animation ? $style.transition_toggle_leaveActive : ''"
-		:enterFromClass="prefer.s.animation ? $style.transition_toggle_enterFrom : ''"
-		:leaveToClass="prefer.s.animation ? $style.transition_toggle_leaveTo : ''"
-		@enter="enter"
-		@afterEnter="afterEnter"
-		@leave="leave"
-		@afterLeave="afterLeave"
+	<div
+		ref="rootEl"
+		class="_panel"
+		:class="[
+			$style.root,
+			{
+				[$style.naked]: naked,
+				[$style.thin]: thin,
+				[$style.scrollable]: scrollable,
+			},
+		]"
 	>
-		<div v-show="showBody" ref="contentEl" :class="[$style.content, { [$style.omitted]: omitted, [$style.naked]: naked }]">
-			<slot></slot>
-			<button v-if="omitted" :class="$style.fade" class="_button" @click="showMore">
-				<span :class="$style.fadeLabel">{{ i18n.ts.showMore }}</span>
-			</button>
-		</div>
-	</Transition>
-</div>
+		<header v-if="showHeader" ref="headerEl" :class="$style.header">
+			<div :class="$style.title">
+				<span :class="$style.titleIcon"><slot name="icon"></slot></span>
+				<slot name="header"></slot>
+			</div>
+			<div :class="$style.headerSub">
+				<slot name="func" :buttonStyleClass="$style.headerButton"></slot>
+				<button
+					v-if="foldable"
+					:class="$style.headerButton"
+					class="_button"
+					@click="() => (showBody = !showBody)"
+				>
+					<template v-if="showBody"><i class="ti ti-chevron-up"></i></template>
+					<template v-else><i class="ti ti-chevron-down"></i></template>
+				</button>
+			</div>
+		</header>
+		<Transition
+			:enterActiveClass="
+				prefer.s.animation ? $style.transition_toggle_enterActive : ''
+			"
+			:leaveActiveClass="
+				prefer.s.animation ? $style.transition_toggle_leaveActive : ''
+			"
+			:enterFromClass="
+				prefer.s.animation ? $style.transition_toggle_enterFrom : ''
+			"
+			:leaveToClass="prefer.s.animation ? $style.transition_toggle_leaveTo : ''"
+			@enter="enter"
+			@afterEnter="afterEnter"
+			@leave="leave"
+			@afterLeave="afterLeave"
+		>
+			<div
+				v-show="showBody"
+				ref="contentEl"
+				:class="[
+					$style.content,
+					{ [$style.omitted]: omitted, [$style.naked]: naked },
+				]"
+			>
+				<slot></slot>
+				<button
+					v-if="omitted"
+					:class="$style.fade"
+					class="_button"
+					@click="showMore"
+				>
+					<span :class="$style.fadeLabel">{{ i18n.ts.showMore }}</span>
+				</button>
+			</div>
+		</Transition>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
-import { prefer } from '@/preferences.js';
-import { i18n } from '@/i18n.js';
+import { onMounted, onUnmounted, ref, useTemplateRef, watch } from "vue";
+import { prefer } from "@/preferences.js";
+import { i18n } from "@/i18n.js";
 
-const props = withDefaults(defineProps<{
-	showHeader?: boolean;
-	thin?: boolean;
-	naked?: boolean;
-	foldable?: boolean;
-	onUnfold?: () => boolean; // return false to prevent unfolding
-	scrollable?: boolean;
-	expanded?: boolean;
-	maxHeight?: number | null;
-}>(), {
-	expanded: true,
-	showHeader: true,
-	maxHeight: null,
-});
+const props = withDefaults(
+	defineProps<{
+		showHeader?: boolean;
+		thin?: boolean;
+		naked?: boolean;
+		foldable?: boolean;
+		onUnfold?: () => boolean; // return false to prevent unfolding
+		scrollable?: boolean;
+		expanded?: boolean;
+		maxHeight?: number | null;
+	}>(),
+	{
+		expanded: true,
+		showHeader: true,
+		maxHeight: null,
+	},
+);
 
-const rootEl = useTemplateRef('rootEl');
-const contentEl = useTemplateRef('contentEl');
-const headerEl = useTemplateRef('headerEl');
+const rootEl = useTemplateRef("rootEl");
+const contentEl = useTemplateRef("contentEl");
+const headerEl = useTemplateRef("headerEl");
 const showBody = ref(props.expanded);
 const ignoreOmit = ref(false);
 const omitted = ref(false);
@@ -68,14 +105,14 @@ const omitted = ref(false);
 function enter(el: Element) {
 	if (!(el instanceof HTMLElement)) return;
 	const elementHeight = el.getBoundingClientRect().height;
-	el.style.height = '0';
+	el.style.height = "0";
 	el.offsetHeight; // reflow
 	el.style.height = `${Math.min(elementHeight, props.maxHeight ?? Infinity)}px`;
 }
 
 function afterEnter(el: Element) {
 	if (!(el instanceof HTMLElement)) return;
-	el.style.height = '';
+	el.style.height = "";
 }
 
 function leave(el: Element) {
@@ -83,12 +120,12 @@ function leave(el: Element) {
 	const elementHeight = el.getBoundingClientRect().height;
 	el.style.height = `${elementHeight}px`;
 	el.offsetHeight; // reflow
-	el.style.height = '0';
+	el.style.height = "0";
 }
 
 function afterLeave(el: Element) {
 	if (!(el instanceof HTMLElement)) return;
-	el.style.height = '';
+	el.style.height = "";
 }
 
 const calcOmit = () => {
@@ -110,20 +147,27 @@ function showMore() {
 }
 
 onMounted(() => {
-	watch(showBody, v => {
-		if (!rootEl.value) return;
-		const headerHeight = props.showHeader ? headerEl.value?.offsetHeight ?? 0 : 0;
-		rootEl.value.style.minHeight = `${headerHeight}px`;
-		if (v) {
-			rootEl.value.style.flexBasis = 'auto';
-		} else {
-			rootEl.value.style.flexBasis = `${headerHeight}px`;
-		}
-	}, {
-		immediate: true,
-	});
+	watch(
+		showBody,
+		(v) => {
+			if (!rootEl.value) return;
+			const headerHeight = props.showHeader
+				? (headerEl.value?.offsetHeight ?? 0)
+				: 0;
+			rootEl.value.style.minHeight = `${headerHeight}px`;
+			if (v) {
+				rootEl.value.style.flexBasis = "auto";
+			} else {
+				rootEl.value.style.flexBasis = `${headerHeight}px`;
+			}
+		},
+		{
+			immediate: true,
+		},
+	);
 
-	if (rootEl.value) rootEl.value.style.setProperty('--maxHeight', props.maxHeight + 'px');
+	if (rootEl.value)
+		rootEl.value.style.setProperty("--maxHeight", props.maxHeight + "px");
 
 	calcOmit();
 
@@ -139,7 +183,9 @@ onUnmounted(() => {
 .transition_toggle_enterActive,
 .transition_toggle_leaveActive {
 	overflow-y: clip;
-	transition: opacity 0.5s, height 0.5s !important;
+	transition:
+		opacity 0.5s,
+		height 0.5s !important;
 }
 .transition_toggle_enterFrom,
 .transition_toggle_leaveTo {
@@ -180,7 +226,11 @@ onUnmounted(() => {
 	top: var(--MI-stickyTop, 0px);
 	left: 0;
 	color: var(--MI_THEME-panelHeaderFg);
-	background: color-mix(in srgb, var(--MI_THEME-panelHeaderBg) 35%, transparent);
+	background: color-mix(
+		in srgb,
+		var(--MI_THEME-panelHeaderBg) 35%,
+		transparent
+	);
 	z-index: 2;
 	line-height: 1.4em;
 }
@@ -246,7 +296,11 @@ onUnmounted(() => {
 			left: 0;
 			width: 100%;
 			height: 64px;
-			background: linear-gradient(0deg, var(--MI_THEME-panel), color(from var(--MI_THEME-panel) srgb r g b / 0));
+			background: linear-gradient(
+				0deg,
+				var(--MI_THEME-panel),
+				color(from var(--MI_THEME-panel) srgb r g b / 0)
+			);
 
 			> .fadeLabel {
 				display: inline-block;

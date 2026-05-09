@@ -3,22 +3,23 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable, Inject } from '@nestjs/common';
-import { DataSource } from 'typeorm';
-import { AppLockService } from '@/core/AppLockService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { DI } from '@/di-symbols.js';
-import Logger from '@/logger.js';
-import { bindThis } from '@/decorators.js';
-import Chart from '../core.js';
-import { name, schema } from './entities/test-grouped.js';
-import type { KVs } from '../core.js';
+import { Injectable, Inject } from "@nestjs/common";
+import { DataSource } from "typeorm";
+import { AppLockService } from "@/core/AppLockService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { DI } from "@/di-symbols.js";
+import Logger from "@/logger.js";
+import { bindThis } from "@/decorators.js";
+import Chart from "../core.js";
+import { name, schema } from "./entities/test-grouped.js";
+import type { KVs } from "../core.js";
 
 /**
  * For testing
  */
 @Injectable()
-export default class TestGroupedChart extends Chart<typeof schema> { // eslint-disable-line import/no-default-export
+export default class TestGroupedChart extends Chart<typeof schema> {
+	// eslint-disable-line import/no-default-export
 	private total = {} as Record<string, number>;
 
 	constructor(
@@ -30,16 +31,25 @@ export default class TestGroupedChart extends Chart<typeof schema> { // eslint-d
 
 		logger: Logger,
 	) {
-		super(db, (k) => appLockService.getChartInsertLock(k), logger, name, schema, true);
+		super(
+			db,
+			(k) => appLockService.getChartInsertLock(k),
+			logger,
+			name,
+			schema,
+			true,
+		);
 	}
 
 	protected getCurrentDate(): Date {
 		return this.timeService.date;
 	}
 
-	protected async tickMajor(group: string): Promise<Partial<KVs<typeof schema>>> {
+	protected async tickMajor(
+		group: string,
+	): Promise<Partial<KVs<typeof schema>>> {
 		return {
-			'foo.total': this.total[group],
+			"foo.total": this.total[group],
 		};
 	}
 
@@ -53,9 +63,12 @@ export default class TestGroupedChart extends Chart<typeof schema> { // eslint-d
 
 		this.total[group]++;
 
-		this.commit({
-			'foo.total': 1,
-			'foo.inc': 1,
-		}, group);
+		this.commit(
+			{
+				"foo.total": 1,
+				"foo.inc": 1,
+			},
+			group,
+		);
 	}
 }

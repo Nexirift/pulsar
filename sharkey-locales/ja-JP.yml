@@ -180,7 +180,7 @@ _timelineDescription:
 _serverSettings:
   sidebarLogoUrl: "ロゴURL"
   sidebarLogoDescription: "高精細、ダイナミック幅のシナリオで通常のアイコンの代わりに使用するロゴを指定します。"
-  sidebarLogoUsageExample:  "例：サイドバー、訪問者用、「情報」ページ"
+  sidebarLogoUsageExample: "例：サイドバー、訪問者用、「情報」ページ"
   inquiryUrl: "問い合わせ先URL"
   inquiryUrlDescription: "サーバー運営者へのお問い合わせフォームのURLや、運営者の連絡先等が記載されたWebページのURLを指定します。"
 _accountMigration:
@@ -194,7 +194,7 @@ _achievements:
       flavor: "Sharkeyを使ってくれてありがとう！"
     _iLoveMisskey:
       title: "I Love Sharkey"
-      description: "\"I ❤ #Sharkey\"を投稿した"
+      description: '"I ❤ #Sharkey"を投稿した'
       flavor: "Sharkeyを使ってくださりありがとうございます！ by 開発チーム"
     _client30min:
       description: "クライアントを起動してから30分以上経過した"
@@ -353,8 +353,8 @@ _mfm:
   scaleDescription: "内容を引き伸ばして表示します。"
   foreground: "文字色"
   foregroundDescription: "文字色を変更します。"
-  fade: 'フェード'
-  fadeDescription: '内容をフェードイン・フェードアウトさせます。'
+  fade: "フェード"
+  fadeDescription: "内容をフェードイン・フェードアウトさせます。"
   background: "背景色"
   backgroundDescription: "背景色を変更します。"
   plain: "Plain"

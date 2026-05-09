@@ -5,10 +5,14 @@
 
 export class AddUserLastFetchedFeaturedAt1758129782800 {
 	async up(queryRunner) {
-		await queryRunner.query(`ALTER TABLE "user" ADD "lastFetchedFeaturedAt" DATE`);
+		await queryRunner.query(
+			`ALTER TABLE "user" ADD "lastFetchedFeaturedAt" DATE`,
+		);
 	}
 
 	async down(queryRunner) {
-		await queryRunner.query(`ALTER TABLE "user" DROP COLUMN "lastFetchedFeaturedAt"`);
+		await queryRunner.query(
+			`ALTER TABLE "user" DROP COLUMN "lastFetchedFeaturedAt"`,
+		);
 	}
 }

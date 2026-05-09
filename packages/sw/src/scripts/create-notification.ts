@@ -6,13 +6,13 @@
 /*
  * Notification manager for SW
  */
-import * as Misskey from 'misskey-js';
-import type { BadgeNames, PushNotificationDataMap } from '@/types.js';
-import { char2fileName } from '@/scripts/twemoji-base.js';
-import { cli } from '@/scripts/operations.js';
-import { getAccountFromId } from '@/scripts/get-account-from-id.js';
-import { swLang } from '@/scripts/lang.js';
-import { getUserName } from '@/scripts/get-user-name.js';
+import * as Misskey from "misskey-js";
+import type { BadgeNames, PushNotificationDataMap } from "@/types.js";
+import { char2fileName } from "@/scripts/twemoji-base.js";
+import { cli } from "@/scripts/operations.js";
+import { getAccountFromId } from "@/scripts/get-account-from-id.js";
+import { swLang } from "@/scripts/lang.js";
+import { getUserName } from "@/scripts/get-user-name.js";
 
 // const closeNotificationsByTags = async (tags: string[]): Promise<void> => {
 // 	for (const n of (await Promise.all(tags.map(tag => globalThis.registration.getNotifications({ tag })))).flat()) {
@@ -20,7 +20,8 @@ import { getUserName } from '@/scripts/get-user-name.js';
 // 	}
 // };
 
-const iconUrl = (name: BadgeNames): string => `/static-assets/tabler-badges/${name}.png`;
+const iconUrl = (name: BadgeNames): string =>
+	`/static-assets/tabler-badges/${name}.png`;
 /* How to add a new badge:
  * 1. Find the icon and download png from https://tabler-icons.io/
  * 2. vips resize ~/Downloads/icon-name.png vipswork.png 0.4; vips scRGB2BW vipswork.png ~/icon-name.png"[compression=9,strip]"; rm vipswork.png;
@@ -29,18 +30,22 @@ const iconUrl = (name: BadgeNames): string => `/static-assets/tabler-badges/${na
  * 5. Add `badge: iconUrl('icon-name'),`
  */
 
-export async function createNotification<K extends keyof PushNotificationDataMap>(data: PushNotificationDataMap[K]): Promise<void> {
+export async function createNotification<
+	K extends keyof PushNotificationDataMap,
+>(data: PushNotificationDataMap[K]): Promise<void> {
 	const n = await composeNotification(data);
 
 	if (n) {
 		return globalThis.registration.showNotification(...n);
 	} else {
-		console.error('Could not compose notification', data);
+		console.error("Could not compose notification", data);
 		// return createEmptyNotification();
 	}
 }
 
-async function composeNotification(data: PushNotificationDataMap[keyof PushNotificationDataMap]): Promise<[string, NotificationOptions] | null> {
+async function composeNotification(
+	data: PushNotificationDataMap[keyof PushNotificationDataMap],
+): Promise<[string, NotificationOptions] | null> {
 	const i18n = await (swLang.i18n ?? swLang.fetchLocale());
 	switch (data.type) {
 		/*
@@ -51,263 +56,366 @@ async function composeNotification(data: PushNotificationDataMap[keyof PushNotif
 				data
 			}];
 		*/
-		case 'notification':
+		case "notification":
 			switch (data.body.type) {
-				case 'follow': {
+				case "follow": {
 					// users/showの型定義をswos.apiへ当てはめるのが困難なのでapiFetch.requestを直接使用
 					const account = await getAccountFromId(data.userId);
 					if (!account) return null;
-					const userDetail = await cli.request('users/show', { userId: data.body.userId }, account.token);
-					return [i18n.ts._notification.youWereFollowed, {
-						body: getUserName(data.body.user),
-						icon: data.body.user.avatarUrl ?? undefined,
-						badge: iconUrl('user-plus'),
-						data,
-						actions: userDetail.isFollowing ? [] : [
-							{
-								action: 'follow',
-								title: i18n.ts._notification._actions.followBack,
-							},
-						],
-					}];
+					const userDetail = await cli.request(
+						"users/show",
+						{ userId: data.body.userId },
+						account.token,
+					);
+					return [
+						i18n.ts._notification.youWereFollowed,
+						{
+							body: getUserName(data.body.user),
+							icon: data.body.user.avatarUrl ?? undefined,
+							badge: iconUrl("user-plus"),
+							data,
+							actions: userDetail.isFollowing
+								? []
+								: [
+										{
+											action: "follow",
+											title: i18n.ts._notification._actions.followBack,
+										},
+									],
+						},
+					];
 				}
 
-				case 'mention':
-					return [i18n.tsx._notification.youGotMention({ name: getUserName(data.body.user) }), {
-						body: data.body.note.text ?? '',
-						icon: data.body.user.avatarUrl ?? undefined,
-						badge: iconUrl('at'),
-						data,
-						actions: [
-							{
-								action: 'reply',
-								title: i18n.ts._notification._actions.reply,
-							},
-						],
-					}];
-
-				case 'reply':
-					return [i18n.tsx._notification.youGotReply({ name: getUserName(data.body.user) }), {
-						body: data.body.note.text ?? '',
-						icon: data.body.user.avatarUrl ?? undefined,
-						badge: iconUrl('arrow-back-up'),
-						data,
-						actions: [
-							{
-								action: 'reply',
-								title: i18n.ts._notification._actions.reply,
-							},
-						],
-					}];
-
-				case 'renote':
-					return [i18n.tsx._notification.youRenoted({ name: getUserName(data.body.user) }), {
-						body: data.body.note.text ?? '',
-						icon: data.body.user.avatarUrl ?? undefined,
-						badge: iconUrl('repeat'),
-						data,
-						actions: [
-							{
-								action: 'showUser',
-								title: getUserName(data.body.user),
-							},
-						],
-					}];
-
-				case 'quote':
-					return [i18n.tsx._notification.youGotQuote({ name: getUserName(data.body.user) }), {
-						body: data.body.note.text ?? '',
-						icon: data.body.user.avatarUrl ?? undefined,
-						badge: iconUrl('quote'),
-						data,
-						actions: [
-							{
-								action: 'reply',
-								title: i18n.ts._notification._actions.reply,
-							},
-							...((data.body.note.visibility === 'public' || data.body.note.visibility === 'home') ? [
+				case "mention":
+					return [
+						i18n.tsx._notification.youGotMention({
+							name: getUserName(data.body.user),
+						}),
+						{
+							body: data.body.note.text ?? "",
+							icon: data.body.user.avatarUrl ?? undefined,
+							badge: iconUrl("at"),
+							data,
+							actions: [
 								{
-									action: 'renote',
-									title: i18n.ts._notification._actions.renote,
+									action: "reply",
+									title: i18n.ts._notification._actions.reply,
 								},
-							] : []),
-						],
-					}];
+							],
+						},
+					];
 
-				case 'note':
-					return [i18n.ts._notification.newNote + ': ' + getUserName(data.body.user), {
-						body: data.body.note.text ?? '',
-						icon: data.body.user.avatarUrl ?? undefined,
-						data,
-					}];
+				case "reply":
+					return [
+						i18n.tsx._notification.youGotReply({
+							name: getUserName(data.body.user),
+						}),
+						{
+							body: data.body.note.text ?? "",
+							icon: data.body.user.avatarUrl ?? undefined,
+							badge: iconUrl("arrow-back-up"),
+							data,
+							actions: [
+								{
+									action: "reply",
+									title: i18n.ts._notification._actions.reply,
+								},
+							],
+						},
+					];
 
-				case 'reaction': {
+				case "renote":
+					return [
+						i18n.tsx._notification.youRenoted({
+							name: getUserName(data.body.user),
+						}),
+						{
+							body: data.body.note.text ?? "",
+							icon: data.body.user.avatarUrl ?? undefined,
+							badge: iconUrl("repeat"),
+							data,
+							actions: [
+								{
+									action: "showUser",
+									title: getUserName(data.body.user),
+								},
+							],
+						},
+					];
+
+				case "quote":
+					return [
+						i18n.tsx._notification.youGotQuote({
+							name: getUserName(data.body.user),
+						}),
+						{
+							body: data.body.note.text ?? "",
+							icon: data.body.user.avatarUrl ?? undefined,
+							badge: iconUrl("quote"),
+							data,
+							actions: [
+								{
+									action: "reply",
+									title: i18n.ts._notification._actions.reply,
+								},
+								...(data.body.note.visibility === "public" ||
+								data.body.note.visibility === "home"
+									? [
+											{
+												action: "renote",
+												title: i18n.ts._notification._actions.renote,
+											},
+										]
+									: []),
+							],
+						},
+					];
+
+				case "note":
+					return [
+						i18n.ts._notification.newNote + ": " + getUserName(data.body.user),
+						{
+							body: data.body.note.text ?? "",
+							icon: data.body.user.avatarUrl ?? undefined,
+							data,
+						},
+					];
+
+				case "reaction": {
 					let reaction = data.body.reaction;
 					let badge: string | undefined;
 
-					if (reaction.startsWith(':')) {
+					if (reaction.startsWith(":")) {
 						// カスタム絵文字の場合
 						const name = reaction.substring(1, reaction.length - 1);
 						const badgeUrl = new URL(`/emoji/${name}.webp`, origin);
-						badgeUrl.searchParams.set('badge', '1');
+						badgeUrl.searchParams.set("badge", "1");
 						badge = badgeUrl.href;
-						reaction = name.split('@')[0];
+						reaction = name.split("@")[0];
 					} else {
 						// Unicode絵文字の場合
 						badge = `/twemoji-badge/${char2fileName(reaction)}.png`;
 					}
 
-					if (await fetch(badge).then(res => res.status !== 200).catch(() => true)) {
-						badge = iconUrl('plus');
+					if (
+						await fetch(badge)
+							.then((res) => res.status !== 200)
+							.catch(() => true)
+					) {
+						badge = iconUrl("plus");
 					}
 
 					const tag = `reaction:${data.body.note.id}`;
-					return [`${reaction} ${getUserName(data.body.user)}`, {
-						body: data.body.note.text ?? '',
-						icon: data.body.user.avatarUrl ?? undefined,
-						tag,
-						badge,
-						data,
-						actions: [
-							{
-								action: 'showUser',
-								title: getUserName(data.body.user),
-							},
-						],
-					}];
+					return [
+						`${reaction} ${getUserName(data.body.user)}`,
+						{
+							body: data.body.note.text ?? "",
+							icon: data.body.user.avatarUrl ?? undefined,
+							tag,
+							badge,
+							data,
+							actions: [
+								{
+									action: "showUser",
+									title: getUserName(data.body.user),
+								},
+							],
+						},
+					];
 				}
 
-				case 'receiveFollowRequest':
-					return [i18n.ts._notification.youReceivedFollowRequest, {
-						body: getUserName(data.body.user),
-						icon: data.body.user.avatarUrl ?? undefined,
-						badge: iconUrl('user-plus'),
-						data,
-						actions: [
-							{
-								action: 'accept',
-								title: i18n.ts.accept,
-							},
-							{
-								action: 'reject',
-								title: i18n.ts.reject,
-							},
-						],
-					}];
+				case "receiveFollowRequest":
+					return [
+						i18n.ts._notification.youReceivedFollowRequest,
+						{
+							body: getUserName(data.body.user),
+							icon: data.body.user.avatarUrl ?? undefined,
+							badge: iconUrl("user-plus"),
+							data,
+							actions: [
+								{
+									action: "accept",
+									title: i18n.ts.accept,
+								},
+								{
+									action: "reject",
+									title: i18n.ts.reject,
+								},
+							],
+						},
+					];
 
-				case 'followRequestAccepted':
-					return [i18n.ts._notification.yourFollowRequestAccepted, {
-						body: getUserName(data.body.user),
-						icon: data.body.user.avatarUrl ?? undefined,
-						badge: iconUrl('circle-check'),
-						data,
-					}];
+				case "followRequestAccepted":
+					return [
+						i18n.ts._notification.yourFollowRequestAccepted,
+						{
+							body: getUserName(data.body.user),
+							icon: data.body.user.avatarUrl ?? undefined,
+							badge: iconUrl("circle-check"),
+							data,
+						},
+					];
 
-				case 'achievementEarned':
-					return [i18n.ts._notification.achievementEarned, {
-						body: i18n.ts._achievements._types[`_${data.body.achievement}`].title,
-						badge: iconUrl('medal'),
-						data,
-						tag: `achievement:${data.body.achievement}`,
-					}];
+				case "achievementEarned":
+					return [
+						i18n.ts._notification.achievementEarned,
+						{
+							body: i18n.ts._achievements._types[`_${data.body.achievement}`]
+								.title,
+							badge: iconUrl("medal"),
+							data,
+							tag: `achievement:${data.body.achievement}`,
+						},
+					];
 
-				case 'login':
-					return [i18n.ts._notification.login, {
-						badge: iconUrl('login-2'),
-						data,
-					}];
+				case "login":
+					return [
+						i18n.ts._notification.login,
+						{
+							badge: iconUrl("login-2"),
+							data,
+						},
+					];
 
-				case 'exportCompleted':
-					return [i18n.tsx._notification.exportOfXCompleted({ x: Misskey.entities.exportEntityName(i18n)[data.body.exportedEntity] }), {
-						badge: iconUrl('circle-check'),
-						data,
-					}];
+				case "exportCompleted":
+					return [
+						i18n.tsx._notification.exportOfXCompleted({
+							x: Misskey.entities.exportEntityName(i18n)[
+								data.body.exportedEntity
+							],
+						}),
+						{
+							badge: iconUrl("circle-check"),
+							data,
+						},
+					];
 
-				case 'importCompleted':
-					return [i18n.tsx._notification.importOfXCompleted({ x: Misskey.entities.importEntityName(i18n)[data.body.importedEntity] }), {
-						badge: iconUrl('circle-check'),
-						data,
-					}];
+				case "importCompleted":
+					return [
+						i18n.tsx._notification.importOfXCompleted({
+							x: Misskey.entities.importEntityName(i18n)[
+								data.body.importedEntity
+							],
+						}),
+						{
+							badge: iconUrl("circle-check"),
+							data,
+						},
+					];
 
-				case 'pollEnded':
-					return [i18n.ts._notification.pollEnded, {
-						body: data.body.note.text ?? '',
-						badge: iconUrl('chart-arrows'),
-						data,
-					}];
+				case "pollEnded":
+					return [
+						i18n.ts._notification.pollEnded,
+						{
+							body: data.body.note.text ?? "",
+							badge: iconUrl("chart-arrows"),
+							data,
+						},
+					];
 
-				case 'appAuthorized':
-					return [i18n.tsx._notification.appAuthorized({ appName: data.body.appName }), {
-						badge: iconUrl('plus'),
-						data,
-					}];
+				case "appAuthorized":
+					return [
+						i18n.tsx._notification.appAuthorized({
+							appName: data.body.appName,
+						}),
+						{
+							badge: iconUrl("plus"),
+							data,
+						},
+					];
 
-				case 'app':
-					return [data.body.header ?? data.body.body, {
-						body: data.body.header ? data.body.body : '',
-						icon: data.body.icon ?? undefined,
-						data,
-					}];
+				case "app":
+					return [
+						data.body.header ?? data.body.body,
+						{
+							body: data.body.header ? data.body.body : "",
+							icon: data.body.icon ?? undefined,
+							data,
+						},
+					];
 
-				case 'test':
-					return [i18n.ts._notification.testNotification, {
-						body: i18n.ts._notification.notificationWillBeDisplayedLikeThis,
-						badge: iconUrl('bell'),
-						data,
-					}];
+				case "test":
+					return [
+						i18n.ts._notification.testNotification,
+						{
+							body: i18n.ts._notification.notificationWillBeDisplayedLikeThis,
+							badge: iconUrl("bell"),
+							data,
+						},
+					];
 
-				case 'edited':
-					return [i18n.ts._notification.edited, {
-						body: data.body.note.text ?? '',
-						icon: data.body.user.avatarUrl ?? undefined,
-						badge: iconUrl('messages'),
-						data,
-					}];
+				case "edited":
+					return [
+						i18n.ts._notification.edited,
+						{
+							body: data.body.note.text ?? "",
+							icon: data.body.user.avatarUrl ?? undefined,
+							badge: iconUrl("messages"),
+							data,
+						},
+					];
 
-				case 'scheduledNoteFailed':
-					return [i18n.ts._notification.scheduledNoteFailed, {
-						body: data.body.reason,
-						badge: iconUrl('bell'),
-						data,
-					}];
+				case "scheduledNoteFailed":
+					return [
+						i18n.ts._notification.scheduledNoteFailed,
+						{
+							body: data.body.reason,
+							badge: iconUrl("bell"),
+							data,
+						},
+					];
 
-				case 'scheduledNotePosted':
-					return [i18n.ts._notification.scheduledNotePosted, {
-						body: data.body.note.text ?? '',
-						icon: data.body.user.avatarUrl ?? undefined,
-						badge: iconUrl('bell'),
-						data,
-					}];
+				case "scheduledNotePosted":
+					return [
+						i18n.ts._notification.scheduledNotePosted,
+						{
+							body: data.body.note.text ?? "",
+							icon: data.body.user.avatarUrl ?? undefined,
+							badge: iconUrl("bell"),
+							data,
+						},
+					];
 
 				default:
 					return null;
 			}
-		case 'unreadAntennaNote':
-			return [i18n.tsx._notification.unreadAntennaNote({ name: data.body.antenna.name }), {
-				body: `${getUserName(data.body.note.user)}: ${data.body.note.text ?? ''}`,
-				icon: data.body.note.user.avatarUrl ?? undefined,
-				badge: iconUrl('antenna'),
-				tag: `antenna:${data.body.antenna.id}`,
-				data,
-				renotify: true,
-			}];
-		case 'newChatMessage':
+		case "unreadAntennaNote":
+			return [
+				i18n.tsx._notification.unreadAntennaNote({
+					name: data.body.antenna.name,
+				}),
+				{
+					body: `${getUserName(data.body.note.user)}: ${data.body.note.text ?? ""}`,
+					icon: data.body.note.user.avatarUrl ?? undefined,
+					badge: iconUrl("antenna"),
+					tag: `antenna:${data.body.antenna.id}`,
+					data,
+					renotify: true,
+				},
+			];
+		case "newChatMessage":
 			if (data.body.toRoom != null) {
-				return [`${data.body.toRoom.name}: ${getUserName(data.body.fromUser)}: ${data.body.text}`, {
-					icon: data.body.fromUser.avatarUrl ?? undefined,
-					badge: iconUrl('messages'),
-					tag: `chat:room:${data.body.toRoomId}`,
-					data,
-					renotify: true,
-				}];
+				return [
+					`${data.body.toRoom.name}: ${getUserName(data.body.fromUser)}: ${data.body.text}`,
+					{
+						icon: data.body.fromUser.avatarUrl ?? undefined,
+						badge: iconUrl("messages"),
+						tag: `chat:room:${data.body.toRoomId}`,
+						data,
+						renotify: true,
+					},
+				];
 			} else {
-				return [`${getUserName(data.body.fromUser)}: ${data.body.text}`, {
-					icon: data.body.fromUser.avatarUrl ?? undefined,
-					badge: iconUrl('messages'),
-					tag: `chat:user:${data.body.fromUserId}`,
-					data,
-					renotify: true,
-				}];
+				return [
+					`${getUserName(data.body.fromUser)}: ${data.body.text}`,
+					{
+						icon: data.body.fromUser.avatarUrl ?? undefined,
+						badge: iconUrl("messages"),
+						tag: `chat:user:${data.body.fromUserId}`,
+						data,
+						renotify: true,
+					},
+				];
 			}
 		default:
 			return null;

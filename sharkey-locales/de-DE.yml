@@ -1,6 +1,6 @@
 ---
 introMisskey: "Willkommen! Sharkey ist eine dezentralisierte Open-Source Microblogging-Platform.\nVerfasse „Notizen“ um mitzuteilen, was gerade passiert oder um Ereignisse mit anderen zu teilen. 📡\nMit „Reaktionen“ kannst du außerdem schnell deine Gefühle über Notizen anderer Benutzer zum Ausdruck bringen. 👍\nEine neue Welt wartet auf dich! 🚀"
-poweredByMisskeyDescription: "{name} wird durch die Open-Source-Plattform <b>Sharkey</b> betrieben, die auf Misskey basiert (meist als \"Misskey-Instanz\" bezeichnet)."
+poweredByMisskeyDescription: '{name} wird durch die Open-Source-Plattform <b>Sharkey</b> betrieben, die auf Misskey basiert (meist als "Misskey-Instanz" bezeichnet).'
 renotedBy: "Geboostet von {user}"
 approvals: "Genehmigungen"
 copyLinkRenote: "Boost-Link kopieren"
@@ -136,7 +136,7 @@ _initialTutorial:
   _landing:
     description: "Hier kannst du die Grundlagen und Funktionen von Sharkey lernen."
   _note:
-    description: "Beiträge auf Sharkey heißen \"Notizen\". Notizen werden chronologisch in der Chronik angeordnet und in Echtzeit aktualisiert."
+    description: 'Beiträge auf Sharkey heißen "Notizen". Notizen werden chronologisch in der Chronik angeordnet und in Echtzeit aktualisiert.'
   _timeline:
     description1: "Sharkey verfügt über mehrere Chroniken (einige können je nach den Richtlinien des Servers nicht verfügbar sein)."
     bubble: "Du kannst Notizen von verbundenen Servern ansehen, die von den Administratoren ausgewählt wurden."
@@ -149,7 +149,7 @@ _timelineDescription:
 _serverSettings:
   sidebarLogoUrl: "Logo-URL"
   sidebarLogoDescription: "Gibt das Logo an, das in Szenarien mit hoher Auflösung und dynamischer Breite anstelle des normalen Symbols verwendet werden soll."
-  sidebarLogoUsageExample: "Zum Beispiel in der Seitenleiste, für Besucher und auf der \"Über\"-Seite."
+  sidebarLogoUsageExample: 'Zum Beispiel in der Seitenleiste, für Besucher und auf der "Über"-Seite.'
 _accountMigration:
   moveAccountDescription: "Hierdurch wird dein Konto zu einem anderen migriert.\n ・Follower von diesem Konto werden automatisch auf das neue Konto migriert\n ・Dieses Konto wird allen Nutzern, denen es derzeit folgt, nicht mehr folgen\n ・Mit diesem Konto können keine neuen Notizen usw. erstellt werden\n\nWährend die Migration der Follower automatisch erfolgt, muss die Migration der Konten, denen du folgst, manuell vorbereitet werden. Exportiere hierzu die Liste der gefolgten Nutzer über das Einstellungsmenu, und importiere diese Liste im neuen Konto. Das gleiche Verfahren gilt für erstellte Listen und stummgeschaltete oder blockierte Nutzer.\n\n(Diese Erklärung gilt für Sharkey v13.12.0 oder später. Die Funktionsweise andere ActivityPub-Software, beispielsweise Mastodon,  kann hiervon abweichen.)"
 _achievements:
@@ -161,7 +161,7 @@ _achievements:
       flavor: "Danke, dass du Sharkey nutzt!"
     _iLoveMisskey:
       title: "I Love Sharkey"
-      description: "Sende \"I ❤ #Sharkey\""
+      description: 'Sende "I ❤ #Sharkey"'
       flavor: "Danke, dass du Sharkey verwendest! - vom Entwicklerteam"
     _client30min:
       description: "Habe Sharkey für mindestens 30 Minuten geöffnet"
@@ -275,7 +275,7 @@ _mfm:
   jelly: "Animation (Jelly)"
   jellyDescription: "Verleiht dem Inhalt eine geleeartige Animation."
   tada: "Animation (Tada)"
-  tadaDescription: "Verleiht dem Inhalt eine \"Tada!\"-ähnliche Animation."
+  tadaDescription: 'Verleiht dem Inhalt eine "Tada!"-ähnliche Animation.'
   jump: "Animation (Springen)"
   jumpDescription: "Verleiht dem Inhalt eine Sprunganimation."
   bounce: "Animation (Aufprall)"
@@ -312,8 +312,8 @@ _mfm:
   scaleDescription: "Inhalt um einen bestimmten Betrag skalieren."
   foreground: "Vordergrundfarbe"
   foregroundDescription: "Ändern der Vordergrundfarbe von Text."
-  fade: 'Verblassen'
-  fadeDescription: 'Text ein- und ausblenden.'
+  fade: "Verblassen"
+  fadeDescription: "Text ein- und ausblenden."
   background: "Hintergrundfarbe"
   backgroundDescription: "Ändere die Hintergrundfarbe des Textes."
   border: "Umrandung"
@@ -411,6 +411,6 @@ _authorizedFetchValue:
 _authorizedFetchValueDescription:
   never: "Alle unsignierten Anfragen blockieren. Verbessert den Datenschutz und macht die Blockierung effektiver, ist aber nicht mit sehr alter oder ungewöhnlicher Instanzsoftware kompatibel."
   always: "Erlaubt alle unsignierten Anfragen. Bietet die größte Kompatibilität mit anderen Instanzen, reduziert aber die Privatsphäre und schwächt vorhandene Blockierungen."
-  essential: "Erlaubt einige begrenzte unsignierte Anfragen. Bietet eine Mischung aus \"Niemals\" und \"Immer\", indem nur die minimalen Profil-Metadaten offengelegt werden, die für die Föderation mit älterer Software erforderlich sind."
-  staff: "Verwende den von den Administratoren der Instanz empfohlenen Standardwert von \"{value}\"."
+  essential: 'Erlaubt einige begrenzte unsignierte Anfragen. Bietet eine Mischung aus "Niemals" und "Immer", indem nur die minimalen Profil-Metadaten offengelegt werden, die für die Föderation mit älterer Software erforderlich sind.'
+  staff: 'Verwende den von den Administratoren der Instanz empfohlenen Standardwert von "{value}".'
 authorizedFetchLegacyWarning: "Die Konfigurationseigenschaft 'checkActivityPubGetSignature' ist veraltet und wurde durch die neue Einstellung „Authorized Fetch“ ersetzt. Bitte entferne sie aus deiner Konfigurationsdatei."

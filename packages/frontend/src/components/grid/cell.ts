@@ -3,14 +3,21 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { ValidateViolation } from '@/components/grid/cell-validators.js';
-import type { Size } from '@/components/grid/grid.js';
-import type { GridColumn } from '@/components/grid/column.js';
-import type { GridRow } from '@/components/grid/row.js';
-import type { MenuItem } from '@/types/menu.js';
-import type { GridContext } from '@/components/grid/grid-event.js';
+import type { ValidateViolation } from "@/components/grid/cell-validators.js";
+import type { Size } from "@/components/grid/grid.js";
+import type { GridColumn } from "@/components/grid/column.js";
+import type { GridRow } from "@/components/grid/row.js";
+import type { MenuItem } from "@/types/menu.js";
+import type { GridContext } from "@/components/grid/grid-event.js";
 
-export type CellValue = string | boolean | number | undefined | null | Array<unknown> | NonNullable<unknown>;
+export type CellValue =
+	| string
+	| boolean
+	| number
+	| undefined
+	| null
+	| Array<unknown>
+	| NonNullable<unknown>;
 
 export type CellAddress = {
 	row: number;
@@ -34,7 +41,12 @@ export type GridCell = {
 	violation: ValidateViolation;
 };
 
-export type GridCellContextMenuFactory = (col: GridColumn, row: GridRow, value: CellValue, context: GridContext) => MenuItem[];
+export type GridCellContextMenuFactory = (
+	col: GridColumn,
+	row: GridRow,
+	value: CellValue,
+	context: GridContext,
+) => MenuItem[];
 
 export type GridCellSetting = {
 	contextMenuFactory?: GridCellContextMenuFactory;
@@ -46,9 +58,10 @@ export function createCell(
 	value: CellValue,
 	setting: GridCellSetting,
 ): GridCell {
-	const newValue = (row.using && column.setting.valueTransformer)
-		? column.setting.valueTransformer(row, column, value)
-		: value;
+	const newValue =
+		row.using && column.setting.valueTransformer
+			? column.setting.valueTransformer(row, column, value)
+			: value;
 
 	return {
 		address: { row: row.index, col: column.index },

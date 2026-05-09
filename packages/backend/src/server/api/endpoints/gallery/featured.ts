@@ -3,26 +3,28 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { GalleryPostsRepository } from '@/models/_.js';
-import { GalleryPostEntityService } from '@/core/entities/GalleryPostEntityService.js';
-import { DI } from '@/di-symbols.js';
-import { FeaturedService } from '@/core/FeaturedService.js';
-import { TimeService } from '@/global/TimeService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { GalleryPostsRepository } from "@/models/_.js";
+import { GalleryPostEntityService } from "@/core/entities/GalleryPostEntityService.js";
+import { DI } from "@/di-symbols.js";
+import { FeaturedService } from "@/core/FeaturedService.js";
+import { TimeService } from "@/global/TimeService.js";
 
 export const meta = {
-	tags: ['gallery'],
+	tags: ["gallery"],
 
 	requireCredential: false,
 
 	res: {
-		type: 'array',
-		optional: false, nullable: false,
+		type: "array",
+		optional: false,
+		nullable: false,
 		items: {
-			type: 'object',
-			optional: false, nullable: false,
-			ref: 'GalleryPost',
+			type: "object",
+			optional: false,
+			nullable: false,
+			ref: "GalleryPost",
 		},
 	},
 
@@ -34,16 +36,17 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
-		untilId: { type: 'string', format: 'misskey:id' },
+		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+		untilId: { type: "string", format: "misskey:id" },
 	},
 	required: [],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	private galleryPostsRankingCache: string[] = [];
 	private galleryPostsRankingCacheLastFetchedAt = 0;
 
@@ -57,7 +60,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			let postIds: string[];
-			if (this.galleryPostsRankingCacheLastFetchedAt !== 0 && (this.timeService.now - this.galleryPostsRankingCacheLastFetchedAt < 1000 * 60 * 30)) {
+			if (
+				this.galleryPostsRankingCacheLastFetchedAt !== 0 &&
+				this.timeService.now - this.galleryPostsRankingCacheLastFetchedAt <
+					1000 * 60 * 30
+			) {
 				postIds = this.galleryPostsRankingCache;
 			} else {
 				postIds = await this.featuredService.getGalleryPostsRanking(100);
@@ -65,9 +72,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				this.galleryPostsRankingCacheLastFetchedAt = this.timeService.now;
 			}
 
-			postIds.sort((a, b) => a > b ? -1 : 1);
+			postIds.sort((a, b) => (a > b ? -1 : 1));
 			if (ps.untilId) {
-				postIds = postIds.filter(id => id < ps.untilId!);
+				postIds = postIds.filter((id) => id < ps.untilId!);
 			}
 			postIds = postIds.slice(0, ps.limit);
 
@@ -75,8 +82,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return [];
 			}
 
-			const query = this.galleryPostsRepository.createQueryBuilder('post')
-				.where('post.id IN (:...postIds)', { postIds: postIds });
+			const query = this.galleryPostsRepository
+				.createQueryBuilder("post")
+				.where("post.id IN (:...postIds)", { postIds: postIds });
 
 			const posts = await query.getMany();
 

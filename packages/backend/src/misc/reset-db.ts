@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { DataSource } from 'typeorm';
+import type { DataSource } from "typeorm";
 
 export async function resetDb(db: DataSource) {
 	const reset = async () => {
@@ -26,7 +26,7 @@ export async function resetDb(db: DataSource) {
 			} else {
 				// Ignore rule - this is just testing code.
 				// eslint-disable-next-line no-restricted-globals
-				await new Promise(resolve => setTimeout(resolve, 1000));
+				await new Promise((resolve) => setTimeout(resolve, 1000));
 				continue;
 			}
 		}

@@ -24,145 +24,180 @@
  * test - テスト通知（サーバー側）
  */
 export const notificationTypes = [
-	'note',
-	'follow',
-	'mention',
-	'reply',
-	'renote',
-	'quote',
-	'reaction',
-	'pollEnded',
-	'edited',
-	'receiveFollowRequest',
-	'followRequestAccepted',
-	'roleAssigned',
-	'chatRoomInvitationReceived',
-	'achievementEarned',
-	'exportCompleted',
-	'importCompleted',
-	'login',
-	'createToken',
-	'scheduledNoteFailed',
-	'scheduledNotePosted',
-	'app',
-	'test',
-	'sharedAccessGranted',
-	'sharedAccessRevoked',
-	'sharedAccessLogin',
+	"note",
+	"follow",
+	"mention",
+	"reply",
+	"renote",
+	"quote",
+	"reaction",
+	"pollEnded",
+	"edited",
+	"receiveFollowRequest",
+	"followRequestAccepted",
+	"roleAssigned",
+	"chatRoomInvitationReceived",
+	"achievementEarned",
+	"exportCompleted",
+	"importCompleted",
+	"login",
+	"createToken",
+	"scheduledNoteFailed",
+	"scheduledNotePosted",
+	"app",
+	"test",
+	"sharedAccessGranted",
+	"sharedAccessRevoked",
+	"sharedAccessLogin",
 ] as const;
 
 export const groupedNotificationTypes = [
 	...notificationTypes,
-	'reaction:grouped',
-	'renote:grouped',
+	"reaction:grouped",
+	"renote:grouped",
 ] as const;
 
-export const obsoleteNotificationTypes = ['pollVote', 'groupInvited'] as const;
+export const obsoleteNotificationTypes = ["pollVote", "groupInvited"] as const;
 
-export const noteVisibilities = ['public', 'home', 'followers', 'specified'] as const;
+export const noteVisibilities = [
+	"public",
+	"home",
+	"followers",
+	"specified",
+] as const;
 
-export const mutedNoteReasons = ['word', 'manual', 'spam', 'other'] as const;
+export const mutedNoteReasons = ["word", "manual", "spam", "other"] as const;
 
-export const followingVisibilities = ['public', 'followers', 'private'] as const;
-export const followersVisibilities = ['public', 'followers', 'private'] as const;
+export const followingVisibilities = [
+	"public",
+	"followers",
+	"private",
+] as const;
+export const followersVisibilities = [
+	"public",
+	"followers",
+	"private",
+] as const;
 
-export const defaultCWPriorities = ['default', 'parent', 'defaultParent', 'parentDefault'] as const;
+export const defaultCWPriorities = [
+	"default",
+	"parent",
+	"defaultParent",
+	"parentDefault",
+] as const;
 
 /**
  * ユーザーがエクスポートできるものの種類
  *
  * （主にエクスポート完了通知で使用するものであり、既存のDBの名称等と必ずしも一致しない）
  */
-export const userExportableEntities = ['antenna', 'blocking', 'clip', 'customEmoji', 'favorite', 'following', 'muting', 'note', 'userList'] as const;
+export const userExportableEntities = [
+	"antenna",
+	"blocking",
+	"clip",
+	"customEmoji",
+	"favorite",
+	"following",
+	"muting",
+	"note",
+	"userList",
+] as const;
 
 /**
  * ユーザーがインポートできるものの種類
  *
  * （主にインポート完了通知で使用するものであり、既存のDBの名称等と必ずしも一致しない）
  */
-export const userImportableEntities = ['antenna', 'blocking', 'customEmoji', 'following', 'muting', 'userList'] as const;
+export const userImportableEntities = [
+	"antenna",
+	"blocking",
+	"customEmoji",
+	"following",
+	"muting",
+	"userList",
+] as const;
 
 export const moderationLogTypes = [
-	'updateServerSettings',
-	'suspend',
-	'approve',
-	'decline',
-	'unsuspend',
-	'updateUserNote',
-	'addCustomEmoji',
-	'updateCustomEmoji',
-	'deleteCustomEmoji',
-	'assignRole',
-	'unassignRole',
-	'createRole',
-	'updateRole',
-	'deleteRole',
-	'clearQueue',
-	'promoteQueue',
-	'deleteDriveFile',
-	'deleteNote',
-	'createGlobalAnnouncement',
-	'createUserAnnouncement',
-	'updateGlobalAnnouncement',
-	'updateUserAnnouncement',
-	'deleteGlobalAnnouncement',
-	'deleteUserAnnouncement',
-	'resetPassword',
-	'restartMigration',
-	'setMandatoryCW',
-	'setMandatoryCWForNote',
-	'setMandatoryCWForInstance',
-	'suspendRemoteInstance',
-	'unsuspendRemoteInstance',
-	'rejectRemoteInstanceReports',
-	'acceptRemoteInstanceReports',
-	'updateRemoteInstanceNote',
-	'markSensitiveDriveFile',
-	'unmarkSensitiveDriveFile',
-	'resolveAbuseReport',
-	'forwardAbuseReport',
-	'updateAbuseReportNote',
-	'createInvitation',
-	'createAd',
-	'updateAd',
-	'deleteAd',
-	'createAvatarDecoration',
-	'updateAvatarDecoration',
-	'deleteAvatarDecoration',
-	'unsetUserAvatar',
-	'unsetUserBanner',
-	'createSystemWebhook',
-	'updateSystemWebhook',
-	'deleteSystemWebhook',
-	'createAbuseReportNotificationRecipient',
-	'updateAbuseReportNotificationRecipient',
-	'deleteAbuseReportNotificationRecipient',
-	'deleteAccount',
-	'deletePage',
-	'deleteFlash',
-	'deleteGalleryPost',
-	'deleteChatRoom',
-	'acceptQuotesUser',
-	'rejectQuotesUser',
-	'acceptQuotesInstance',
-	'rejectQuotesInstance',
-	'clearUserFiles',
-	'nsfwUser',
-	'unNsfwUser',
-	'silenceUser',
-	'unSilenceUser',
-	'createAccount',
-	'clearRemoteFiles',
-	'clearOwnerlessFiles',
-	'updateCustomEmojis',
-	'importCustomEmojis',
-	'clearInstanceFiles',
-	'severFollowRelations',
-	'createPromo',
-	'addRelay',
-	'removeRelay',
-	'updateProxyAccountDescription',
-	'setRoot',
+	"updateServerSettings",
+	"suspend",
+	"approve",
+	"decline",
+	"unsuspend",
+	"updateUserNote",
+	"addCustomEmoji",
+	"updateCustomEmoji",
+	"deleteCustomEmoji",
+	"assignRole",
+	"unassignRole",
+	"createRole",
+	"updateRole",
+	"deleteRole",
+	"clearQueue",
+	"promoteQueue",
+	"deleteDriveFile",
+	"deleteNote",
+	"createGlobalAnnouncement",
+	"createUserAnnouncement",
+	"updateGlobalAnnouncement",
+	"updateUserAnnouncement",
+	"deleteGlobalAnnouncement",
+	"deleteUserAnnouncement",
+	"resetPassword",
+	"restartMigration",
+	"setMandatoryCW",
+	"setMandatoryCWForNote",
+	"setMandatoryCWForInstance",
+	"suspendRemoteInstance",
+	"unsuspendRemoteInstance",
+	"rejectRemoteInstanceReports",
+	"acceptRemoteInstanceReports",
+	"updateRemoteInstanceNote",
+	"markSensitiveDriveFile",
+	"unmarkSensitiveDriveFile",
+	"resolveAbuseReport",
+	"forwardAbuseReport",
+	"updateAbuseReportNote",
+	"createInvitation",
+	"createAd",
+	"updateAd",
+	"deleteAd",
+	"createAvatarDecoration",
+	"updateAvatarDecoration",
+	"deleteAvatarDecoration",
+	"unsetUserAvatar",
+	"unsetUserBanner",
+	"createSystemWebhook",
+	"updateSystemWebhook",
+	"deleteSystemWebhook",
+	"createAbuseReportNotificationRecipient",
+	"updateAbuseReportNotificationRecipient",
+	"deleteAbuseReportNotificationRecipient",
+	"deleteAccount",
+	"deletePage",
+	"deleteFlash",
+	"deleteGalleryPost",
+	"deleteChatRoom",
+	"acceptQuotesUser",
+	"rejectQuotesUser",
+	"acceptQuotesInstance",
+	"rejectQuotesInstance",
+	"clearUserFiles",
+	"nsfwUser",
+	"unNsfwUser",
+	"silenceUser",
+	"unSilenceUser",
+	"createAccount",
+	"clearRemoteFiles",
+	"clearOwnerlessFiles",
+	"updateCustomEmojis",
+	"importCustomEmojis",
+	"clearInstanceFiles",
+	"severFollowRelations",
+	"createPromo",
+	"addRelay",
+	"removeRelay",
+	"updateProxyAccountDescription",
+	"setRoot",
 ] as const;
 
 export type ModerationLogPayloads = {
@@ -455,14 +490,14 @@ export type ModerationLogPayloads = {
 		postUserUsername: string;
 	};
 	acceptQuotesUser: {
-		userId: string,
-		userUsername: string,
-		userHost: string | null,
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
 	};
 	rejectQuotesUser: {
-		userId: string,
-		userUsername: string,
-		userHost: string | null,
+		userId: string;
+		userUsername: string;
+		userHost: string | null;
 	};
 	acceptQuotesInstance: {
 		id: string;
@@ -515,35 +550,35 @@ export type ModerationLogPayloads = {
 		count: number;
 	};
 	updateCustomEmojis: {
-		ids: string[],
-		category?: string | null,
-		license?: string | null,
-		setAliases?: string[],
-		addAliases?: string[],
-		delAliases?: string[],
-	},
+		ids: string[];
+		category?: string | null;
+		license?: string | null;
+		setAliases?: string[];
+		addAliases?: string[];
+		delAliases?: string[];
+	};
 	importCustomEmojis: {
-		fileName: string,
-	},
+		fileName: string;
+	};
 	clearInstanceFiles: {
 		host: string;
 		count: number;
-	},
+	};
 	severFollowRelations: {
 		host: string;
-	},
+	};
 	createPromo: {
-		noteId: string,
+		noteId: string;
 		noteUserId: string;
 		noteUserUsername: string;
 		noteUserHost: string | null;
-	},
+	};
 	addRelay: {
 		inbox: string;
-	},
+	};
 	removeRelay: {
 		inbox: string;
-	},
+	};
 	setRoot: {
 		before: {
 			userId: string;
@@ -553,25 +588,24 @@ export type ModerationLogPayloads = {
 			userId: string;
 			userUsername: string;
 		};
-	},
+	};
 };
 
 export type Serialized<T> = {
-	[K in keyof T]:
-	T[K] extends Date
+	[K in keyof T]: T[K] extends Date
 		? string
-		: T[K] extends (Date | null)
-			? (string | null)
-			: T[K] extends (Date | undefined)
-				? (string | undefined)
-				: T[K] extends (Date | null | undefined)
-					? (string | null | undefined)
+		: T[K] extends Date | null
+			? string | null
+			: T[K] extends Date | undefined
+				? string | undefined
+				: T[K] extends Date | null | undefined
+					? string | null | undefined
 					: T[K] extends Record<string, any>
 						? Serialized<T[K]>
-						: T[K] extends (Record<string, any> | null)
-							? (Serialized<T[K]> | null)
-							: T[K] extends (Record<string, any> | undefined)
-								? (Serialized<T[K]> | undefined)
+						: T[K] extends Record<string, any> | null
+							? Serialized<T[K]> | null
+							: T[K] extends Record<string, any> | undefined
+								? Serialized<T[K]> | undefined
 								: T[K];
 };
 

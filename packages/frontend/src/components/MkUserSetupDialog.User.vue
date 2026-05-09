@@ -4,32 +4,45 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div v-adaptive-bg class="_panel" style="position: relative;">
-	<div :class="$style.banner" :style="user.bannerUrl ? { backgroundImage: `url(${user.bannerUrl})` } : ''"></div>
-	<MkAvatar :class="$style.avatar" :user="user" indicator/>
-	<div :class="$style.title">
-		<div :class="$style.name"><MkUserName :user="user" :nowrap="false"/></div>
-		<p :class="$style.username"><MkAcct :user="user"/></p>
-	</div>
-	<div :class="$style.description">
-		<div v-if="user.description" :class="$style.mfm">
-			<Mfm :text="user.description" :isBlock="true" :author="user"/>
+	<div v-adaptive-bg class="_panel" style="position: relative">
+		<div
+			:class="$style.banner"
+			:style="
+				user.bannerUrl ? { backgroundImage: `url(${user.bannerUrl})` } : ''
+			"
+		></div>
+		<MkAvatar :class="$style.avatar" :user="user" indicator />
+		<div :class="$style.title">
+			<div :class="$style.name">
+				<MkUserName :user="user" :nowrap="false" />
+			</div>
+			<p :class="$style.username"><MkAcct :user="user" /></p>
 		</div>
-		<span v-else style="opacity: 0.7;">{{ i18n.ts.noAccountDescription }}</span>
+		<div :class="$style.description">
+			<div v-if="user.description" :class="$style.mfm">
+				<Mfm :text="user.description" :isBlock="true" :author="user" />
+			</div>
+			<span v-else style="opacity: 0.7">{{
+				i18n.ts.noAccountDescription
+			}}</span>
+		</div>
+		<div :class="$style.footer">
+			<MkButton v-if="!isFollowing" primary gradate rounded full @click="follow"
+				><i class="ti ti-plus"></i> {{ i18n.ts.follow }}</MkButton
+			>
+			<div v-else style="opacity: 0.7; text-align: center">
+				{{ i18n.ts.youFollowing }} <i class="ti ti-check"></i>
+			</div>
+		</div>
 	</div>
-	<div :class="$style.footer">
-		<MkButton v-if="!isFollowing" primary gradate rounded full @click="follow"><i class="ti ti-plus"></i> {{ i18n.ts.follow }}</MkButton>
-		<div v-else style="opacity: 0.7; text-align: center;">{{ i18n.ts.youFollowing }} <i class="ti ti-check"></i></div>
-	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import * as Misskey from 'misskey-js';
-import { ref } from 'vue';
-import MkButton from '@/components/MkButton.vue';
-import { i18n } from '@/i18n.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
+import * as Misskey from "misskey-js";
+import { ref } from "vue";
+import MkButton from "@/components/MkButton.vue";
+import { i18n } from "@/i18n.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
 
 const props = defineProps<{
 	user: Misskey.entities.UserDetailed;
@@ -39,7 +52,7 @@ const isFollowing = ref(false);
 
 async function follow() {
 	isFollowing.value = true;
-	misskeyApi('following/create', {
+	misskeyApi("following/create", {
 		userId: props.user.id,
 	});
 }

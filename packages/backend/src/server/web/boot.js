@@ -3,63 +3,72 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-'use strict';
+"use strict";
 
 // ブロックの中に入れないと、定義した変数がブラウザのグローバルスコープに登録されてしまい邪魔なので
 (async () => {
 	window.onerror = (e) => {
 		console.error(e);
-		renderError('SOMETHING_HAPPENED', e);
+		renderError("SOMETHING_HAPPENED", e);
 	};
 	window.onunhandledrejection = (e) => {
 		console.error(e);
-		renderError('SOMETHING_HAPPENED_IN_PROMISE', e);
+		renderError("SOMETHING_HAPPENED_IN_PROMISE", e);
 	};
 
-	let forceError = localStorage.getItem('forceError');
+	let forceError = localStorage.getItem("forceError");
 	if (forceError != null) {
-		renderError('FORCED_ERROR', 'This error is forced by having forceError in local storage.');
+		renderError(
+			"FORCED_ERROR",
+			"This error is forced by having forceError in local storage.",
+		);
 		return;
 	}
 
 	// Force update when locales change
 	const langsVersion = LANGS_VERSION;
-	const localeVersion = localStorage.getItem('localeVersion');
+	const localeVersion = localStorage.getItem("localeVersion");
 	if (localeVersion !== langsVersion) {
-		console.info(`Updating locales from version ${localeVersion ?? 'N/A'} to ${langsVersion}`);
-		localStorage.removeItem('localeVersion');
-		localStorage.removeItem('locale');
+		console.info(
+			`Updating locales from version ${localeVersion ?? "N/A"} to ${langsVersion}`,
+		);
+		localStorage.removeItem("localeVersion");
+		localStorage.removeItem("locale");
 	}
 
 	//#region Detect language & fetch translations
-	if (!localStorage.getItem('locale')) {
+	if (!localStorage.getItem("locale")) {
 		const supportedLangs = LANGS;
 		/** @type {string | null | undefined} */
-		let lang = localStorage.getItem('lang');
+		let lang = localStorage.getItem("lang");
 		if (lang == null || !supportedLangs.includes(lang)) {
 			if (supportedLangs.includes(navigator.language)) {
 				lang = navigator.language;
 			} else {
-				lang = supportedLangs.find(x => x.split('-')[0] === navigator.language.split('-')[0]);
+				lang = supportedLangs.find(
+					(x) => x.split("-")[0] === navigator.language.split("-")[0],
+				);
 
 				// Fallback
-				if (lang == null) lang = 'en-US';
+				if (lang == null) lang = "en-US";
 			}
 		}
 
 		// for https://github.com/misskey-dev/misskey/issues/10202
-		if (lang == null || lang.toString == null || lang.toString() === 'null') {
-			console.error('invalid lang value detected!!!', typeof lang, lang);
-			lang = 'en-US';
+		if (lang == null || lang.toString == null || lang.toString() === "null") {
+			console.error("invalid lang value detected!!!", typeof lang, lang);
+			lang = "en-US";
 		}
 
-		const localRes = await window.fetch(`/assets/locales/${lang}.${langsVersion}.json`);
+		const localRes = await window.fetch(
+			`/assets/locales/${lang}.${langsVersion}.json`,
+		);
 		if (localRes.status === 200) {
-			localStorage.setItem('lang', lang);
-			localStorage.setItem('locale', await localRes.text());
-			localStorage.setItem('localeVersion', langsVersion);
+			localStorage.setItem("lang", lang);
+			localStorage.setItem("locale", await localRes.text());
+			localStorage.setItem("localeVersion", langsVersion);
 		} else {
-			renderError('LOCALE_FETCH');
+			renderError("LOCALE_FETCH");
 			return;
 		}
 	}
@@ -67,29 +76,30 @@
 
 	//#region Script
 	async function importAppScript() {
-		await import(`/vite/${CLIENT_ENTRY}`)
-			.catch(async e => {
-				console.error(e);
-				renderError('APP_IMPORT', e);
-			});
+		await import(`/vite/${CLIENT_ENTRY}`).catch(async (e) => {
+			console.error(e);
+			renderError("APP_IMPORT", e);
+		});
 	}
 
 	// タイミングによっては、この時点でDOMの構築が済んでいる場合とそうでない場合とがある
-	if (document.readyState !== 'loading') {
+	if (document.readyState !== "loading") {
 		importAppScript();
 	} else {
-		window.addEventListener('DOMContentLoaded', () => {
+		window.addEventListener("DOMContentLoaded", () => {
 			importAppScript();
 		});
 	}
 	//#endregion
 
 	//#region Theme
-	const theme = localStorage.getItem('theme');
-	const themeFontFaceName = 'pulsar-theme-font-face';
+	const theme = localStorage.getItem("theme");
+	const themeFontFaceName = "pulsar-theme-font-face";
 	if (theme) {
 		let existingFontFace;
-		document.fonts.forEach((v) => { if (v.family === themeFontFaceName) existingFontFace = v;});
+		document.fonts.forEach((v) => {
+			if (v.family === themeFontFaceName) existingFontFace = v;
+		});
 		if (existingFontFace) document.fonts.delete(existingFontFace);
 
 		const themeProps = JSON.parse(theme);
@@ -98,59 +108,67 @@
 		if (fontFaceSrc) {
 			const fontFace = new FontFace(
 				themeFontFaceName,
-				fontFaceSrc, fontFaceOpts || {},
+				fontFaceSrc,
+				fontFaceOpts || {},
 			);
 			document.fonts.add(fontFace);
-			fontFace.load().catch(
-				(failure) => {
-					console.log(failure);
-				},
-			);
+			fontFace.load().catch((failure) => {
+				console.log(failure);
+			});
 		}
 		for (const [k, v] of Object.entries(themeProps)) {
-			if (k.startsWith('font')) continue;
-			document.documentElement.style.setProperty(`--MI_THEME-${k}`, v.toString());
+			if (k.startsWith("font")) continue;
+			document.documentElement.style.setProperty(
+				`--MI_THEME-${k}`,
+				v.toString(),
+			);
 
 			// HTMLの theme-color 適用
-			if (k === 'htmlThemeColor') {
+			if (k === "htmlThemeColor") {
 				for (const tag of document.head.children) {
-					if (tag.tagName === 'META' && tag.getAttribute('name') === 'theme-color') {
-						tag.setAttribute('content', v);
+					if (
+						tag.tagName === "META" &&
+						tag.getAttribute("name") === "theme-color"
+					) {
+						tag.setAttribute("content", v);
 						break;
 					}
 				}
 			}
 		}
 	}
-	const colorScheme = localStorage.getItem('colorScheme');
+	const colorScheme = localStorage.getItem("colorScheme");
 	if (colorScheme) {
-		document.documentElement.style.setProperty('color-scheme', colorScheme);
+		document.documentElement.style.setProperty("color-scheme", colorScheme);
 	}
 	//#endregion
 
-	const fontSize = localStorage.getItem('fontSize');
+	const fontSize = localStorage.getItem("fontSize");
 	if (fontSize) {
 		if (fontSize === "custom") {
-			const customFontSize = localStorage.getItem('customFontSize');
-			document.documentElement.style.setProperty('font-size', `${customFontSize}px`);
+			const customFontSize = localStorage.getItem("customFontSize");
+			document.documentElement.style.setProperty(
+				"font-size",
+				`${customFontSize}px`,
+			);
 		} else {
-			document.documentElement.classList.add('f-' + fontSize);
+			document.documentElement.classList.add("f-" + fontSize);
 		}
 	}
 
-	const cornerRadius = localStorage.getItem('cornerRadius');
+	const cornerRadius = localStorage.getItem("cornerRadius");
 	if (cornerRadius) {
 		document.documentElement.classList.add(`radius-${cornerRadius}`);
 	}
 
-	const useSystemFont = localStorage.getItem('useSystemFont');
+	const useSystemFont = localStorage.getItem("useSystemFont");
 	if (useSystemFont) {
-		document.documentElement.classList.add('useSystemFont');
+		document.documentElement.classList.add("useSystemFont");
 	}
 
-	const customCss = localStorage.getItem('customCss');
+	const customCss = localStorage.getItem("customCss");
 	if (customCss && customCss.length > 0) {
-		const style = document.createElement('style');
+		const style = document.createElement("style");
 		style.innerHTML = customCss;
 		document.head.appendChild(style);
 	}
@@ -160,7 +178,7 @@
 	 * @returns {Promise<void>}
 	 */
 	async function addStyle(styleText) {
-		let css = document.createElement('style');
+		let css = document.createElement("style");
 		css.appendChild(document.createTextNode(styleText));
 		document.head.appendChild(css);
 	}
@@ -172,27 +190,32 @@
 	 */
 	async function renderError(code, details) {
 		// Cannot set property 'innerHTML' of null を回避
-		if (document.readyState === 'loading') {
-			await new Promise(resolve => window.addEventListener('DOMContentLoaded', resolve));
+		if (document.readyState === "loading") {
+			await new Promise((resolve) =>
+				window.addEventListener("DOMContentLoaded", resolve),
+			);
 		}
 
-		const locale = JSON.parse(localStorage.getItem('locale') || '{}');
+		const locale = JSON.parse(localStorage.getItem("locale") || "{}");
 
-		const messages = Object.assign({
-			title: 'Failed to initialize Pulsar',
-			solution: 'The following actions may solve the problem.',
-			solution1: 'Update your os and browser',
-			solution2: 'Disable an adblocker',
-			solution3: 'Clear the browser cache',
-			solution4: '(Tor Browser) Set dom.webaudio.enabled to true',
-			otherOption: 'Other options',
-			otherOption1: 'Clear preferences and cache',
-			otherOption2: 'Start the simple client',
-			otherOption3: 'Start the repair tool',
-		}, locale?._bootErrors || {});
-		const reload = locale?.reload || 'Reload';
+		const messages = Object.assign(
+			{
+				title: "Failed to initialize Pulsar",
+				solution: "The following actions may solve the problem.",
+				solution1: "Update your os and browser",
+				solution2: "Disable an adblocker",
+				solution3: "Clear the browser cache",
+				solution4: "(Tor Browser) Set dom.webaudio.enabled to true",
+				otherOption: "Other options",
+				otherOption1: "Clear preferences and cache",
+				otherOption2: "Start the simple client",
+				otherOption3: "Start the repair tool",
+			},
+			locale?._bootErrors || {},
+		);
+		const reload = locale?.reload || "Reload";
 
-		let errorsElement = document.getElementById('errors');
+		let errorsElement = document.getElementById("errors");
 
 		if (!errorsElement) {
 			document.body.innerHTML = `
@@ -233,10 +256,10 @@
 			<br>
 			<div id="errors"></div>
 			`;
-			errorsElement = document.getElementById('errors');
+			errorsElement = document.getElementById("errors");
 		}
-		const detailsElement = document.createElement('details');
-		detailsElement.id = 'errorInfo';
+		const detailsElement = document.createElement("details");
+		detailsElement.id = "errorInfo";
 		detailsElement.innerHTML = `
 		<br>
 		<summary>

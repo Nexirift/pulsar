@@ -3,26 +3,26 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
-import { bindThis } from '@/decorators.js';
-import { ChartLoggerService } from '@/core/chart/ChartLoggerService.js';
-import { TimeService, type TimerHandle } from '@/global/TimeService.js';
-import Logger from '@/logger.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
-import FederationChart from './charts/federation.js';
-import NotesChart from './charts/notes.js';
-import UsersChart from './charts/users.js';
-import ActiveUsersChart from './charts/active-users.js';
-import InstanceChart from './charts/instance.js';
-import PerUserNotesChart from './charts/per-user-notes.js';
-import PerUserPvChart from './charts/per-user-pv.js';
-import DriveChart from './charts/drive.js';
-import PerUserReactionsChart from './charts/per-user-reactions.js';
-import PerUserFollowingChart from './charts/per-user-following.js';
-import PerUserDriveChart from './charts/per-user-drive.js';
-import ApRequestChart from './charts/ap-request.js';
-import type { OnApplicationShutdown } from '@nestjs/common';
+import { bindThis } from "@/decorators.js";
+import { ChartLoggerService } from "@/core/chart/ChartLoggerService.js";
+import { TimeService, type TimerHandle } from "@/global/TimeService.js";
+import Logger from "@/logger.js";
+import { renderInlineError } from "@/misc/render-inline-error.js";
+import FederationChart from "./charts/federation.js";
+import NotesChart from "./charts/notes.js";
+import UsersChart from "./charts/users.js";
+import ActiveUsersChart from "./charts/active-users.js";
+import InstanceChart from "./charts/instance.js";
+import PerUserNotesChart from "./charts/per-user-notes.js";
+import PerUserPvChart from "./charts/per-user-pv.js";
+import DriveChart from "./charts/drive.js";
+import PerUserReactionsChart from "./charts/per-user-reactions.js";
+import PerUserFollowingChart from "./charts/per-user-following.js";
+import PerUserDriveChart from "./charts/per-user-drive.js";
+import ApRequestChart from "./charts/ap-request.js";
+import type { OnApplicationShutdown } from "@nestjs/common";
 
 @Injectable()
 export class ChartManagementService implements OnApplicationShutdown {
@@ -67,25 +67,29 @@ export class ChartManagementService implements OnApplicationShutdown {
 	@bindThis
 	public async start() {
 		// 20分おきにメモリ情報をDBに書き込み
-		this.saveIntervalId = this.timeService.startTimer(async () => {
-			for (const chart of this.charts) {
-				await chart.save();
-			}
-			this.logger.info('All charts saved');
-		}, 1000 * 60 * 20, { repeated: true });
+		this.saveIntervalId = this.timeService.startTimer(
+			async () => {
+				for (const chart of this.charts) {
+					await chart.save();
+				}
+				this.logger.info("All charts saved");
+			},
+			1000 * 60 * 20,
+			{ repeated: true },
+		);
 	}
 
 	@bindThis
 	public async dispose(): Promise<void> {
 		this.timeService.stopTimer(this.saveIntervalId);
-		if (process.env.NODE_ENV !== 'test') {
-			this.logger.info('Saving charts for shutdown...');
+		if (process.env.NODE_ENV !== "test") {
+			this.logger.info("Saving charts for shutdown...");
 			for (const chart of this.charts) {
-				await chart.save().catch(err => {
+				await chart.save().catch((err) => {
 					this.logger.error(`Error saving chart: ${renderInlineError(err)}`);
 				});
 			}
-			this.logger.info('All charts saved');
+			this.logger.info("All charts saved");
 		}
 	}
 

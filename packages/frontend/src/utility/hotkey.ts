@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: syuilo and misskey-project
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { getHTMLElementOrNull } from '@/utility/get-dom-node-or-null.js';
+import { getHTMLElementOrNull } from "@/utility/get-dom-node-or-null.js";
 
 //#region types
 export type Keymap = Record<string, CallbackFunction | CallbackObject>;
@@ -24,39 +24,47 @@ type Pattern = {
 type Action = {
 	patterns: Pattern[];
 	callback: CallbackFunction;
-	options: Required<Omit<CallbackObject, 'callback'>>;
+	options: Required<Omit<CallbackObject, "callback">>;
 };
 //#endregion
 
 //#region consts
 const KEY_ALIASES = {
-	'esc': 'Escape',
-	'enter': 'Enter',
-	'space': ' ',
-	'up': 'ArrowUp',
-	'down': 'ArrowDown',
-	'left': 'ArrowLeft',
-	'right': 'ArrowRight',
-	'plus': ['+', ';'],
+	esc: "Escape",
+	enter: "Enter",
+	space: " ",
+	up: "ArrowUp",
+	down: "ArrowDown",
+	left: "ArrowLeft",
+	right: "ArrowRight",
+	plus: ["+", ";"],
 };
 
-const MODIFIER_KEYS = ['ctrl', 'alt', 'shift'];
+const MODIFIER_KEYS = ["ctrl", "alt", "shift"];
 
-const IGNORE_ELEMENTS = ['input', 'textarea', 'ruffle-player'];
+const IGNORE_ELEMENTS = ["input", "textarea", "ruffle-player"];
 //#endregion
 
 //#region store
-let latestHotkey: Pattern & { callback: CallbackFunction } | null = null;
+let latestHotkey: (Pattern & { callback: CallbackFunction }) | null = null;
 //#endregion
 
 //#region impl
 export const makeHotkey = (keymap: Keymap) => {
 	const actions = parseKeymap(keymap);
 	return (ev: KeyboardEvent) => {
-		if ('pswp' in window && window.pswp != null) return;
+		if ("pswp" in window && window.pswp != null) return;
 		if (window.document.activeElement != null) {
-			if (IGNORE_ELEMENTS.includes(window.document.activeElement.tagName.toLowerCase())) return;
-			if (getHTMLElementOrNull(window.document.activeElement)?.isContentEditable) return;
+			if (
+				IGNORE_ELEMENTS.includes(
+					window.document.activeElement.tagName.toLowerCase(),
+				)
+			)
+				return;
+			if (
+				getHTMLElementOrNull(window.document.activeElement)?.isContentEditable
+			)
+				return;
 		}
 		for (const action of actions) {
 			if (matchPatterns(ev, action)) {
@@ -79,18 +87,20 @@ const parseKeymap = (keymap: Keymap) => {
 };
 
 const parsePatterns = (rawPatterns: keyof Keymap) => {
-	return rawPatterns.split('|').map(part => {
-		const keys = part.split('+').map(trimLower);
-		const which = parseKeyCode(keys.findLast(x => !MODIFIER_KEYS.includes(x)));
-		const ctrl = keys.includes('ctrl');
-		const alt = keys.includes('alt');
-		const shift = keys.includes('shift');
+	return rawPatterns.split("|").map((part) => {
+		const keys = part.split("+").map(trimLower);
+		const which = parseKeyCode(
+			keys.findLast((x) => !MODIFIER_KEYS.includes(x)),
+		);
+		const ctrl = keys.includes("ctrl");
+		const alt = keys.includes("alt");
+		const shift = keys.includes("shift");
 		return { which, ctrl, alt, shift } as const satisfies Pattern;
 	});
 };
 
 const parseCallback = (rawCallback: Keymap[keyof Keymap]) => {
-	if (typeof rawCallback === 'object') {
+	if (typeof rawCallback === "object") {
 		return rawCallback.callback;
 	}
 	return rawCallback;
@@ -99,13 +109,13 @@ const parseCallback = (rawCallback: Keymap[keyof Keymap]) => {
 const parseOptions = (rawCallback: Keymap[keyof Keymap]) => {
 	const defaultOptions = {
 		allowRepeat: false,
-	} as const satisfies Action['options'];
-	if (typeof rawCallback === 'object') {
+	} as const satisfies Action["options"];
+	if (typeof rawCallback === "object") {
 		const { callback, ...rawOptions } = rawCallback;
 		const options = { ...defaultOptions, ...rawOptions };
-		return { ...options } as const satisfies Action['options'];
+		return { ...options } as const satisfies Action["options"];
 	}
-	return { ...defaultOptions } as const satisfies Action['options'];
+	return { ...defaultOptions } as const satisfies Action["options"];
 };
 
 const matchPatterns = (ev: KeyboardEvent, action: Action) => {
@@ -156,7 +166,7 @@ const parseKeyCode = (input?: string | null) => {
 	if (input == null) return [];
 	const raw = getValueByKey(KEY_ALIASES, input);
 	if (raw == null) return [input];
-	if (typeof raw === 'string') return [trimLower(raw)];
+	if (typeof raw === "string") return [trimLower(raw)];
 	return raw.map(trimLower);
 };
 
@@ -164,7 +174,10 @@ const getValueByKey = <
 	T extends Record<keyof any, unknown>,
 	K extends keyof T | keyof any,
 	R extends K extends keyof T ? T[K] : T[keyof T] | undefined,
->(obj: T, key: K) => {
+>(
+	obj: T,
+	key: K,
+) => {
 	return obj[key] as R;
 };
 

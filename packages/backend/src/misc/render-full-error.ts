@@ -3,16 +3,16 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as Bull from 'bullmq';
-import { AbortError, FetchError } from 'node-fetch';
-import { StatusError } from '@/misc/status-error.js';
-import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
-import { CaptchaError, captchaErrorCodes } from '@/misc/captcha-error.js';
+import * as Bull from "bullmq";
+import { AbortError, FetchError } from "node-fetch";
+import { StatusError } from "@/misc/status-error.js";
+import { IdentifiableError } from "@/misc/identifiable-error.js";
+import { renderInlineError } from "@/misc/render-inline-error.js";
+import { CaptchaError, captchaErrorCodes } from "@/misc/captcha-error.js";
 
 export function renderFullError(e?: unknown): unknown {
-	if (e === undefined) return 'undefined';
-	if (e === null) return 'null';
+	if (e === undefined) return "undefined";
+	if (e === null) return "null";
 
 	if (e instanceof Error) {
 		if (isSimpleError(e)) {
@@ -26,7 +26,7 @@ export function renderFullError(e?: unknown): unknown {
 
 		// mix "cause" and "errors"
 		if (e instanceof AggregateError && e.errors.length > 0) {
-			const causes = e.errors.map(inner => renderFullError(inner));
+			const causes = e.errors.map((inner) => renderFullError(inner));
 			if (e.cause) {
 				causes.push(renderFullError(e.cause));
 			}
@@ -43,18 +43,19 @@ export function renderFullError(e?: unknown): unknown {
 
 function isSimpleError(e: Error): boolean {
 	if (e instanceof Bull.UnrecoverableError) return true;
-	if (e instanceof AbortError || e.name === 'AbortError') return true;
-	if (e instanceof FetchError || e.name === 'FetchError') return true;
+	if (e instanceof AbortError || e.name === "AbortError") return true;
+	if (e instanceof FetchError || e.name === "FetchError") return true;
 	if (e instanceof StatusError) return true;
 	if (e instanceof IdentifiableError) return true;
 	if (e instanceof FetchError) return true;
-	if (e instanceof CaptchaError && e.code !== captchaErrorCodes.unknown) return true;
+	if (e instanceof CaptchaError && e.code !== captchaErrorCodes.unknown)
+		return true;
 	return false;
 }
 
 interface ErrorData {
-	stack?: Error['stack'];
-	message?: Error['message'];
-	name?: Error['name'];
-	cause?: Error['cause'] | Error['cause'][];
+	stack?: Error["stack"];
+	message?: Error["message"];
+	name?: Error["name"];
+	cause?: Error["cause"] | Error["cause"][];
 }

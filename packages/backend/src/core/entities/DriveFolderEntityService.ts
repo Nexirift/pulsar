@@ -3,15 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { DI } from '@/di-symbols.js';
-import type { DriveFilesRepository, DriveFoldersRepository } from '@/models/_.js';
-import { awaitAll } from '@/misc/prelude/await-all.js';
-import type { Packed } from '@/misc/json-schema.js';
-import type { } from '@/models/Blocking.js';
-import type { MiDriveFolder } from '@/models/DriveFolder.js';
-import { bindThis } from '@/decorators.js';
-import { IdService } from '@/core/IdService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { DI } from "@/di-symbols.js";
+import type {
+	DriveFilesRepository,
+	DriveFoldersRepository,
+} from "@/models/_.js";
+import { awaitAll } from "@/misc/prelude/await-all.js";
+import type { Packed } from "@/misc/json-schema.js";
+import type {} from "@/models/Blocking.js";
+import type { MiDriveFolder } from "@/models/DriveFolder.js";
+import { bindThis } from "@/decorators.js";
+import { IdService } from "@/core/IdService.js";
 
 @Injectable()
 export class DriveFolderEntityService {
@@ -23,21 +26,26 @@ export class DriveFolderEntityService {
 		private driveFilesRepository: DriveFilesRepository,
 
 		private idService: IdService,
-	) {
-	}
+	) {}
 
 	@bindThis
 	public async pack(
-		src: MiDriveFolder['id'] | MiDriveFolder,
+		src: MiDriveFolder["id"] | MiDriveFolder,
 		options?: {
-			detail: boolean
+			detail: boolean;
 		},
-	): Promise<Packed<'DriveFolder'>> {
-		const opts = Object.assign({
-			detail: false,
-		}, options);
+	): Promise<Packed<"DriveFolder">> {
+		const opts = Object.assign(
+			{
+				detail: false,
+			},
+			options,
+		);
 
-		const folder = typeof src === 'object' ? src : await this.driveFoldersRepository.findOneByOrFail({ id: src });
+		const folder =
+			typeof src === "object"
+				? src
+				: await this.driveFoldersRepository.findOneByOrFail({ id: src });
 
 		return await awaitAll({
 			id: folder.id,
@@ -45,21 +53,24 @@ export class DriveFolderEntityService {
 			name: folder.name,
 			parentId: folder.parentId,
 
-			...(opts.detail ? {
-				foldersCount: this.driveFoldersRepository.countBy({
-					parentId: folder.id,
-				}),
-				filesCount: this.driveFilesRepository.countBy({
-					folderId: folder.id,
-				}),
+			...(opts.detail
+				? {
+						foldersCount: this.driveFoldersRepository.countBy({
+							parentId: folder.id,
+						}),
+						filesCount: this.driveFilesRepository.countBy({
+							folderId: folder.id,
+						}),
 
-				...(folder.parentId ? {
-					parent: this.pack(folder.parentId, {
-						detail: true,
-					}),
-				} : {}),
-			} : {}),
+						...(folder.parentId
+							? {
+									parent: this.pack(folder.parentId, {
+										detail: true,
+									}),
+								}
+							: {}),
+					}
+				: {}),
 		});
 	}
 }
-

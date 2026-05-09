@@ -1,6 +1,6 @@
 ---
 introMisskey: "Hoş geldiniz! Sharkey, açık kaynaklı, merkeziyetsiz bir mikroblog servisidir.\n\"Notlar\" oluşturarak düşüncelerinizi çevrenizdeki herkesle paylaşabilirsiniz. 📡\n\"Tepkiler\" ile de başkalarının notlarına duygularınızı hızlıca ifade edebilirsiniz. 👍\nHaydi, yeni bir dünyayı keşfedelim! 🚀"
-poweredByMisskeyDescription: "{name}, Misskey tabanlı <b>Sharkey</b> açık kaynak platformu üzerinde çalışan servislerden biridir (\"Misskey sunucusu\" olarak da anılır)."
+poweredByMisskeyDescription: '{name}, Misskey tabanlı <b>Sharkey</b> açık kaynak platformu üzerinde çalışan servislerden biridir ("Misskey sunucusu" olarak da anılır).'
 renotedBy: "{user} tarafından boostlandı"
 approvals: "Onaylar"
 copyLinkRenote: "Boost bağlantısını kopyala"
@@ -62,7 +62,7 @@ mediaSilencedByBase: "Bu hostun medyası, üst alan adının medyası sessize al
 driveSearchbarPlaceholder: "Sürücüde ara"
 fileNotSelected: "Dosya seçilmedi"
 background: "Arka plan"
-antennaUsersDescription: "Her satıra bir kullanıcı adı yazın. Bir sunucudaki tüm kullanıcılar için \"*@sunucu.com\" kullanın"
+antennaUsersDescription: 'Her satıra bir kullanıcı adı yazın. Bir sunucudaki tüm kullanıcılar için "*@sunucu.com" kullanın'
 aboutMisskey: "Sharkey Hakkında"
 expandAllCws: "Tüm yanıtlardaki içeriği göster"
 collapseAllCws: "Tüm yanıtlardaki içeriği gizle"
@@ -215,7 +215,7 @@ _timelineDescription:
 _serverSettings:
   sidebarLogoUrl: "Logo URL’si"
   sidebarLogoDescription: "Yüksek çözünürlüklü, dinamik genişlik senaryolarında normal simge yerine kullanılacak logoyu belirtir."
-  sidebarLogoUsageExample: "Örn. Kenar çubuğunda, ziyaretçilere ve \"Hakkında\" sayfasında."
+  sidebarLogoUsageExample: 'Örn. Kenar çubuğunda, ziyaretçilere ve "Hakkında" sayfasında.'
   inquiryUrl: "İletişim URL’si"
   inquiryUrlDescription: "İletişim formu veya sunucu yöneticilerinin iletişim bilgilerini içeren bir web sayfasının URL’sini belirtin."
   aboutInstance: "Sunucu hakkında"
@@ -231,12 +231,12 @@ _achievements:
       flavor: "Sharkey’i kullandığınız için teşekkürler!"
     _iLoveMisskey:
       title: "I Love Sharkey"
-      description: "\"I ❤ #Sharkey\" gönder"
+      description: '"I ❤ #Sharkey" gönder'
       flavor: "Sharkey geliştirme ekibi desteğiniz için minnettar!"
     _client30min:
       description: "Sharkey’i en az 30 dakika açık tut"
     _client60min:
-      title: "No \"Miss\" in Sharkey"
+      title: 'No "Miss" in Sharkey'
       description: "Sharkey’i en az 60 dakika açık tut"
     _brainDiver:
       flavor: "Sharkey-Sharkey La-Tu-Ma"
@@ -402,7 +402,7 @@ _mfm:
   jelly: "Animasyon (Jelly)"
   jellyDescription: "İçeriğe jöle benzeri bir animasyon verir."
   tada: "Animasyon (Tada)"
-  tadaDescription: "İçeriğe \"Tada!\" tarzında bir animasyon verir."
+  tadaDescription: 'İçeriğe "Tada!" tarzında bir animasyon verir.'
   jump: "Animasyon (Zıplama)"
   jumpDescription: "İçeriğe zıplama animasyonu verir."
   bounce: "Animasyon (Sekme)"
@@ -523,13 +523,12 @@ _noteSearch:
     module: "Modül"
     flash: "Flash"
 
-
 id: "ID"
 
 mandatoryCW: "İçerik uyarısını zorunlu kıl"
 mandatoryCWDescription: "Bu kullanıcı tarafından oluşturulan tüm gönderilere içerik uyarısı uygular. Gönderide zaten bir CW varsa, bunun sonuna eklenir."
 fetchLinkedNote: "Bağlı notu getir"
-showTranslationButtonInNoteFooter: "Not eylem menüsüne \"Çevir\" ekle"
+showTranslationButtonInNoteFooter: 'Not eylem menüsüne "Çevir" ekle'
 translationFailed: "Not çevrilemedi. Lütfen daha sonra tekrar deneyin veya yardım için bir yöneticiye başvurun."
 
 _processErrors:
@@ -547,8 +546,8 @@ _authorizedFetchValue:
 _authorizedFetchValueDescription:
   never: "Tüm imzasız istekleri engeller. Gizliliği artırır ve engellemeleri daha etkili hale getirir, ancak bazı çok eski veya nadir kullanılan yazılımlarla uyumlu değildir."
   always: "Tüm imzasız isteklere izin verir. Diğer sunucularla en yüksek uyumluluğu sağlar, ancak gizliliği azaltır ve engellemeleri zayıflatır."
-  essential: "Sınırlı imzasız isteklere izin verir. Daha eski yazılımlarla federasyon için gerekli minimum profil meta verilerini açığa çıkararak \"Asla\" ve \"Her zaman\" arasında bir denge sağlar."
-  staff: "Sunucu yöneticilerinin önerdiği varsayılan değer olan \"{value}\" kullanılır."
+  essential: 'Sınırlı imzasız isteklere izin verir. Daha eski yazılımlarla federasyon için gerekli minimum profil meta verilerini açığa çıkararak "Asla" ve "Her zaman" arasında bir denge sağlar.'
+  staff: 'Sunucu yöneticilerinin önerdiği varsayılan değer olan "{value}" kullanılır.'
 authorizedFetchLegacyWarning: "'checkActivityPubGetSignature' yapılandırma özelliği kullanımdan kaldırılmıştır ve yeni Yetkili Getirme ayarı ile değiştirilmiştir. Lütfen yapılandırma dosyanızdan kaldırın."
 
 _followRequest:
@@ -568,7 +567,7 @@ wordMuteTestLabel: "Desenleri test et"
 wordMuteTestDescription: "Kelime desenlerinizi test etmek için buraya biraz metin girin. Eşleşen kelimeler varsa aşağıda gösterilecektir."
 wordMuteTestTest: "Test et"
 wordMuteTestMatch: "Eşleşen kelimeler: {words}"
-wordMuteTestNoResults: "Henüz sonuç yok, metin girip \"Test et\" butonuna tıklayın."
+wordMuteTestNoResults: 'Henüz sonuç yok, metin girip "Test et" butonuna tıklayın.'
 wordMuteTestNoMatch: "Metin hiçbir desenle eşleşmiyor."
 wordMuteWarning: "Tüm kelime sessizleştirmeleri *büyük/küçük harfe duyarlıdır* ve uzun bir kelimenin veya ismin parçası da olsa herhangi bir alt dizeyle eşleşir. Daha hassas kontrol için düzenli ifadeler kullanabilirsiniz."
 
@@ -626,7 +625,7 @@ hibernated: "Uyku modunda"
 keepCwDescription: "İçerik Uyarısı olan bir gönderiye yanıt verirken, yanıt için aynı CW’yi otomatik olarak kullan."
 keepCwDisabled: "Devre dışı (CW’leri kopyalama)"
 keepCwEnabled: "Etkin (CW’yi aynen kopyala)"
-keepCwPrependRe: "Etkin (CW’yi kopyala ve başına \"RE:\" ekle)"
+keepCwPrependRe: 'Etkin (CW’yi kopyala ve başına "RE:" ekle)'
 
 noteFooterLabel: "Not kontrolleri"
 

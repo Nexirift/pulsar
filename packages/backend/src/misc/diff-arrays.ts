@@ -16,7 +16,10 @@ export interface DiffResult<T> {
  * @param dataBefore Array containing data before the change
  * @param dataAfter Array containing data after the change
  */
-export function diffArrays<T>(dataBefore: T[] | null | undefined, dataAfter: T[] | null | undefined): DiffResult<T> {
+export function diffArrays<T>(
+	dataBefore: T[] | null | undefined,
+	dataAfter: T[] | null | undefined,
+): DiffResult<T> {
 	const before = dataBefore ? new Set(dataBefore) : null;
 	const after = dataAfter ? new Set(dataAfter) : null;
 
@@ -64,7 +67,10 @@ export function diffArrays<T>(dataBefore: T[] | null | undefined, dataAfter: T[]
  * @param dataBefore Array containing data before the change
  * @param dataAfter Array containing data after the change
  */
-export function diffArraysSimple<T>(dataBefore: T[] | null | undefined, dataAfter: T[] | null | undefined): boolean {
+export function diffArraysSimple<T>(
+	dataBefore: T[] | null | undefined,
+	dataAfter: T[] | null | undefined,
+): boolean {
 	const before = dataBefore ? new Set(dataBefore) : null;
 	const after = dataAfter ? new Set(dataAfter) : null;
 

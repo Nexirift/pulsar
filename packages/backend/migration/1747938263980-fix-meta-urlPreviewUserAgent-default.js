@@ -4,13 +4,17 @@
  */
 
 export class FixMetaUrlPreviewUserAgentDefault1747938263980 {
-	name = 'FixMetaUrlPreviewUserAgentDefault1747938263980'
+	name = "FixMetaUrlPreviewUserAgentDefault1747938263980";
 
 	async up(queryRunner) {
-		await queryRunner.query(`ALTER TABLE "meta" ALTER COLUMN "urlPreviewUserAgent" DROP DEFAULT`);
+		await queryRunner.query(
+			`ALTER TABLE "meta" ALTER COLUMN "urlPreviewUserAgent" DROP DEFAULT`,
+		);
 	}
 
 	async down(queryRunner) {
-		await queryRunner.query(`ALTER TABLE "meta" ALTER COLUMN "urlPreviewUserAgent" SET DEFAULT NULL`);
+		await queryRunner.query(
+			`ALTER TABLE "meta" ALTER COLUMN "urlPreviewUserAgent" SET DEFAULT NULL`,
+		);
 	}
 }

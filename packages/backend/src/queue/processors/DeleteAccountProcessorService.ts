@@ -3,28 +3,51 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { In, IsNull, MoreThan } from 'typeorm';
-import { DI } from '@/di-symbols.js';
-import type { DriveFilesRepository, NoteReactionsRepository, NotesRepository, UserProfilesRepository, UsersRepository, NoteScheduleRepository, MiNoteSchedule, FollowingsRepository, FollowRequestsRepository, BlockingsRepository, MutingsRepository, ClipsRepository, ClipNotesRepository, LatestNotesRepository, NoteEditsRepository, NoteFavoritesRepository, PollVotesRepository, PollsRepository, SigninsRepository, UserIpsRepository, RegistryItemsRepository, MiUser } from '@/models/_.js';
-import type Logger from '@/logger.js';
-import { DriveService } from '@/core/DriveService.js';
-import type { MiDriveFile } from '@/models/DriveFile.js';
-import type { MiNote } from '@/models/Note.js';
-import type { MiNoteReaction } from '@/models/NoteReaction.js';
-import { EmailService } from '@/core/EmailService.js';
-import { bindThis } from '@/decorators.js';
-import { SearchService } from '@/core/SearchService.js';
-import { ApLogService } from '@/core/ApLogService.js';
-import { ReactionService } from '@/core/ReactionService.js';
-import { QueueService } from '@/core/QueueService.js';
-import { CacheService } from '@/core/CacheService.js';
-import { NoteDeleteService } from '@/core/NoteDeleteService.js';
-import { QueueLoggerService } from '@/queue/QueueLoggerService.js';
-import { ApPersonService } from '@/core/activitypub/models/ApPersonService.js';
-import * as Acct from '@/misc/acct.js';
-import type * as Bull from 'bullmq';
-import type { DbUserDeleteJobData } from '../types.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { In, IsNull, MoreThan } from "typeorm";
+import { DI } from "@/di-symbols.js";
+import type {
+	DriveFilesRepository,
+	NoteReactionsRepository,
+	NotesRepository,
+	UserProfilesRepository,
+	UsersRepository,
+	NoteScheduleRepository,
+	MiNoteSchedule,
+	FollowingsRepository,
+	FollowRequestsRepository,
+	BlockingsRepository,
+	MutingsRepository,
+	ClipsRepository,
+	ClipNotesRepository,
+	LatestNotesRepository,
+	NoteEditsRepository,
+	NoteFavoritesRepository,
+	PollVotesRepository,
+	PollsRepository,
+	SigninsRepository,
+	UserIpsRepository,
+	RegistryItemsRepository,
+	MiUser,
+} from "@/models/_.js";
+import type Logger from "@/logger.js";
+import { DriveService } from "@/core/DriveService.js";
+import type { MiDriveFile } from "@/models/DriveFile.js";
+import type { MiNote } from "@/models/Note.js";
+import type { MiNoteReaction } from "@/models/NoteReaction.js";
+import { EmailService } from "@/core/EmailService.js";
+import { bindThis } from "@/decorators.js";
+import { SearchService } from "@/core/SearchService.js";
+import { ApLogService } from "@/core/ApLogService.js";
+import { ReactionService } from "@/core/ReactionService.js";
+import { QueueService } from "@/core/QueueService.js";
+import { CacheService } from "@/core/CacheService.js";
+import { NoteDeleteService } from "@/core/NoteDeleteService.js";
+import { QueueLoggerService } from "@/queue/QueueLoggerService.js";
+import { ApPersonService } from "@/core/activitypub/models/ApPersonService.js";
+import * as Acct from "@/misc/acct.js";
+import type * as Bull from "bullmq";
+import type { DbUserDeleteJobData } from "../types.js";
 
 @Injectable()
 export class DeleteAccountProcessorService {
@@ -102,11 +125,14 @@ export class DeleteAccountProcessorService {
 		private readonly apPersonService: ApPersonService,
 		private readonly noteDeleteService: NoteDeleteService,
 	) {
-		this.logger = this.queueLoggerService.logger.createSubLogger('delete-account');
+		this.logger =
+			this.queueLoggerService.logger.createSubLogger("delete-account");
 	}
 
 	@bindThis
-	public async process(job: Bull.Job<DbUserDeleteJobData>): Promise<string | void> {
+	public async process(
+		job: Bull.Job<DbUserDeleteJobData>,
+	): Promise<string | void> {
 		this.logger.info(`Deleting account of ${job.data.user.id} ...`);
 
 		const user = await this.usersRepository.findOneBy({ id: job.data.user.id });
@@ -114,15 +140,16 @@ export class DeleteAccountProcessorService {
 			return;
 		}
 
-		{ // Delete user clips
-			const userClips = await this.clipsRepository.find({
+		{
+			// Delete user clips
+			const userClips = (await this.clipsRepository.find({
 				select: {
 					id: true,
 				},
 				where: {
 					userId: user.id,
 				},
-			}) as { id: string }[];
+			})) as { id: string }[];
 
 			// Delete one-at-a-time because there can be a lot
 			for (const clip of userClips) {
@@ -135,18 +162,20 @@ export class DeleteAccountProcessorService {
 				userId: user.id,
 			});
 
-			this.logger.info('All clips have been deleted.');
+			this.logger.info("All clips have been deleted.");
 		}
 
-		{ // Delete favorites
+		{
+			// Delete favorites
 			await this.noteFavoritesRepository.delete({
 				userId: user.id,
 			});
 
-			this.logger.info('All favorites have been deleted.');
+			this.logger.info("All favorites have been deleted.");
 		}
 
-		{ // Delete user relations
+		{
+			// Delete user relations
 			await this.cacheService.refreshFollowRelationsFor(user.id);
 			await this.cacheService.userFollowingsCache.delete(user.id);
 			await this.cacheService.userFollowingsCache.delete(user.id);
@@ -158,7 +187,9 @@ export class DeleteAccountProcessorService {
 			await this.cacheService.renoteMutingsCache.delete(user.id);
 			await this.cacheService.userProfileCache.delete(user.id);
 			await this.cacheService.userByIdCache.delete(user.id);
-			await this.cacheService.userByAcctCache.delete(Acct.toString({ username: user.usernameLower, host: user.host }));
+			await this.cacheService.userByAcctCache.delete(
+				Acct.toString({ username: user.usernameLower, host: user.host }),
+			);
 			await this.cacheService.userFollowStatsCache.delete(user.id);
 			if (user.token) {
 				await this.cacheService.nativeTokenCache.delete(user.token);
@@ -199,14 +230,15 @@ export class DeleteAccountProcessorService {
 				muteeId: user.id,
 			});
 
-			this.logger.info('All user relations have been deleted.');
+			this.logger.info("All user relations have been deleted.");
 		}
 
-		{ // Delete reactions
-			let cursor: MiNoteReaction['id'] | null = null;
+		{
+			// Delete reactions
+			let cursor: MiNoteReaction["id"] | null = null;
 
 			while (true) {
-				const reactions = await this.noteReactionsRepository.find({
+				const reactions = (await this.noteReactionsRepository.find({
 					where: {
 						userId: user.id,
 						...(cursor ? { id: MoreThan(cursor) } : {}),
@@ -218,7 +250,7 @@ export class DeleteAccountProcessorService {
 					relations: {
 						note: true,
 					},
-				}) as MiNoteReaction[];
+				})) as MiNoteReaction[];
 
 				if (reactions.length === 0) {
 					break;
@@ -233,14 +265,15 @@ export class DeleteAccountProcessorService {
 				}
 			}
 
-			this.logger.info('All reactions have been deleted');
+			this.logger.info("All reactions have been deleted");
 		}
 
-		{ // Poll votes
-			let cursor: MiNoteReaction['id'] | null = null;
+		{
+			// Poll votes
+			let cursor: MiNoteReaction["id"] | null = null;
 
 			while (true) {
-				const votes = await this.pollVotesRepository.find({
+				const votes = (await this.pollVotesRepository.find({
 					where: {
 						userId: user.id,
 						...(cursor ? { id: MoreThan(cursor) } : {}),
@@ -252,7 +285,7 @@ export class DeleteAccountProcessorService {
 					order: {
 						id: 1,
 					},
-				}) as { id: string }[];
+				})) as { id: string }[];
 
 				if (votes.length === 0) {
 					break;
@@ -261,38 +294,42 @@ export class DeleteAccountProcessorService {
 				cursor = votes.at(-1)?.id ?? null;
 
 				await this.pollVotesRepository.delete({
-					id: In(votes.map(v => v.id)),
+					id: In(votes.map((v) => v.id)),
 				});
 			}
 
-			this.logger.info('All poll votes have been deleted');
+			this.logger.info("All poll votes have been deleted");
 		}
 
-		{ // Delete scheduled notes
-			const scheduledNotes = await this.noteScheduleRepository.findBy({
+		{
+			// Delete scheduled notes
+			const scheduledNotes = (await this.noteScheduleRepository.findBy({
 				userId: user.id,
-			}) as MiNoteSchedule[];
+			})) as MiNoteSchedule[];
 
 			for (const note of scheduledNotes) {
-				await this.queueService.ScheduleNotePostQueue.remove(`schedNote:${note.id}`);
+				await this.queueService.ScheduleNotePostQueue.remove(
+					`schedNote:${note.id}`,
+				);
 			}
 
 			await this.noteScheduleRepository.delete({
 				userId: user.id,
 			});
 
-			this.logger.info('All scheduled notes deleted');
+			this.logger.info("All scheduled notes deleted");
 		}
 
-		{ // Delete notes
+		{
+			// Delete notes
 			await this.latestNotesRepository.delete({
 				userId: user.id,
 			});
 
-			let cursor: MiNote['id'] | null = null;
+			let cursor: MiNote["id"] | null = null;
 
 			while (true) {
-				const notes = await this.notesRepository.find({
+				const notes = (await this.notesRepository.find({
 					where: {
 						userId: user.id,
 						replyId: IsNull(),
@@ -300,9 +337,9 @@ export class DeleteAccountProcessorService {
 					},
 					take: 100,
 					order: {
-						id: 'desc',
+						id: "desc",
 					},
-				}) as MiNote[];
+				})) as MiNote[];
 
 				if (notes.length === 0) {
 					break;
@@ -319,7 +356,7 @@ export class DeleteAccountProcessorService {
 					}
 				}
 
-				const ids = notes.map(note => note.id);
+				const ids = notes.map((note) => note.id);
 
 				const replies = await this.notesRepository.find({
 					where: { replyId: In(ids) },
@@ -328,7 +365,12 @@ export class DeleteAccountProcessorService {
 
 				// Delete replies through the usual service to ensure we get all "cascading notes" logic.
 				for (const reply of replies) {
-					await this.noteDeleteService.delete(reply.user as MiUser, reply, undefined, true);
+					await this.noteDeleteService.delete(
+						reply.user as MiUser,
+						reply,
+						undefined,
+						true,
+					);
 				}
 
 				await this.noteEditsRepository.delete({
@@ -343,20 +385,21 @@ export class DeleteAccountProcessorService {
 				}
 
 				// Delete note AP logs
-				const noteUris = notes.map(n => n.uri).filter(u => !!u) as string[];
+				const noteUris = notes.map((n) => n.uri).filter((u) => !!u) as string[];
 				if (noteUris.length > 0) {
 					await this.apLogService.deleteObjectLogs(noteUris);
 				}
 			}
 
-			this.logger.info('All of notes deleted');
+			this.logger.info("All of notes deleted");
 		}
 
-		{ // Delete files
-			let cursor: MiDriveFile['id'] | null = null;
+		{
+			// Delete files
+			let cursor: MiDriveFile["id"] | null = null;
 
 			while (true) {
-				const files = await this.driveFilesRepository.find({
+				const files = (await this.driveFilesRepository.find({
 					where: {
 						userId: user.id,
 						...(cursor ? { id: MoreThan(cursor) } : {}),
@@ -365,7 +408,7 @@ export class DeleteAccountProcessorService {
 					order: {
 						id: 1,
 					},
-				}) as MiDriveFile[];
+				})) as MiDriveFile[];
 
 				if (files.length === 0) {
 					break;
@@ -378,23 +421,27 @@ export class DeleteAccountProcessorService {
 				}
 			}
 
-			this.logger.info('All of files deleted');
+			this.logger.info("All of files deleted");
 		}
 
-		{ // Delete actor logs
+		{
+			// Delete actor logs
 			if (user.uri) {
 				await this.apLogService.deleteObjectLogs(user.uri);
 			}
 
 			await this.apLogService.deleteInboxLogs(user.id);
 
-			this.logger.info('All AP logs deleted');
+			this.logger.info("All AP logs deleted");
 		}
 
 		// Do this BEFORE deleting the account!
-		const profile = await this.userProfilesRepository.findOneBy({ userId: user.id });
+		const profile = await this.userProfilesRepository.findOneBy({
+			userId: user.id,
+		});
 
-		{ // Delete the actual account
+		{
+			// Delete the actual account
 			await this.userIpsRepository.delete({
 				userId: user.id,
 			});
@@ -414,21 +461,25 @@ export class DeleteAccountProcessorService {
 				await this.usersRepository.delete(user.id);
 			}
 
-			this.logger.info('Account data deleted');
+			this.logger.info("Account data deleted");
 		}
 
-		{ // Send email notification
+		{
+			// Send email notification
 			if (profile && profile.email && profile.emailVerified) {
 				try {
-					await this.emailService.sendEmail(profile.email, 'Account deleted',
-						'Your account has been deleted.',
-						'Your account has been deleted.');
+					await this.emailService.sendEmail(
+						profile.email,
+						"Account deleted",
+						"Your account has been deleted.",
+						"Your account has been deleted.",
+					);
 				} catch (e) {
-					this.logger.warn('Failed to send account deletion message:', { e });
+					this.logger.warn("Failed to send account deletion message:", { e });
 				}
 			}
 		}
 
-		return 'Account deleted';
+		return "Account deleted";
 	}
 }

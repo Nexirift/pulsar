@@ -7,7 +7,7 @@ When using a service with Sharkey, there are several important points to keep in
 2. Even for posts made in private, there is no guarantee that the recipient's server will treat them as private in the same way. Please exercise caution when posting personal or confidential information. (Again, this applies to the internet in general.)
 
 3. The "Drive" feature is NOT secure cloud storage. This feature exists for easier managing of your uploaded files.
-Any data uploaded, whether shared via post or not, will be publicly accessible. Please use 3rd party cloud storage providers if you need to upload data with sensitive information of any kind. 
+   Any data uploaded, whether shared via post or not, will be publicly accessible. Please use 3rd party cloud storage providers if you need to upload data with sensitive information of any kind.
 
 4. Account deletion can be a resource-intensive process and may take a long time. In cases with a lot of uploaded data, it may even be impossible to delete an account.
 

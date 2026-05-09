@@ -4,76 +4,100 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkContainer :foldable="true" :expanded="!collapsed">
-	<template #header>
-		<i
-			class="ph-headphones ph-bold ph-lg"
-			style="margin-right: 0.5em"
-		></i>Music
-	</template>
+	<MkContainer :foldable="true" :expanded="!collapsed">
+		<template #header>
+			<i class="ph-headphones ph-bold ph-lg" style="margin-right: 0.5em"></i
+			>Music
+		</template>
 
-	<div style="padding: 8px">
-		<div class="flex">
-			<a :href="listenbrainz.musicbrainzurl">
-				<img class="image" :src="listenbrainz.img" :alt="listenbrainz.title"/>
-				<div class="flex flex-col items-start">
-					<p class="text-sm font-bold">Now Playing: {{ listenbrainz.title }}</p>
-					<p class="text-xs font-medium">{{ listenbrainz.artist }}</p>
-				</div>
-			</a>
-			<a :href="listenbrainz.listenbrainzurl">
-				<div class="playicon">
-					<i class="ph-play ph-bold ph-lg"></i>
-				</div>
-			</a>
+		<div style="padding: 8px">
+			<div class="flex">
+				<a :href="listenbrainz.musicbrainzurl">
+					<img
+						class="image"
+						:src="listenbrainz.img"
+						:alt="listenbrainz.title"
+					/>
+					<div class="flex flex-col items-start">
+						<p class="text-sm font-bold">
+							Now Playing: {{ listenbrainz.title }}
+						</p>
+						<p class="text-xs font-medium">{{ listenbrainz.artist }}</p>
+					</div>
+				</a>
+				<a :href="listenbrainz.listenbrainzurl">
+					<div class="playicon">
+						<i class="ph-play ph-bold ph-lg"></i>
+					</div>
+				</a>
+			</div>
 		</div>
-	</div>
-</MkContainer>
+	</MkContainer>
 </template>
 
 <script lang="ts" setup>
-import * as misskey from 'misskey-js';
-import MkContainer from '@/components/MkContainer.vue';
+import * as misskey from "misskey-js";
+import MkContainer from "@/components/MkContainer.vue";
 const props = withDefaults(
 	defineProps<{
 		user: misskey.entities.UserDetailed;
 		collapsed?: boolean;
-	}>(), {
+	}>(),
+	{
 		collapsed: false,
 	},
 );
-const listenbrainz = { title: '', artist: '', lastlisten: '', img: '', musicbrainzurl: '', listenbrainzurl: '' };
+const listenbrainz = {
+	title: "",
+	artist: "",
+	lastlisten: "",
+	img: "",
+	musicbrainzurl: "",
+	listenbrainzurl: "",
+};
 if (props.user.listenbrainz) {
 	const getLMData = async (title: string, artist: string) => {
-		const response = await window.fetch(`https://api.listenbrainz.org/1/metadata/lookup/?artist_name=${artist}&recording_name=${title}`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
+		const response = await window.fetch(
+			`https://api.listenbrainz.org/1/metadata/lookup/?artist_name=${artist}&recording_name=${title}`,
+			{
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json",
+				},
 			},
-		});
+		);
 		const data = await response.json();
 		if (!data.recording_name) {
 			return null;
 		}
 		const titler: string = data.recording_name;
 		const artistr: string = data.artist_credit_name;
-		const img: string = data.release_mbid ? `https://coverartarchive.org/release/${data.release_mbid}/front-250` : 'https://coverartarchive.org/img/big_logo.svg';
-		const musicbrainzurl: string = data.recording_mbid ? `https://musicbrainz.org/recording/${data.recording_mbid}` : '#';
-		const listenbrainzurl: string = data.recording_mbid ? `https://listenbrainz.org/player?recording_mbids=${data.recording_mbid}` : '#';
+		const img: string = data.release_mbid
+			? `https://coverartarchive.org/release/${data.release_mbid}/front-250`
+			: "https://coverartarchive.org/img/big_logo.svg";
+		const musicbrainzurl: string = data.recording_mbid
+			? `https://musicbrainz.org/recording/${data.recording_mbid}`
+			: "#";
+		const listenbrainzurl: string = data.recording_mbid
+			? `https://listenbrainz.org/player?recording_mbids=${data.recording_mbid}`
+			: "#";
 		return [titler, artistr, img, musicbrainzurl, listenbrainzurl];
 	};
-	const response = await window.fetch(`https://api.listenbrainz.org/1/user/${props.user.listenbrainz}/playing-now`, {
-		method: 'GET',
-		headers: {
-			'Content-Type': 'application/json',
+	const response = await window.fetch(
+		`https://api.listenbrainz.org/1/user/${props.user.listenbrainz}/playing-now`,
+		{
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+			},
 		},
-	});
+	);
 	const data = await response.json();
 	if (data.payload.listens && data.payload.listens.length !== 0) {
 		const title: string = data.payload.listens[0].track_metadata.track_name;
 		const artist: string = data.payload.listens[0].track_metadata.artist_name;
 		const lastlisten: string = data.payload.listens[0].playing_now;
-		const img = 'https://coverartarchive.org/img/big_logo.svg';
+		const img = "https://coverartarchive.org/img/big_logo.svg";
 		await getLMData(title, artist).then((lmData) => {
 			if (!lmData) {
 				listenbrainz.title = title;
@@ -99,9 +123,9 @@ if (props.user.listenbrainz) {
 	align-items: center;
 }
 .flex a {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
+	display: flex;
+	align-items: center;
+	text-decoration: none;
 }
 .image {
 	height: 4.8rem;

@@ -4,10 +4,10 @@
  */
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { expect, userEvent, within } from '@storybook/test';
-import type { StoryObj } from '@storybook/vue3';
-import MkA from './MkA.vue';
-import { tick } from '@/utility/test-utils.js';
+import { expect, userEvent, within } from "@storybook/test";
+import type { StoryObj } from "@storybook/vue3";
+import MkA from "./MkA.vue";
+import { tick } from "@/utility/test-utils.js";
 export const Default = {
 	render(args) {
 		return {
@@ -31,21 +31,21 @@ export const Default = {
 	},
 	async play({ canvasElement }) {
 		const canvas = within(canvasElement);
-		const a = canvas.getByRole<HTMLAnchorElement>('link');
+		const a = canvas.getByRole<HTMLAnchorElement>("link");
 		// FIXME: 通るけどその後落ちるのでコメントアウト
 		// await expect(a.href).toMatch(/^https?:\/\/.*#test$/);
-		await userEvent.pointer({ keys: '[MouseRight]', target: a });
-		const menu = canvas.getByRole('menu');
+		await userEvent.pointer({ keys: "[MouseRight]", target: a });
+		const menu = canvas.getByRole("menu");
 		await expect(menu).toBeInTheDocument();
 		await userEvent.click(a);
 		a.blur();
 		await expect(menu).not.toBeInTheDocument();
 	},
 	args: {
-		to: '#test',
-		behavior: 'browser',
+		to: "#test",
+		behavior: "browser",
 	},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkA>;

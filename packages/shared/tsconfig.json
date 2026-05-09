@@ -7,8 +7,5 @@
 		"Used for type-checking the shared JS/TS code; do not reference from other packages."
 	],
 
-	"include": [
-		"*.js",
-		"*.ts",
-	],
+	"include": ["*.js", "*.ts"]
 }

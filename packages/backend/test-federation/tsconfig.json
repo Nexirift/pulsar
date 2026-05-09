@@ -15,8 +15,5 @@
 		// Output
 		"outDir": "./built"
 	},
-	"include": [
-		"daemon.ts",
-		"./test/**/*.ts"
-	]
+	"include": ["daemon.ts", "./test/**/*.ts"]
 }

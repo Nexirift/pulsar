@@ -3,17 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Brackets, type FindOptionsWhere } from 'typeorm';
-import type { NoteReactionsRepository } from '@/models/_.js';
-import type { MiNoteReaction } from '@/models/NoteReaction.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { NoteReactionEntityService } from '@/core/entities/NoteReactionEntityService.js';
-import { DI } from '@/di-symbols.js';
-import { QueryService } from '@/core/QueryService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Brackets, type FindOptionsWhere } from "typeorm";
+import type { NoteReactionsRepository } from "@/models/_.js";
+import type { MiNoteReaction } from "@/models/NoteReaction.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { NoteReactionEntityService } from "@/core/entities/NoteReactionEntityService.js";
+import { DI } from "@/di-symbols.js";
+import { QueryService } from "@/core/QueryService.js";
 
 export const meta = {
-	tags: ['notes', 'reactions'],
+	tags: ["notes", "reactions"],
 
 	requireCredential: false,
 
@@ -21,20 +21,22 @@ export const meta = {
 	cacheSec: 60,
 
 	res: {
-		type: 'array',
-		optional: false, nullable: false,
+		type: "array",
+		optional: false,
+		nullable: false,
 		items: {
-			type: 'object',
-			optional: false, nullable: false,
-			ref: 'NoteReaction',
+			type: "object",
+			optional: false,
+			nullable: false,
+			ref: "NoteReaction",
 		},
 	},
 
 	errors: {
 		noSuchNote: {
-			message: 'No such note.',
-			code: 'NO_SUCH_NOTE',
-			id: '263fff3d-d0e1-4af4-bea7-8408059b451a',
+			message: "No such note.",
+			code: "NO_SUCH_NOTE",
+			id: "263fff3d-d0e1-4af4-bea7-8408059b451a",
 		},
 	},
 
@@ -46,19 +48,20 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		noteId: { type: 'string', format: 'misskey:id' },
-		type: { type: 'string', nullable: true },
-		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
-		sinceId: { type: 'string', format: 'misskey:id' },
-		untilId: { type: 'string', format: 'misskey:id' },
+		noteId: { type: "string", format: "misskey:id" },
+		type: { type: "string", nullable: true },
+		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+		sinceId: { type: "string", format: "misskey:id" },
+		untilId: { type: "string", format: "misskey:id" },
 	},
-	required: ['noteId'],
+	required: ["noteId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.noteReactionsRepository)
 		private noteReactionsRepository: NoteReactionsRepository,
@@ -67,17 +70,24 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const query = this.queryService.makePaginationQuery(this.noteReactionsRepository.createQueryBuilder('reaction'), ps.sinceId, ps.untilId)
-				.andWhere('reaction.noteId = :noteId', { noteId: ps.noteId })
-				.leftJoinAndSelect('reaction.user', 'user')
-				.leftJoinAndSelect('reaction.note', 'note');
+			const query = this.queryService
+				.makePaginationQuery(
+					this.noteReactionsRepository.createQueryBuilder("reaction"),
+					ps.sinceId,
+					ps.untilId,
+				)
+				.andWhere("reaction.noteId = :noteId", { noteId: ps.noteId })
+				.leftJoinAndSelect("reaction.user", "user")
+				.leftJoinAndSelect("reaction.note", "note");
 
 			if (ps.type) {
 				// ローカルリアクションはホスト名が . とされているが
 				// DB 上ではそうではないので、必要に応じて変換
-				const suffix = '@.:';
-				const type = ps.type.endsWith(suffix) ? ps.type.slice(0, ps.type.length - suffix.length) + ':' : ps.type;
-				query.andWhere('reaction.reaction = :type', { type });
+				const suffix = "@.:";
+				const type = ps.type.endsWith(suffix)
+					? ps.type.slice(0, ps.type.length - suffix.length) + ":"
+					: ps.type;
+				query.andWhere("reaction.reaction = :type", { type });
 			}
 
 			if (me) this.queryService.generateMutedUserQueryForNotes(query, me);

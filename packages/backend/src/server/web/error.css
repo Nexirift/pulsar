@@ -5,7 +5,12 @@
  */
 
 * {
-	font-family: BIZ UDGothic, Roboto, HelveticaNeue, Arial, sans-serif;
+	font-family:
+		BIZ UDGothic,
+		Roboto,
+		HelveticaNeue,
+		Arial,
+		sans-serif;
 }
 
 #pulsar_app,
@@ -100,7 +105,7 @@ code {
 	cursor: pointer;
 }
 
-#errorInfo summary>* {
+#errorInfo summary > * {
 	display: inline;
 }
 

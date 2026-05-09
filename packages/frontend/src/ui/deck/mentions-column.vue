@@ -4,19 +4,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<XColumn :column="column" :isStacked="isStacked" :refresher="() => reloadTimeline()">
-	<template #header><i class="ti ti-at" style="margin-right: 8px;"></i>{{ column.name || i18n.ts._deck._columns.mentions }}</template>
+	<XColumn
+		:column="column"
+		:isStacked="isStacked"
+		:refresher="() => reloadTimeline()"
+	>
+		<template #header
+			><i class="ti ti-at" style="margin-right: 8px"></i
+			>{{ column.name || i18n.ts._deck._columns.mentions }}</template
+		>
 
-	<MkNotes ref="tlComponent" :pagination="pagination"/>
-</XColumn>
+		<MkNotes ref="tlComponent" :pagination="pagination" />
+	</XColumn>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import XColumn from './column.vue';
-import type { Column } from '@/deck.js';
-import MkNotes from '@/components/MkNotes.vue';
-import { i18n } from '../../i18n.js';
+import { ref } from "vue";
+import XColumn from "./column.vue";
+import type { Column } from "@/deck.js";
+import MkNotes from "@/components/MkNotes.vue";
+import { i18n } from "../../i18n.js";
 
 defineProps<{
 	column: Column;
@@ -34,7 +41,7 @@ function reloadTimeline() {
 }
 
 const pagination = {
-	endpoint: 'notes/mentions' as const,
+	endpoint: "notes/mentions" as const,
 	limit: 10,
 };
 </script>

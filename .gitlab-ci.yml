@@ -5,21 +5,21 @@ stages:
 
 variables:
   # https://docs.gitlab.com/user/application_security/sast/gitlab_advanced_sast
-  GITLAB_ADVANCED_SAST_ENABLED: 'true'
+  GITLAB_ADVANCED_SAST_ENABLED: "true"
 
   # https://docs.gitlab.com/user/application_security/sast/#vulnerability-filters
   # https://stackoverflow.com/a/71111784
-  SAST_EXCLUDED_PATHS: 'spec,test,test-d,test-federation,test-server,tests,tmp,cypress,coverage,node_modules,build,built,built-js,*.min.js,megalodon/lib,libopenmpt'
-  DS_EXCLUDED_PATHS: 'spec,test,test-d,test-federation,test-server,tests,tmp,cypress,coverage,node_modules,build,built,built-js,*.min.js,megalodon/lib,libopenmpt,packages/*/src' # save time: skip source directories
+  SAST_EXCLUDED_PATHS: "spec,test,test-d,test-federation,test-server,tests,tmp,cypress,coverage,node_modules,build,built,built-js,*.min.js,megalodon/lib,libopenmpt"
+  DS_EXCLUDED_PATHS: "spec,test,test-d,test-federation,test-server,tests,tmp,cypress,coverage,node_modules,build,built,built-js,*.min.js,megalodon/lib,libopenmpt,packages/*/src" # save time: skip source directories
 
   # https://docs.gitlab.com/user/application_security/dependency_scanning/migration_guide_to_sbom_based_scans/
-  DS_ENFORCE_NEW_ANALYZER: 'true'
+  DS_ENFORCE_NEW_ANALYZER: "true"
   DS_MAX_DEPTH: -1
   # https://docs.gitlab.com/user/application_security/dependency_scanning/static_reachability/
   DS_STATIC_REACHABILITY_ENABLED: true
 
   # https://docs.gitlab.com/user/application_security/detect/security_configuration/#use-security-scanning-tools-with-merge-request-pipelines
-  AST_ENABLE_MR_PIPELINES: 'true'
+  AST_ENABLE_MR_PIPELINES: "true"
 
 .common: &common
   # "only" has been removed, so we use rules.
@@ -40,15 +40,15 @@ variables:
 
 # https://docs.gitlab.com/user/application_security/sast/
 include:
-  - local: '.gitlab/ci_templates/dependency_scanning.yml'
+  - local: ".gitlab/ci_templates/dependency_scanning.yml"
     rules: *common-rules
-  - local: '.gitlab/ci_templates/container_scanning.yml'
+  - local: ".gitlab/ci_templates/container_scanning.yml"
     rules: *deploy-rules
-  - local: '.gitlab/ci_templates/sast.yml'
+  - local: ".gitlab/ci_templates/sast.yml"
     rules: *common-rules
-  - local: '.gitlab/ci_templates/secret_detection.yml'
+  - local: ".gitlab/ci_templates/secret_detection.yml"
     rules: *common-rules
-  - local: '.gitlab/ci_templates/lib_behave.yml'
+  - local: ".gitlab/ci_templates/lib_behave.yml"
     rules: *common-rules
 
 # Cache node_modules and share build artifacts for the pipeline.
@@ -63,8 +63,8 @@ build: &build
     name: docker.io/node:22
     pull_policy: if-not-present
   variables:
-    POSTGRES_PASSWORD: 'ci'
-    COREPACK_DEFAULT_TO_LATEST: '0'
+    POSTGRES_PASSWORD: "ci"
+    COREPACK_DEFAULT_TO_LATEST: "0"
   # Arm64 is recommended for CI
   tags:
     - arm64
@@ -84,21 +84,21 @@ build: &build
     - &cache-pnpm
       key:
         files:
-          - 'pnpm-lock.yaml'
-          - 'pnpm-workspace.yaml'
+          - "pnpm-lock.yaml"
+          - "pnpm-workspace.yaml"
       paths:
-        - '.pnpm-store/'
-        - 'node_modules/'
-        - 'packages/*/node_modules/'
-        - 'packages/misskey-js/generator/node_modules/'
+        - ".pnpm-store/"
+        - "node_modules/"
+        - "packages/*/node_modules/"
+        - "packages/misskey-js/generator/node_modules/"
       policy: pull-push
       when: on_success
     - &cache-build
       key: "$CI_COMMIT_REF_SLUG"
       paths:
-        - 'built/'
-        - 'packages/*/built/'
-        - 'packages/megalodon/lib/'
+        - "built/"
+        - "packages/*/built/"
+        - "packages/megalodon/lib/"
       policy: pull-push
       when: on_success
 
@@ -107,11 +107,9 @@ build: &build
   <<: *build
   stage: test
   cache:
-    -
-      <<: *cache-pnpm
+    - <<: *cache-pnpm
       policy: pull
-    -
-      <<: *cache-build
+    - <<: *cache-build
       policy: pull
 
 lint:
@@ -137,14 +135,14 @@ backend_tests:
     - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'stable')
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
       changes:
-        - 'packages/backend/**/*'
-        - 'packages/megalodon/**/*'
-        - 'packages/misskey-js/**/*'
-        - 'packages/*' # single-star is intention - we don't want to recurse!
-        - 'scripts/**/*'
-        - 'eslint/**/*'
-        - 'chart/**/*'
-        - '.config/**/*'
+        - "packages/backend/**/*"
+        - "packages/megalodon/**/*"
+        - "packages/misskey-js/**/*"
+        - "packages/*" # single-star is intention - we don't want to recurse!
+        - "scripts/**/*"
+        - "eslint/**/*"
+        - "chart/**/*"
+        - ".config/**/*"
 
 frontend_tests:
   <<: *test_common
@@ -157,21 +155,21 @@ frontend_tests:
     - if: $CI_PIPELINE_SOURCE == 'push' && ($CI_COMMIT_BRANCH == 'develop' || $CI_COMMIT_BRANCH == 'stable')
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
       changes:
-        - 'packages/frontend/**/*'
-        - 'packages/frontend-embed/**/*'
-        - 'packages/frontend-shared/**/*'
-        - 'packages/misskey-js/**/*'
-        - 'packages/misskey-bubble-game/**/*'
-        - 'packages/misskey-reversi/**/*'
-        - 'packages/sw/**/*'
-        - 'packages/*' # single-star is intention - we don't want to recurse!
-        - 'scripts/**/*'
-        - 'eslint/**/*'
-        - 'locales/**/*'
-        - 'sharkey-locales/**/*'
-        - 'pulsar-locales/**/*'
-        - 'cypress/**/*'
-        - 'assets/**/*'
+        - "packages/frontend/**/*"
+        - "packages/frontend-embed/**/*"
+        - "packages/frontend-shared/**/*"
+        - "packages/misskey-js/**/*"
+        - "packages/misskey-bubble-game/**/*"
+        - "packages/misskey-reversi/**/*"
+        - "packages/sw/**/*"
+        - "packages/*" # single-star is intention - we don't want to recurse!
+        - "scripts/**/*"
+        - "eslint/**/*"
+        - "locales/**/*"
+        - "sharkey-locales/**/*"
+        - "pulsar-locales/**/*"
+        - "cypress/**/*"
+        - "assets/**/*"
 
 misskey-js_tests:
   <<: *test_common

@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { http, HttpResponse } from 'msw';
-import { action } from '@storybook/addon-actions';
-import { chatMessage } from '../../.storybook/fakes';
-import MkChatHistories from './MkChatHistories.vue';
-import type { StoryObj } from '@storybook/vue3';
-import type * as Misskey from 'misskey-js';
+import { http, HttpResponse } from "msw";
+import { action } from "@storybook/addon-actions";
+import { chatMessage } from "../../.storybook/fakes";
+import MkChatHistories from "./MkChatHistories.vue";
+import type { StoryObj } from "@storybook/vue3";
+import type * as Misskey from "misskey-js";
 export const Default = {
 	render(args) {
 		return {
@@ -31,12 +31,13 @@ export const Default = {
 		};
 	},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 		msw: {
 			handlers: [
-				http.post('/api/chat/history', async ({ request }) => {
-					const body = await request.json() as Misskey.entities.ChatHistoryRequest;
-					action('POST /api/chat/history')(body);
+				http.post("/api/chat/history", async ({ request }) => {
+					const body =
+						(await request.json()) as Misskey.entities.ChatHistoryRequest;
+					action("POST /api/chat/history")(body);
 					return HttpResponse.json([chatMessage(body.room)]);
 				}),
 			],

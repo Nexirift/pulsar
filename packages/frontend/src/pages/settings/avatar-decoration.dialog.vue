@@ -4,60 +4,97 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkModalWindow
-	ref="dialog"
-	:width="400"
-	:height="450"
-	@close="cancel"
-	@closed="emit('closed')"
->
-	<template #header>{{ i18n.ts.avatarDecorations }}</template>
+	<MkModalWindow
+		ref="dialog"
+		:width="400"
+		:height="450"
+		@close="cancel"
+		@closed="emit('closed')"
+	>
+		<template #header>{{ i18n.ts.avatarDecorations }}</template>
 
-	<div>
-		<div class="_spacer" style="--MI_SPACER-min: 20px; --MI_SPACER-max: 28px;">
-			<div style="text-align: center;">
-				<div :class="$style.name">{{ decoration.name }}</div>
-				<MkAvatar style="width: 64px; height: 64px; margin-bottom: 20px;" :user="$i" :decorations="decorationsForPreview" forceShowDecoration/>
+		<div>
+			<div class="_spacer" style="--MI_SPACER-min: 20px; --MI_SPACER-max: 28px">
+				<div style="text-align: center">
+					<div :class="$style.name">{{ decoration.name }}</div>
+					<MkAvatar
+						style="width: 64px; height: 64px; margin-bottom: 20px"
+						:user="$i"
+						:decorations="decorationsForPreview"
+						forceShowDecoration
+					/>
+				</div>
+				<div class="_gaps_s">
+					<MkRange
+						v-model="angle"
+						continuousUpdate
+						:min="-0.5"
+						:max="0.5"
+						:step="0.025"
+						:textConverter="(v) => `${Math.floor(v * 360)}°`"
+					>
+						<template #label>{{ i18n.ts.angle }}</template>
+					</MkRange>
+					<MkRange
+						v-model="offsetX"
+						continuousUpdate
+						:min="-0.25"
+						:max="0.25"
+						:step="0.025"
+						:textConverter="(v) => `${Math.floor(v * 100)}%`"
+					>
+						<template #label>X {{ i18n.ts.position }}</template>
+					</MkRange>
+					<MkRange
+						v-model="offsetY"
+						continuousUpdate
+						:min="-0.25"
+						:max="0.25"
+						:step="0.025"
+						:textConverter="(v) => `${Math.floor(v * 100)}%`"
+					>
+						<template #label>Y {{ i18n.ts.position }}</template>
+					</MkRange>
+					<MkSwitch v-model="showBelow">
+						<template #label>{{ i18n.ts.showBelowAvatar }}</template>
+					</MkSwitch>
+					<MkSwitch v-model="flipH">
+						<template #label>{{ i18n.ts.flip }} (Horizontal)</template>
+					</MkSwitch>
+					<MkSwitch v-model="flipV">
+						<template #label>{{ i18n.ts.flip }} (Vertical)</template>
+					</MkSwitch>
+				</div>
 			</div>
-			<div class="_gaps_s">
-				<MkRange v-model="angle" continuousUpdate :min="-0.5" :max="0.5" :step="0.025" :textConverter="(v) => `${Math.floor(v * 360)}°`">
-					<template #label>{{ i18n.ts.angle }}</template>
-				</MkRange>
-				<MkRange v-model="offsetX" continuousUpdate :min="-0.25" :max="0.25" :step="0.025" :textConverter="(v) => `${Math.floor(v * 100)}%`">
-					<template #label>X {{ i18n.ts.position }}</template>
-				</MkRange>
-				<MkRange v-model="offsetY" continuousUpdate :min="-0.25" :max="0.25" :step="0.025" :textConverter="(v) => `${Math.floor(v * 100)}%`">
-					<template #label>Y {{ i18n.ts.position }}</template>
-				</MkRange>
-				<MkSwitch v-model="showBelow">
-					<template #label>{{ i18n.ts.showBelowAvatar }}</template>
-				</MkSwitch>
-				<MkSwitch v-model="flipH">
-					<template #label>{{ i18n.ts.flip }} (Horizontal)</template>
-				</MkSwitch>
-				<MkSwitch v-model="flipV">
-					<template #label>{{ i18n.ts.flip }} (Vertical)</template>
-				</MkSwitch>
+
+			<div :class="$style.footer" class="_buttonsCenter">
+				<MkButton v-if="usingIndex != null" primary rounded @click="update"
+					><i class="ti ti-check"></i> {{ i18n.ts.update }}</MkButton
+				>
+				<MkButton v-if="usingIndex != null" rounded @click="detach"
+					><i class="ti ti-x"></i> {{ i18n.ts.detach }}</MkButton
+				>
+				<MkButton
+					v-else
+					:disabled="exceeded || locked"
+					primary
+					rounded
+					@click="attach"
+					><i class="ti ti-check"></i> {{ i18n.ts.attach }}</MkButton
+				>
 			</div>
 		</div>
-
-		<div :class="$style.footer" class="_buttonsCenter">
-			<MkButton v-if="usingIndex != null" primary rounded @click="update"><i class="ti ti-check"></i> {{ i18n.ts.update }}</MkButton>
-			<MkButton v-if="usingIndex != null" rounded @click="detach"><i class="ti ti-x"></i> {{ i18n.ts.detach }}</MkButton>
-			<MkButton v-else :disabled="exceeded || locked" primary rounded @click="attach"><i class="ti ti-check"></i> {{ i18n.ts.attach }}</MkButton>
-		</div>
-	</div>
-</MkModalWindow>
+	</MkModalWindow>
 </template>
 
 <script lang="ts" setup>
-import { useTemplateRef, ref, computed } from 'vue';
-import MkButton from '@/components/MkButton.vue';
-import MkModalWindow from '@/components/MkModalWindow.vue';
-import MkSwitch from '@/components/MkSwitch.vue';
-import { i18n } from '@/i18n.js';
-import MkRange from '@/components/MkRange.vue';
-import { ensureSignin } from '@/i.js';
+import { useTemplateRef, ref, computed } from "vue";
+import MkButton from "@/components/MkButton.vue";
+import MkModalWindow from "@/components/MkModalWindow.vue";
+import MkSwitch from "@/components/MkSwitch.vue";
+import { i18n } from "@/i18n.js";
+import MkRange from "@/components/MkRange.vue";
+import { ensureSignin } from "@/i.js";
 
 const $i = ensureSignin();
 
@@ -72,35 +109,73 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'closed'): void;
-	(ev: 'attach', payload: {
-		angle: number;
-		flipH: boolean;
-		flipV: boolean;
-		offsetX: number;
-		offsetY: number;
-		showBelow: boolean;
-	}): void;
-	(ev: 'update', payload: {
-		angle: number;
-		flipH: boolean;
-		flipV: boolean;
-		offsetX: number;
-		offsetY: number;
-		showBelow: boolean;
-	}): void;
-	(ev: 'detach'): void;
+	(ev: "closed"): void;
+	(
+		ev: "attach",
+		payload: {
+			angle: number;
+			flipH: boolean;
+			flipV: boolean;
+			offsetX: number;
+			offsetY: number;
+			showBelow: boolean;
+		},
+	): void;
+	(
+		ev: "update",
+		payload: {
+			angle: number;
+			flipH: boolean;
+			flipV: boolean;
+			offsetX: number;
+			offsetY: number;
+			showBelow: boolean;
+		},
+	): void;
+	(ev: "detach"): void;
 }>();
 
-const dialog = useTemplateRef('dialog');
-const exceeded = computed(() => ($i.policies.avatarDecorationLimit - $i.avatarDecorations.length) <= 0);
-const locked = computed(() => props.decoration.roleIdsThatCanBeUsedThisDecoration.length > 0 && !$i.roles.some(r => props.decoration.roleIdsThatCanBeUsedThisDecoration.includes(r.id)));
-const angle = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].angle : null) ?? 0);
-const flipH = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].flipH : null) ?? false);
-const flipV = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].flipV : null) ?? false);
-const offsetX = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].offsetX : null) ?? 0);
-const offsetY = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].offsetY : null) ?? 0);
-const showBelow = ref((props.usingIndex != null ? $i.avatarDecorations[props.usingIndex].showBelow : null) ?? false);
+const dialog = useTemplateRef("dialog");
+const exceeded = computed(
+	() => $i.policies.avatarDecorationLimit - $i.avatarDecorations.length <= 0,
+);
+const locked = computed(
+	() =>
+		props.decoration.roleIdsThatCanBeUsedThisDecoration.length > 0 &&
+		!$i.roles.some((r) =>
+			props.decoration.roleIdsThatCanBeUsedThisDecoration.includes(r.id),
+		),
+);
+const angle = ref(
+	(props.usingIndex != null
+		? $i.avatarDecorations[props.usingIndex].angle
+		: null) ?? 0,
+);
+const flipH = ref(
+	(props.usingIndex != null
+		? $i.avatarDecorations[props.usingIndex].flipH
+		: null) ?? false,
+);
+const flipV = ref(
+	(props.usingIndex != null
+		? $i.avatarDecorations[props.usingIndex].flipV
+		: null) ?? false,
+);
+const offsetX = ref(
+	(props.usingIndex != null
+		? $i.avatarDecorations[props.usingIndex].offsetX
+		: null) ?? 0,
+);
+const offsetY = ref(
+	(props.usingIndex != null
+		? $i.avatarDecorations[props.usingIndex].offsetY
+		: null) ?? 0,
+);
+const showBelow = ref(
+	(props.usingIndex != null
+		? $i.avatarDecorations[props.usingIndex].showBelow
+		: null) ?? false,
+);
 
 const decorationsForPreview = computed(() => {
 	const decoration = {
@@ -128,7 +203,7 @@ function cancel() {
 }
 
 async function update() {
-	emit('update', {
+	emit("update", {
 		angle: angle.value,
 		flipH: flipH.value,
 		flipV: flipV.value,
@@ -140,7 +215,7 @@ async function update() {
 }
 
 async function attach() {
-	emit('attach', {
+	emit("attach", {
 		angle: angle.value,
 		flipH: flipH.value,
 		flipV: flipV.value,
@@ -152,7 +227,7 @@ async function attach() {
 }
 
 async function detach() {
-	emit('detach');
+	emit("detach");
 	dialog.value?.close();
 }
 </script>

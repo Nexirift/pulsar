@@ -3,26 +3,26 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { reversiUpdateKeys } from '@/const.js';
-import type { MiReversiGame } from '@/models/_.js';
-import { bindThis } from '@/decorators.js';
-import { ReversiService } from '@/core/ReversiService.js';
-import { ReversiGameEntityService } from '@/core/entities/ReversiGameEntityService.js';
-import { isJsonObject } from '@/misc/json-value.js';
-import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
-import type { JsonObject, JsonValue } from '@/misc/json-value.js';
-import Channel, { type MiChannelService } from '../channel.js';
+import { Injectable } from "@nestjs/common";
+import { reversiUpdateKeys } from "@/const.js";
+import type { MiReversiGame } from "@/models/_.js";
+import { bindThis } from "@/decorators.js";
+import { ReversiService } from "@/core/ReversiService.js";
+import { ReversiGameEntityService } from "@/core/entities/ReversiGameEntityService.js";
+import { isJsonObject } from "@/misc/json-value.js";
+import { errorCodes, IdentifiableError } from "@/misc/identifiable-error.js";
+import type { JsonObject, JsonValue } from "@/misc/json-value.js";
+import Channel, { type MiChannelService } from "../channel.js";
 
 class ReversiGameChannel extends Channel {
-	public readonly chName = 'reversiGame';
+	public readonly chName = "reversiGame";
 	public static shouldShare = false;
 	public static requireCredential = false as const;
-	private gameId: MiReversiGame['id'] | null = null;
+	private gameId: MiReversiGame["id"] | null = null;
 
 	constructor(
 		id: string,
-		connection: Channel['connection'],
+		connection: Channel["connection"],
 
 		private reversiService: ReversiService,
 		private reversiGameEntityService: ReversiGameEntityService,
@@ -32,8 +32,12 @@ class ReversiGameChannel extends Channel {
 
 	@bindThis
 	public async init(params: JsonObject) {
-		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
-		if (typeof params.gameId !== 'string') return;
+		if (!this.subscriber)
+			throw new IdentifiableError(
+				errorCodes.websocketError,
+				`Cannot init ${this.chName} channel: socket is not connected`,
+			);
+		if (typeof params.gameId !== "string") return;
 		this.gameId = params.gameId;
 
 		this.subscriber.on(`reversiGameStream:${this.gameId}`, this.send);
@@ -42,32 +46,40 @@ class ReversiGameChannel extends Channel {
 	@bindThis
 	public onMessage(type: string, body: JsonValue) {
 		switch (type) {
-			case 'ready':
-				if (typeof body !== 'boolean') return;
+			case "ready":
+				if (typeof body !== "boolean") return;
 				this.ready(body);
 				break;
-			case 'updateSettings':
+			case "updateSettings":
 				if (!isJsonObject(body)) return;
 				if (!this.reversiService.isValidReversiUpdateKey(body.key)) return;
-				if (!this.reversiService.isValidReversiUpdateValue(body.key, body.value)) return;
+				if (
+					!this.reversiService.isValidReversiUpdateValue(body.key, body.value)
+				)
+					return;
 
 				this.updateSettings(body.key, body.value);
 				break;
-			case 'cancel':
+			case "cancel":
 				this.cancelGame();
 				break;
-			case 'putStone':
+			case "putStone":
 				if (!isJsonObject(body)) return;
-				if (typeof body.pos !== 'number') return;
-				if (typeof body.id !== 'string') return;
+				if (typeof body.pos !== "number") return;
+				if (typeof body.id !== "string") return;
 				this.putStone(body.pos, body.id);
 				break;
-			case 'claimTimeIsUp': this.claimTimeIsUp(); break;
+			case "claimTimeIsUp":
+				this.claimTimeIsUp();
+				break;
 		}
 	}
 
 	@bindThis
-	private async updateSettings<K extends typeof reversiUpdateKeys[number]>(key: K, value: MiReversiGame[K]) {
+	private async updateSettings<K extends (typeof reversiUpdateKeys)[number]>(
+		key: K,
+		value: MiReversiGame[K],
+	) {
 		if (this.user == null) return;
 
 		this.reversiService.updateSettings(this.gameId!, this.user, key, value);
@@ -117,11 +129,13 @@ export class ReversiGameChannelService implements MiChannelService<false> {
 	constructor(
 		private reversiService: ReversiService,
 		private reversiGameEntityService: ReversiGameEntityService,
-	) {
-	}
+	) {}
 
 	@bindThis
-	public create(id: string, connection: Channel['connection']): ReversiGameChannel {
+	public create(
+		id: string,
+		connection: Channel["connection"],
+	): ReversiGameChannel {
 		return new ReversiGameChannel(
 			id,
 			connection,

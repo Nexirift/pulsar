@@ -42,7 +42,7 @@ _initialTutorial:
   _done:
     description: "The functions introduced here are just a small part. For a more detailed understanding of using Pulsar, please refer to {link}."
 introMisskey: "Welcome! Pulsar is an open source, decentralized microblogging service.\nCreate \"notes\" to share your thoughts with everyone around you. 📡\nWith \"reactions\", you can also quickly express your feelings about everyone's notes. 👍\nLet's explore a new world! 🚀"
-poweredByMisskeyDescription: "{name} is one of the services powered by the open source platform <b>Pulsar</b> which is based on Sharkey, a fork of Misskey (referred to as a \"Misskey instance\")."
+poweredByMisskeyDescription: '{name} is one of the services powered by the open source platform <b>Pulsar</b> which is based on Sharkey, a fork of Misskey (referred to as a "Misskey instance").'
 flagAsBotDescription: "Enable this option if this account is controlled by a program. If enabled, it will act as a flag for other developers to prevent endless interaction chains with other bots and adjust Pulsar's internal systems to treat this account as a bot."
 intro: "Installation of Pulsar has been finished! Please create an admin user."
 aboutMisskey: "About Pulsar"
@@ -65,7 +65,7 @@ misskeyUpdated: "Pulsar has been updated!"
 didYouLikeMisskey: "Have you taken a liking to Pulsar?"
 pleaseDonate: "{host} uses the free software, Pulsar. We would highly appreciate your donations so development of Pulsar can continue!"
 goToMisskey: "To Pulsar"
-repositoryUrlDescription: "If there is a repository where the source code is publicly available, enter its URL. If you are using Pulsar as-is (without any changes to the source code), enter https://code.nexirift.com/Nexirift/pulsar."
+repositoryUrlDescription: "If there is a repository where the source code is publicly available, enter its URL. If you are using Pulsar as-is (without any changes to the source code), enter https://git.codeguilds.org/Nexirift/pulsar."
 altcha: "ALTCHA"
 enableAltcha: "Enable ALTCHA"
 altchaSiteKey: "API Key (for Sentinel) or Challenge URL (for custom server)"
@@ -102,12 +102,12 @@ _achievements:
       flavor: "Thank you for using Pulsar!"
     _iLoveMisskey:
       title: "I Love Pulsar"
-      description: "Post \"I ❤ #Pulsar\""
+      description: 'Post "I ❤ #Pulsar"'
       flavor: "Pulsar's development team greatly appreciates your support!"
     _client30min:
       description: "Keep Pulsar opened for at least 30 minutes"
     _client60min:
-      title: "No \"Miss\" in Pulsar"
+      title: 'No "Miss" in Pulsar'
       description: "Keep Pulsar opened for at least 60 minutes"
     _brainDiver:
       flavor: "Pulsar-Pulsar La-Tu-Ma"
@@ -137,7 +137,7 @@ _urlPreviewSetting:
 _notification:
   appAuthorized: "An application was authorized"
   _types:
-    appAuthorized: "You have authorized the application \"{appName}\"."
+    appAuthorized: 'You have authorized the application "{appName}".'
 _offlineScreen:
   banner: "You are currently offline"
 robotsTxtDescription: "Adding entries here will override the default robots.txt packaged with Pulsar."
@@ -152,7 +152,7 @@ createApp: "Create OAuth App"
 createNewApp: "Create New OAuth App"
 editApp: "Edit OAuth App"
 deleteApp: "Delete OAuth App"
-deleteAppConfirm: "Are you sure you want to delete \"{name}\"? This action cannot be undone."
+deleteAppConfirm: 'Are you sure you want to delete "{name}"? This action cannot be undone.'
 appCreated: "OAuth App Created"
 appCreatedMessage: "Your app \"{name}\" has been created successfully.\n\nClient ID:\n{id}\n\nClient Secret:\n{secret}\n\nPlease save the client secret in a secure location. You will not be able to view it again."
 clientId: "Client ID"

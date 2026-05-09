@@ -10,7 +10,7 @@ dbReplications: false
 redis:
   host: redis.test
   port: 6379
-id: 'aidx'
+id: "aidx"
 proxyBypassHosts:
   - api.deepl.com
   - api-free.deepl.com

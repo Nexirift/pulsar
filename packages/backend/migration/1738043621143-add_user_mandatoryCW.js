@@ -1,5 +1,5 @@
 export class AddUserMandatoryCW1738043621143 {
-	name = 'AddUserCW1738043621143'
+	name = "AddUserCW1738043621143";
 
 	async up(queryRunner) {
 		await queryRunner.query(`ALTER TABLE "user" ADD "mandatoryCW" text`);

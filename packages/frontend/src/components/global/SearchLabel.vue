@@ -4,11 +4,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<slot></slot>
+	<slot></slot>
 </template>
 
-<script lang="ts" setup>
-</script>
+<script lang="ts" setup></script>
 
-<style lang="scss" module>
-</style>
+<style lang="scss" module></style>

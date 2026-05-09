@@ -4,32 +4,46 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root">
-	<EmAvatar :class="$style.avatar" :user="note.user" link preview/>
-	<div :class="$style.main">
-		<EmNoteHeader :class="$style.header" :note="note" :mini="true"/>
-		<div>
-			<p v-if="mergedCW != null" :class="$style.cw">
-				<EmMfm v-if="mergedCW != ''" style="margin-right: 8px;" :text="mergedCW" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis" :isBlock="true"/>
-				<button style="display: block; width: 100%;" class="_buttonGray _buttonRounded" @click="showContent = !showContent">{{ showContent ? i18n.ts._cw.hide : i18n.ts._cw.show }}</button>
-			</p>
-			<div v-show="mergedCW == null || showContent">
-				<EmSubNoteContent :class="$style.text" :note="note"/>
+	<div :class="$style.root">
+		<EmAvatar :class="$style.avatar" :user="note.user" link preview />
+		<div :class="$style.main">
+			<EmNoteHeader :class="$style.header" :note="note" :mini="true" />
+			<div>
+				<p v-if="mergedCW != null" :class="$style.cw">
+					<EmMfm
+						v-if="mergedCW != ''"
+						style="margin-right: 8px"
+						:text="mergedCW"
+						:author="note.user"
+						:nyaize="'respect'"
+						:emojiUrls="note.emojis"
+						:isBlock="true"
+					/>
+					<button
+						style="display: block; width: 100%"
+						class="_buttonGray _buttonRounded"
+						@click="showContent = !showContent"
+					>
+						{{ showContent ? i18n.ts._cw.hide : i18n.ts._cw.show }}
+					</button>
+				</p>
+				<div v-show="mergedCW == null || showContent">
+					<EmSubNoteContent :class="$style.text" :note="note" />
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import { computeMergedCw } from '@@/js/compute-merged-cw.js';
-import { i18n } from '@/i18n.js';
-import EmAvatar from '@/components/EmAvatar.vue';
-import EmNoteHeader from '@/components/EmNoteHeader.vue';
-import EmSubNoteContent from '@/components/EmSubNoteContent.vue';
-import EmMfm from '@/components/EmMfm.js';
+import { computed, ref } from "vue";
+import * as Misskey from "misskey-js";
+import { computeMergedCw } from "@@/js/compute-merged-cw.js";
+import { i18n } from "@/i18n.js";
+import EmAvatar from "@/components/EmAvatar.vue";
+import EmNoteHeader from "@/components/EmNoteHeader.vue";
+import EmSubNoteContent from "@/components/EmSubNoteContent.vue";
+import EmMfm from "@/components/EmMfm.js";
 
 const props = defineProps<{
 	note: Misskey.entities.Note;

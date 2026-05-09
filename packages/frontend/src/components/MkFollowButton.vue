@@ -4,78 +4,98 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<button
-	class="_button"
-	:class="[$style.root, { [$style.wait]: wait, [$style.active]: isFollowing || hasPendingFollowRequestFromYou, [$style.full]: full, [$style.large]: large }]"
-	:disabled="wait || disabled"
-	@click="onClick"
->
-	<template v-if="!wait">
-		<template v-if="hasPendingFollowRequestFromYou && user.isLocked">
-			<span v-if="full" :class="$style.text">{{ i18n.ts.followRequestPending }}</span><i class="ti ti-hourglass-empty"></i>
+	<button
+		class="_button"
+		:class="[
+			$style.root,
+			{
+				[$style.wait]: wait,
+				[$style.active]: isFollowing || hasPendingFollowRequestFromYou,
+				[$style.full]: full,
+				[$style.large]: large,
+			},
+		]"
+		:disabled="wait || disabled"
+		@click="onClick"
+	>
+		<template v-if="!wait">
+			<template v-if="hasPendingFollowRequestFromYou && user.isLocked">
+				<span v-if="full" :class="$style.text">{{
+					i18n.ts.followRequestPending
+				}}</span
+				><i class="ti ti-hourglass-empty"></i>
+			</template>
+			<template v-else-if="hasPendingFollowRequestFromYou && !user.isLocked">
+				<!-- つまりリモートフォローの場合。 -->
+				<span v-if="full" :class="$style.text">{{ i18n.ts.processing }}</span
+				><MkLoading :em="true" :colored="false" />
+			</template>
+			<template v-else-if="isFollowing">
+				<span v-if="full" :class="$style.text">{{ i18n.ts.youFollowing }}</span
+				><i class="ti ti-minus"></i>
+			</template>
+			<template v-else-if="!isFollowing && user.isLocked">
+				<span v-if="full" :class="$style.text">{{ i18n.ts.followRequest }}</span
+				><i class="ti ti-plus"></i>
+			</template>
+			<template v-else-if="!isFollowing && !user.isLocked">
+				<span v-if="full" :class="$style.text">{{ i18n.ts.follow }}</span
+				><i class="ti ti-plus"></i>
+			</template>
 		</template>
-		<template v-else-if="hasPendingFollowRequestFromYou && !user.isLocked">
-			<!-- つまりリモートフォローの場合。 -->
-			<span v-if="full" :class="$style.text">{{ i18n.ts.processing }}</span><MkLoading :em="true" :colored="false"/>
+		<template v-else>
+			<span v-if="full" :class="$style.text">{{ i18n.ts.processing }}</span
+			><MkLoading :em="true" :colored="false" />
 		</template>
-		<template v-else-if="isFollowing">
-			<span v-if="full" :class="$style.text">{{ i18n.ts.youFollowing }}</span><i class="ti ti-minus"></i>
-		</template>
-		<template v-else-if="!isFollowing && user.isLocked">
-			<span v-if="full" :class="$style.text">{{ i18n.ts.followRequest }}</span><i class="ti ti-plus"></i>
-		</template>
-		<template v-else-if="!isFollowing && !user.isLocked">
-			<span v-if="full" :class="$style.text">{{ i18n.ts.follow }}</span><i class="ti ti-plus"></i>
-		</template>
-	</template>
-	<template v-else>
-		<span v-if="full" :class="$style.text">{{ i18n.ts.processing }}</span><MkLoading :em="true" :colored="false"/>
-	</template>
-</button>
+	</button>
 </template>
 
 <script lang="ts" setup>
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import * as Misskey from 'misskey-js';
-import { host } from '@@/js/config.js';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { useStream } from '@/stream.js';
-import { i18n } from '@/i18n.js';
-import { claimAchievement } from '@/utility/achievements.js';
-import { pleaseLogin } from '@/utility/please-login.js';
-import { $i } from '@/i.js';
-import { prefer } from '@/preferences.js';
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import * as Misskey from "misskey-js";
+import { host } from "@@/js/config.js";
+import * as os from "@/os.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { useStream } from "@/stream.js";
+import { i18n } from "@/i18n.js";
+import { claimAchievement } from "@/utility/achievements.js";
+import { pleaseLogin } from "@/utility/please-login.js";
+import { $i } from "@/i.js";
+import { prefer } from "@/preferences.js";
 
-const props = withDefaults(defineProps<{
-	user: Misskey.entities.UserDetailed,
-	full?: boolean,
-	large?: boolean,
-	disabled?: boolean,
-}>(), {
-	full: false,
-	large: false,
-	disabled: false,
-});
+const props = withDefaults(
+	defineProps<{
+		user: Misskey.entities.UserDetailed;
+		full?: boolean;
+		large?: boolean;
+		disabled?: boolean;
+	}>(),
+	{
+		full: false,
+		large: false,
+		disabled: false,
+	},
+);
 
 const emit = defineEmits<{
-	(_: 'update:user', value: Misskey.entities.UserDetailed): void,
-	(_: 'update:wait', value: boolean): void,
+	(_: "update:user", value: Misskey.entities.UserDetailed): void;
+	(_: "update:wait", value: boolean): void;
 }>();
 
 const isFollowing = ref(props.user.isFollowing);
-const hasPendingFollowRequestFromYou = ref(props.user.hasPendingFollowRequestFromYou);
+const hasPendingFollowRequestFromYou = ref(
+	props.user.hasPendingFollowRequestFromYou,
+);
 const wait = ref(false);
-const connection = useStream().useChannel('main');
+const connection = useStream().useChannel("main");
 
 // Emit the "wait" status so external components can synchronize state
-watch(wait, value => emit('update:wait', value));
+watch(wait, (value) => emit("update:wait", value));
 
 if (props.user.isFollowing == null && $i) {
-	misskeyApi('users/show', {
+	misskeyApi("users/show", {
 		userId: props.user.id,
-	})
-		.then(onFollowChange);
+	}).then(onFollowChange);
 }
 
 function onFollowChange(user: Misskey.entities.UserDetailed) {
@@ -86,15 +106,22 @@ function onFollowChange(user: Misskey.entities.UserDetailed) {
 }
 
 async function onClick() {
-	pleaseLogin({ openOnRemote: { type: 'web', path: `/@${props.user.username}@${props.user.host ?? host}` } });
+	pleaseLogin({
+		openOnRemote: {
+			type: "web",
+			path: `/@${props.user.username}@${props.user.host ?? host}`,
+		},
+	});
 
 	wait.value = true;
 
 	try {
 		if (isFollowing.value) {
 			const { canceled } = await os.confirm({
-				type: 'warning',
-				text: i18n.tsx.unfollowConfirm({ name: props.user.name || props.user.username }),
+				type: "warning",
+				text: i18n.tsx.unfollowConfirm({
+					name: props.user.name || props.user.username,
+				}),
 			});
 
 			if (canceled) {
@@ -102,14 +129,19 @@ async function onClick() {
 				return;
 			}
 
-			await misskeyApi('following/delete', {
+			await misskeyApi("following/delete", {
 				userId: props.user.id,
 			});
 		} else {
-			if (prefer.s.alwaysConfirmFollow && !hasPendingFollowRequestFromYou.value) {
+			if (
+				prefer.s.alwaysConfirmFollow &&
+				!hasPendingFollowRequestFromYou.value
+			) {
 				const { canceled } = await os.confirm({
-					type: 'question',
-					text: i18n.tsx.followConfirm({ name: props.user.name || props.user.username }),
+					type: "question",
+					text: i18n.tsx.followConfirm({
+						name: props.user.name || props.user.username,
+					}),
 				});
 
 				if (canceled) {
@@ -120,7 +152,7 @@ async function onClick() {
 
 			if (hasPendingFollowRequestFromYou.value) {
 				const { canceled } = await os.confirm({
-					type: 'question',
+					type: "question",
 					text: i18n.ts.undoFollowRequestConfirm,
 				});
 
@@ -129,16 +161,16 @@ async function onClick() {
 					return;
 				}
 
-				await misskeyApi('following/requests/cancel', {
+				await misskeyApi("following/requests/cancel", {
 					userId: props.user.id,
 				});
 				hasPendingFollowRequestFromYou.value = false;
 			} else {
-				await misskeyApi('following/create', {
+				await misskeyApi("following/create", {
 					userId: props.user.id,
 					withReplies: prefer.s.defaultFollowWithReplies,
 				});
-				emit('update:user', {
+				emit("update:user", {
 					...props.user,
 					withReplies: prefer.s.defaultFollowWithReplies,
 				});
@@ -149,19 +181,19 @@ async function onClick() {
 					return;
 				}
 
-				claimAchievement('following1');
+				claimAchievement("following1");
 
 				if ($i.followingCount >= 10) {
-					claimAchievement('following10');
+					claimAchievement("following10");
 				}
 				if ($i.followingCount >= 50) {
-					claimAchievement('following50');
+					claimAchievement("following50");
 				}
 				if ($i.followingCount >= 100) {
-					claimAchievement('following100');
+					claimAchievement("following100");
 				}
 				if ($i.followingCount >= 300) {
-					claimAchievement('following300');
+					claimAchievement("following300");
 				}
 			}
 		}
@@ -173,8 +205,8 @@ async function onClick() {
 }
 
 onMounted(() => {
-	connection.on('follow', onFollowChange);
-	connection.on('unfollow', onFollowChange);
+	connection.on("follow", onFollowChange);
+	connection.on("unfollow", onFollowChange);
 });
 
 onBeforeUnmount(() => {

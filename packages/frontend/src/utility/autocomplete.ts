@@ -3,14 +3,19 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { nextTick, ref, defineAsyncComponent } from 'vue';
-import getCaretCoordinates from 'textarea-caret';
-import { toASCII } from 'punycode.js';
-import type { Ref } from 'vue';
-import type { CompleteInfo } from '@/components/MkAutocomplete.vue';
-import { popup } from '@/os.js';
+import { nextTick, ref, defineAsyncComponent } from "vue";
+import getCaretCoordinates from "textarea-caret";
+import { toASCII } from "punycode.js";
+import type { Ref } from "vue";
+import type { CompleteInfo } from "@/components/MkAutocomplete.vue";
+import { popup } from "@/os.js";
 
-export type SuggestionType = 'user' | 'hashtag' | 'emoji' | 'mfmTag' | 'mfmParam';
+export type SuggestionType =
+	| "user"
+	| "hashtag"
+	| "emoji"
+	| "mfmTag"
+	| "mfmParam";
 
 export class Autocomplete {
 	private suggestion: {
@@ -40,7 +45,11 @@ export class Autocomplete {
 	/**
 	 * 対象のテキストエリアを与えてインスタンスを初期化します。
 	 */
-	constructor(textarea: HTMLInputElement | HTMLTextAreaElement, textRef: Ref<string | number | null>, onlyType?: SuggestionType[]) {
+	constructor(
+		textarea: HTMLInputElement | HTMLTextAreaElement,
+		textRef: Ref<string | number | null>,
+		onlyType?: SuggestionType[],
+	) {
 		//#region BIND
 		this.onInput = this.onInput.bind(this);
 		this.complete = this.complete.bind(this);
@@ -51,7 +60,13 @@ export class Autocomplete {
 		this.textarea = textarea;
 		this.textRef = textRef;
 		this.opening = false;
-		this.onlyType = onlyType ?? ['user', 'hashtag', 'emoji', 'mfmTag', 'mfmParam'];
+		this.onlyType = onlyType ?? [
+			"user",
+			"hashtag",
+			"emoji",
+			"mfmTag",
+			"mfmParam",
+		];
 
 		this.attach();
 	}
@@ -60,14 +75,14 @@ export class Autocomplete {
 	 * このインスタンスにあるテキストエリアの入力のキャプチャを開始します。
 	 */
 	public attach() {
-		this.textarea.addEventListener('input', this.onInput);
+		this.textarea.addEventListener("input", this.onInput);
 	}
 
 	/**
 	 * このインスタンスにあるテキストエリアの入力のキャプチャを解除します。
 	 */
 	public detach() {
-		this.textarea.removeEventListener('input', this.onInput);
+		this.textarea.removeEventListener("input", this.onInput);
 		this.close();
 	}
 
@@ -76,19 +91,15 @@ export class Autocomplete {
 	 */
 	private onInput() {
 		const caretPos = Number(this.textarea.selectionStart);
-		const text = this.text.substring(0, caretPos).split('\n').pop()!;
+		const text = this.text.substring(0, caretPos).split("\n").pop()!;
 
-		const mentionIndex = text.lastIndexOf('@');
-		const hashtagIndex = text.lastIndexOf('#');
-		const emojiIndex = text.lastIndexOf(':');
-		const mfmTagIndex = text.lastIndexOf('$');
-		const mfmParamIndex = text.lastIndexOf('.');
+		const mentionIndex = text.lastIndexOf("@");
+		const hashtagIndex = text.lastIndexOf("#");
+		const emojiIndex = text.lastIndexOf(":");
+		const mfmTagIndex = text.lastIndexOf("$");
+		const mfmParamIndex = text.lastIndexOf(".");
 
-		const max = Math.max(
-			mentionIndex,
-			hashtagIndex,
-			emojiIndex,
-			mfmTagIndex);
+		const max = Math.max(mentionIndex, hashtagIndex, emojiIndex, mfmTagIndex);
 
 		if (max === -1) {
 			this.close();
@@ -99,69 +110,85 @@ export class Autocomplete {
 
 		const isMention = mentionIndex !== -1;
 		const isHashtag = hashtagIndex !== -1;
-		const isMfmParam = mfmParamIndex !== -1 && afterLastMfmParam?.includes('.') && !afterLastMfmParam.includes(' ');
+		const isMfmParam =
+			mfmParamIndex !== -1 &&
+			afterLastMfmParam?.includes(".") &&
+			!afterLastMfmParam.includes(" ");
 		const isMfmTag = mfmTagIndex !== -1 && !isMfmParam;
-		const isEmoji = emojiIndex !== -1 && text.split(/:[\p{Letter}\p{Number}\p{Mark}_+-]+:/u).pop()!.includes(':');
+		const isEmoji =
+			emojiIndex !== -1 &&
+			text
+				.split(/:[\p{Letter}\p{Number}\p{Mark}_+-]+:/u)
+				.pop()!
+				.includes(":");
 		// :ok:などを🆗にするたいおぷ
 		const isEmojiCompleteToUnicode = !isEmoji && emojiIndex === text.length - 1;
 
 		let opened = false;
 
-		if (isMention && this.onlyType.includes('user')) {
+		if (isMention && this.onlyType.includes("user")) {
 			// ユーザのサジェスト中に@を入力すると、その位置から新たにユーザ名を取りなおそうとしてしまう
 			// この動きはリモートユーザのサジェストを阻害するので、@を検知したらその位置よりも前の@を探し、
 			// ホスト名を含むリモートのユーザ名を全て拾えるようにする
-			const mentionIndexAlt = text.lastIndexOf('@', mentionIndex - 1);
-			const username = mentionIndexAlt === -1
-				? text.substring(mentionIndex + 1)
-				: text.substring(mentionIndexAlt + 1);
-			if (username !== '' && username.match(/^[a-zA-Z0-9_@.]+$/)) {
-				this.open('user', username);
+			const mentionIndexAlt = text.lastIndexOf("@", mentionIndex - 1);
+			const username =
+				mentionIndexAlt === -1
+					? text.substring(mentionIndex + 1)
+					: text.substring(mentionIndexAlt + 1);
+			if (username !== "" && username.match(/^[a-zA-Z0-9_@.]+$/)) {
+				this.open("user", username);
 				opened = true;
-			} else if (username === '') {
-				this.open('user', null);
+			} else if (username === "") {
+				this.open("user", null);
 				opened = true;
 			}
 		}
 
-		if (isHashtag && !opened && this.onlyType.includes('hashtag')) {
+		if (isHashtag && !opened && this.onlyType.includes("hashtag")) {
 			const hashtag = text.substring(hashtagIndex + 1);
-			if (!hashtag.includes(' ')) {
-				this.open('hashtag', hashtag);
+			if (!hashtag.includes(" ")) {
+				this.open("hashtag", hashtag);
 				opened = true;
 			}
 		}
 
-		if (isEmoji && !opened && this.onlyType.includes('emoji')) {
+		if (isEmoji && !opened && this.onlyType.includes("emoji")) {
 			const emoji = text.substring(emojiIndex + 1);
-			if (!emoji.includes(' ')) {
-				this.open('emoji', emoji.normalize('NFC'));
+			if (!emoji.includes(" ")) {
+				this.open("emoji", emoji.normalize("NFC"));
 				opened = true;
 			}
 		}
 
-		if (isEmojiCompleteToUnicode && !opened && this.onlyType.includes('emoji')) {
-			const emoji = text.substring(text.lastIndexOf(':', text.length - 2) + 1, text.length - 1);
-			if (!emoji.includes(' ')) {
-				this.open('emojiComplete', emoji);
+		if (
+			isEmojiCompleteToUnicode &&
+			!opened &&
+			this.onlyType.includes("emoji")
+		) {
+			const emoji = text.substring(
+				text.lastIndexOf(":", text.length - 2) + 1,
+				text.length - 1,
+			);
+			if (!emoji.includes(" ")) {
+				this.open("emojiComplete", emoji);
 				opened = true;
 			}
 		}
 
-		if (isMfmTag && !opened && this.onlyType.includes('mfmTag')) {
+		if (isMfmTag && !opened && this.onlyType.includes("mfmTag")) {
 			const mfmTag = text.substring(mfmTagIndex + 1);
-			if (!mfmTag.includes(' ')) {
-				this.open('mfmTag', mfmTag.replace('[', ''));
+			if (!mfmTag.includes(" ")) {
+				this.open("mfmTag", mfmTag.replace("[", ""));
 				opened = true;
 			}
 		}
 
-		if (isMfmParam && !opened && this.onlyType.includes('mfmParam')) {
+		if (isMfmParam && !opened && this.onlyType.includes("mfmParam")) {
 			const mfmParam = text.substring(mfmParamIndex + 1);
-			if (!mfmParam.includes(' ')) {
-				this.open('mfmParam', {
+			if (!mfmParam.includes(" ")) {
+				this.open("mfmParam", {
 					tag: text.substring(mfmTagIndex + 2, mfmParamIndex),
-					params: mfmParam.split(','),
+					params: mfmParam.split(","),
 				});
 				opened = true;
 			}
@@ -175,7 +202,10 @@ export class Autocomplete {
 	/**
 	 * サジェストを提示します。
 	 */
-	private async open<T extends keyof CompleteInfo>(type: T, q: CompleteInfo[T]['query']) {
+	private async open<T extends keyof CompleteInfo>(
+		type: T,
+		q: CompleteInfo[T]["query"],
+	) {
 		if (type !== this.currentType) {
 			this.close();
 		}
@@ -184,7 +214,10 @@ export class Autocomplete {
 		this.currentType = type;
 
 		//#region サジェストを表示すべき位置を計算
-		const caretPosition = getCaretCoordinates(this.textarea, this.textarea.selectionStart);
+		const caretPosition = getCaretCoordinates(
+			this.textarea,
+			this.textarea.selectionStart,
+		);
 
 		const rect = this.textarea.getBoundingClientRect();
 
@@ -203,18 +236,22 @@ export class Autocomplete {
 			const _y = ref(y);
 			const _q = ref(q);
 
-			const { dispose } = await popup(defineAsyncComponent(() => import('@/components/MkAutocomplete.vue')), {
-				textarea: this.textarea,
-				close: this.close,
-				type: type,
-				q: _q,
-				x: _x,
-				y: _y,
-			}, {
-				done: (res) => {
-					this.complete(res);
+			const { dispose } = await popup(
+				defineAsyncComponent(() => import("@/components/MkAutocomplete.vue")),
+				{
+					textarea: this.textarea,
+					close: this.close,
+					type: type,
+					q: _q,
+					x: _x,
+					y: _y,
 				},
-			});
+				{
+					done: (res) => {
+						this.complete(res);
+					},
+				},
+			);
 
 			this.suggestion = {
 				q: _q,
@@ -242,19 +279,28 @@ export class Autocomplete {
 	/**
 	 * オートコンプリートする
 	 */
-	private complete<T extends keyof CompleteInfo>({ type, value }: { type: T; value: CompleteInfo[T]['payload'] }) {
+	private complete<T extends keyof CompleteInfo>({
+		type,
+		value,
+	}: {
+		type: T;
+		value: CompleteInfo[T]["payload"];
+	}) {
 		this.close();
 
 		const caret = Number(this.textarea.selectionStart);
 
-		if (type === 'user') {
+		if (type === "user") {
 			const source = this.text;
 
 			const before = source.substring(0, caret);
-			const trimmedBefore = before.substring(0, before.lastIndexOf('@'));
+			const trimmedBefore = before.substring(0, before.lastIndexOf("@"));
 			const after = source.substring(caret);
 
-			const acct = value.host === null ? value.username : `${value.username}@${toASCII(value.host)}`;
+			const acct =
+				value.host === null
+					? value.username
+					: `${value.username}@${toASCII(value.host)}`;
 
 			// 挿入
 			this.text = `${trimmedBefore}@${acct} ${after}`;
@@ -265,11 +311,11 @@ export class Autocomplete {
 				const pos = trimmedBefore.length + (acct.length + 2);
 				this.textarea.setSelectionRange(pos, pos);
 			});
-		} else if (type === 'hashtag') {
+		} else if (type === "hashtag") {
 			const source = this.text;
 
 			const before = source.substring(0, caret);
-			const trimmedBefore = before.substring(0, before.lastIndexOf('#'));
+			const trimmedBefore = before.substring(0, before.lastIndexOf("#"));
 			const after = source.substring(caret);
 
 			// 挿入
@@ -281,11 +327,11 @@ export class Autocomplete {
 				const pos = trimmedBefore.length + (value.length + 2);
 				this.textarea.setSelectionRange(pos, pos);
 			});
-		} else if (type === 'emoji') {
+		} else if (type === "emoji") {
 			const source = this.text;
 
 			const before = source.substring(0, caret);
-			const trimmedBefore = before.substring(0, before.lastIndexOf(':'));
+			const trimmedBefore = before.substring(0, before.lastIndexOf(":"));
 			const after = source.substring(caret);
 
 			// 挿入
@@ -297,11 +343,14 @@ export class Autocomplete {
 				const pos = trimmedBefore.length + value.length;
 				this.textarea.setSelectionRange(pos, pos);
 			});
-		} else if (type === 'emojiComplete') {
+		} else if (type === "emojiComplete") {
 			const source = this.text;
 
 			const before = source.substring(0, caret);
-			const trimmedBefore = before.substring(0, before.lastIndexOf(':', before.length - 2));
+			const trimmedBefore = before.substring(
+				0,
+				before.lastIndexOf(":", before.length - 2),
+			);
 			const after = source.substring(caret);
 
 			// 挿入
@@ -313,11 +362,11 @@ export class Autocomplete {
 				const pos = trimmedBefore.length + value.length;
 				this.textarea.setSelectionRange(pos, pos);
 			});
-		} else if (type === 'mfmTag') {
+		} else if (type === "mfmTag") {
 			const source = this.text;
 
 			const before = source.substring(0, caret);
-			const trimmedBefore = before.substring(0, before.lastIndexOf('$'));
+			const trimmedBefore = before.substring(0, before.lastIndexOf("$"));
 			const after = source.substring(caret);
 
 			// 挿入
@@ -329,11 +378,11 @@ export class Autocomplete {
 				const pos = trimmedBefore.length + (value.length + 3);
 				this.textarea.setSelectionRange(pos, pos);
 			});
-		} else if (type === 'mfmParam') {
+		} else if (type === "mfmParam") {
 			const source = this.text;
 
 			const before = source.substring(0, caret);
-			const trimmedBefore = before.substring(0, before.lastIndexOf('.'));
+			const trimmedBefore = before.substring(0, before.lastIndexOf("."));
 			const after = source.substring(caret);
 
 			// 挿入

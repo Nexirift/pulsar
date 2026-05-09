@@ -3,46 +3,54 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { CustomEmojiService } from '@/core/CustomEmojiService.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { CustomEmojiService } from "@/core/CustomEmojiService.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
 
 export const meta = {
-	tags: ['admin'],
+	tags: ["admin"],
 
 	requireCredential: true,
-	requiredRolePolicy: 'canManageCustomEmojis',
-	kind: 'write:admin:emoji',
+	requiredRolePolicy: "canManageCustomEmojis",
+	kind: "write:admin:emoji",
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		ids: { type: 'array', items: {
-			type: 'string', format: 'misskey:id',
-		} },
+		ids: {
+			type: "array",
+			items: {
+				type: "string",
+				format: "misskey:id",
+			},
+		},
 		category: {
-			type: 'string',
+			type: "string",
 			nullable: true,
-			description: 'Use `null` to reset the category.',
+			description: "Use `null` to reset the category.",
 		},
 	},
-	required: ['ids'],
+	required: ["ids"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		private customEmojiService: CustomEmojiService,
 		private readonly moderationLogService: ModerationLogService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			await this.moderationLogService.log(me, 'updateCustomEmojis', {
+			await this.moderationLogService.log(me, "updateCustomEmojis", {
 				ids: ps.ids,
 				category: ps.category,
 			});
-			await this.customEmojiService.setCategoryBulk(ps.ids, ps.category?.normalize('NFC') ?? null);
+			await this.customEmojiService.setCategoryBulk(
+				ps.ids,
+				ps.category?.normalize("NFC") ?? null,
+			);
 		});
 	}
 }

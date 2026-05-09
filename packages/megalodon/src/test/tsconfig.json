@@ -3,12 +3,8 @@
 	"extends": "../../../shared/tsconfig.node.jsonc",
 	"compilerOptions": {
 		"outDir": "../../built/test",
-		"rootDir": "./",
+		"rootDir": "./"
 	},
-	"include": [
-		"**/*.ts",
-	],
-	"references": [
-		{ "path": "../lib/tsconfig.json" }
-	]
+	"include": ["**/*.ts"],
+	"references": [{ "path": "../lib/tsconfig.json" }]
 }

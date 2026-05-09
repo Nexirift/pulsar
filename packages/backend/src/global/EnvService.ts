@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { createEnvOptions, type EnvOption } from '@/env.js';
+import { Injectable } from "@nestjs/common";
+import { createEnvOptions, type EnvOption } from "@/env.js";
 
 /**
  * Provides structured, mockable access to runtime/environment details.

@@ -3,23 +3,28 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { IsNull } from 'typeorm';
-import { DI } from '@/di-symbols.js';
-import type { UsersRepository, DriveFilesRepository, UserListMembershipsRepository, UserListsRepository } from '@/models/_.js';
-import type Logger from '@/logger.js';
-import * as Acct from '@/misc/acct.js';
-import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
-import { DownloadService } from '@/core/DownloadService.js';
-import { UserListService } from '@/core/UserListService.js';
-import { IdService } from '@/core/IdService.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import { bindThis } from '@/decorators.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import { NotificationService } from '@/core/NotificationService.js';
-import type * as Bull from 'bullmq';
-import type { DbUserImportJobData } from '../types.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { IsNull } from "typeorm";
+import { DI } from "@/di-symbols.js";
+import type {
+	UsersRepository,
+	DriveFilesRepository,
+	UserListMembershipsRepository,
+	UserListsRepository,
+} from "@/models/_.js";
+import type Logger from "@/logger.js";
+import * as Acct from "@/misc/acct.js";
+import { RemoteUserResolveService } from "@/core/RemoteUserResolveService.js";
+import { DownloadService } from "@/core/DownloadService.js";
+import { UserListService } from "@/core/UserListService.js";
+import { IdService } from "@/core/IdService.js";
+import { UtilityService } from "@/core/UtilityService.js";
+import { bindThis } from "@/decorators.js";
+import { renderInlineError } from "@/misc/render-inline-error.js";
+import { QueueLoggerService } from "../QueueLoggerService.js";
+import { NotificationService } from "@/core/NotificationService.js";
+import type * as Bull from "bullmq";
+import type { DbUserImportJobData } from "../types.js";
 
 @Injectable()
 export class ImportUserListsProcessorService {
@@ -46,7 +51,8 @@ export class ImportUserListsProcessorService {
 		private queueLoggerService: QueueLoggerService,
 		private notificationService: NotificationService,
 	) {
-		this.logger = this.queueLoggerService.logger.createSubLogger('import-user-lists');
+		this.logger =
+			this.queueLoggerService.logger.createSubLogger("import-user-lists");
 	}
 
 	@bindThis
@@ -71,12 +77,12 @@ export class ImportUserListsProcessorService {
 
 		let linenum = 0;
 
-		for (const line of csv.trim().split('\n')) {
+		for (const line of csv.trim().split("\n")) {
 			linenum++;
 
 			try {
-				const listName = line.split(',')[0].trim();
-				const { username, host } = Acct.parse(line.split(',')[1].trim());
+				const listName = line.split(",")[0].trim();
+				const { username, host } = Acct.parse(line.split(",")[1].trim());
 
 				let list = await this.userListsRepository.findOneBy({
 					userId: user.id,
@@ -91,19 +97,30 @@ export class ImportUserListsProcessorService {
 					});
 				}
 
-				let target = this.utilityService.isSelfHost(host!) ? await this.usersRepository.findOneBy({
-					host: IsNull(),
-					usernameLower: username.toLowerCase(),
-				}) : await this.usersRepository.findOneBy({
-					host: this.utilityService.toPuny(host!),
-					usernameLower: username.toLowerCase(),
-				});
+				let target = this.utilityService.isSelfHost(host!)
+					? await this.usersRepository.findOneBy({
+							host: IsNull(),
+							usernameLower: username.toLowerCase(),
+						})
+					: await this.usersRepository.findOneBy({
+							host: this.utilityService.toPuny(host!),
+							usernameLower: username.toLowerCase(),
+						});
 
 				if (target == null) {
-					target = await this.remoteUserResolveService.resolveUser(username, host);
+					target = await this.remoteUserResolveService.resolveUser(
+						username,
+						host,
+					);
 				}
 
-				if (await this.userListMembershipsRepository.findOneBy({ userListId: list!.id, userId: target.id }) != null) continue;
+				if (
+					(await this.userListMembershipsRepository.findOneBy({
+						userListId: list!.id,
+						userId: target.id,
+					})) != null
+				)
+					continue;
 
 				this.userListService.addMember(target, list!, user);
 			} catch (e) {
@@ -111,11 +128,15 @@ export class ImportUserListsProcessorService {
 			}
 		}
 
-		this.notificationService.createNotification(job.data.user.id, 'importCompleted', {
-			importedEntity: 'userList',
-			fileId: file.id,
-		});
+		this.notificationService.createNotification(
+			job.data.user.id,
+			"importCompleted",
+			{
+				importedEntity: "userList",
+				fileId: file.id,
+			},
+		);
 
-		this.logger.debug('Imported');
+		this.logger.debug("Imported");
 	}
 }

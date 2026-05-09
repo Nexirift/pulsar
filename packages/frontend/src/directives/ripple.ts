@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import MkRippleEffect from '@/components/MkRippleEffect.vue';
-import { prefer } from '@/preferences.js';
-import { popup } from '@/os.js';
+import MkRippleEffect from "@/components/MkRippleEffect.vue";
+import { prefer } from "@/preferences.js";
+import { popup } from "@/os.js";
 
 export default {
 	mounted(el, binding, vn) {
@@ -13,15 +13,19 @@ export default {
 		if (binding.value === false) return;
 		if (!prefer.s.animation) return;
 
-		el.addEventListener('click', () => {
+		el.addEventListener("click", () => {
 			const rect = el.getBoundingClientRect();
 
-			const x = rect.left + (el.offsetWidth / 2);
-			const y = rect.top + (el.offsetHeight / 2);
+			const x = rect.left + el.offsetWidth / 2;
+			const y = rect.top + el.offsetHeight / 2;
 
-			const { dispose } = popup(MkRippleEffect, { x, y }, {
-				end: () => dispose(),
-			});
+			const { dispose } = popup(
+				MkRippleEffect,
+				{ x, y },
+				{
+					end: () => dispose(),
+				},
+			);
 		});
 	},
 };

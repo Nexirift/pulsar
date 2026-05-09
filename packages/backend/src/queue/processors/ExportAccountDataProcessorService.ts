@@ -3,29 +3,50 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as fs from 'node:fs';
-import { Inject, Injectable } from '@nestjs/common';
-import { In, IsNull, MoreThan, Not } from 'typeorm';
-import { format as dateFormat } from 'date-fns';
-import mime from 'mime-types';
-import archiver from 'archiver';
-import { DI } from '@/di-symbols.js';
-import type { AntennasRepository, BlockingsRepository, DriveFilesRepository, FollowingsRepository, MiBlocking, MiFollowing, MiMuting, MiNote, MiNoteFavorite, MiPoll, MiUser, MutingsRepository, NoteFavoritesRepository, NotesRepository, PollsRepository, SigninsRepository, UserListMembershipsRepository, UserListsRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
-import type { Config } from '@/config.js';
-import type Logger from '@/logger.js';
-import { DriveService } from '@/core/DriveService.js';
-import { IdService } from '@/core/IdService.js';
-import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
-import { createTemp, createTempDir } from '@/misc/create-temp.js';
-import { bindThis } from '@/decorators.js';
-import { Packed } from '@/misc/json-schema.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import { DownloadService } from '@/core/DownloadService.js';
-import { EmailService } from '@/core/EmailService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type * as Bull from 'bullmq';
+import * as fs from "node:fs";
+import { Inject, Injectable } from "@nestjs/common";
+import { In, IsNull, MoreThan, Not } from "typeorm";
+import { format as dateFormat } from "date-fns";
+import mime from "mime-types";
+import archiver from "archiver";
+import { DI } from "@/di-symbols.js";
+import type {
+	AntennasRepository,
+	BlockingsRepository,
+	DriveFilesRepository,
+	FollowingsRepository,
+	MiBlocking,
+	MiFollowing,
+	MiMuting,
+	MiNote,
+	MiNoteFavorite,
+	MiPoll,
+	MiUser,
+	MutingsRepository,
+	NoteFavoritesRepository,
+	NotesRepository,
+	PollsRepository,
+	SigninsRepository,
+	UserListMembershipsRepository,
+	UserListsRepository,
+	UserProfilesRepository,
+	UsersRepository,
+} from "@/models/_.js";
+import type { Config } from "@/config.js";
+import type Logger from "@/logger.js";
+import { DriveService } from "@/core/DriveService.js";
+import { IdService } from "@/core/IdService.js";
+import { DriveFileEntityService } from "@/core/entities/DriveFileEntityService.js";
+import { createTemp, createTempDir } from "@/misc/create-temp.js";
+import { bindThis } from "@/decorators.js";
+import { Packed } from "@/misc/json-schema.js";
+import { UtilityService } from "@/core/UtilityService.js";
+import { DownloadService } from "@/core/DownloadService.js";
+import { EmailService } from "@/core/EmailService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { renderInlineError } from "@/misc/render-inline-error.js";
+import { QueueLoggerService } from "../QueueLoggerService.js";
+import type * as Bull from "bullmq";
 
 @Injectable()
 export class ExportAccountDataProcessorService {
@@ -83,7 +104,9 @@ export class ExportAccountDataProcessorService {
 		private queueLoggerService: QueueLoggerService,
 		private readonly timeService: TimeService,
 	) {
-		this.logger = this.queueLoggerService.logger.createSubLogger('export-account-data');
+		this.logger = this.queueLoggerService.logger.createSubLogger(
+			"export-account-data",
+		);
 	}
 
 	@bindThis
@@ -94,7 +117,9 @@ export class ExportAccountDataProcessorService {
 			return;
 		}
 
-		const profile = await this.userProfilesRepository.findOneBy({ userId: job.data.user.id });
+		const profile = await this.userProfilesRepository.findOneBy({
+			userId: job.data.user.id,
+		});
 		if (profile == null) {
 			this.logger.debug(`Skip: user ${job.data.user.id} has no profile`);
 			return;
@@ -108,17 +133,17 @@ export class ExportAccountDataProcessorService {
 
 		// User Export
 
-		const userPath = path + '/user.json';
+		const userPath = path + "/user.json";
 
-		fs.writeFileSync(userPath, '', 'utf-8');
+		fs.writeFileSync(userPath, "", "utf-8");
 
-		const userStream = fs.createWriteStream(userPath, { flags: 'a' });
+		const userStream = fs.createWriteStream(userPath, { flags: "a" });
 
 		const writeUser = (text: string): Promise<void> => {
 			return new Promise<void>((res, rej) => {
-				userStream.write(text, err => {
+				userStream.write(text, (err) => {
 					if (err) {
-						this.logger.error('Error writing user:', err);
+						this.logger.error("Error writing user:", err);
 						rej(err);
 					} else {
 						res();
@@ -127,30 +152,40 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeUser(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","user":[`);
+		await writeUser(
+			`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","user":[`,
+		);
 
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { host, uri, sharedInbox, followersUri, lastFetchedAt, inbox, ...userTrimmed } = user;
+		const {
+			host,
+			uri,
+			sharedInbox,
+			followersUri,
+			lastFetchedAt,
+			inbox,
+			...userTrimmed
+		} = user;
 
 		await writeUser(JSON.stringify(userTrimmed));
 
-		await writeUser(']}');
+		await writeUser("]}");
 
 		userStream.end();
 
 		// Profile Export
 
-		const profilePath = path + '/profile.json';
+		const profilePath = path + "/profile.json";
 
-		fs.writeFileSync(profilePath, '', 'utf-8');
+		fs.writeFileSync(profilePath, "", "utf-8");
 
-		const profileStream = fs.createWriteStream(profilePath, { flags: 'a' });
+		const profileStream = fs.createWriteStream(profilePath, { flags: "a" });
 
 		const writeProfile = (text: string): Promise<void> => {
 			return new Promise<void>((res, rej) => {
-				profileStream.write(text, err => {
+				profileStream.write(text, (err) => {
 					if (err) {
-						this.logger.error('Error writing profile:', err);
+						this.logger.error("Error writing profile:", err);
 						rej(err);
 					} else {
 						res();
@@ -160,13 +195,23 @@ export class ExportAccountDataProcessorService {
 		};
 
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { emailVerifyCode, twoFactorBackupSecret, twoFactorSecret, password, twoFactorTempSecret, userHost, ...profileTrimmed } = profile;
+		const {
+			emailVerifyCode,
+			twoFactorBackupSecret,
+			twoFactorSecret,
+			password,
+			twoFactorTempSecret,
+			userHost,
+			...profileTrimmed
+		} = profile;
 
-		await writeProfile(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","profile":[`);
+		await writeProfile(
+			`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","profile":[`,
+		);
 
 		await writeProfile(JSON.stringify(profileTrimmed));
 
-		await writeProfile(']}');
+		await writeProfile("]}");
 
 		profileStream.end();
 
@@ -174,17 +219,17 @@ export class ExportAccountDataProcessorService {
 
 		const signins = await this.signinsRepository.findBy({ userId: user.id });
 
-		const ipPath = path + '/ips.json';
+		const ipPath = path + "/ips.json";
 
-		fs.writeFileSync(ipPath, '', 'utf-8');
+		fs.writeFileSync(ipPath, "", "utf-8");
 
-		const ipStream = fs.createWriteStream(ipPath, { flags: 'a' });
+		const ipStream = fs.createWriteStream(ipPath, { flags: "a" });
 
 		const writeIPs = (text: string): Promise<void> => {
 			return new Promise<void>((res, rej) => {
-				ipStream.write(text, err => {
+				ipStream.write(text, (err) => {
 					if (err) {
-						this.logger.error('Error writing IPs:', err);
+						this.logger.error("Error writing IPs:", err);
 						rej(err);
 					} else {
 						res();
@@ -193,33 +238,39 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeIPs(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","ips":[`);
+		await writeIPs(
+			`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","ips":[`,
+		);
 
 		for (const signin of signins) {
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { userId, id, user, ...signinTrimmed } = signin;
 			const isFirst = signins.indexOf(signin) === 0;
 
-			await writeIPs(isFirst ? JSON.stringify(signinTrimmed) : ',\n' + JSON.stringify(signinTrimmed));
+			await writeIPs(
+				isFirst
+					? JSON.stringify(signinTrimmed)
+					: ",\n" + JSON.stringify(signinTrimmed),
+			);
 		}
 
-		await writeIPs(']}');
+		await writeIPs("]}");
 
 		ipStream.end();
 
 		// Note Export
 
-		const notesPath = path + '/notes.json';
+		const notesPath = path + "/notes.json";
 
-		fs.writeFileSync(notesPath, '', 'utf-8');
+		fs.writeFileSync(notesPath, "", "utf-8");
 
-		const notesStream = fs.createWriteStream(notesPath, { flags: 'a' });
+		const notesStream = fs.createWriteStream(notesPath, { flags: "a" });
 
 		const writeNotes = (text: string): Promise<void> => {
 			return new Promise<void>((res, rej) => {
-				notesStream.write(text, err => {
+				notesStream.write(text, (err) => {
 					if (err) {
-						this.logger.error('Error writing notes:', err);
+						this.logger.error("Error writing notes:", err);
 						rej(err);
 					} else {
 						res();
@@ -228,13 +279,15 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeNotes(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","notes":[`);
+		await writeNotes(
+			`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","notes":[`,
+		);
 
-		let noteCursor: MiNote['id'] | null = null;
+		let noteCursor: MiNote["id"] | null = null;
 		let exportedNotesCount = 0;
 
 		while (true) {
-			const notes = await this.notesRepository.find({
+			const notes = (await this.notesRepository.find({
 				where: {
 					userId: user.id,
 					...(noteCursor ? { id: MoreThan(noteCursor) } : {}),
@@ -243,7 +296,7 @@ export class ExportAccountDataProcessorService {
 				order: {
 					id: 1,
 				},
-			}) as MiNote[];
+			})) as MiNote[];
 
 			if (notes.length === 0) {
 				break;
@@ -254,33 +307,39 @@ export class ExportAccountDataProcessorService {
 			for (const note of notes) {
 				let poll: MiPoll | undefined;
 				if (note.hasPoll) {
-					poll = await this.pollsRepository.findOneByOrFail({ noteId: note.id });
+					poll = await this.pollsRepository.findOneByOrFail({
+						noteId: note.id,
+					});
 				}
-				const files = await this.driveFileEntityService.packManyByIds(note.fileIds);
+				const files = await this.driveFileEntityService.packManyByIds(
+					note.fileIds,
+				);
 				const content = JSON.stringify(this.noteSerialize(note, poll, files));
 				const isFirst = exportedNotesCount === 0;
-				await writeNotes(isFirst ? content : ',\n' + content);
+				await writeNotes(isFirst ? content : ",\n" + content);
 				exportedNotesCount++;
 			}
 		}
 
-		await writeNotes(']}');
+		await writeNotes("]}");
 
 		notesStream.end();
 
 		// Following Export
 
-		const followingsPath = path + '/followings.json';
+		const followingsPath = path + "/followings.json";
 
-		fs.writeFileSync(followingsPath, '', 'utf-8');
+		fs.writeFileSync(followingsPath, "", "utf-8");
 
-		const followingStream = fs.createWriteStream(followingsPath, { flags: 'a' });
+		const followingStream = fs.createWriteStream(followingsPath, {
+			flags: "a",
+		});
 
 		const writeFollowing = (text: string): Promise<void> => {
 			return new Promise<void>((res, rej) => {
-				followingStream.write(text, err => {
+				followingStream.write(text, (err) => {
 					if (err) {
-						this.logger.error('Error writing following:', err);
+						this.logger.error("Error writing following:", err);
 						rej(err);
 					} else {
 						res();
@@ -289,9 +348,11 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeFollowing(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","followings":[`);
+		await writeFollowing(
+			`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","followings":[`,
+		);
 
-		let followingsCursor: MiFollowing['id'] | null = null;
+		let followingsCursor: MiFollowing["id"] | null = null;
 		let exportedFollowingsCount = 0;
 
 		const mutings = await this.mutingsRepository.findBy({
@@ -299,17 +360,19 @@ export class ExportAccountDataProcessorService {
 		});
 
 		while (true) {
-			const followings = await this.followingsRepository.find({
+			const followings = (await this.followingsRepository.find({
 				where: {
 					followerId: user.id,
-					...(mutings.length > 0 ? { followeeId: Not(In(mutings.map(x => x.muteeId))) } : {}),
+					...(mutings.length > 0
+						? { followeeId: Not(In(mutings.map((x) => x.muteeId))) }
+						: {}),
 					...(followingsCursor ? { id: MoreThan(followingsCursor) } : {}),
 				},
 				take: 100,
 				order: {
 					id: 1,
 				},
-			}) as MiFollowing[];
+			})) as MiFollowing[];
 
 			if (followings.length === 0) {
 				break;
@@ -318,39 +381,48 @@ export class ExportAccountDataProcessorService {
 			followingsCursor = followings.at(-1)?.id ?? null;
 
 			for (const following of followings) {
-				const u = await this.usersRepository.findOneBy({ id: following.followeeId });
+				const u = await this.usersRepository.findOneBy({
+					id: following.followeeId,
+				});
 				if (u == null) {
 					continue;
 				}
 
-				if (u.updatedAt && (this.timeService.now - u.updatedAt.getTime() > 1000 * 60 * 60 * 24 * 90)) {
+				if (
+					u.updatedAt &&
+					this.timeService.now - u.updatedAt.getTime() >
+						1000 * 60 * 60 * 24 * 90
+				) {
 					continue;
 				}
 
 				const isFirst = exportedFollowingsCount === 0;
-				const content = this.utilityService.getFullApAccount(u.username, u.host);
-				await writeFollowing(isFirst ? `"${content}"` : ',\n' + `"${content}"`);
+				const content = this.utilityService.getFullApAccount(
+					u.username,
+					u.host,
+				);
+				await writeFollowing(isFirst ? `"${content}"` : ",\n" + `"${content}"`);
 				exportedFollowingsCount++;
 			}
 		}
 
-		await writeFollowing(']}');
+		await writeFollowing("]}");
 
 		followingStream.end();
 
 		// Followers Export
 
-		const followersPath = path + '/followers.json';
+		const followersPath = path + "/followers.json";
 
-		fs.writeFileSync(followersPath, '', 'utf-8');
+		fs.writeFileSync(followersPath, "", "utf-8");
 
-		const followerStream = fs.createWriteStream(followersPath, { flags: 'a' });
+		const followerStream = fs.createWriteStream(followersPath, { flags: "a" });
 
 		const writeFollowers = (text: string): Promise<void> => {
 			return new Promise<void>((res, rej) => {
-				followerStream.write(text, err => {
+				followerStream.write(text, (err) => {
 					if (err) {
-						this.logger.error('Error writing followers:', err);
+						this.logger.error("Error writing followers:", err);
 						rej(err);
 					} else {
 						res();
@@ -359,13 +431,15 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeFollowers(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","followers":[`);
+		await writeFollowers(
+			`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","followers":[`,
+		);
 
-		let followersCursor: MiFollowing['id'] | null = null;
+		let followersCursor: MiFollowing["id"] | null = null;
 		let exportedFollowersCount = 0;
 
 		while (true) {
-			const followers = await this.followingsRepository.find({
+			const followers = (await this.followingsRepository.find({
 				where: {
 					followeeId: user.id,
 					...(followersCursor ? { id: MoreThan(followersCursor) } : {}),
@@ -374,7 +448,7 @@ export class ExportAccountDataProcessorService {
 				order: {
 					id: 1,
 				},
-			}) as MiFollowing[];
+			})) as MiFollowing[];
 
 			if (followers.length === 0) {
 				break;
@@ -383,35 +457,40 @@ export class ExportAccountDataProcessorService {
 			followersCursor = followers.at(-1)?.id ?? null;
 
 			for (const follower of followers) {
-				const u = await this.usersRepository.findOneBy({ id: follower.followerId });
+				const u = await this.usersRepository.findOneBy({
+					id: follower.followerId,
+				});
 				if (u == null) {
 					continue;
 				}
 
 				const isFirst = exportedFollowersCount === 0;
-				const content = this.utilityService.getFullApAccount(u.username, u.host);
-				await writeFollowers(isFirst ? `"${content}"` : ',\n' + `"${content}"`);
+				const content = this.utilityService.getFullApAccount(
+					u.username,
+					u.host,
+				);
+				await writeFollowers(isFirst ? `"${content}"` : ",\n" + `"${content}"`);
 				exportedFollowersCount++;
 			}
 		}
 
-		await writeFollowers(']}');
+		await writeFollowers("]}");
 
 		followerStream.end();
 
 		// Drive Export
 
-		const filesPath = path + '/drive.json';
+		const filesPath = path + "/drive.json";
 
-		fs.writeFileSync(filesPath, '', 'utf-8');
+		fs.writeFileSync(filesPath, "", "utf-8");
 
-		const filesStream = fs.createWriteStream(filesPath, { flags: 'a' });
+		const filesStream = fs.createWriteStream(filesPath, { flags: "a" });
 
 		const writeDrive = (text: string): Promise<void> => {
 			return new Promise<void>((res, rej) => {
-				filesStream.write(text, err => {
+				filesStream.write(text, (err) => {
 					if (err) {
-						this.logger.error('Error writing drive:', err);
+						this.logger.error("Error writing drive:", err);
 						rej(err);
 					} else {
 						res();
@@ -422,22 +501,28 @@ export class ExportAccountDataProcessorService {
 
 		fs.mkdirSync(`${path}/files`);
 
-		await writeDrive(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","drive":[`);
+		await writeDrive(
+			`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","drive":[`,
+		);
 
-		const driveFiles = await this.driveFilesRepository.find({ where: { userId: user.id } });
+		const driveFiles = await this.driveFilesRepository.find({
+			where: { userId: user.id },
+		});
 
 		for (const file of driveFiles) {
 			const ext = mime.extension(file.type);
-			const fileName = file.name + '.' + ext;
-			const filePath = path + '/files/' + fileName;
-			fs.writeFileSync(filePath, '', 'binary');
+			const fileName = file.name + "." + ext;
+			const filePath = path + "/files/" + fileName;
+			fs.writeFileSync(filePath, "", "binary");
 			let downloaded = false;
 
 			try {
 				await this.downloadService.downloadUrl(file.url, filePath);
 				downloaded = true;
 			} catch (e) {
-				this.logger.error(`Error writing drive file ${file.id} (${file.name}): ${renderInlineError(e)}`);
+				this.logger.error(
+					`Error writing drive file ${file.id} (${file.name}): ${renderInlineError(e)}`,
+				);
 			}
 
 			if (!downloaded) {
@@ -450,26 +535,26 @@ export class ExportAccountDataProcessorService {
 			});
 			const isFirst = driveFiles.indexOf(file) === 0;
 
-			await writeDrive(isFirst ? content : ',\n' + content);
+			await writeDrive(isFirst ? content : ",\n" + content);
 		}
 
-		await writeDrive(']}');
+		await writeDrive("]}");
 
 		filesStream.end();
 
 		// Muting Export
 
-		const mutingPath = path + '/mutings.json';
+		const mutingPath = path + "/mutings.json";
 
-		fs.writeFileSync(mutingPath, '', 'utf-8');
+		fs.writeFileSync(mutingPath, "", "utf-8");
 
-		const mutingStream = fs.createWriteStream(mutingPath, { flags: 'a' });
+		const mutingStream = fs.createWriteStream(mutingPath, { flags: "a" });
 
 		const writeMuting = (text: string): Promise<void> => {
 			return new Promise<void>((res, rej) => {
-				mutingStream.write(text, err => {
+				mutingStream.write(text, (err) => {
 					if (err) {
-						this.logger.error('Error writing mutings:', err);
+						this.logger.error("Error writing mutings:", err);
 						rej(err);
 					} else {
 						res();
@@ -478,10 +563,12 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeMuting(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","mutings":[`);
+		await writeMuting(
+			`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","mutings":[`,
+		);
 
 		let exportedMutingCount = 0;
-		let mutingCursor: MiMuting['id'] | null = null;
+		let mutingCursor: MiMuting["id"] | null = null;
 
 		while (true) {
 			const mutes = await this.mutingsRepository.find({
@@ -506,33 +593,37 @@ export class ExportAccountDataProcessorService {
 				const u = await this.usersRepository.findOneBy({ id: mute.muteeId });
 
 				if (u == null) {
-					exportedMutingCount++; continue;
+					exportedMutingCount++;
+					continue;
 				}
 
-				const content = this.utilityService.getFullApAccount(u.username, u.host);
+				const content = this.utilityService.getFullApAccount(
+					u.username,
+					u.host,
+				);
 				const isFirst = exportedMutingCount === 0;
-				await writeMuting(isFirst ? `"${content}"` : ',\n' + `"${content}"`);
+				await writeMuting(isFirst ? `"${content}"` : ",\n" + `"${content}"`);
 				exportedMutingCount++;
 			}
 		}
 
-		await writeMuting(']}');
+		await writeMuting("]}");
 
 		mutingStream.end();
 
 		// Blockings Export
 
-		const blockingPath = path + '/blockings.json';
+		const blockingPath = path + "/blockings.json";
 
-		fs.writeFileSync(blockingPath, '', 'utf-8');
+		fs.writeFileSync(blockingPath, "", "utf-8");
 
-		const blockingStream = fs.createWriteStream(blockingPath, { flags: 'a' });
+		const blockingStream = fs.createWriteStream(blockingPath, { flags: "a" });
 
 		const writeBlocking = (text: string): Promise<void> => {
 			return new Promise<void>((res, rej) => {
-				blockingStream.write(text, err => {
+				blockingStream.write(text, (err) => {
 					if (err) {
-						this.logger.error('Error writing blockings:', err);
+						this.logger.error("Error writing blockings:", err);
 						rej(err);
 					} else {
 						res();
@@ -541,10 +632,12 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeBlocking(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","blockings":[`);
+		await writeBlocking(
+			`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","blockings":[`,
+		);
 
 		let exportedBlockingCount = 0;
-		let blockingCursor: MiBlocking['id'] | null = null;
+		let blockingCursor: MiBlocking["id"] | null = null;
 
 		while (true) {
 			const blockings = await this.blockingsRepository.find({
@@ -568,33 +661,37 @@ export class ExportAccountDataProcessorService {
 				const u = await this.usersRepository.findOneBy({ id: block.blockeeId });
 
 				if (u == null) {
-					exportedBlockingCount++; continue;
+					exportedBlockingCount++;
+					continue;
 				}
 
-				const content = this.utilityService.getFullApAccount(u.username, u.host);
+				const content = this.utilityService.getFullApAccount(
+					u.username,
+					u.host,
+				);
 				const isFirst = exportedBlockingCount === 0;
-				await writeBlocking(isFirst ? `"${content}"` : ',\n' + `"${content}"`);
+				await writeBlocking(isFirst ? `"${content}"` : ",\n" + `"${content}"`);
 				exportedBlockingCount++;
 			}
 		}
 
-		await writeBlocking(']}');
+		await writeBlocking("]}");
 
 		blockingStream.end();
 
 		// Favorites export
 
-		const favoritePath = path + '/favorites.json';
+		const favoritePath = path + "/favorites.json";
 
-		fs.writeFileSync(favoritePath, '', 'utf-8');
+		fs.writeFileSync(favoritePath, "", "utf-8");
 
-		const favoriteStream = fs.createWriteStream(favoritePath, { flags: 'a' });
+		const favoriteStream = fs.createWriteStream(favoritePath, { flags: "a" });
 
 		const writeFavorite = (text: string): Promise<void> => {
 			return new Promise<void>((res, rej) => {
-				favoriteStream.write(text, err => {
+				favoriteStream.write(text, (err) => {
 					if (err) {
-						this.logger.error('Error writing favorites:', err);
+						this.logger.error("Error writing favorites:", err);
 						rej(err);
 					} else {
 						res();
@@ -603,13 +700,15 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeFavorite(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","favorites":[`);
+		await writeFavorite(
+			`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","favorites":[`,
+		);
 
 		let exportedFavoritesCount = 0;
-		let favoriteCursor: MiNoteFavorite['id'] | null = null;
+		let favoriteCursor: MiNoteFavorite["id"] | null = null;
 
 		while (true) {
-			const favorites = await this.noteFavoritesRepository.find({
+			const favorites = (await this.noteFavoritesRepository.find({
 				where: {
 					userId: user.id,
 					...(favoriteCursor ? { id: MoreThan(favoriteCursor) } : {}),
@@ -618,8 +717,8 @@ export class ExportAccountDataProcessorService {
 				order: {
 					id: 1,
 				},
-				relations: ['note', 'note.user'],
-			}) as (MiNoteFavorite & { note: MiNote & { user: MiUser } })[];
+				relations: ["note", "note.user"],
+			})) as (MiNoteFavorite & { note: MiNote & { user: MiUser } })[];
 
 			if (favorites.length === 0) {
 				break;
@@ -630,32 +729,34 @@ export class ExportAccountDataProcessorService {
 			for (const favorite of favorites) {
 				let poll: MiPoll | undefined;
 				if (favorite.note.hasPoll) {
-					poll = await this.pollsRepository.findOneByOrFail({ noteId: favorite.note.id });
+					poll = await this.pollsRepository.findOneByOrFail({
+						noteId: favorite.note.id,
+					});
 				}
 				const content = JSON.stringify(this.favoriteSerialize(favorite, poll));
 				const isFirst = exportedFavoritesCount === 0;
-				await writeFavorite(isFirst ? content : ',\n' + content);
+				await writeFavorite(isFirst ? content : ",\n" + content);
 				exportedFavoritesCount++;
 			}
 		}
 
-		await writeFavorite(']}');
+		await writeFavorite("]}");
 
 		favoriteStream.end();
 
 		// Antennas export
 
-		const antennaPath = path + '/antennas.json';
+		const antennaPath = path + "/antennas.json";
 
-		fs.writeFileSync(antennaPath, '', 'utf-8');
+		fs.writeFileSync(antennaPath, "", "utf-8");
 
-		const antennaStream = fs.createWriteStream(antennaPath, { flags: 'a' });
+		const antennaStream = fs.createWriteStream(antennaPath, { flags: "a" });
 
 		const writeAntenna = (text: string): Promise<void> => {
 			return new Promise<void>((res, rej) => {
-				antennaStream.write(text, err => {
+				antennaStream.write(text, (err) => {
 					if (err) {
-						this.logger.error('Error writing antennas:', err);
+						this.logger.error("Error writing antennas:", err);
 						rej(err);
 					} else {
 						res();
@@ -664,56 +765,68 @@ export class ExportAccountDataProcessorService {
 			});
 		};
 
-		await writeAntenna(`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","antennas":[`);
+		await writeAntenna(
+			`{"metaVersion":1,"host":"${this.config.host}","exportedAt":"${this.timeService.date.toString()}","antennas":[`,
+		);
 
 		const antennas = await this.antennasRepository.findBy({ userId: user.id });
 
 		for (const [index, antenna] of antennas.entries()) {
 			let users: MiUser[] | undefined;
 			if (antenna.userListId !== null) {
-				const memberships = await this.userListMembershipsRepository.findBy({ userListId: antenna.userListId });
+				const memberships = await this.userListMembershipsRepository.findBy({
+					userListId: antenna.userListId,
+				});
 				users = await this.usersRepository.findBy({
-					id: In(memberships.map(j => j.userId)),
+					id: In(memberships.map((j) => j.userId)),
 				});
 			}
 
-			await writeAntenna(JSON.stringify({
-				name: antenna.name,
-				src: antenna.src,
-				keywords: antenna.keywords,
-				excludeKeywords: antenna.excludeKeywords,
-				users: antenna.users,
-				userListAccts: typeof users !== 'undefined' ? users.map((u) => {
-					return this.utilityService.getFullApAccount(u.username, u.host); // acct
-				}) : null,
-				caseSensitive: antenna.caseSensitive,
-				localOnly: antenna.localOnly,
-				withReplies: antenna.withReplies,
-				withFile: antenna.withFile,
-			}));
+			await writeAntenna(
+				JSON.stringify({
+					name: antenna.name,
+					src: antenna.src,
+					keywords: antenna.keywords,
+					excludeKeywords: antenna.excludeKeywords,
+					users: antenna.users,
+					userListAccts:
+						typeof users !== "undefined"
+							? users.map((u) => {
+									return this.utilityService.getFullApAccount(
+										u.username,
+										u.host,
+									); // acct
+								})
+							: null,
+					caseSensitive: antenna.caseSensitive,
+					localOnly: antenna.localOnly,
+					withReplies: antenna.withReplies,
+					withFile: antenna.withFile,
+				}),
+			);
 
 			if (antennas.length - 1 !== index) {
-				await writeAntenna(', ');
+				await writeAntenna(", ");
 			}
 		}
 
-		await writeAntenna(']}');
+		await writeAntenna("]}");
 
 		antennaStream.end();
 
 		// Lists export
 
-		const listPath = path + '/lists.csv';
+		const listPath = path + "/lists.csv";
 
-		fs.writeFileSync(listPath, '', 'utf-8');
+		fs.writeFileSync(listPath, "", "utf-8");
 
-		const listStream = fs.createWriteStream(listPath, { flags: 'a' });
+		const listStream = fs.createWriteStream(listPath, { flags: "a" });
 
 		const writeList = (text: string): Promise<void> => {
 			return new Promise<void>((res, rej) => {
-				listStream.write(text, err => {
+				listStream.write(text, (err) => {
 					if (err) {
-						this.logger.error('Error writing lists:', err);
+						this.logger.error("Error writing lists:", err);
 						rej(err);
 					} else {
 						res();
@@ -727,15 +840,17 @@ export class ExportAccountDataProcessorService {
 		});
 
 		for (const list of lists) {
-			const memberships = await this.userListMembershipsRepository.findBy({ userListId: list.id });
+			const memberships = await this.userListMembershipsRepository.findBy({
+				userListId: list.id,
+			});
 			const users = await this.usersRepository.findBy({
-				id: In(memberships.map(j => j.userId)),
+				id: In(memberships.map((j) => j.userId)),
 			});
 
 			for (const u of users) {
 				const acct = this.utilityService.getFullApAccount(u.username, u.host);
 				const content = `${list.name},${acct}`;
-				await writeList(content + '\n');
+				await writeList(content + "\n");
 			}
 		}
 
@@ -745,21 +860,30 @@ export class ExportAccountDataProcessorService {
 		await new Promise<void>(async (resolve) => {
 			const [archivePath, archiveCleanup] = await createTemp();
 			const archiveStream = fs.createWriteStream(archivePath);
-			const archive = archiver('zip', {
+			const archive = archiver("zip", {
 				zlib: { level: 0 },
 			});
-			archiveStream.on('close', async () => {
+			archiveStream.on("close", async () => {
 				this.logger.debug(`Exported to path: ${archivePath}`);
 
-				const fileName = 'data-request-' + dateFormat(this.timeService.date, 'yyyy-MM-dd-HH-mm-ss') + '.zip';
-				const driveFile = await this.driveService.addFile({ user, path: archivePath, name: fileName, force: true });
+				const fileName =
+					"data-request-" +
+					dateFormat(this.timeService.date, "yyyy-MM-dd-HH-mm-ss") +
+					".zip";
+				const driveFile = await this.driveService.addFile({
+					user,
+					path: archivePath,
+					name: fileName,
+					force: true,
+				});
 
 				this.logger.debug(`Exported to drive: ${driveFile.id}`);
 				cleanup();
 				archiveCleanup();
 				if (profile.email) {
-					this.emailService.sendEmail(profile.email,
-						'Your data archive is ready',
+					this.emailService.sendEmail(
+						profile.email,
+						"Your data archive is ready",
 						`Click the following link to download the archive: ${driveFile.url}<br/>It is also available in your drive.`,
 						`Click the following link to download the archive: ${driveFile.url}\r\n\r\nIt is also available in your drive.`,
 					);
@@ -772,7 +896,11 @@ export class ExportAccountDataProcessorService {
 		});
 	}
 
-	private noteSerialize(note: MiNote, poll: MiPoll | null = null, files: Packed<'DriveFile'>[]): Record<string, unknown> {
+	private noteSerialize(
+		note: MiNote,
+		poll: MiPoll | null = null,
+		files: Packed<"DriveFile">[],
+	): Record<string, unknown> {
 		return {
 			id: note.id,
 			text: note.text,
@@ -790,7 +918,10 @@ export class ExportAccountDataProcessorService {
 		};
 	}
 
-	private favoriteSerialize(favorite: MiNoteFavorite & { note: MiNote & { user: MiUser } }, poll: MiPoll | null = null): Record<string, unknown> {
+	private favoriteSerialize(
+		favorite: MiNoteFavorite & { note: MiNote & { user: MiUser } },
+		poll: MiPoll | null = null,
+	): Record<string, unknown> {
 		return {
 			id: favorite.id,
 			createdAt: this.idService.parse(favorite.id).date.toISOString(),

@@ -4,14 +4,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<a :href="href" target="_blank" :class="$style.root">
-	<img v-if="!video.isSensitive && video.thumbnailUrl" :class="$style.thumbnail" :src="video.thumbnailUrl">
-	<div :class="$style.videoOverlayPlayButton"><i class="ti ti-player-play-filled"></i></div>
-</a>
+	<a :href="href" target="_blank" :class="$style.root">
+		<img
+			v-if="!video.isSensitive && video.thumbnailUrl"
+			:class="$style.thumbnail"
+			:src="video.thumbnailUrl"
+		/>
+		<div :class="$style.videoOverlayPlayButton">
+			<i class="ti ti-player-play-filled"></i>
+		</div>
+	</a>
 </template>
 
 <script setup lang="ts">
-import * as Misskey from 'misskey-js';
+import * as Misskey from "misskey-js";
 
 defineProps<{
 	video: Misskey.entities.DriveFile;

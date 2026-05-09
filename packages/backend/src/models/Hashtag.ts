@@ -3,17 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Entity, PrimaryColumn, Index, Column } from 'typeorm';
-import { id } from './util/id.js';
-import type { MiUser } from './User.js';
+import { Entity, PrimaryColumn, Index, Column } from "typeorm";
+import { id } from "./util/id.js";
+import type { MiUser } from "./User.js";
 
-@Entity('hashtag')
+@Entity("hashtag")
 export class MiHashtag {
 	@PrimaryColumn(id())
 	public id: string;
 
 	@Index({ unique: true })
-	@Column('varchar', {
+	@Column("varchar", {
 		length: 128,
 	})
 	public name: string;
@@ -22,10 +22,10 @@ export class MiHashtag {
 		...id(),
 		array: true,
 	})
-	public mentionedUserIds: MiUser['id'][];
+	public mentionedUserIds: MiUser["id"][];
 
 	@Index()
-	@Column('integer', {
+	@Column("integer", {
 		default: 0,
 	})
 	public mentionedUsersCount: number;
@@ -34,10 +34,10 @@ export class MiHashtag {
 		...id(),
 		array: true,
 	})
-	public mentionedLocalUserIds: MiUser['id'][];
+	public mentionedLocalUserIds: MiUser["id"][];
 
 	@Index()
-	@Column('integer', {
+	@Column("integer", {
 		default: 0,
 	})
 	public mentionedLocalUsersCount: number;
@@ -46,10 +46,10 @@ export class MiHashtag {
 		...id(),
 		array: true,
 	})
-	public mentionedRemoteUserIds: MiUser['id'][];
+	public mentionedRemoteUserIds: MiUser["id"][];
 
 	@Index()
-	@Column('integer', {
+	@Column("integer", {
 		default: 0,
 	})
 	public mentionedRemoteUsersCount: number;
@@ -58,10 +58,10 @@ export class MiHashtag {
 		...id(),
 		array: true,
 	})
-	public attachedUserIds: MiUser['id'][];
+	public attachedUserIds: MiUser["id"][];
 
 	@Index()
-	@Column('integer', {
+	@Column("integer", {
 		default: 0,
 	})
 	public attachedUsersCount: number;
@@ -70,10 +70,10 @@ export class MiHashtag {
 		...id(),
 		array: true,
 	})
-	public attachedLocalUserIds: MiUser['id'][];
+	public attachedLocalUserIds: MiUser["id"][];
 
 	@Index()
-	@Column('integer', {
+	@Column("integer", {
 		default: 0,
 	})
 	public attachedLocalUsersCount: number;
@@ -82,10 +82,10 @@ export class MiHashtag {
 		...id(),
 		array: true,
 	})
-	public attachedRemoteUserIds: MiUser['id'][];
+	public attachedRemoteUserIds: MiUser["id"][];
 
 	@Index()
-	@Column('integer', {
+	@Column("integer", {
 		default: 0,
 	})
 	public attachedRemoteUsersCount: number;

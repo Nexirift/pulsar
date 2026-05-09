@@ -3,23 +3,24 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable, Inject } from '@nestjs/common';
-import { DataSource } from 'typeorm';
-import type { MiUser } from '@/models/User.js';
-import { AppLockService } from '@/core/AppLockService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { DI } from '@/di-symbols.js';
-import { bindThis } from '@/decorators.js';
-import Chart from '../core.js';
-import { ChartLoggerService } from '../ChartLoggerService.js';
-import { name, schema } from './entities/per-user-pv.js';
-import type { KVs } from '../core.js';
+import { Injectable, Inject } from "@nestjs/common";
+import { DataSource } from "typeorm";
+import type { MiUser } from "@/models/User.js";
+import { AppLockService } from "@/core/AppLockService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { DI } from "@/di-symbols.js";
+import { bindThis } from "@/decorators.js";
+import Chart from "../core.js";
+import { ChartLoggerService } from "../ChartLoggerService.js";
+import { name, schema } from "./entities/per-user-pv.js";
+import type { KVs } from "../core.js";
 
 /**
  * ユーザーごとのプロフィール被閲覧数に関するチャート
  */
 @Injectable()
-export default class PerUserPvChart extends Chart<typeof schema> { // eslint-disable-line import/no-default-export
+export default class PerUserPvChart extends Chart<typeof schema> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.db)
 		private db: DataSource,
@@ -28,7 +29,14 @@ export default class PerUserPvChart extends Chart<typeof schema> { // eslint-dis
 		private chartLoggerService: ChartLoggerService,
 		private readonly timeService: TimeService,
 	) {
-		super(db, (k) => appLockService.getChartInsertLock(k), chartLoggerService.logger, name, schema, true);
+		super(
+			db,
+			(k) => appLockService.getChartInsertLock(k),
+			chartLoggerService.logger,
+			name,
+			schema,
+			true,
+		);
 	}
 
 	protected getCurrentDate(): Date {
@@ -44,18 +52,24 @@ export default class PerUserPvChart extends Chart<typeof schema> { // eslint-dis
 	}
 
 	@bindThis
-	public commitByUser(user: { id: MiUser['id'] }, key: string): void {
-		this.commit({
-			'upv.user': [key],
-			'pv.user': 1,
-		}, user.id);
+	public commitByUser(user: { id: MiUser["id"] }, key: string): void {
+		this.commit(
+			{
+				"upv.user": [key],
+				"pv.user": 1,
+			},
+			user.id,
+		);
 	}
 
 	@bindThis
-	public commitByVisitor(user: { id: MiUser['id'] }, key: string): void {
-		this.commit({
-			'upv.visitor': [key],
-			'pv.visitor': 1,
-		}, user.id);
+	public commitByVisitor(user: { id: MiUser["id"] }, key: string): void {
+		this.commit(
+			{
+				"upv.visitor": [key],
+				"pv.visitor": 1,
+			},
+			user.id,
+		);
 	}
 }

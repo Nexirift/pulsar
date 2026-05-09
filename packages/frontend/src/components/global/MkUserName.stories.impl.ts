@@ -4,10 +4,10 @@
  */
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { expect } from '@storybook/test';
-import type { StoryObj } from '@storybook/vue3';
-import { userDetailed } from '../../../.storybook/fakes.js';
-import MkUserName from './MkUserName.vue';
+import { expect } from "@storybook/test";
+import type { StoryObj } from "@storybook/vue3";
+import { userDetailed } from "../../../.storybook/fakes.js";
+import MkUserName from "./MkUserName.vue";
 export const Default = {
 	render(args) {
 		return {
@@ -30,13 +30,15 @@ export const Default = {
 		};
 	},
 	async play({ canvasElement }) {
-		await expect(canvasElement).toHaveTextContent(userDetailed().name as string);
+		await expect(canvasElement).toHaveTextContent(
+			userDetailed().name as string,
+		);
 	},
 	args: {
 		user: userDetailed(),
 	},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkUserName>;
 export const Anonymous = {

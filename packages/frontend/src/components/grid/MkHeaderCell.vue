@@ -4,48 +4,63 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div
-	ref="rootEl"
-	class="mk_grid_th"
-	:class="$style.cell"
-	:style="[{ maxWidth: column.width, minWidth: column.width, width: column.width }]"
-	data-grid-cell
-	:data-grid-cell-row="-1"
-	:data-grid-cell-col="column.index"
->
-	<div :class="$style.root">
-		<div :class="$style.left"></div>
-		<div :class="$style.wrapper">
-			<div ref="contentEl" :class="$style.contentArea">
-				<span v-if="column.setting.icon" class="ti" :class="column.setting.icon" style="line-height: normal"></span>
-				<span v-else>{{ text }}</span>
+	<div
+		ref="rootEl"
+		class="mk_grid_th"
+		:class="$style.cell"
+		:style="[
+			{ maxWidth: column.width, minWidth: column.width, width: column.width },
+		]"
+		data-grid-cell
+		:data-grid-cell-row="-1"
+		:data-grid-cell-col="column.index"
+	>
+		<div :class="$style.root">
+			<div :class="$style.left"></div>
+			<div :class="$style.wrapper">
+				<div ref="contentEl" :class="$style.contentArea">
+					<span
+						v-if="column.setting.icon"
+						class="ti"
+						:class="column.setting.icon"
+						style="line-height: normal"
+					></span>
+					<span v-else>{{ text }}</span>
+				</div>
 			</div>
+			<div
+				:class="$style.right"
+				@mousedown="onHandleMouseDown"
+				@dblclick="onHandleDoubleClick"
+			></div>
 		</div>
-		<div
-			:class="$style.right"
-			@mousedown="onHandleMouseDown"
-			@dblclick="onHandleDoubleClick"
-		></div>
 	</div>
-</div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, toRefs, watch } from 'vue';
-import { GridEventEmitter } from '@/components/grid/grid.js';
-import type { Size } from '@/components/grid/grid.js';
-import type { GridColumn } from '@/components/grid/column.js';
+import {
+	computed,
+	nextTick,
+	onMounted,
+	onUnmounted,
+	ref,
+	toRefs,
+	watch,
+} from "vue";
+import { GridEventEmitter } from "@/components/grid/grid.js";
+import type { Size } from "@/components/grid/grid.js";
+import type { GridColumn } from "@/components/grid/column.js";
 
 const emit = defineEmits<{
-	(ev: 'operation:beginWidthChange', sender: GridColumn): void;
-	(ev: 'operation:endWidthChange', sender: GridColumn): void;
-	(ev: 'operation:widthLargest', sender: GridColumn): void;
-	(ev: 'change:width', sender: GridColumn, width: string): void;
-	(ev: 'change:contentSize', sender: GridColumn, newSize: Size): void;
+	(ev: "operation:beginWidthChange", sender: GridColumn): void;
+	(ev: "operation:endWidthChange", sender: GridColumn): void;
+	(ev: "operation:widthLargest", sender: GridColumn): void;
+	(ev: "change:width", sender: GridColumn, width: string): void;
+	(ev: "change:contentSize", sender: GridColumn, newSize: Size): void;
 }>();
 const props = defineProps<{
-	column: GridColumn,
-	bus: GridEventEmitter,
+	column: GridColumn;
+	bus: GridEventEmitter;
 }>();
 
 const { column, bus } = toRefs(props);
@@ -57,18 +72,22 @@ const resizing = ref<boolean>(false);
 
 const text = computed(() => {
 	const result = column.value.setting.title ?? column.value.setting.bindTo;
-	return result.length > 0 ? result : '　';
+	return result.length > 0 ? result : "　";
 });
 
-watch(column, () => {
-	// 中身がセットされた直後はサイズが分からないので、次のタイミングで更新する
-	nextTick(emitContentSizeChanged);
-}, { immediate: true });
+watch(
+	column,
+	() => {
+		// 中身がセットされた直後はサイズが分からないので、次のタイミングで更新する
+		nextTick(emitContentSizeChanged);
+	},
+	{ immediate: true },
+);
 
 function onHandleDoubleClick(ev: MouseEvent) {
 	switch (ev.type) {
-		case 'dblclick': {
-			emit('operation:widthLargest', column.value);
+		case "dblclick": {
+			emit("operation:widthLargest", column.value);
 			break;
 		}
 	}
@@ -76,12 +95,12 @@ function onHandleDoubleClick(ev: MouseEvent) {
 
 function onHandleMouseDown(ev: MouseEvent) {
 	switch (ev.type) {
-		case 'mousedown': {
+		case "mousedown": {
 			if (!resizing.value) {
 				registerHandleMouseUp();
 				registerHandleMouseMove();
 				resizing.value = true;
-				emit('operation:beginWidthChange', column.value);
+				emit("operation:beginWidthChange", column.value);
 			}
 			break;
 		}
@@ -95,13 +114,13 @@ function onHandleMouseMove(ev: MouseEvent) {
 	}
 
 	switch (ev.type) {
-		case 'mousemove': {
+		case "mousemove": {
 			if (resizing.value) {
 				const bounds = rootEl.value.getBoundingClientRect();
 				const clientWidth = rootEl.value.clientWidth;
 				const clientRight = bounds.left + clientWidth;
 				const nextWidth = clientWidth + (ev.clientX - clientRight);
-				emit('change:width', column.value, `${nextWidth}px`);
+				emit("change:width", column.value, `${nextWidth}px`);
 			}
 			break;
 		}
@@ -110,12 +129,12 @@ function onHandleMouseMove(ev: MouseEvent) {
 
 function onHandleMouseUp(ev: MouseEvent) {
 	switch (ev.type) {
-		case 'mouseup': {
+		case "mouseup": {
 			if (resizing.value) {
 				unregisterHandleMouseUp();
 				unregisterHandleMouseMove();
 				resizing.value = false;
-				emit('operation:endWidthChange', column.value);
+				emit("operation:endWidthChange", column.value);
 			}
 			break;
 		}
@@ -128,26 +147,26 @@ function onForceRefreshContentSize() {
 
 function registerHandleMouseMove() {
 	unregisterHandleMouseMove();
-	addEventListener('mousemove', onHandleMouseMove);
+	addEventListener("mousemove", onHandleMouseMove);
 }
 
 function unregisterHandleMouseMove() {
-	removeEventListener('mousemove', onHandleMouseMove);
+	removeEventListener("mousemove", onHandleMouseMove);
 }
 
 function registerHandleMouseUp() {
 	unregisterHandleMouseUp();
-	addEventListener('mouseup', onHandleMouseUp);
+	addEventListener("mouseup", onHandleMouseUp);
 }
 
 function unregisterHandleMouseUp() {
-	removeEventListener('mouseup', onHandleMouseUp);
+	removeEventListener("mouseup", onHandleMouseUp);
 }
 
 function emitContentSizeChanged() {
 	const clientWidth = contentEl.value?.clientWidth ?? 0;
 	const clientHeight = contentEl.value?.clientHeight ?? 0;
-	emit('change:contentSize', column.value, {
+	emit("change:contentSize", column.value, {
 		// バーの横幅も考慮したいので、+3px
 		width: clientWidth + 3 + 3,
 		height: clientHeight,
@@ -155,13 +174,12 @@ function emitContentSizeChanged() {
 }
 
 onMounted(() => {
-	bus.value.on('forceRefreshContentSize', onForceRefreshContentSize);
+	bus.value.on("forceRefreshContentSize", onForceRefreshContentSize);
 });
 
 onUnmounted(() => {
-	bus.value.off('forceRefreshContentSize', onForceRefreshContentSize);
+	bus.value.off("forceRefreshContentSize", onForceRefreshContentSize);
 });
-
 </script>
 
 <style module lang="scss">

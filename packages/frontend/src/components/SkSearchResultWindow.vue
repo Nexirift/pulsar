@@ -6,21 +6,30 @@ Displays a list of notes as results of a search.
 -->
 
 <template>
-<MkWindow ref="window" :initialWidth="600" :initialHeight="450" :canResize="true" @closed="emit('closed')">
-	<template #header>
-		<i class="ph-magnifying-glass ph-bold ph-lg" style="margin-right: 0.5em;"></i>
-		<b>{{ i18n.ts.searchResult }}</b>
-	</template>
-	<MkNotes :key="props.noteKey" :pagination="props.notePagination"/>
-</MkWindow>
+	<MkWindow
+		ref="window"
+		:initialWidth="600"
+		:initialHeight="450"
+		:canResize="true"
+		@closed="emit('closed')"
+	>
+		<template #header>
+			<i
+				class="ph-magnifying-glass ph-bold ph-lg"
+				style="margin-right: 0.5em"
+			></i>
+			<b>{{ i18n.ts.searchResult }}</b>
+		</template>
+		<MkNotes :key="props.noteKey" :pagination="props.notePagination" />
+	</MkWindow>
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
-import type { Paging } from '@/components/MkPagination.vue';
-import MkNotes from '@/components/MkNotes.vue';
-import MkWindow from '@/components/MkWindow.vue';
-import { i18n } from '@/i18n.js';
+import {} from "vue";
+import type { Paging } from "@/components/MkPagination.vue";
+import MkNotes from "@/components/MkNotes.vue";
+import MkWindow from "@/components/MkWindow.vue";
+import { i18n } from "@/i18n.js";
 
 const props = defineProps<{
 	noteKey: string | number | symbol | undefined;
@@ -28,11 +37,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'closed'): void;
+	(ev: "closed"): void;
 }>();
-
 </script>
 
-<style lang="scss" module>
-
-</style>
+<style lang="scss" module></style>

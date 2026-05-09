@@ -4,13 +4,17 @@
  */
 
 export class AlterMetaDefaultLikeNotNull1747944466178 {
-    name = 'AlterMetaDefaultLikeNotNull1747944466178'
+	name = "AlterMetaDefaultLikeNotNull1747944466178";
 
-    async up(queryRunner) {
-        await queryRunner.query(`ALTER TABLE "meta" ALTER COLUMN "defaultLike" SET NOT NULL`);
-    }
+	async up(queryRunner) {
+		await queryRunner.query(
+			`ALTER TABLE "meta" ALTER COLUMN "defaultLike" SET NOT NULL`,
+		);
+	}
 
-    async down(queryRunner) {
-        await queryRunner.query(`ALTER TABLE "meta" ALTER COLUMN "defaultLike" DROP NOT NULL`);
-    }
+	async down(queryRunner) {
+		await queryRunner.query(
+			`ALTER TABLE "meta" ALTER COLUMN "defaultLike" DROP NOT NULL`,
+		);
+	}
 }

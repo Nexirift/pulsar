@@ -4,29 +4,30 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root">
-	<MkMediaList v-if="image" :mediaList="[image]" :class="$style.mediaList"/>
-</div>
+	<div :class="$style.root">
+		<MkMediaList v-if="image" :mediaList="[image]" :class="$style.mediaList" />
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import MkMediaList from '@/components/MkMediaList.vue';
+import { onMounted, ref } from "vue";
+import * as Misskey from "misskey-js";
+import MkMediaList from "@/components/MkMediaList.vue";
 
 const props = defineProps<{
-	block: Misskey.entities.PageBlock,
-	page: Misskey.entities.Page,
+	block: Misskey.entities.PageBlock;
+	page: Misskey.entities.Page;
 }>();
 
 defineEmits<{
-	(ev: 'expandMute', note: Misskey.entities.Note): void;
+	(ev: "expandMute", note: Misskey.entities.Note): void;
 }>();
 
 const image = ref<Misskey.entities.DriveFile | null>(null);
 
 onMounted(() => {
-	image.value = props.page.attachedFiles.find(x => x.id === props.block.fileId) ?? null;
+	image.value =
+		props.page.attachedFiles.find((x) => x.id === props.block.fileId) ?? null;
 });
 </script>
 

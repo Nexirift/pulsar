@@ -4,55 +4,58 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkModal
-	ref="modal"
-	v-slot="{ type, maxHeight }"
-	:zPriority="'middle'"
-	:preferType="'auto'"
-	:transparentBg="true"
-	:manualShowing="manualShowing"
-	:src="src"
-	@click="modal?.close()"
-	@esc="modal?.close()"
-	@opening="opening"
-	@close="emit('close')"
-	@closed="emit('closed')"
->
-	<MkGifPicker
-		ref="picker"
-		class="_popup _shadow"
-		:class="{ [$style.drawer]: type === 'drawer' }"
-		:asDrawer="type === 'drawer'"
-		:max-height="maxHeight"
-		@chosen="chosen"
+	<MkModal
+		ref="modal"
+		v-slot="{ type, maxHeight }"
+		:zPriority="'middle'"
+		:preferType="'auto'"
+		:transparentBg="true"
+		:manualShowing="manualShowing"
+		:src="src"
+		@click="modal?.close()"
 		@esc="modal?.close()"
-	/>
-</MkModal>
+		@opening="opening"
+		@close="emit('close')"
+		@closed="emit('closed')"
+	>
+		<MkGifPicker
+			ref="picker"
+			class="_popup _shadow"
+			:class="{ [$style.drawer]: type === 'drawer' }"
+			:asDrawer="type === 'drawer'"
+			:max-height="maxHeight"
+			@chosen="chosen"
+			@esc="modal?.close()"
+		/>
+	</MkModal>
 </template>
 
 <script lang="ts" setup>
-import { useTemplateRef } from 'vue';
-import MkModal from '@/components/MkModal.vue';
-import MkGifPicker from '@/components/MkGifPicker.vue';
+import { useTemplateRef } from "vue";
+import MkModal from "@/components/MkModal.vue";
+import MkGifPicker from "@/components/MkGifPicker.vue";
 
-const props = withDefaults(defineProps<{
-	manualShowing?: boolean | null;
-	src?: HTMLElement;
-}>(), {
-	manualShowing: null,
-});
+const props = withDefaults(
+	defineProps<{
+		manualShowing?: boolean | null;
+		src?: HTMLElement;
+	}>(),
+	{
+		manualShowing: null,
+	},
+);
 
 const emit = defineEmits<{
-	(ev: 'done', v: string): void;
-	(ev: 'close'): void;
-	(ev: 'closed'): void;
+	(ev: "done", v: string): void;
+	(ev: "close"): void;
+	(ev: "closed"): void;
 }>();
 
-const modal = useTemplateRef('modal');
-const picker = useTemplateRef('picker');
+const modal = useTemplateRef("modal");
+const picker = useTemplateRef("picker");
 
 function chosen(gifUrl: string) {
-	emit('done', gifUrl);
+	emit("done", gifUrl);
 	modal.value?.close();
 }
 

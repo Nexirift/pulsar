@@ -3,45 +3,46 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AdsRepository } from '@/models/_.js';
-import { QueryService } from '@/core/QueryService.js';
-import { DI } from '@/di-symbols.js';
-import { TimeService } from '@/global/TimeService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { AdsRepository } from "@/models/_.js";
+import { QueryService } from "@/core/QueryService.js";
+import { DI } from "@/di-symbols.js";
+import { TimeService } from "@/global/TimeService.js";
 
 export const meta = {
-	tags: ['admin'],
+	tags: ["admin"],
 
 	requireCredential: true,
 	requireModerator: true,
-	kind: 'read:admin:ad',
+	kind: "read:admin:ad",
 	res: {
-		type: 'array',
+		type: "array",
 		optional: false,
 		nullable: false,
 		items: {
-			type: 'object',
+			type: "object",
 			optional: false,
 			nullable: false,
-			ref: 'Ad',
+			ref: "Ad",
 		},
 	},
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
-		sinceId: { type: 'string', format: 'misskey:id' },
-		untilId: { type: 'string', format: 'misskey:id' },
-		publishing: { type: 'boolean', default: null, nullable: true },
+		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+		sinceId: { type: "string", format: "misskey:id" },
+		untilId: { type: "string", format: "misskey:id" },
+		publishing: { type: "boolean", default: null, nullable: true },
 	},
 	required: [],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.adsRepository)
 		private adsRepository: AdsRepository,
@@ -50,15 +51,23 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const query = this.queryService.makePaginationQuery(this.adsRepository.createQueryBuilder('ad'), ps.sinceId, ps.untilId);
+			const query = this.queryService.makePaginationQuery(
+				this.adsRepository.createQueryBuilder("ad"),
+				ps.sinceId,
+				ps.untilId,
+			);
 			if (ps.publishing === true) {
-				query.andWhere('ad.expiresAt > :now', { now: this.timeService.date }).andWhere('ad.startsAt <= :now', { now: this.timeService.date });
+				query
+					.andWhere("ad.expiresAt > :now", { now: this.timeService.date })
+					.andWhere("ad.startsAt <= :now", { now: this.timeService.date });
 			} else if (ps.publishing === false) {
-				query.andWhere('ad.expiresAt <= :now', { now: this.timeService.date }).orWhere('ad.startsAt > :now', { now: this.timeService.date });
+				query
+					.andWhere("ad.expiresAt <= :now", { now: this.timeService.date })
+					.orWhere("ad.startsAt > :now", { now: this.timeService.date });
 			}
 			const ads = await query.limit(ps.limit).getMany();
 
-			return ads.map(ad => ({
+			return ads.map((ad) => ({
 				id: ad.id,
 				expiresAt: ad.expiresAt.toISOString(),
 				startsAt: ad.startsAt.toISOString(),

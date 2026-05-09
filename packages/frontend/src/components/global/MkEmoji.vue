@@ -4,20 +4,38 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<img v-if="!useOsNativeEmojis" :class="$style.root" :src="url" :alt="props.emoji" decoding="async" @pointerenter="computeTitle" @click="onClick"/>
-<span v-else :alt="props.emoji" @pointerenter="computeTitle" @click="onClick">{{ colorizedNativeEmoji }}</span>
+	<img
+		v-if="!useOsNativeEmojis"
+		:class="$style.root"
+		:src="url"
+		:alt="props.emoji"
+		decoding="async"
+		@pointerenter="computeTitle"
+		@click="onClick"
+	/>
+	<span
+		v-else
+		:alt="props.emoji"
+		@pointerenter="computeTitle"
+		@click="onClick"
+		>{{ colorizedNativeEmoji }}</span
+	>
 </template>
 
 <script lang="ts" setup>
-import { computed, inject } from 'vue';
-import { colorizeEmoji, getEmojiName } from '@@/js/emojilist.js';
-import { char2fluentEmojiFilePath, char2twemojiFilePath, char2tossfaceFilePath } from '@@/js/emoji-base.js';
-import type { MenuItem } from '@/types/menu.js';
-import * as os from '@/os.js';
-import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
-import { i18n } from '@/i18n.js';
-import { prefer } from '@/preferences.js';
-import { DI } from '@/di.js';
+import { computed, inject } from "vue";
+import { colorizeEmoji, getEmojiName } from "@@/js/emojilist.js";
+import {
+	char2fluentEmojiFilePath,
+	char2twemojiFilePath,
+	char2tossfaceFilePath,
+} from "@@/js/emoji-base.js";
+import type { MenuItem } from "@/types/menu.js";
+import * as os from "@/os.js";
+import { copyToClipboard } from "@/utility/copy-to-clipboard.js";
+import { i18n } from "@/i18n.js";
+import { prefer } from "@/preferences.js";
+import { DI } from "@/di.js";
 
 const props = defineProps<{
 	emoji: string;
@@ -27,9 +45,14 @@ const props = defineProps<{
 
 const react = inject(DI.mfmEmojiReactCallback, null);
 
-const char2path = prefer.s.emojiStyle === 'twemoji' ? char2twemojiFilePath : prefer.s.emojiStyle === 'tossface' ? char2tossfaceFilePath : char2fluentEmojiFilePath;
+const char2path =
+	prefer.s.emojiStyle === "twemoji"
+		? char2twemojiFilePath
+		: prefer.s.emojiStyle === "tossface"
+			? char2tossfaceFilePath
+			: char2fluentEmojiFilePath;
 
-const useOsNativeEmojis = computed(() => prefer.s.emojiStyle === 'native');
+const useOsNativeEmojis = computed(() => prefer.s.emojiStyle === "native");
 const url = computed(() => char2path(props.emoji));
 const colorizedNativeEmoji = computed(() => colorizeEmoji(props.emoji));
 
@@ -44,21 +67,24 @@ function onClick(ev: MouseEvent) {
 
 		const menuItems: MenuItem[] = [];
 
-		menuItems.push({
-			type: 'label',
-			text: props.emoji,
-		}, {
-			text: i18n.ts.copy,
-			icon: 'ti ti-copy',
-			action: () => {
-				copyToClipboard(props.emoji);
+		menuItems.push(
+			{
+				type: "label",
+				text: props.emoji,
 			},
-		});
+			{
+				text: i18n.ts.copy,
+				icon: "ti ti-copy",
+				action: () => {
+					copyToClipboard(props.emoji);
+				},
+			},
+		);
 
 		if (props.menuReaction && react) {
 			menuItems.push({
 				text: i18n.ts.doReaction,
-				icon: 'ph-smiley ph-bold ph-lg',
+				icon: "ph-smiley ph-bold ph-lg",
 				action: () => {
 					react(props.emoji);
 				},

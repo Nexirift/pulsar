@@ -5,9 +5,9 @@
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable import/no-default-export */
-import type { StoryObj } from '@storybook/vue3';
-import { clip } from '../../.storybook/fakes.js';
-import MkClipPreview from './MkClipPreview.vue';
+import type { StoryObj } from "@storybook/vue3";
+import { clip } from "../../.storybook/fakes.js";
+import MkClipPreview from "./MkClipPreview.vue";
 export const Default = {
 	render(args) {
 		return {
@@ -34,11 +34,12 @@ export const Default = {
 		noUserInfo: false,
 	},
 	parameters: {
-		layout: 'fullscreen',
+		layout: "fullscreen",
 	},
 	decorators: [
 		() => ({
-			template: '<div style="display: flex; align-items: center; justify-content: center; height: 100vh"><div style="max-width: 700px; width: 100%; margin: 3rem"><story/></div></div>',
+			template:
+				'<div style="display: flex; align-items: center; justify-content: center; height: 100vh"><div style="max-width: 700px; width: 100%; margin: 3rem"><story/></div></div>',
 		}),
 	],
 } satisfies StoryObj<typeof MkClipPreview>;

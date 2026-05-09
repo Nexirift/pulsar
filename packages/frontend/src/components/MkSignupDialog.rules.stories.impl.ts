@@ -4,12 +4,12 @@
  */
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { expect, userEvent, waitFor, within } from '@storybook/test';
-import type { StoryObj } from '@storybook/vue3';
-import { onBeforeUnmount } from 'vue';
-import MkSignupServerRules from './MkSignupDialog.rules.vue';
-import { i18n } from '@/i18n.js';
-import { instance } from '@/instance.js';
+import { expect, userEvent, waitFor, within } from "@storybook/test";
+import type { StoryObj } from "@storybook/vue3";
+import { onBeforeUnmount } from "vue";
+import MkSignupServerRules from "./MkSignupDialog.rules.vue";
+import { i18n } from "@/i18n.js";
+import { instance } from "@/instance.js";
 export const Empty = {
 	render(args) {
 		return {
@@ -33,15 +33,17 @@ export const Empty = {
 	},
 	async play({ canvasElement }) {
 		const canvas = within(canvasElement);
-		const groups = await canvas.findAllByRole('group');
-		const buttons = await canvas.findAllByRole('button');
+		const groups = await canvas.findAllByRole("group");
+		const buttons = await canvas.findAllByRole("button");
 		for (const group of groups) {
-			if (group.ariaExpanded === 'true') {
+			if (group.ariaExpanded === "true") {
 				continue;
 			}
-			const button = await within(group).findByRole('button');
+			const button = await within(group).findByRole("button");
 			userEvent.click(button);
-			await waitFor(() => expect(group).toHaveAttribute('aria-expanded', 'true'));
+			await waitFor(() =>
+				expect(group).toHaveAttribute("aria-expanded", "true"),
+			);
 		}
 		const labels = await canvas.findAllByText(i18n.ts.agree);
 		for (const label of labels) {
@@ -68,11 +70,11 @@ export const Empty = {
 					instance.tosUrl = null;
 				});
 			},
-			template: '<story/>',
+			template: "<story/>",
 		}),
 	],
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkSignupServerRules>;
 export const ServerRulesOnly = {
@@ -80,9 +82,7 @@ export const ServerRulesOnly = {
 	args: {
 		...Empty.args,
 		// @ts-expect-error serverRules is for test
-		serverRules: [
-			'ルール',
-		],
+		serverRules: ["ルール"],
 	},
 } satisfies StoryObj<typeof MkSignupServerRules>;
 export const TOSOnly = {
@@ -90,7 +90,7 @@ export const TOSOnly = {
 	args: {
 		...Empty.args,
 		// @ts-expect-error tosUrl is for test
-		tosUrl: 'https://example.com/tos',
+		tosUrl: "https://example.com/tos",
 	},
 } satisfies StoryObj<typeof MkSignupServerRules>;
 export const ServerRulesAndTOS = {

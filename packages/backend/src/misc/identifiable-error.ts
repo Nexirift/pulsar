@@ -18,9 +18,14 @@ export class IdentifiableError extends Error {
 	 */
 	public readonly isRetryable: boolean;
 
-	constructor(id: string, message?: string, isRetryable = false, cause?: unknown) {
+	constructor(
+		id: string,
+		message?: string,
+		isRetryable = false,
+		cause?: unknown,
+	) {
 		super(message, cause ? { cause } : undefined);
-		this.message = message ?? '';
+		this.message = message ?? "";
 		this.id = id;
 		this.isRetryable = isRetryable;
 	}
@@ -31,11 +36,11 @@ export class IdentifiableError extends Error {
  */
 export const errorCodes = {
 	// User has been deleted (hard or soft deleted)
-	userIsDeleted: '4cac9436-baa3-4955-a368-7628aea676cf',
+	userIsDeleted: "4cac9436-baa3-4955-a368-7628aea676cf",
 	// User is suspended (directly or by instance)
-	userIsSuspended: '1e56d624-737f-48e4-beb6-0bdddb9fa809',
+	userIsSuspended: "1e56d624-737f-48e4-beb6-0bdddb9fa809",
 	// User has no valid featured collection (not defined, invalid, etc)
-	noFeaturedCollection: '2aa4766e-b7d8-4291-a671-56800498b085',
+	noFeaturedCollection: "2aa4766e-b7d8-4291-a671-56800498b085",
 	// WebSocket server encountered an error
-	websocketError: '4b277ff0-88f6-4ddc-8960-8058e76b3677',
+	websocketError: "4b277ff0-88f6-4ddc-8960-8058e76b3677",
 } as const;

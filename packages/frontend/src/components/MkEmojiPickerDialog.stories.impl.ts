@@ -3,5 +3,5 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import MkEmojiPickerDialog from './MkEmojiPickerDialog.vue';
+import MkEmojiPickerDialog from "./MkEmojiPickerDialog.vue";
 void MkEmojiPickerDialog;

@@ -3,28 +3,28 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import type { UserListsRepository } from '@/models/_.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { DI } from '@/di-symbols.js';
-import { CacheService } from '@/core/CacheService.js';
-import { UserListService } from '@/core/UserListService.js';
-import { ApiError } from '../../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import type { UserListsRepository } from "@/models/_.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { DI } from "@/di-symbols.js";
+import { CacheService } from "@/core/CacheService.js";
+import { UserListService } from "@/core/UserListService.js";
+import { ApiError } from "../../../error.js";
 
 export const meta = {
-	tags: ['lists'],
+	tags: ["lists"],
 
 	requireCredential: true,
 
-	kind: 'write:account',
+	kind: "write:account",
 
-	description: 'Delete an existing list of users.',
+	description: "Delete an existing list of users.",
 
 	errors: {
 		noSuchList: {
-			message: 'No such list.',
-			code: 'NO_SUCH_LIST',
-			id: '78436795-db79-42f5-b1e2-55ea2cf19166',
+			message: "No such list.",
+			code: "NO_SUCH_LIST",
+			id: "78436795-db79-42f5-b1e2-55ea2cf19166",
 		},
 	},
 
@@ -36,15 +36,16 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		listId: { type: 'string', format: 'misskey:id' },
+		listId: { type: "string", format: "misskey:id" },
 	},
-	required: ['listId'],
+	required: ["listId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.userListsRepository)
 		private userListsRepository: UserListsRepository,
@@ -69,7 +70,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				this.cacheService.listUserFavoritesCache.delete(userList.id),
 				this.cacheService.listUserMembershipsCache.delete(userList.id),
 				this.cacheService.userListFavoritesCache.deleteMany(listFavorites),
-				this.cacheService.userListMembershipsCache.deleteMany(listMembership.keys()),
+				this.cacheService.userListMembershipsCache.deleteMany(
+					listMembership.keys(),
+				),
 			]);
 		});
 	}

@@ -6,5 +6,5 @@
  *
  * @module
  */
-export type * from './default.d.ts';
-export type * from './load-options.d.ts';
+export type * from "./default.d.ts";
+export type * from "./load-options.d.ts";

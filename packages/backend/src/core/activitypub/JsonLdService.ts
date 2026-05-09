@@ -3,30 +3,32 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as crypto from 'node:crypto';
-import { Injectable } from '@nestjs/common';
-import { UnrecoverableError } from 'bullmq';
-import { HttpRequestService } from '@/core/HttpRequestService.js';
-import { bindThis } from '@/decorators.js';
-import Logger from '@/logger.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import { StatusError } from '@/misc/status-error.js';
-import { TimeService } from '@/global/TimeService.js';
-import { CONTEXT, PRELOADED_CONTEXTS } from './misc/contexts.js';
-import { validateContentTypeSetAsJsonLD } from './misc/validator.js';
-import type { ContextDefinition, JsonLdDocument } from 'jsonld';
-import type { JsonLd as JsonLdObject, RemoteDocument } from 'jsonld/jsonld-spec.js';
+import * as crypto from "node:crypto";
+import { Injectable } from "@nestjs/common";
+import { UnrecoverableError } from "bullmq";
+import { HttpRequestService } from "@/core/HttpRequestService.js";
+import { bindThis } from "@/decorators.js";
+import Logger from "@/logger.js";
+import { LoggerService } from "@/core/LoggerService.js";
+import { StatusError } from "@/misc/status-error.js";
+import { TimeService } from "@/global/TimeService.js";
+import { CONTEXT, PRELOADED_CONTEXTS } from "./misc/contexts.js";
+import { validateContentTypeSetAsJsonLD } from "./misc/validator.js";
+import type { ContextDefinition, JsonLdDocument } from "jsonld";
+import type {
+	JsonLd as JsonLdObject,
+	RemoteDocument,
+} from "jsonld/jsonld-spec.js";
 
 // https://stackoverflow.com/a/66252656
 type RemoveIndex<T> = {
-	[ K in keyof T as string extends K
+	[K in keyof T as string extends K
 		? never
 		: number extends K
 			? never
 			: symbol extends K
 				? never
-				: K
-	] : T[K];
+				: K]: T[K];
 };
 
 export type Document = RemoveIndex<JsonLdDocument>;
@@ -46,7 +48,7 @@ export type Signed<T extends Document> = T & {
 };
 
 export function isSigned<T extends Document>(doc: T): doc is Signed<T> {
-	return 'signature' in doc && typeof(doc.signature) === 'object';
+	return "signature" in doc && typeof doc.signature === "object";
 }
 
 // RsaSignature2017 implementation is based on https://github.com/transmute-industries/RsaSignature2017
@@ -61,11 +63,17 @@ export class JsonLdService {
 
 		loggerService: LoggerService,
 	) {
-		this.logger = loggerService.getLogger('json-ld');
+		this.logger = loggerService.getLogger("json-ld");
 	}
 
 	@bindThis
-	public async signRsaSignature2017<T extends Document>(data: T, privateKey: string, creator: string, domain?: string, created?: Date): Promise<Signed<T>> {
+	public async signRsaSignature2017<T extends Document>(
+		data: T,
+		privateKey: string,
+		creator: string,
+		domain?: string,
+		created?: Date,
+	): Promise<Signed<T>> {
 		const options: {
 			type: string;
 			creator: string;
@@ -73,9 +81,9 @@ export class JsonLdService {
 			nonce: string;
 			created: string;
 		} = {
-			type: 'RsaSignature2017',
+			type: "RsaSignature2017",
 			creator,
-			nonce: crypto.randomBytes(16).toString('hex'),
+			nonce: crypto.randomBytes(16).toString("hex"),
 			created: (created ?? this.timeService.date).toISOString(),
 		};
 
@@ -85,7 +93,7 @@ export class JsonLdService {
 
 		const toBeSigned = await this.createVerifyData(data, options);
 
-		const signer = crypto.createSign('sha256');
+		const signer = crypto.createSign("sha256");
 		signer.update(toBeSigned);
 		signer.end();
 
@@ -95,34 +103,40 @@ export class JsonLdService {
 			...data,
 			signature: {
 				...options,
-				signatureValue: signature.toString('base64'),
+				signatureValue: signature.toString("base64"),
 			},
 		};
 	}
 
 	@bindThis
-	public async verifyRsaSignature2017(data: Signed<Document>, publicKey: string): Promise<boolean> {
+	public async verifyRsaSignature2017(
+		data: Signed<Document>,
+		publicKey: string,
+	): Promise<boolean> {
 		const toBeSigned = await this.createVerifyData(data, data.signature);
-		const verifier = crypto.createVerify('sha256');
+		const verifier = crypto.createVerify("sha256");
 		verifier.update(toBeSigned);
-		return verifier.verify(publicKey, data.signature.signatureValue, 'base64');
+		return verifier.verify(publicKey, data.signature.signatureValue, "base64");
 	}
 
 	@bindThis
-	public async createVerifyData<T extends Document>(data: T, options: Partial<Signature>): Promise<string> {
+	public async createVerifyData<T extends Document>(
+		data: T,
+		options: Partial<Signature>,
+	): Promise<string> {
 		const transformedOptions = {
 			...options,
-			'@context': 'https://w3id.org/identity/v1',
+			"@context": "https://w3id.org/identity/v1",
 		};
-		delete transformedOptions['type'];
-		delete transformedOptions['id'];
-		delete transformedOptions['signatureValue'];
+		delete transformedOptions["type"];
+		delete transformedOptions["id"];
+		delete transformedOptions["signatureValue"];
 		const canonizedOptions = await this.normalize(transformedOptions);
 		const optionsHash = this.sha256(canonizedOptions.toString());
 		const transformedData = { ...data } as T & { signature?: unknown };
-		delete transformedData['signature'];
+		delete transformedData["signature"];
 		const cannonidedData = await this.normalize(transformedData);
-		this.logger.debug('cannonidedData', cannonidedData);
+		this.logger.debug("cannonidedData", cannonidedData);
 		const documentHash = this.sha256(cannonidedData.toString());
 		const verifyData = `${optionsHash}${documentHash}`;
 		return verifyData;
@@ -130,11 +144,16 @@ export class JsonLdService {
 
 	@bindThis
 	// TODO our default CONTEXT isn't valid for the library, is this a bug?
-	public async compact(data: Document, context: ContextDefinition = CONTEXT as unknown as ContextDefinition): Promise<Document> {
+	public async compact(
+		data: Document,
+		context: ContextDefinition = CONTEXT as unknown as ContextDefinition,
+	): Promise<Document> {
 		const customLoader = this.getLoader();
 		// XXX: Importing jsonld dynamically since Jest frequently fails to import it statically
 		// https://github.com/misskey-dev/misskey/pull/9894#discussion_r1103753595
-		return await (await import('jsonld')).default.compact(data, context, {
+		return await (
+			await import("jsonld")
+		).default.compact(data, context, {
 			documentLoader: customLoader,
 		});
 	}
@@ -142,7 +161,9 @@ export class JsonLdService {
 	@bindThis
 	public async normalize(data: Document): Promise<string> {
 		const customLoader = this.getLoader();
-		return await (await import('jsonld')).default.normalize(data, {
+		return await (
+			await import("jsonld")
+		).default.normalize(data, {
 			documentLoader: customLoader,
 		});
 	}
@@ -150,7 +171,8 @@ export class JsonLdService {
 	@bindThis
 	private getLoader() {
 		return async (url: string): Promise<RemoteDocument> => {
-			if (!/^https?:\/\//.test(url)) throw new UnrecoverableError(`Invalid URL: ${url}`);
+			if (!/^https?:\/\//.test(url))
+				throw new UnrecoverableError(`Invalid URL: ${url}`);
 
 			{
 				if (url in PRELOADED_CONTEXTS) {
@@ -175,32 +197,38 @@ export class JsonLdService {
 
 	@bindThis
 	private async fetchDocument(url: string): Promise<JsonLdObject> {
-		const json = await this.httpRequestService.send(
-			url,
-			{
-				headers: {
-					Accept: 'application/ld+json, application/json',
+		const json = await this.httpRequestService
+			.send(
+				url,
+				{
+					headers: {
+						Accept: "application/ld+json, application/json",
+					},
 				},
-			},
-			{
-				throwErrorWhenResponseNotOk: false,
-				validators: [validateContentTypeSetAsJsonLD],
-			},
-		).then(res => {
-			if (!res.ok) {
-				throw new StatusError(`failed to fetch JSON-LD from ${url}`, res.status, res.statusText);
-			} else {
-				return res.json();
-			}
-		});
+				{
+					throwErrorWhenResponseNotOk: false,
+					validators: [validateContentTypeSetAsJsonLD],
+				},
+			)
+			.then((res) => {
+				if (!res.ok) {
+					throw new StatusError(
+						`failed to fetch JSON-LD from ${url}`,
+						res.status,
+						res.statusText,
+					);
+				} else {
+					return res.json();
+				}
+			});
 
 		return json as JsonLdObject;
 	}
 
 	@bindThis
 	public sha256(data: string): string {
-		const hash = crypto.createHash('sha256');
+		const hash = crypto.createHash("sha256");
 		hash.update(data);
-		return hash.digest('hex');
+		return hash.digest("hex");
 	}
 }

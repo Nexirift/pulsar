@@ -4,102 +4,139 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div ref="rootEl" class="rrevdjwu" :class="{ grid }">
-	<MkInput
-		v-if="searchIndex && searchIndex.length > 0"
-		v-model="searchQuery"
-		:placeholder="i18n.ts.search"
-		type="search"
-		style="margin-bottom: 16px;"
-		@input.passive="searchOnInput"
-		@keydown="searchOnKeyDown"
-	>
-		<template #prefix><i class="ti ti-search"></i></template>
-	</MkInput>
+	<div ref="rootEl" class="rrevdjwu" :class="{ grid }">
+		<MkInput
+			v-if="searchIndex && searchIndex.length > 0"
+			v-model="searchQuery"
+			:placeholder="i18n.ts.search"
+			type="search"
+			style="margin-bottom: 16px"
+			@input.passive="searchOnInput"
+			@keydown="searchOnKeyDown"
+		>
+			<template #prefix><i class="ti ti-search"></i></template>
+		</MkInput>
 
-	<template v-if="rawSearchQuery == ''">
-		<div v-for="group in def" class="group">
-			<div v-if="group.title" class="title">{{ group.title }}</div>
+		<template v-if="rawSearchQuery == ''">
+			<div v-for="group in def" class="group">
+				<div v-if="group.title" class="title">{{ group.title }}</div>
 
-			<div class="items">
-				<template v-for="(item, i) in group.items">
-					<a v-if="item.type === 'a'" :href="item.href" :target="item.target" class="_button item" :class="{ danger: item.danger, active: item.active }">
-						<span v-if="item.icon" class="icon"><i :class="item.icon" class="ti-fw"></i></span>
-						<span class="text">{{ item.text }}</span>
-					</a>
-					<button v-else-if="item.type === 'button'" class="_button item" :class="{ danger: item.danger, active: item.active }" :disabled="item.active" @click="ev => item.action(ev)">
-						<span v-if="item.icon" class="icon"><i :class="item.icon" class="ti-fw"></i></span>
-						<span class="text">{{ item.text }}</span>
-					</button>
-					<MkA v-else :to="item.to" class="_button item" :class="{ danger: item.danger, active: item.active }">
-						<span v-if="item.icon" class="icon"><i :class="item.icon" class="ti-fw"></i></span>
-						<span class="text">{{ item.text }}</span>
-					</MkA>
-				</template>
+				<div class="items">
+					<template v-for="(item, i) in group.items">
+						<a
+							v-if="item.type === 'a'"
+							:href="item.href"
+							:target="item.target"
+							class="_button item"
+							:class="{ danger: item.danger, active: item.active }"
+						>
+							<span v-if="item.icon" class="icon"
+								><i :class="item.icon" class="ti-fw"></i
+							></span>
+							<span class="text">{{ item.text }}</span>
+						</a>
+						<button
+							v-else-if="item.type === 'button'"
+							class="_button item"
+							:class="{ danger: item.danger, active: item.active }"
+							:disabled="item.active"
+							@click="(ev) => item.action(ev)"
+						>
+							<span v-if="item.icon" class="icon"
+								><i :class="item.icon" class="ti-fw"></i
+							></span>
+							<span class="text">{{ item.text }}</span>
+						</button>
+						<MkA
+							v-else
+							:to="item.to"
+							class="_button item"
+							:class="{ danger: item.danger, active: item.active }"
+						>
+							<span v-if="item.icon" class="icon"
+								><i :class="item.icon" class="ti-fw"></i
+							></span>
+							<span class="text">{{ item.text }}</span>
+						</MkA>
+					</template>
+				</div>
 			</div>
-		</div>
-	</template>
-	<template v-else>
-		<div v-for="item, index in searchResult">
-			<MkA
-				:to="item.path + '#' + item.id"
-				class="_button searchResultItem"
-				:class="{ selected: searchSelectedIndex !== null && searchSelectedIndex === index }"
-			>
-				<span v-if="item.icon" class="icon"><i :class="item.icon" class="ti-fw"></i></span>
-				<span class="text">
-					<template v-if="item.isRoot">
-						{{ item.label }}
-					</template>
-					<template v-else>
-						<span style="opacity: 0.7; font-size: 90%;">{{ item.parentLabels.join(' > ') }}</span>
-						<br>
-						<span>{{ item.label }}</span>
-					</template>
-				</span>
-			</MkA>
-		</div>
-	</template>
-</div>
+		</template>
+		<template v-else>
+			<div v-for="(item, index) in searchResult">
+				<MkA
+					:to="item.path + '#' + item.id"
+					class="_button searchResultItem"
+					:class="{
+						selected:
+							searchSelectedIndex !== null && searchSelectedIndex === index,
+					}"
+				>
+					<span v-if="item.icon" class="icon"
+						><i :class="item.icon" class="ti-fw"></i
+					></span>
+					<span class="text">
+						<template v-if="item.isRoot">
+							{{ item.label }}
+						</template>
+						<template v-else>
+							<span style="opacity: 0.7; font-size: 90%">{{
+								item.parentLabels.join(" > ")
+							}}</span>
+							<br />
+							<span>{{ item.label }}</span>
+						</template>
+					</span>
+				</MkA>
+			</div>
+		</template>
+	</div>
 </template>
 
 <script lang="ts">
 export type SuperMenuDef = {
 	title?: string;
-	items: ({
-		type: 'a';
-		href: string;
-		target?: string;
-		icon?: string;
-		text: string;
-		danger?: boolean;
-		active?: boolean;
-	} | {
-		type: 'button';
-		icon?: string;
-		text: string;
-		danger?: boolean;
-		active?: boolean;
-		action: (ev: MouseEvent) => void | Promise<void>;
-	} | {
-		type?: 'link';
-		to: string;
-		icon?: string;
-		text: string;
-		danger?: boolean;
-		active?: boolean;
-	})[];
+	items: (
+		| {
+				type: "a";
+				href: string;
+				target?: string;
+				icon?: string;
+				text: string;
+				danger?: boolean;
+				active?: boolean;
+		  }
+		| {
+				type: "button";
+				icon?: string;
+				text: string;
+				danger?: boolean;
+				active?: boolean;
+				action: (ev: MouseEvent) => void | Promise<void>;
+		  }
+		| {
+				type?: "link";
+				to: string;
+				icon?: string;
+				text: string;
+				danger?: boolean;
+				active?: boolean;
+		  }
+	)[];
 };
 </script>
 
 <script lang="ts" setup>
-import { useTemplateRef, ref, watch, nextTick, computed } from 'vue';
-import { getScrollContainer } from '@@/js/scroll.js';
-import type { SearchIndexItem } from '@/utility/settings-search-index.js';
-import MkInput from '@/components/MkInput.vue';
-import { i18n } from '@/i18n.js';
-import { useRouter } from '@/router.js';
-import { initIntlString, compareStringIncludes } from '@/utility/intl-string.js';
+import { useTemplateRef, ref, watch, nextTick, computed } from "vue";
+import { getScrollContainer } from "@@/js/scroll.js";
+import type { SearchIndexItem } from "@/utility/settings-search-index.js";
+import MkInput from "@/components/MkInput.vue";
+import { i18n } from "@/i18n.js";
+import { useRouter } from "@/router.js";
+import {
+	initIntlString,
+	compareStringIncludes,
+} from "@/utility/intl-string.js";
 
 const props = defineProps<{
 	def: SuperMenuDef[];
@@ -110,21 +147,27 @@ const props = defineProps<{
 initIntlString();
 
 const router = useRouter();
-const rootEl = useTemplateRef('rootEl');
+const rootEl = useTemplateRef("rootEl");
 
-const searchQuery = ref('');
-const rawSearchQuery = ref('');
+const searchQuery = ref("");
+const rawSearchQuery = ref("");
 
 const searchSelectedIndex = ref<null | number>(null);
-const searchResult = ref<{
-	id: string;
-	path: string;
-	label: string;
-	icon?: string;
-	isRoot: boolean;
-	parentLabels: string[];
-}[]>([]);
-const searchIndexItemByIdComputed = computed(() => props.searchIndex && new Map<string, SearchIndexItem>(props.searchIndex.map(i => [i.id, i])));
+const searchResult = ref<
+	{
+		id: string;
+		path: string;
+		label: string;
+		icon?: string;
+		isRoot: boolean;
+		parentLabels: string[];
+	}[]
+>([]);
+const searchIndexItemByIdComputed = computed(
+	() =>
+		props.searchIndex &&
+		new Map<string, SearchIndexItem>(props.searchIndex.map((i) => [i.id, i])),
+);
 
 watch(searchQuery, (value) => {
 	rawSearchQuery.value = value;
@@ -134,7 +177,7 @@ watch(rawSearchQuery, (value) => {
 	searchResult.value = [];
 	searchSelectedIndex.value = null;
 
-	if (value === '') {
+	if (value === "") {
 		return;
 	}
 
@@ -145,19 +188,21 @@ watch(rawSearchQuery, (value) => {
 			let icon: string | undefined = item.icon;
 			const parentLabels: string[] = [];
 
-			for (let current = searchIndexItemById.get(item.parentId ?? '');
+			for (
+				let current = searchIndexItemById.get(item.parentId ?? "");
 				current != null;
-				current = searchIndexItemById.get(current.parentId ?? '')) {
+				current = searchIndexItemById.get(current.parentId ?? "")
+			) {
 				path ??= current.path;
 				icon ??= current.icon;
 				parentLabels.push(current.label);
 			}
 
-			if (_DEV_ && path == null) throw new Error('path is null for ' + item.id);
+			if (_DEV_ && path == null) throw new Error("path is null for " + item.id);
 
 			searchResult.value.push({
 				id: item.id,
-				path: path ?? '/', // never gets `/`
+				path: path ?? "/", // never gets `/`
 				label: item.label,
 				parentLabels: parentLabels.toReversed(),
 				icon,
@@ -184,29 +229,40 @@ function searchOnInput(ev: InputEvent) {
 function searchOnKeyDown(ev: KeyboardEvent) {
 	if (ev.isComposing) return;
 
-	if (ev.key === 'Enter' && searchSelectedIndex.value != null) {
+	if (ev.key === "Enter" && searchSelectedIndex.value != null) {
 		ev.preventDefault();
-		router.push(searchResult.value[searchSelectedIndex.value].path + '#' + searchResult.value[searchSelectedIndex.value].id);
-	} else if (ev.key === 'ArrowDown') {
+		router.push(
+			searchResult.value[searchSelectedIndex.value].path +
+				"#" +
+				searchResult.value[searchSelectedIndex.value].id,
+		);
+	} else if (ev.key === "ArrowDown") {
 		ev.preventDefault();
 		const current = searchSelectedIndex.value ?? -1;
-		searchSelectedIndex.value = current + 1 >= searchResult.value.length ? 0 : current + 1;
-	} else if (ev.key === 'ArrowUp') {
+		searchSelectedIndex.value =
+			current + 1 >= searchResult.value.length ? 0 : current + 1;
+	} else if (ev.key === "ArrowUp") {
 		ev.preventDefault();
 		const current = searchSelectedIndex.value ?? 0;
-		searchSelectedIndex.value = current - 1 < 0 ? searchResult.value.length - 1 : current - 1;
+		searchSelectedIndex.value =
+			current - 1 < 0 ? searchResult.value.length - 1 : current - 1;
 	}
 
-	if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+	if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
 		nextTick(() => {
 			if (!rootEl.value) return;
-			const selectedEl = rootEl.value.querySelector<HTMLElement>('.searchResultItem.selected');
+			const selectedEl = rootEl.value.querySelector<HTMLElement>(
+				".searchResultItem.selected",
+			);
 			if (selectedEl != null) {
 				const scrollContainer = getScrollContainer(selectedEl);
 				if (!scrollContainer) return;
 				scrollContainer.scrollTo({
-					top: selectedEl.offsetTop - scrollContainer.clientHeight / 2 + selectedEl.clientHeight / 2,
-					behavior: 'instant',
+					top:
+						selectedEl.offsetTop -
+						scrollContainer.clientHeight / 2 +
+						selectedEl.clientHeight / 2,
+					behavior: "instant",
 				});
 			}
 		});
@@ -270,7 +326,6 @@ function searchOnKeyDown(ev: KeyboardEvent) {
 					padding-right: 12px;
 					flex-shrink: 1;
 				}
-
 			}
 		}
 	}

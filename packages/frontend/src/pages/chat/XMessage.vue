@@ -4,78 +4,133 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="[$style.root, { [$style.isMe]: isMe }]">
-	<MkAvatar :class="$style.avatar" :user="message.fromUser!" :link="!isMe" :preview="false"/>
-	<div :class="$style.body" @contextmenu.stop="onContextmenu">
-		<div :class="$style.header"><MkUserName v-if="!isMe && prefer.s['chat.showSenderName'] && message.fromUser != null" :user="message.fromUser"/></div>
-		<MkFukidashi :class="$style.fukidashi" :tail="isMe ? 'right' : 'left'" :accented="isMe">
-			<Mfm
-				v-if="message.text"
-				ref="text"
-				class="_selectable"
-				:text="message.text"
-				:parsedNotes="parsed"
-				:i="$i"
-				:nyaize="'respect'"
-				:enableEmojiMenu="true"
-				:enableEmojiMenuReaction="true"
-			/>
-			<MkMediaList v-if="message.file" :mediaList="[message.file]" :class="$style.file"/>
-		</MkFukidashi>
-		<div class="_gaps_s" style="margin: 8px 0;" @click.stop>
-			<SkUrlPreviewGroup :sourceNodes="parsed" :showAsQuote="!message.fromUser.rejectQuotes"/>
-		</div>
-		<div :class="$style.footer">
-			<button class="_textButton" style="color: currentColor;" @click="showMenu"><i class="ti ti-dots-circle-horizontal"></i></button>
-			<MkTime :class="$style.time" :time="message.createdAt"/>
-			<MkA v-if="isSearchResult && 'toRoom' in message && message.toRoom != null" :to="`/chat/room/${message.toRoomId}`">{{ message.toRoom.name }}</MkA>
-			<MkA v-if="isSearchResult && 'toUser' in message && message.toUser != null && isMe" :to="`/chat/user/${message.toUserId}`">@{{ message.toUser.username }}</MkA>
-		</div>
-		<SkTransitionGroup
-			:enterActiveClass="$style.transition_reaction_enterActive"
-			:leaveActiveClass="$style.transition_reaction_leaveActive"
-			:enterFromClass="$style.transition_reaction_enterFrom"
-			:leaveToClass="$style.transition_reaction_leaveTo"
-			:moveClass="$style.transition_reaction_move"
-			tag="div" :class="$style.reactions"
-		>
-			<div v-for="record in message.reactions" :key="record.reaction + record.user.id" :class="[$style.reaction, record.user.id === $i.id ? $style.reactionMy : null]" @click="onReactionClick(record)">
-				<MkAvatar :user="record.user" :link="false" :class="$style.reactionAvatar"/>
-				<MkReactionIcon
-					:withTooltip="true"
-					:reaction="record.reaction.replace(/^:(\w+):$/, ':$1@.:')"
-					:noStyle="true"
-					:class="$style.reactionIcon"
+	<div :class="[$style.root, { [$style.isMe]: isMe }]">
+		<MkAvatar
+			:class="$style.avatar"
+			:user="message.fromUser!"
+			:link="!isMe"
+			:preview="false"
+		/>
+		<div :class="$style.body" @contextmenu.stop="onContextmenu">
+			<div :class="$style.header">
+				<MkUserName
+					v-if="
+						!isMe && prefer.s['chat.showSenderName'] && message.fromUser != null
+					"
+					:user="message.fromUser"
 				/>
 			</div>
-		</SkTransitionGroup>
+			<MkFukidashi
+				:class="$style.fukidashi"
+				:tail="isMe ? 'right' : 'left'"
+				:accented="isMe"
+			>
+				<Mfm
+					v-if="message.text"
+					ref="text"
+					class="_selectable"
+					:text="message.text"
+					:parsedNotes="parsed"
+					:i="$i"
+					:nyaize="'respect'"
+					:enableEmojiMenu="true"
+					:enableEmojiMenuReaction="true"
+				/>
+				<MkMediaList
+					v-if="message.file"
+					:mediaList="[message.file]"
+					:class="$style.file"
+				/>
+			</MkFukidashi>
+			<div class="_gaps_s" style="margin: 8px 0" @click.stop>
+				<SkUrlPreviewGroup
+					:sourceNodes="parsed"
+					:showAsQuote="!message.fromUser.rejectQuotes"
+				/>
+			</div>
+			<div :class="$style.footer">
+				<button
+					class="_textButton"
+					style="color: currentColor"
+					@click="showMenu"
+				>
+					<i class="ti ti-dots-circle-horizontal"></i>
+				</button>
+				<MkTime :class="$style.time" :time="message.createdAt" />
+				<MkA
+					v-if="isSearchResult && 'toRoom' in message && message.toRoom != null"
+					:to="`/chat/room/${message.toRoomId}`"
+					>{{ message.toRoom.name }}</MkA
+				>
+				<MkA
+					v-if="
+						isSearchResult &&
+						'toUser' in message &&
+						message.toUser != null &&
+						isMe
+					"
+					:to="`/chat/user/${message.toUserId}`"
+					>@{{ message.toUser.username }}</MkA
+				>
+			</div>
+			<SkTransitionGroup
+				:enterActiveClass="$style.transition_reaction_enterActive"
+				:leaveActiveClass="$style.transition_reaction_leaveActive"
+				:enterFromClass="$style.transition_reaction_enterFrom"
+				:leaveToClass="$style.transition_reaction_leaveTo"
+				:moveClass="$style.transition_reaction_move"
+				tag="div"
+				:class="$style.reactions"
+			>
+				<div
+					v-for="record in message.reactions"
+					:key="record.reaction + record.user.id"
+					:class="[
+						$style.reaction,
+						record.user.id === $i.id ? $style.reactionMy : null,
+					]"
+					@click="onReactionClick(record)"
+				>
+					<MkAvatar
+						:user="record.user"
+						:link="false"
+						:class="$style.reactionAvatar"
+					/>
+					<MkReactionIcon
+						:withTooltip="true"
+						:reaction="record.reaction.replace(/^:(\w+):$/, ':$1@.:')"
+						:noStyle="true"
+						:class="$style.reactionIcon"
+					/>
+				</div>
+			</SkTransitionGroup>
+		</div>
 	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { computed, defineAsyncComponent, provide } from 'vue';
-import * as mfm from 'mfm-js';
-import * as Misskey from 'misskey-js';
-import { url } from '@@/js/config.js';
-import { isLink } from '@@/js/is-link.js';
-import type { MenuItem } from '@/types/menu.js';
-import type { NormalizedChatMessage } from './room.vue';
-import { ensureSignin } from '@/i.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { i18n } from '@/i18n.js';
-import MkFukidashi from '@/components/MkFukidashi.vue';
-import * as os from '@/os.js';
-import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
-import MkMediaList from '@/components/MkMediaList.vue';
-import { reactionPicker } from '@/utility/reaction-picker.js';
-import * as sound from '@/utility/sound.js';
-import MkReactionIcon from '@/components/MkReactionIcon.vue';
-import { prefer } from '@/preferences.js';
-import { DI } from '@/di.js';
-import { getHTMLElementOrNull } from '@/utility/get-dom-node-or-null.js';
-import SkTransitionGroup from '@/components/SkTransitionGroup.vue';
-import SkUrlPreviewGroup from '@/components/SkUrlPreviewGroup.vue';
+import { computed, defineAsyncComponent, provide } from "vue";
+import * as mfm from "mfm-js";
+import * as Misskey from "misskey-js";
+import { url } from "@@/js/config.js";
+import { isLink } from "@@/js/is-link.js";
+import type { MenuItem } from "@/types/menu.js";
+import type { NormalizedChatMessage } from "./room.vue";
+import { ensureSignin } from "@/i.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { i18n } from "@/i18n.js";
+import MkFukidashi from "@/components/MkFukidashi.vue";
+import * as os from "@/os.js";
+import { copyToClipboard } from "@/utility/copy-to-clipboard.js";
+import MkMediaList from "@/components/MkMediaList.vue";
+import { reactionPicker } from "@/utility/reaction-picker.js";
+import * as sound from "@/utility/sound.js";
+import MkReactionIcon from "@/components/MkReactionIcon.vue";
+import { prefer } from "@/preferences.js";
+import { DI } from "@/di.js";
+import { getHTMLElementOrNull } from "@/utility/get-dom-node-or-null.js";
+import SkTransitionGroup from "@/components/SkTransitionGroup.vue";
+import SkUrlPreviewGroup from "@/components/SkUrlPreviewGroup.vue";
 
 const $i = ensureSignin();
 
@@ -85,45 +140,51 @@ const props = defineProps<{
 }>();
 
 const isMe = computed(() => props.message.fromUserId === $i.id);
-const parsed = computed(() => props.message.text ? mfm.parse(props.message.text) : []);
+const parsed = computed(() =>
+	props.message.text ? mfm.parse(props.message.text) : [],
+);
 
 provide(DI.mfmEmojiReactCallback, (reaction) => {
-	if ($i.policies.chatAvailability !== 'available') return;
+	if ($i.policies.chatAvailability !== "available") return;
 
-	sound.playMisskeySfx('reaction');
-	misskeyApi('chat/messages/react', {
+	sound.playMisskeySfx("reaction");
+	misskeyApi("chat/messages/react", {
 		messageId: props.message.id,
 		reaction: reaction,
 	});
 });
 
 function react(ev: MouseEvent) {
-	if ($i.policies.chatAvailability !== 'available') return;
+	if ($i.policies.chatAvailability !== "available") return;
 
 	const targetEl = getHTMLElementOrNull(ev.currentTarget ?? ev.target);
 	if (!targetEl) return;
 
 	reactionPicker.show(targetEl, null, async (reaction) => {
-		sound.playMisskeySfx('reaction');
-		misskeyApi('chat/messages/react', {
+		sound.playMisskeySfx("reaction");
+		misskeyApi("chat/messages/react", {
 			messageId: props.message.id,
 			reaction: reaction,
 		});
 	});
 }
 
-function onReactionClick(record: Misskey.entities.ChatMessage['reactions'][0]) {
-	if ($i.policies.chatAvailability !== 'available') return;
+function onReactionClick(record: Misskey.entities.ChatMessage["reactions"][0]) {
+	if ($i.policies.chatAvailability !== "available") return;
 
 	if (record.user.id === $i.id) {
-		misskeyApi('chat/messages/unreact', {
+		misskeyApi("chat/messages/unreact", {
 			messageId: props.message.id,
 			reaction: record.reaction,
 		});
 	} else {
-		if (!props.message.reactions.some(r => r.user.id === $i.id && r.reaction === record.reaction)) {
-			sound.playMisskeySfx('reaction');
-			misskeyApi('chat/messages/react', {
+		if (
+			!props.message.reactions.some(
+				(r) => r.user.id === $i.id && r.reaction === record.reaction,
+			)
+		) {
+			sound.playMisskeySfx("reaction");
+			misskeyApi("chat/messages/react", {
 				messageId: props.message.id,
 				reaction: record.reaction,
 			});
@@ -133,7 +194,7 @@ function onReactionClick(record: Misskey.entities.ChatMessage['reactions'][0]) {
 
 function onContextmenu(ev: MouseEvent) {
 	if (ev.target && isLink(ev.target as HTMLElement)) return;
-	if (window.getSelection()?.toString() !== '') return;
+	if (window.getSelection()?.toString() !== "") return;
 
 	showMenu(ev, true);
 }
@@ -141,39 +202,39 @@ function onContextmenu(ev: MouseEvent) {
 function showMenu(ev: MouseEvent, contextmenu = false) {
 	const menu: MenuItem[] = [];
 
-	if (!isMe.value && $i.policies.chatAvailability === 'available') {
+	if (!isMe.value && $i.policies.chatAvailability === "available") {
 		menu.push({
 			text: i18n.ts.reaction,
-			icon: 'ti ti-mood-plus',
+			icon: "ti ti-mood-plus",
 			action: (ev) => {
 				react(ev);
 			},
 		});
 
 		menu.push({
-			type: 'divider',
+			type: "divider",
 		});
 	}
 
 	menu.push({
 		text: i18n.ts.copyContent,
-		icon: 'ti ti-copy',
+		icon: "ti ti-copy",
 		action: () => {
-			copyToClipboard(props.message.text ?? '');
+			copyToClipboard(props.message.text ?? "");
 		},
 	});
 
 	menu.push({
-		type: 'divider',
+		type: "divider",
 	});
 
-	if (isMe.value && $i.policies.chatAvailability === 'available') {
+	if (isMe.value && $i.policies.chatAvailability === "available") {
 		menu.push({
 			text: i18n.ts.delete,
-			icon: 'ti ti-trash',
+			icon: "ti ti-trash",
 			danger: true,
 			action: () => {
-				misskeyApi('chat/messages/delete', {
+				misskeyApi("chat/messages/delete", {
 					messageId: props.message.id,
 				});
 			},
@@ -183,15 +244,21 @@ function showMenu(ev: MouseEvent, contextmenu = false) {
 	if (!isMe.value && props.message.fromUser != null) {
 		menu.push({
 			text: i18n.ts.reportAbuse,
-			icon: 'ti ti-exclamation-circle',
+			icon: "ti ti-exclamation-circle",
 			action: () => {
 				const localUrl = `${url}/chat/messages/${props.message.id}`;
-				const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkAbuseReportWindow.vue')), {
-					user: props.message.fromUser!,
-					initialComment: `${localUrl}\n-----\n`,
-				}, {
-					closed: () => dispose(),
-				});
+				const { dispose } = os.popup(
+					defineAsyncComponent(
+						() => import("@/components/MkAbuseReportWindow.vue"),
+					),
+					{
+						user: props.message.fromUser!,
+						initialComment: `${localUrl}\n-----\n`,
+					},
+					{
+						closed: () => dispose(),
+					},
+				);
 			},
 		});
 	}
@@ -208,7 +275,9 @@ function showMenu(ev: MouseEvent, contextmenu = false) {
 .transition_reaction_move,
 .transition_reaction_enterActive,
 .transition_reaction_leaveActive {
-	transition: opacity 0.2s cubic-bezier(0,.5,.5,1), transform 0.2s cubic-bezier(0,.5,.5,1) !important;
+	transition:
+		opacity 0.2s cubic-bezier(0, 0.5, 0.5, 1),
+		transform 0.2s cubic-bezier(0, 0.5, 0.5, 1) !important;
 }
 .transition_reaction_enterFrom,
 .transition_reaction_leaveTo {

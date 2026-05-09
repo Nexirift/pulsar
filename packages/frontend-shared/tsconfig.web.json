@@ -16,17 +16,8 @@
 			"@/*": ["./*"],
 			"@@/*": ["./*"]
 		},
-		"typeRoots": [
-			"./@types",
-			"./node_modules/@types"
-		]
+		"typeRoots": ["./@types", "./node_modules/@types"]
 	},
-	"include": [
-		"./@types/**/*.ts",
-		"./js/**/*"
-	],
-	"exclude": [
-		"node_modules",
-		"js-built"
-	]
+	"include": ["./@types/**/*.ts", "./js/**/*"],
+	"exclude": ["node_modules", "js-built"]
 }

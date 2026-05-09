@@ -3,19 +3,19 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { In } from 'typeorm';
-import type Logger from '@/logger.js';
-import { bindThis } from '@/decorators.js';
-import { MetaService } from '@/core/MetaService.js';
-import { RoleService } from '@/core/RoleService.js';
-import { EmailService } from '@/core/EmailService.js';
-import { MiUser, type UserProfilesRepository } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
-import { SystemWebhookService } from '@/core/SystemWebhookService.js';
-import { AnnouncementService } from '@/core/AnnouncementService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { In } from "typeorm";
+import type Logger from "@/logger.js";
+import { bindThis } from "@/decorators.js";
+import { MetaService } from "@/core/MetaService.js";
+import { RoleService } from "@/core/RoleService.js";
+import { EmailService } from "@/core/EmailService.js";
+import { MiUser, type UserProfilesRepository } from "@/models/_.js";
+import { DI } from "@/di-symbols.js";
+import { SystemWebhookService } from "@/core/SystemWebhookService.js";
+import { AnnouncementService } from "@/core/AnnouncementService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { QueueLoggerService } from "../QueueLoggerService.js";
 
 // モデレーターが不在と判断する日付の閾値
 const MODERATOR_INACTIVITY_LIMIT_DAYS = 7;
@@ -38,20 +38,28 @@ export type ModeratorInactivityRemainingTime = {
 	asDays: number;
 };
 
-function generateModeratorInactivityMail(remainingTime: ModeratorInactivityRemainingTime) {
-	const subject = 'Moderator Inactivity Warning';
+function generateModeratorInactivityMail(
+	remainingTime: ModeratorInactivityRemainingTime,
+) {
+	const subject = "Moderator Inactivity Warning";
 
-	const timeVariant = remainingTime.asDays === 0 ? `${remainingTime.asHours} hours` : `${remainingTime.asDays} days`;
-	const timeVariantJa = remainingTime.asDays === 0 ? `${remainingTime.asHours} 時間` : `${remainingTime.asDays} 日間`;
+	const timeVariant =
+		remainingTime.asDays === 0
+			? `${remainingTime.asHours} hours`
+			: `${remainingTime.asDays} days`;
+	const timeVariantJa =
+		remainingTime.asDays === 0
+			? `${remainingTime.asHours} 時間`
+			: `${remainingTime.asDays} 日間`;
 	const message = [
-		'To Moderators,',
-		'',
+		"To Moderators,",
+		"",
 		`No moderator has been active for a period of time. After further ${timeVariant} of inactivity, the instance will switch to invitation only.`,
-		'If you do not wish that to happen, please log into Pulsar to update your last active date and time.',
+		"If you do not wish that to happen, please log into Pulsar to update your last active date and time.",
 	];
 
-	const html = message.join('<br>');
-	const text = message.join('\n');
+	const html = message.join("<br>");
+	const text = message.join("\n");
 
 	return {
 		subject,
@@ -61,17 +69,17 @@ function generateModeratorInactivityMail(remainingTime: ModeratorInactivityRemai
 }
 
 function generateInvitationOnlyChangedMail() {
-	const subject = 'Switch to invitation only';
+	const subject = "Switch to invitation only";
 
 	const message = [
-		'To Moderators,',
-		'',
+		"To Moderators,",
+		"",
 		`The instance has been switched to invitation only, because no moderator activity was detected for ${MODERATOR_INACTIVITY_LIMIT_DAYS} days.`,
-		'To change this, please log in and use the control panel.',
+		"To change this, please log in and use the control panel.",
 	];
 
-	const html = message.join('<br>');
-	const text = message.join('\n');
+	const html = message.join("<br>");
+	const text = message.join("\n");
 
 	return {
 		subject,
@@ -95,43 +103,56 @@ export class CheckModeratorsActivityProcessorService {
 		private queueLoggerService: QueueLoggerService,
 		private readonly timeService: TimeService,
 	) {
-		this.logger = this.queueLoggerService.logger.createSubLogger('check-moderators-activity');
+		this.logger = this.queueLoggerService.logger.createSubLogger(
+			"check-moderators-activity",
+		);
 	}
 
 	@bindThis
 	public async process(): Promise<void> {
-		this.logger.debug('start.');
+		this.logger.debug("start.");
 
 		const meta = await this.metaService.fetch(false);
 
 		if (!meta.disableRegistration) {
 			if (meta.disableInactivity) {
-				this.logger.debug('moderation inactivity check is disabled.');
+				this.logger.debug("moderation inactivity check is disabled.");
 			} else {
 				await this.processImpl();
 			}
 		} else {
-			this.logger.debug('is already invitation only.');
+			this.logger.debug("is already invitation only.");
 		}
 
-		this.logger.debug('finish.');
+		this.logger.debug("finish.");
 	}
 
 	@bindThis
 	private async processImpl() {
 		const evaluateResult = await this.evaluateModeratorsInactiveDays();
 		if (evaluateResult.isModeratorsInactive) {
-			this.logger.warn(`The moderator has been inactive for ${MODERATOR_INACTIVITY_LIMIT_DAYS} days. We will move to invitation only.`);
+			this.logger.warn(
+				`The moderator has been inactive for ${MODERATOR_INACTIVITY_LIMIT_DAYS} days. We will move to invitation only.`,
+			);
 
 			await this.changeToInvitationOnly();
 			await this.notifyChangeToInvitationOnly();
 		} else {
 			const remainingTime = evaluateResult.remainingTime;
 			if (remainingTime.asDays <= MODERATOR_INACTIVITY_WARNING_REMAINING_DAYS) {
-				const timeVariant = remainingTime.asDays === 0 ? `${remainingTime.asHours} hours` : `${remainingTime.asDays} days`;
-				this.logger.warn(`A moderator has been inactive for a period of time. If you are inactive for an additional ${timeVariant}, it will switch to invitation only.`);
+				const timeVariant =
+					remainingTime.asDays === 0
+						? `${remainingTime.asHours} hours`
+						: `${remainingTime.asDays} days`;
+				this.logger.warn(
+					`A moderator has been inactive for a period of time. If you are inactive for an additional ${timeVariant}, it will switch to invitation only.`,
+				);
 
-				if (remainingTime.asHours % MODERATOR_INACTIVITY_WARNING_NOTIFY_INTERVAL_HOURS === 0) {
+				if (
+					remainingTime.asHours %
+						MODERATOR_INACTIVITY_WARNING_NOTIFY_INTERVAL_HOURS ===
+					0
+				) {
 					// ジョブの実行頻度と同等だと通知が多すぎるため期限から6時間ごとに通知する
 					// つまり、のこり2日を切ったら6時間ごとに通知が送られる
 					await this.notifyInactiveModeratorsWarning(remainingTime);
@@ -174,18 +195,22 @@ export class CheckModeratorsActivityProcessorService {
 		const inactivePeriod = new Date(today);
 		inactivePeriod.setDate(today.getDate() - MODERATOR_INACTIVITY_LIMIT_DAYS);
 
-		const moderators = await this.fetchModerators()
-			.then(it => it.filter(it => it.lastActiveDate != null));
+		const moderators = await this.fetchModerators().then((it) =>
+			it.filter((it) => it.lastActiveDate != null),
+		);
 		const inactiveModerators = moderators
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			.filter(it => it.lastActiveDate!.getTime() < inactivePeriod.getTime());
+			.filter((it) => it.lastActiveDate!.getTime() < inactivePeriod.getTime());
 
 		// 残りの猶予を示したいので、最終アクティブ日時が一番若いモデレータの日数を基準に猶予を計算する
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		const newestLastActiveDate = new Date(Math.max(...moderators.map(it => it.lastActiveDate!.getTime())));
-		const remainingTime = newestLastActiveDate.getTime() - inactivePeriod.getTime();
+		const newestLastActiveDate = new Date(
+			Math.max(...moderators.map((it) => it.lastActiveDate!.getTime())),
+		);
+		const remainingTime =
+			newestLastActiveDate.getTime() - inactivePeriod.getTime();
 		const remainingTimeAsDays = Math.floor(remainingTime / ONE_DAY_MILLI_SEC);
-		const remainingTimeAsHours = Math.floor((remainingTime / ONE_HOUR_MILLI_SEC));
+		const remainingTimeAsHours = Math.floor(remainingTime / ONE_HOUR_MILLI_SEC);
 
 		return {
 			isModeratorsInactive: inactiveModerators.length === moderators.length,
@@ -204,26 +229,33 @@ export class CheckModeratorsActivityProcessorService {
 	}
 
 	@bindThis
-	public async notifyInactiveModeratorsWarning(remainingTime: ModeratorInactivityRemainingTime) {
+	public async notifyInactiveModeratorsWarning(
+		remainingTime: ModeratorInactivityRemainingTime,
+	) {
 		// -- モデレータへのメール送信
 
 		const moderators = await this.fetchModerators();
 		const moderatorProfiles = await this.userProfilesRepository
-			.findBy({ userId: In(moderators.map(it => it.id)) })
-			.then(it => new Map(it.map(it => [it.userId, it])));
+			.findBy({ userId: In(moderators.map((it) => it.id)) })
+			.then((it) => new Map(it.map((it) => [it.userId, it])));
 
 		const mail = generateModeratorInactivityMail(remainingTime);
 		for (const moderator of moderators) {
 			const profile = moderatorProfiles.get(moderator.id);
 			if (profile && profile.email && profile.emailVerified) {
-				this.emailService.sendEmail(profile.email, mail.subject, mail.html, mail.text);
+				this.emailService.sendEmail(
+					profile.email,
+					mail.subject,
+					mail.html,
+					mail.text,
+				);
 			}
 		}
 
 		// -- SystemWebhook
 
 		return this.systemWebhookService.enqueueSystemWebhook(
-			'inactiveModeratorsWarning',
+			"inactiveModeratorsWarning",
 			{ remainingTime: remainingTime },
 		);
 	}
@@ -234,8 +266,8 @@ export class CheckModeratorsActivityProcessorService {
 
 		const moderators = await this.fetchModerators();
 		const moderatorProfiles = await this.userProfilesRepository
-			.findBy({ userId: In(moderators.map(it => it.id)) })
-			.then(it => new Map(it.map(it => [it.userId, it])));
+			.findBy({ userId: In(moderators.map((it) => it.id)) })
+			.then((it) => new Map(it.map((it) => [it.userId, it])));
 
 		const mail = generateInvitationOnlyChangedMail();
 		for (const moderator of moderators) {
@@ -249,14 +281,19 @@ export class CheckModeratorsActivityProcessorService {
 
 			const profile = moderatorProfiles.get(moderator.id);
 			if (profile && profile.email && profile.emailVerified) {
-				this.emailService.sendEmail(profile.email, mail.subject, mail.html, mail.text);
+				this.emailService.sendEmail(
+					profile.email,
+					mail.subject,
+					mail.html,
+					mail.text,
+				);
 			}
 		}
 
 		// -- SystemWebhook
 
 		return this.systemWebhookService.enqueueSystemWebhook(
-			'inactiveModeratorsInvitationOnlyChanged',
+			"inactiveModeratorsInvitationOnlyChanged",
 			{},
 		);
 	}

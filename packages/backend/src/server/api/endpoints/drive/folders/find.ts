@@ -3,28 +3,30 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { IsNull } from 'typeorm';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { DriveFoldersRepository } from '@/models/_.js';
-import { DriveFolderEntityService } from '@/core/entities/DriveFolderEntityService.js';
-import { DI } from '@/di-symbols.js';
-import { promiseMap } from '@/misc/promise-map.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { IsNull } from "typeorm";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { DriveFoldersRepository } from "@/models/_.js";
+import { DriveFolderEntityService } from "@/core/entities/DriveFolderEntityService.js";
+import { DI } from "@/di-symbols.js";
+import { promiseMap } from "@/misc/promise-map.js";
 
 export const meta = {
-	tags: ['drive'],
+	tags: ["drive"],
 
 	requireCredential: true,
 
-	kind: 'read:drive',
+	kind: "read:drive",
 
 	res: {
-		type: 'array',
-		optional: false, nullable: false,
+		type: "array",
+		optional: false,
+		nullable: false,
 		items: {
-			type: 'object',
-			optional: false, nullable: false,
-			ref: 'DriveFolder',
+			type: "object",
+			optional: false,
+			nullable: false,
+			ref: "DriveFolder",
 		},
 	},
 
@@ -36,16 +38,22 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		name: { type: 'string' },
-		parentId: { type: 'string', format: 'misskey:id', nullable: true, default: null },
+		name: { type: "string" },
+		parentId: {
+			type: "string",
+			format: "misskey:id",
+			nullable: true,
+			default: null,
+		},
 	},
-	required: ['name'],
+	required: ["name"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.driveFoldersRepository)
 		private driveFoldersRepository: DriveFoldersRepository,
@@ -59,7 +67,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				parentId: ps.parentId ?? IsNull(),
 			});
 
-			return await promiseMap(folders, async folder => await this.driveFolderEntityService.pack(folder), { limit: 4 });
+			return await promiseMap(
+				folders,
+				async (folder) => await this.driveFolderEntityService.pack(folder),
+				{ limit: 4 },
+			);
 		});
 	}
 }

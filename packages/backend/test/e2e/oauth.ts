@@ -8,21 +8,21 @@
  * and not regressed by version updates or potential migration to another library.
  */
 
-process.env.NODE_ENV = 'test';
+process.env.NODE_ENV = "test";
 
-import * as assert from 'assert';
+import * as assert from "assert";
 import {
 	AuthorizationCode,
 	type AuthorizationTokenConfig,
 	ClientCredentials,
 	ModuleOptions,
 	ResourceOwnerPassword,
-} from 'simple-oauth2';
-import pkceChallenge from 'pkce-challenge';
-import { load as cheerio } from 'cheerio/slim';
-import Fastify, { type FastifyInstance, type FastifyReply } from 'fastify';
-import { api, port, sendEnvUpdateRequest, signup } from '../utils.js';
-import type * as misskey from 'misskey-js';
+} from "simple-oauth2";
+import pkceChallenge from "pkce-challenge";
+import { load as cheerio } from "cheerio/slim";
+import Fastify, { type FastifyInstance, type FastifyReply } from "fastify";
+import { api, port, sendEnvUpdateRequest, signup } from "../utils.js";
+import type * as misskey from "misskey-js";
 
 const host = `http://127.0.0.1:${port}`;
 
@@ -31,10 +31,10 @@ const redirect_uri = `http://127.0.0.1:${clientPort}/redirect`;
 
 const basicAuthParams: AuthorizationParamsExtended = {
 	redirect_uri,
-	scope: 'write:notes',
-	state: 'state',
-	code_challenge: 'code',
-	code_challenge_method: 'S256',
+	scope: "write:notes",
+	state: "state",
+	code_challenge: "code",
+	code_challenge_method: "S256",
 };
 
 interface AuthorizationParamsExtended {
@@ -53,78 +53,102 @@ interface GetTokenError {
 	data: {
 		payload: {
 			error: string;
-		}
-	}
-}
-
-const clientConfig: ModuleOptions<'client_id'> = {
-	client: {
-		id: `http://127.0.0.1:${clientPort}/`,
-		secret: '',
-	},
-	auth: {
-		tokenHost: host,
-		tokenPath: '/oauth/token',
-		authorizePath: '/oauth/authorize',
-	},
-	options: {
-		authorizationMethod: 'body',
-	},
-};
-
-function getMeta(html: string): { transactionId: string | undefined, clientName: string | undefined, clientLogo: string | undefined } {
-	const fragment = cheerio(html);
-	return {
-		transactionId: fragment('meta[name="misskey:oauth:transaction-id"][content]').attr('content'),
-		clientName: fragment('meta[name="misskey:oauth:client-name"][content]').attr('content'),
-		clientLogo: fragment('meta[name="misskey:oauth:client-logo"][content]').attr('content'),
+		};
 	};
 }
 
-function fetchDecision(transactionId: string, user: misskey.entities.SignupResponse, { cancel }: { cancel?: boolean } = {}): Promise<Response> {
-	return fetch(new URL('/oauth/decision', host), {
-		method: 'post',
+const clientConfig: ModuleOptions<"client_id"> = {
+	client: {
+		id: `http://127.0.0.1:${clientPort}/`,
+		secret: "",
+	},
+	auth: {
+		tokenHost: host,
+		tokenPath: "/oauth/token",
+		authorizePath: "/oauth/authorize",
+	},
+	options: {
+		authorizationMethod: "body",
+	},
+};
+
+function getMeta(html: string): {
+	transactionId: string | undefined;
+	clientName: string | undefined;
+	clientLogo: string | undefined;
+} {
+	const fragment = cheerio(html);
+	return {
+		transactionId: fragment(
+			'meta[name="misskey:oauth:transaction-id"][content]',
+		).attr("content"),
+		clientName: fragment(
+			'meta[name="misskey:oauth:client-name"][content]',
+		).attr("content"),
+		clientLogo: fragment(
+			'meta[name="misskey:oauth:client-logo"][content]',
+		).attr("content"),
+	};
+}
+
+function fetchDecision(
+	transactionId: string,
+	user: misskey.entities.SignupResponse,
+	{ cancel }: { cancel?: boolean } = {},
+): Promise<Response> {
+	return fetch(new URL("/oauth/decision", host), {
+		method: "post",
 		body: new URLSearchParams({
 			transaction_id: transactionId,
 			login_token: user.token,
-			cancel: cancel ? 'cancel' : '',
+			cancel: cancel ? "cancel" : "",
 		}),
-		redirect: 'manual',
+		redirect: "manual",
 		headers: {
-			'content-type': 'application/x-www-form-urlencoded',
+			"content-type": "application/x-www-form-urlencoded",
 		},
 	});
 }
 
-async function fetchDecisionFromResponse(response: Response, user: misskey.entities.SignupResponse, { cancel }: { cancel?: boolean } = {}): Promise<Response> {
+async function fetchDecisionFromResponse(
+	response: Response,
+	user: misskey.entities.SignupResponse,
+	{ cancel }: { cancel?: boolean } = {},
+): Promise<Response> {
 	const { transactionId } = getMeta(await response.text());
 	assert.ok(transactionId);
 
 	return await fetchDecision(transactionId, user, { cancel });
 }
 
-async function fetchAuthorizationCode(user: misskey.entities.SignupResponse, scope: string, code_challenge: string): Promise<{ client: AuthorizationCode, code: string }> {
+async function fetchAuthorizationCode(
+	user: misskey.entities.SignupResponse,
+	scope: string,
+	code_challenge: string,
+): Promise<{ client: AuthorizationCode; code: string }> {
 	const client = new AuthorizationCode(clientConfig);
 
-	const response = await fetch(client.authorizeURL({
-		redirect_uri,
-		scope,
-		state: 'state',
-		code_challenge,
-		code_challenge_method: 'S256',
-	} as AuthorizationParamsExtended));
+	const response = await fetch(
+		client.authorizeURL({
+			redirect_uri,
+			scope,
+			state: "state",
+			code_challenge,
+			code_challenge_method: "S256",
+		} as AuthorizationParamsExtended),
+	);
 	assert.strictEqual(response.status, 200);
 
 	const decisionResponse = await fetchDecisionFromResponse(response, user);
 	assert.strictEqual(decisionResponse.status, 302);
 
-	const locationHeader = decisionResponse.headers.get('location');
+	const locationHeader = decisionResponse.headers.get("location");
 	assert.ok(locationHeader);
 
 	const location = new URL(locationHeader);
-	assert.ok(location.searchParams.has('code'));
+	assert.ok(location.searchParams.has("code"));
 
-	const code = new URL(location).searchParams.get('code');
+	const code = new URL(location).searchParams.get("code");
 	assert.ok(code);
 
 	return { client, code };
@@ -133,28 +157,32 @@ async function fetchAuthorizationCode(user: misskey.entities.SignupResponse, sco
 function assertIndirectError(response: Response, error: string): void {
 	assert.strictEqual(response.status, 302);
 
-	const locationHeader = response.headers.get('location');
+	const locationHeader = response.headers.get("location");
 	assert.ok(locationHeader);
 
 	const location = new URL(locationHeader);
-	assert.strictEqual(location.searchParams.get('error'), error);
+	assert.strictEqual(location.searchParams.get("error"), error);
 
 	// https://datatracker.ietf.org/doc/html/rfc9207#name-response-parameter-iss
-	assert.strictEqual(location.searchParams.get('iss'), 'http://misskey.local');
+	assert.strictEqual(location.searchParams.get("iss"), "http://misskey.local");
 	// https://datatracker.ietf.org/doc/html/rfc6749.html#section-4.1.2.1
-	assert.ok(location.searchParams.has('state'));
+	assert.ok(location.searchParams.has("state"));
 }
 
-async function assertDirectError(response: Response, status: number, error: string): Promise<void> {
+async function assertDirectError(
+	response: Response,
+	status: number,
+	error: string,
+): Promise<void> {
 	assert.strictEqual(response.status, status);
 
-	const data = await response.json() as any;
+	const data = (await response.json()) as any;
 	assert.strictEqual(data.error, error);
 }
 
-describe('OAuth', () => {
-	test('fake pass', () => {
-		assert.ok(true, 'fake pass');
+describe("OAuth", () => {
+	test("fake pass", () => {
+		assert.ok(true, "fake pass");
 	});
 });
 

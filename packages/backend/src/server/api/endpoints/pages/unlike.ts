@@ -3,32 +3,32 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import type { PagesRepository, PageLikesRepository } from '@/models/_.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { DI } from '@/di-symbols.js';
-import { ApiError } from '../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import type { PagesRepository, PageLikesRepository } from "@/models/_.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { DI } from "@/di-symbols.js";
+import { ApiError } from "../../error.js";
 
 export const meta = {
-	tags: ['pages'],
+	tags: ["pages"],
 
 	requireCredential: true,
 
 	prohibitMoved: true,
 
-	kind: 'write:page-likes',
+	kind: "write:page-likes",
 
 	errors: {
 		noSuchPage: {
-			message: 'No such page.',
-			code: 'NO_SUCH_PAGE',
-			id: 'a0d41e20-1993-40bd-890e-f6e560ae648e',
+			message: "No such page.",
+			code: "NO_SUCH_PAGE",
+			id: "a0d41e20-1993-40bd-890e-f6e560ae648e",
 		},
 
 		notLiked: {
-			message: 'You have not liked that page.',
-			code: 'NOT_LIKED',
-			id: 'f5e586b0-ce93-4050-b0e3-7f31af5259ee',
+			message: "You have not liked that page.",
+			code: "NOT_LIKED",
+			id: "f5e586b0-ce93-4050-b0e3-7f31af5259ee",
 		},
 	},
 
@@ -40,15 +40,16 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		pageId: { type: 'string', format: 'misskey:id' },
+		pageId: { type: "string", format: "misskey:id" },
 	},
-	required: ['pageId'],
+	required: ["pageId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.pagesRepository)
 		private pagesRepository: PagesRepository,
@@ -74,7 +75,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// Delete like
 			await this.pageLikesRepository.delete(exist.id);
 
-			this.pagesRepository.decrement({ id: page.id }, 'likedCount', 1);
+			this.pagesRepository.decrement({ id: page.id }, "likedCount", 1);
 		});
 	}
 }

@@ -6,39 +6,57 @@ Selectable entry on the "Following" feed, displaying a user with their most rece
 -->
 
 <template>
-<SkMutedNote :note="note" :mutedClass="$style.muted" :expandedClass="$style.root" @click="$emit('select', note.user)">
-	<div :class="$style.avatar">
-		<MkAvatar :class="$style.icon" :user="note.user" indictor/>
-	</div>
-	<div :class="$style.contents">
-		<header :class="$style.header">
-			<MkA v-user-preview="note.user.id" :class="$style.headerName" :to="userPage(note.user)">
-				<MkUserName :user="note.user"/>
-			</MkA>
-			<MkA :to="notePage(note)">
-				<MkTime :time="note.createdAt" :class="$style.headerTime" colored/>
-			</MkA>
-		</header>
-		<div>
-			<Mfm :class="$style.text" :text="getNoteSummary(note, false)" :isBlock="true" :plain="true" :nowrap="false" :isNote="true" nyaize="respect" :author="note.user"/>
+	<SkMutedNote
+		:note="note"
+		:mutedClass="$style.muted"
+		:expandedClass="$style.root"
+		@click="$emit('select', note.user)"
+	>
+		<div :class="$style.avatar">
+			<MkAvatar :class="$style.icon" :user="note.user" indictor />
 		</div>
-	</div>
-</SkMutedNote>
+		<div :class="$style.contents">
+			<header :class="$style.header">
+				<MkA
+					v-user-preview="note.user.id"
+					:class="$style.headerName"
+					:to="userPage(note.user)"
+				>
+					<MkUserName :user="note.user" />
+				</MkA>
+				<MkA :to="notePage(note)">
+					<MkTime :time="note.createdAt" :class="$style.headerTime" colored />
+				</MkA>
+			</header>
+			<div>
+				<Mfm
+					:class="$style.text"
+					:text="getNoteSummary(note, false)"
+					:isBlock="true"
+					:plain="true"
+					:nowrap="false"
+					:isNote="true"
+					nyaize="respect"
+					:author="note.user"
+				/>
+			</div>
+		</div>
+	</SkMutedNote>
 </template>
 
 <script lang="ts" setup>
-import * as Misskey from 'misskey-js';
-import { getNoteSummary } from '@/utility/get-note-summary.js';
-import { userPage } from '@/filters/user.js';
-import { notePage } from '@/filters/note.js';
-import SkMutedNote from '@/components/SkMutedNote.vue';
+import * as Misskey from "misskey-js";
+import { getNoteSummary } from "@/utility/get-note-summary.js";
+import { userPage } from "@/filters/user.js";
+import { notePage } from "@/filters/note.js";
+import SkMutedNote from "@/components/SkMutedNote.vue";
 
 defineProps<{
-	note: Misskey.entities.Note,
+	note: Misskey.entities.Note;
 }>();
 
 defineEmits<{
-	(event: 'select', user: Misskey.entities.UserLite): void
+	(event: "select", user: Misskey.entities.UserLite): void;
 }>();
 </script>
 

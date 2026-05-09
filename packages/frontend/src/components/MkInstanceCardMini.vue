@@ -4,22 +4,35 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="[$style.root, { yellow: instance.isNotResponding, red: instance.isBlocked, gray: instance.isSuspended, blue: instance.isSilenced }]">
-	<img class="icon" :src="getInstanceIcon(instance)" alt="" loading="lazy"/>
-	<div class="body">
-		<span class="host">{{ instance.name ?? instance.host }}</span>
-		<span class="sub _monospace"><b>{{ instance.host }}</b> / {{ instance.softwareName || '?' }} {{ instance.softwareVersion }}</span>
+	<div
+		:class="[
+			$style.root,
+			{
+				yellow: instance.isNotResponding,
+				red: instance.isBlocked,
+				gray: instance.isSuspended,
+				blue: instance.isSilenced,
+			},
+		]"
+	>
+		<img class="icon" :src="getInstanceIcon(instance)" alt="" loading="lazy" />
+		<div class="body">
+			<span class="host">{{ instance.name ?? instance.host }}</span>
+			<span class="sub _monospace"
+				><b>{{ instance.host }}</b> / {{ instance.softwareName || "?" }}
+				{{ instance.softwareVersion }}</span
+			>
+		</div>
+		<MkMiniChart v-if="chartValues" class="chart" :src="chartValues" />
 	</div>
-	<MkMiniChart v-if="chartValues" class="chart" :src="chartValues"/>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import MkMiniChart from '@/components/MkMiniChart.vue';
-import { misskeyApiGet } from '@/utility/misskey-api.js';
-import { getProxiedImageUrlNullable } from '@/utility/media-proxy.js';
+import { ref } from "vue";
+import * as Misskey from "misskey-js";
+import MkMiniChart from "@/components/MkMiniChart.vue";
+import { misskeyApiGet } from "@/utility/misskey-api.js";
+import { getProxiedImageUrlNullable } from "@/utility/media-proxy.js";
 
 const props = defineProps<{
 	instance: Misskey.entities.FederationInstance;
@@ -27,14 +40,22 @@ const props = defineProps<{
 
 const chartValues = ref<number[] | null>(null);
 
-misskeyApiGet('charts/instance', { host: props.instance.host, limit: 16 + 1, span: 'day' }).then(res => {
+misskeyApiGet("charts/instance", {
+	host: props.instance.host,
+	limit: 16 + 1,
+	span: "day",
+}).then((res) => {
 	// 今日のぶんの値はまだ途中の値であり、それも含めると大抵の場合前日よりも下降しているようなグラフになってしまうため今日は弾く
 	res.requests.received.splice(0, 1);
 	chartValues.value = res.requests.received;
 });
 
 function getInstanceIcon(instance): string {
-	return getProxiedImageUrlNullable(instance.iconUrl, 'preview') ?? getProxiedImageUrlNullable(instance.faviconUrl, 'preview') ?? '/client-assets/dummy.png';
+	return (
+		getProxiedImageUrlNullable(instance.iconUrl, "preview") ??
+		getProxiedImageUrlNullable(instance.faviconUrl, "preview") ??
+		"/client-assets/dummy.png"
+	);
 }
 </script>
 
@@ -90,27 +111,63 @@ function getInstanceIcon(instance): string {
 		height: 30px;
 	}
 
-  &:global(.blue) {
-    --c: rgba(0, 42, 255, 0.15);
-    background-image: linear-gradient(45deg, var(--c) 16.67%, transparent 16.67%, transparent 50%, var(--c) 50%, var(--c) 66.67%, transparent 66.67%, transparent 100%);
-    background-size: 16px 16px;
-  }
+	&:global(.blue) {
+		--c: rgba(0, 42, 255, 0.15);
+		background-image: linear-gradient(
+			45deg,
+			var(--c) 16.67%,
+			transparent 16.67%,
+			transparent 50%,
+			var(--c) 50%,
+			var(--c) 66.67%,
+			transparent 66.67%,
+			transparent 100%
+		);
+		background-size: 16px 16px;
+	}
 
 	&:global(.yellow) {
 		--c: rgb(255 196 0 / 15%);
-		background-image: linear-gradient(45deg, var(--c) 16.67%, transparent 16.67%, transparent 50%, var(--c) 50%, var(--c) 66.67%, transparent 66.67%, transparent 100%);
+		background-image: linear-gradient(
+			45deg,
+			var(--c) 16.67%,
+			transparent 16.67%,
+			transparent 50%,
+			var(--c) 50%,
+			var(--c) 66.67%,
+			transparent 66.67%,
+			transparent 100%
+		);
 		background-size: 16px 16px;
 	}
 
 	&:global(.red) {
 		--c: rgb(255 0 0 / 15%);
-		background-image: linear-gradient(45deg, var(--c) 16.67%, transparent 16.67%, transparent 50%, var(--c) 50%, var(--c) 66.67%, transparent 66.67%, transparent 100%);
+		background-image: linear-gradient(
+			45deg,
+			var(--c) 16.67%,
+			transparent 16.67%,
+			transparent 50%,
+			var(--c) 50%,
+			var(--c) 66.67%,
+			transparent 66.67%,
+			transparent 100%
+		);
 		background-size: 16px 16px;
 	}
 
 	&:global(.gray) {
 		--c: var(--MI_THEME-bg);
-		background-image: linear-gradient(45deg, var(--c) 16.67%, transparent 16.67%, transparent 50%, var(--c) 50%, var(--c) 66.67%, transparent 66.67%, transparent 100%);
+		background-image: linear-gradient(
+			45deg,
+			var(--c) 16.67%,
+			transparent 16.67%,
+			transparent 50%,
+			var(--c) 50%,
+			var(--c) 66.67%,
+			transparent 66.67%,
+			transparent 100%
+		);
 		background-size: 16px 16px;
 	}
 }

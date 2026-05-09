@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { ref, computed } from 'vue';
-import { misskeyApi } from '@/utility/misskey-api.js';
+import { ref, computed } from "vue";
+import { misskeyApi } from "@/utility/misskey-api.js";
 
 type SaveData = {
 	gameVersion: number;
@@ -19,16 +19,16 @@ type SaveData = {
 export const saveData = ref<SaveData>();
 export const ready = computed(() => saveData.value != null);
 
-let prev = '';
+let prev = "";
 
 export async function load() {
 	try {
-		saveData.value = await misskeyApi('i/registry/get', {
-			scope: ['clickerGame'],
-			key: 'saveData',
+		saveData.value = await misskeyApi("i/registry/get", {
+			scope: ["clickerGame"],
+			key: "saveData",
 		});
 	} catch (err) {
-		if (err.code === 'NO_SUCH_KEY') {
+		if (err.code === "NO_SUCH_KEY") {
 			saveData.value = {
 				gameVersion: 2,
 				cookies: 0,
@@ -63,9 +63,9 @@ export async function save() {
 	const current = JSON.stringify(saveData.value);
 	if (current === prev) return;
 
-	await misskeyApi('i/registry/set', {
-		scope: ['clickerGame'],
-		key: 'saveData',
+	await misskeyApi("i/registry/set", {
+		scope: ["clickerGame"],
+		key: "saveData",
 		value: saveData.value,
 	});
 

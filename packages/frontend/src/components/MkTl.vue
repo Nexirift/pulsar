@@ -4,25 +4,39 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.items">
-	<template v-for="(item, i) in items" :key="item.id">
-		<div :class="$style.left">
-			<slot v-if="item.type === 'event'" name="left" :event="item.data" :timestamp="item.timestamp" :delta="item.delta"></slot>
-		</div>
-		<div :class="[$style.center, item.type === 'date' ? $style.date : '']">
-			<div :class="$style.centerLine"></div>
-			<div :class="$style.centerPoint"></div>
-		</div>
-		<div :class="$style.right">
-			<slot v-if="item.type === 'event'" name="right" :event="item.data" :timestamp="item.timestamp" :delta="item.delta"></slot>
-			<div v-else :class="$style.dateLabel"><i class="ti ti-chevron-up"></i> {{ item.prevText }}</div>
-		</div>
-	</template>
-</div>
+	<div :class="$style.items">
+		<template v-for="(item, i) in items" :key="item.id">
+			<div :class="$style.left">
+				<slot
+					v-if="item.type === 'event'"
+					name="left"
+					:event="item.data"
+					:timestamp="item.timestamp"
+					:delta="item.delta"
+				></slot>
+			</div>
+			<div :class="[$style.center, item.type === 'date' ? $style.date : '']">
+				<div :class="$style.centerLine"></div>
+				<div :class="$style.centerPoint"></div>
+			</div>
+			<div :class="$style.right">
+				<slot
+					v-if="item.type === 'event'"
+					name="right"
+					:event="item.data"
+					:timestamp="item.timestamp"
+					:delta="item.delta"
+				></slot>
+				<div v-else :class="$style.dateLabel">
+					<i class="ti ti-chevron-up"></i> {{ item.prevText }}
+				</div>
+			</div>
+		</template>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed } from "vue";
 
 const props = defineProps<{
 	events: {
@@ -41,64 +55,72 @@ function getDateText(dateInstance: Date) {
 	const month = dateInstance.getMonth() + 1;
 	const date = dateInstance.getDate();
 	const hour = dateInstance.getHours();
-	return `${year.toString()}/${month.toString()}/${date.toString()} ${hour.toString().padStart(2, '0')}:00:00`;
+	return `${year.toString()}/${month.toString()}/${date.toString()} ${hour.toString().padStart(2, "0")}:00:00`;
 }
 
-const items = computed<({
-	id: string;
-	type: 'event';
-	timestamp: number;
-	delta: number;
-	data: any;
-} | {
-	id: string;
-	type: 'date';
-	prev: Date;
-	prevText: string;
-	next: Date | null;
-	nextText: string;
-})[]>(() => {
-		const results = [];
-		for (let i = 0; i < events.value.length; i++) {
-			const item = events.value[i];
+const items = computed<
+	(
+		| {
+				id: string;
+				type: "event";
+				timestamp: number;
+				delta: number;
+				data: any;
+		  }
+		| {
+				id: string;
+				type: "date";
+				prev: Date;
+				prevText: string;
+				next: Date | null;
+				nextText: string;
+		  }
+	)[]
+>(() => {
+	const results = [];
+	for (let i = 0; i < events.value.length; i++) {
+		const item = events.value[i];
 
-			const date = new Date(item.timestamp);
-			const nextDate = events.value[i + 1] ? new Date(events.value[i + 1].timestamp) : null;
+		const date = new Date(item.timestamp);
+		const nextDate = events.value[i + 1]
+			? new Date(events.value[i + 1].timestamp)
+			: null;
 
+		results.push({
+			id: item.id,
+			type: "event",
+			timestamp: item.timestamp,
+			delta:
+				i === events.value.length - 1
+					? 0
+					: item.timestamp - events.value[i + 1].timestamp,
+			data: item.data,
+		});
+
+		if (
+			i !== events.value.length - 1 &&
+			nextDate != null &&
+			(date.getFullYear() !== nextDate.getFullYear() ||
+				date.getMonth() !== nextDate.getMonth() ||
+				date.getDate() !== nextDate.getDate() ||
+				date.getHours() !== nextDate.getHours())
+		) {
 			results.push({
-				id: item.id,
-				type: 'event',
-				timestamp: item.timestamp,
-				delta: i === events.value.length - 1 ? 0 : item.timestamp - events.value[i + 1].timestamp,
-				data: item.data,
+				id: `date-${item.id}`,
+				type: "date",
+				prev: date,
+				prevText: getDateText(date),
+				next: nextDate,
+				nextText: getDateText(nextDate),
 			});
-
-			if (
-				i !== events.value.length - 1 &&
-				nextDate != null && (
-					date.getFullYear() !== nextDate.getFullYear() ||
-					date.getMonth() !== nextDate.getMonth() ||
-					date.getDate() !== nextDate.getDate() ||
-					date.getHours() !== nextDate.getHours()
-				)
-			) {
-				results.push({
-					id: `date-${item.id}`,
-					type: 'date',
-					prev: date,
-					prevText: getDateText(date),
-					next: nextDate,
-					nextText: getDateText(nextDate),
-				});
-			}
 		}
-		return results;
-	});
+	}
+	return results;
+});
 </script>
 
 <style lang="scss" module>
 .root {
-
 }
 
 .items {
@@ -138,7 +160,11 @@ const items = computed<({
 	margin: auto;
 	width: 3px;
 	height: 100%;
-	background: color-mix(in srgb, var(--MI_THEME-accent), var(--MI_THEME-bg) 75%);
+	background: color-mix(
+		in srgb,
+		var(--MI_THEME-accent),
+		var(--MI_THEME-bg) 75%
+	);
 }
 .centerPoint {
 	position: absolute;
@@ -149,7 +175,11 @@ const items = computed<({
 	margin: auto;
 	width: 13px;
 	height: 13px;
-	background: color-mix(in srgb, var(--MI_THEME-accent), var(--MI_THEME-bg) 75%);
+	background: color-mix(
+		in srgb,
+		var(--MI_THEME-accent),
+		var(--MI_THEME-bg) 75%
+	);
 	border-radius: 50%;
 }
 

@@ -1,6 +1,6 @@
 ---
 introMisskey: "Willkommen! Pulsar ist eine dezentralisierte Open-Source Microblogging-Platform.\nVerfasse „Notizen“ um mitzuteilen, was gerade passiert oder um Ereignisse mit anderen zu teilen. 📡\nMit „Reaktionen“ kannst du außerdem schnell deine Gefühle über Notizen anderer Benutzer zum Ausdruck bringen. 👍\nEine neue Welt wartet auf dich! 🚀"
-poweredByMisskeyDescription: "{name} wird durch die Open-Source-Plattform <b>Pulsar</b> betrieben, die auf Misskey basiert (meist als \"Misskey-Instanz\" bezeichnet)."
+poweredByMisskeyDescription: '{name} wird durch die Open-Source-Plattform <b>Pulsar</b> betrieben, die auf Misskey basiert (meist als "Misskey-Instanz" bezeichnet).'
 flagAsBotDescription: "Aktiviere diese Option, falls dieses Benutzerkonto durch ein Programm gesteuert wird. Falls aktiviert, agiert es als Flag für andere Entwickler zur Verhinderung von endlosen Kettenreaktionen mit anderen Bots und lässt Pulsars interne Systeme dieses Benutzerkonto als Bot behandeln."
 intro: "Pulsar ist installiert! Lass uns nun ein Administratorkonto einrichten."
 aboutMisskey: "Über Pulsar"
@@ -11,14 +11,14 @@ misskeyUpdated: "Pulsar wurde aktualisiert!"
 didYouLikeMisskey: "Gefällt dir Pulsar?"
 pleaseDonate: "Pulsar ist die kostenlose Software, die von {host} verwendet wird. Wir würden uns über Spenden freuen, damit dessen Entwicklung weitergeführt werden kann!"
 goToMisskey: "Zu Pulsar"
-repositoryUrlDescription: "Wenn es ein Repository gibt, in dem der Quellcode öffentlich zugänglich ist, gib dessen URL ein. Wenn du Pulsar unverändert verwendest (ohne Änderungen am Quellcode), gib bitte https://code.nexirift.com/Nexirift/pulsar ein."
+repositoryUrlDescription: "Wenn es ein Repository gibt, in dem der Quellcode öffentlich zugänglich ist, gib dessen URL ein. Wenn du Pulsar unverändert verwendest (ohne Änderungen am Quellcode), gib bitte https://git.codeguilds.org/Nexirift/pulsar ein."
 _initialAccountSetting:
   youCanContinueTutorial: "Du kannst mit dem Tutorial von {name} (Pulsar) fortfahren, oder auch abbrechen und gleich anfangen Pulsar zu verwenden."
 _initialTutorial:
   _landing:
     description: "Hier kannst du die Grundlagen und Funktionen von Pulsar lernen."
   _note:
-    description: "Beiträge auf Pulsar heißen \"Notizen\". Notizen werden chronologisch in der Chronik angeordnet und in Echtzeit aktualisiert."
+    description: 'Beiträge auf Pulsar heißen "Notizen". Notizen werden chronologisch in der Chronik angeordnet und in Echtzeit aktualisiert.'
   _timeline:
     description1: "Pulsar verfügt über mehrere Chroniken (einige können je nach den Richtlinien des Servers nicht verfügbar sein)."
   _postNote:
@@ -36,7 +36,7 @@ _achievements:
       flavor: "Danke, dass du Pulsar nutzt!"
     _iLoveMisskey:
       title: "I Love Pulsar"
-      description: "Sende \"I ❤ #Pulsar\""
+      description: 'Sende "I ❤ #Pulsar"'
       flavor: "Danke, dass du Pulsar verwendest! - vom Entwicklerteam"
     _client30min:
       description: "Habe Pulsar für mindestens 30 Minuten geöffnet"

@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { AdditionalStyle } from '@/components/grid/grid.js';
-import type { GridCell } from '@/components/grid/cell.js';
-import type { GridColumn } from '@/components/grid/column.js';
-import type { MenuItem } from '@/types/menu.js';
-import type { GridContext } from '@/components/grid/grid-event.js';
+import type { AdditionalStyle } from "@/components/grid/grid.js";
+import type { GridCell } from "@/components/grid/cell.js";
+import type { GridColumn } from "@/components/grid/column.js";
+import type { MenuItem } from "@/types/menu.js";
+import type { GridContext } from "@/components/grid/grid-event.js";
 
 export const defaultGridRowSetting: Required<GridRowSetting> = {
 	showNumber: true,
@@ -19,9 +19,9 @@ export const defaultGridRowSetting: Required<GridRowSetting> = {
 };
 
 export type GridRowStyleRuleConditionParams = {
-	row: GridRow,
-	targetCols: GridColumn[],
-	cells: GridCell[]
+	row: GridRow;
+	targetCols: GridColumn[];
+	cells: GridCell[];
 };
 
 export type GridRowStyleRule = {
@@ -29,7 +29,10 @@ export type GridRowStyleRule = {
 	applyStyle: AdditionalStyle;
 };
 
-export type GridRowContextMenuFactory = (row: GridRow, context: GridContext) => MenuItem[];
+export type GridRowContextMenuFactory = (
+	row: GridRow,
+	context: GridContext,
+) => MenuItem[];
 
 export type GridRowSetting = {
 	showNumber?: boolean;
@@ -39,7 +42,7 @@ export type GridRowSetting = {
 	contextMenuFactory?: GridRowContextMenuFactory;
 	events?: {
 		delete?: (rows: GridRow[]) => void;
-	}
+	};
 };
 
 export type GridRow = {
@@ -50,7 +53,11 @@ export type GridRow = {
 	additionalStyles: AdditionalStyle[];
 };
 
-export function createRow(index: number, using: boolean, setting: GridRowSetting): GridRow {
+export function createRow(
+	index: number,
+	using: boolean,
+	setting: GridRowSetting,
+): GridRow {
 	return {
 		index,
 		ranged: false,
@@ -65,4 +72,3 @@ export function resetRow(row: GridRow): void {
 	row.using = false;
 	row.additionalStyles = [];
 }
-

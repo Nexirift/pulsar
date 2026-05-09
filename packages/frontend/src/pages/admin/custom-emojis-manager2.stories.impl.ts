@@ -3,17 +3,15 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { delay, http, HttpResponse } from 'msw';
-import type { StoryObj } from '@storybook/vue3';
-import { entities } from 'misskey-js';
-import { commonHandlers } from '../../../.storybook/mocks.js';
-import { emoji } from '../../../.storybook/fakes.js';
-import { fakeId } from '../../../.storybook/fake-utils.js';
-import custom_emojis_manager2 from './custom-emojis-manager2.vue';
+import { delay, http, HttpResponse } from "msw";
+import type { StoryObj } from "@storybook/vue3";
+import { entities } from "misskey-js";
+import { commonHandlers } from "../../../.storybook/mocks.js";
+import { emoji } from "../../../.storybook/fakes.js";
+import { fakeId } from "../../../.storybook/fake-utils.js";
+import custom_emojis_manager2 from "./custom-emojis-manager2.vue";
 
-function createRender(params: {
-	emojis: entities.EmojiDetailedAdmin[];
-}) {
+function createRender(params: { emojis: entities.EmojiDetailedAdmin[] }) {
 	const storedEmojis: entities.EmojiDetailedAdmin[] = [...params.emojis];
 	const storedDriveFiles: entities.DriveFile[] = [];
 
@@ -38,19 +36,19 @@ function createRender(params: {
 				template: '<custom_emojis_manager2 v-bind="props" />',
 			};
 		},
-		args: {
-
-		},
+		args: {},
 		parameters: {
-			layout: 'fullscreen',
+			layout: "fullscreen",
 			msw: {
 				handlers: [
 					...commonHandlers,
-					http.post('/api/v2/admin/emoji/list', async ({ request }) => {
+					http.post("/api/v2/admin/emoji/list", async ({ request }) => {
 						await delay(100);
 
 						const bodyStream = request.body as ReadableStream;
-						const body = await new Response(bodyStream).json() as entities.V2AdminEmojiListRequest;
+						const body = (await new Response(
+							bodyStream,
+						).json()) as entities.V2AdminEmojiListRequest;
 
 						const emojis = storedEmojis;
 						const limit = body.limit ?? 10;
@@ -64,19 +62,22 @@ function createRender(params: {
 							allPages: Math.ceil(emojis.length / limit),
 						});
 					}),
-					http.post('/api/drive/folders', () => {
+					http.post("/api/drive/folders", () => {
 						return HttpResponse.json([]);
 					}),
-					http.post('/api/drive/files', () => {
+					http.post("/api/drive/files", () => {
 						return HttpResponse.json(storedDriveFiles);
 					}),
-					http.post('/api/drive/files/create', async ({ request }) => {
+					http.post("/api/drive/files/create", async ({ request }) => {
 						const data = await request.formData();
-						const file = data.get('file');
+						const file = data.get("file");
 						if (!file || !(file instanceof File)) {
-							return HttpResponse.json({ error: 'file is required' }, {
-								status: 400,
-							});
+							return HttpResponse.json(
+								{ error: "file is required" },
+								{
+									status: 400,
+								},
+							);
 						}
 
 						// FIXME: ファイルのバイナリに0xEF 0xBF 0xBDが混入してしまい、うまく画像ファイルとして表示できない問題がある
@@ -85,7 +86,7 @@ function createRender(params: {
 							reader.onload = () => {
 								resolve(reader.result as string);
 							};
-							reader.readAsDataURL(new Blob([file], { type: 'image/webp' }));
+							reader.readAsDataURL(new Blob([file], { type: "image/webp" }));
 						});
 
 						const driveFile: entities.DriveFile = {
@@ -93,7 +94,7 @@ function createRender(params: {
 							createdAt: new Date().toISOString(),
 							name: file.name,
 							type: file.type,
-							md5: '',
+							md5: "",
 							size: file.size,
 							isSensitive: false,
 							blurhash: null,
@@ -111,15 +112,17 @@ function createRender(params: {
 
 						return HttpResponse.json(driveFile);
 					}),
-					http.post('api/admin/emoji/add', async ({ request }) => {
+					http.post("api/admin/emoji/add", async ({ request }) => {
 						await delay(100);
 
 						const bodyStream = request.body as ReadableStream;
-						const body = await new Response(bodyStream).json() as entities.AdminEmojiAddRequest;
+						const body = (await new Response(
+							bodyStream,
+						).json()) as entities.AdminEmojiAddRequest;
 
 						const fileId = body.fileId;
 						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-						const file = storedDriveFiles.find(f => f.id === fileId)!;
+						const file = storedDriveFiles.find((f) => f.id === fileId)!;
 
 						const em = emoji({
 							id: fakeId(file.name),
@@ -148,13 +151,19 @@ export const Default = createRender({
 });
 
 export const List10 = createRender({
-	emojis: Array.from({ length: 10 }, (_, i) => emoji({ name: `emoji_${i}` }, i.toString())),
+	emojis: Array.from({ length: 10 }, (_, i) =>
+		emoji({ name: `emoji_${i}` }, i.toString()),
+	),
 });
 
 export const List100 = createRender({
-	emojis: Array.from({ length: 100 }, (_, i) => emoji({ name: `emoji_${i}` }, i.toString())),
+	emojis: Array.from({ length: 100 }, (_, i) =>
+		emoji({ name: `emoji_${i}` }, i.toString()),
+	),
 });
 
 export const List1000 = createRender({
-	emojis: Array.from({ length: 1000 }, (_, i) => emoji({ name: `emoji_${i}` }, i.toString())),
+	emojis: Array.from({ length: 1000 }, (_, i) =>
+		emoji({ name: `emoji_${i}` }, i.toString()),
+	),
 });

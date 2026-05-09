@@ -3,32 +3,32 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { MockConsole } from '../misc/MockConsole.js';
+import { MockConsole } from "../misc/MockConsole.js";
 
-process.env.NODE_ENV = 'test';
+process.env.NODE_ENV = "test";
 
-import * as assert from 'assert';
-import { DataSource } from 'typeorm';
-import { Test, TestingModule } from '@nestjs/testing';
-import { GodOfTimeService } from '../misc/GodOfTimeService.js';
-import { MockRedis } from '../misc/MockRedis.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import TestChart from '@/core/chart/charts/test.js';
-import TestGroupedChart from '@/core/chart/charts/test-grouped.js';
-import TestUniqueChart from '@/core/chart/charts/test-unique.js';
-import TestIntersectionChart from '@/core/chart/charts/test-intersection.js';
-import { entity as TestChartEntity } from '@/core/chart/charts/entities/test.js';
-import { entity as TestGroupedChartEntity } from '@/core/chart/charts/entities/test-grouped.js';
-import { entity as TestUniqueChartEntity } from '@/core/chart/charts/entities/test-unique.js';
-import { entity as TestIntersectionChartEntity } from '@/core/chart/charts/entities/test-intersection.js';
-import { AppLockService } from '@/core/AppLockService.js';
-import Logger from '@/logger.js';
-import { CoreModule } from '@/core/CoreModule.js';
-import { DI } from '@/di-symbols.js';
-import { TimeService } from '@/global/TimeService.js';
-import { LoggerService } from '@/core/LoggerService.js';
+import * as assert from "assert";
+import { DataSource } from "typeorm";
+import { Test, TestingModule } from "@nestjs/testing";
+import { GodOfTimeService } from "../misc/GodOfTimeService.js";
+import { MockRedis } from "../misc/MockRedis.js";
+import { GlobalModule } from "@/GlobalModule.js";
+import TestChart from "@/core/chart/charts/test.js";
+import TestGroupedChart from "@/core/chart/charts/test-grouped.js";
+import TestUniqueChart from "@/core/chart/charts/test-unique.js";
+import TestIntersectionChart from "@/core/chart/charts/test-intersection.js";
+import { entity as TestChartEntity } from "@/core/chart/charts/entities/test.js";
+import { entity as TestGroupedChartEntity } from "@/core/chart/charts/entities/test-grouped.js";
+import { entity as TestUniqueChartEntity } from "@/core/chart/charts/entities/test-unique.js";
+import { entity as TestIntersectionChartEntity } from "@/core/chart/charts/entities/test-intersection.js";
+import { AppLockService } from "@/core/AppLockService.js";
+import Logger from "@/logger.js";
+import { CoreModule } from "@/core/CoreModule.js";
+import { DI } from "@/di-symbols.js";
+import { TimeService } from "@/global/TimeService.js";
+import { LoggerService } from "@/core/LoggerService.js";
 
-describe('Chart', () => {
+describe("Chart", () => {
 	let app: TestingModule;
 	let db: DataSource;
 	let appLockService: AppLockService;
@@ -45,12 +45,15 @@ describe('Chart', () => {
 		app = await Test.createTestingModule({
 			imports: [GlobalModule, CoreModule],
 		})
-			.overrideProvider(DI.redis).useClass(MockRedis)
-			.overrideProvider(TimeService).useClass(GodOfTimeService)
-			.overrideProvider(DI.console).useClass(MockConsole)
+			.overrideProvider(DI.redis)
+			.useClass(MockRedis)
+			.overrideProvider(TimeService)
+			.useClass(GodOfTimeService)
+			.overrideProvider(DI.console)
+			.useClass(MockConsole)
 			.compile();
 
-		logger = app.get(LoggerService).getLogger('chart');
+		logger = app.get(LoggerService).getLogger("chart");
 		appLockService = app.get(AppLockService);
 		redis = app.get(DI.redis);
 		db = app.get(DI.db);
@@ -73,15 +76,24 @@ describe('Chart', () => {
 		testChart = new TestChart(db, appLockService, clock, logger);
 		testGroupedChart = new TestGroupedChart(db, appLockService, clock, logger);
 		testUniqueChart = new TestUniqueChart(db, appLockService, clock, logger);
-		testIntersectionChart = new TestIntersectionChart(db, appLockService, clock, logger);
+		testIntersectionChart = new TestIntersectionChart(
+			db,
+			appLockService,
+			clock,
+			logger,
+		);
 	});
 
 	afterEach(async () => {
 		const entities = [
-			TestChartEntity.hour, TestChartEntity.day,
-			TestGroupedChartEntity.hour, TestGroupedChartEntity.day,
-			TestUniqueChartEntity.hour, TestUniqueChartEntity.day,
-			TestIntersectionChartEntity.hour, TestIntersectionChartEntity.day,
+			TestChartEntity.hour,
+			TestChartEntity.day,
+			TestGroupedChartEntity.hour,
+			TestGroupedChartEntity.day,
+			TestUniqueChartEntity.hour,
+			TestUniqueChartEntity.day,
+			TestIntersectionChartEntity.hour,
+			TestIntersectionChartEntity.day,
 		];
 
 		for (const entity of entities) {
@@ -89,12 +101,12 @@ describe('Chart', () => {
 		}
 	});
 
-	test('Can updates', async () => {
+	test("Can updates", async () => {
 		await testChart.increment();
 		await testChart.save();
 
-		const chartHours = await testChart.getChart('hour', 3, null);
-		const chartDays = await testChart.getChart('day', 3, null);
+		const chartHours = await testChart.getChart("hour", 3, null);
+		const chartDays = await testChart.getChart("day", 3, null);
 
 		assert.deepStrictEqual(chartHours, {
 			foo: {
@@ -113,12 +125,12 @@ describe('Chart', () => {
 		});
 	});
 
-	test('Can updates (dec)', async () => {
+	test("Can updates (dec)", async () => {
 		await testChart.decrement();
 		await testChart.save();
 
-		const chartHours = await testChart.getChart('hour', 3, null);
-		const chartDays = await testChart.getChart('day', 3, null);
+		const chartHours = await testChart.getChart("hour", 3, null);
+		const chartDays = await testChart.getChart("day", 3, null);
 
 		assert.deepStrictEqual(chartHours, {
 			foo: {
@@ -137,9 +149,9 @@ describe('Chart', () => {
 		});
 	});
 
-	test('Empty chart', async () => {
-		const chartHours = await testChart.getChart('hour', 3, null);
-		const chartDays = await testChart.getChart('day', 3, null);
+	test("Empty chart", async () => {
+		const chartHours = await testChart.getChart("hour", 3, null);
+		const chartDays = await testChart.getChart("day", 3, null);
 
 		assert.deepStrictEqual(chartHours, {
 			foo: {
@@ -158,14 +170,14 @@ describe('Chart', () => {
 		});
 	});
 
-	test('Can updates at multiple times at same time', async () => {
+	test("Can updates at multiple times at same time", async () => {
 		await testChart.increment();
 		await testChart.increment();
 		await testChart.increment();
 		await testChart.save();
 
-		const chartHours = await testChart.getChart('hour', 3, null);
-		const chartDays = await testChart.getChart('day', 3, null);
+		const chartHours = await testChart.getChart("hour", 3, null);
+		const chartDays = await testChart.getChart("day", 3, null);
 
 		assert.deepStrictEqual(chartHours, {
 			foo: {
@@ -184,14 +196,14 @@ describe('Chart', () => {
 		});
 	});
 
-	test('複数回saveされてもデータの更新は一度だけ', async () => {
+	test("複数回saveされてもデータの更新は一度だけ", async () => {
 		await testChart.increment();
 		await testChart.save();
 		await testChart.save();
 		await testChart.save();
 
-		const chartHours = await testChart.getChart('hour', 3, null);
-		const chartDays = await testChart.getChart('day', 3, null);
+		const chartHours = await testChart.getChart("hour", 3, null);
+		const chartDays = await testChart.getChart("day", 3, null);
 
 		assert.deepStrictEqual(chartHours, {
 			foo: {
@@ -210,7 +222,7 @@ describe('Chart', () => {
 		});
 	});
 
-	test('Can updates at different times', async () => {
+	test("Can updates at different times", async () => {
 		await testChart.increment();
 		await testChart.save();
 
@@ -219,8 +231,8 @@ describe('Chart', () => {
 		await testChart.increment();
 		await testChart.save();
 
-		const chartHours = await testChart.getChart('hour', 3, null);
-		const chartDays = await testChart.getChart('day', 3, null);
+		const chartHours = await testChart.getChart("hour", 3, null);
+		const chartDays = await testChart.getChart("day", 3, null);
 
 		assert.deepStrictEqual(chartHours, {
 			foo: {
@@ -270,7 +282,7 @@ describe('Chart', () => {
 	});
 	*/
 
-	test('Can padding', async () => {
+	test("Can padding", async () => {
 		await testChart.increment();
 		await testChart.save();
 
@@ -279,8 +291,8 @@ describe('Chart', () => {
 		await testChart.increment();
 		await testChart.save();
 
-		const chartHours = await testChart.getChart('hour', 3, null);
-		const chartDays = await testChart.getChart('day', 3, null);
+		const chartHours = await testChart.getChart("hour", 3, null);
+		const chartDays = await testChart.getChart("day", 3, null);
 
 		assert.deepStrictEqual(chartHours, {
 			foo: {
@@ -300,14 +312,14 @@ describe('Chart', () => {
 	});
 
 	// 要求された範囲にログがひとつもない場合でもパディングできる
-	test('Can padding from past range', async () => {
+	test("Can padding from past range", async () => {
 		await testChart.increment();
 		await testChart.save();
 
 		clock.tick({ hours: 5 });
 
-		const chartHours = await testChart.getChart('hour', 3, null);
-		const chartDays = await testChart.getChart('day', 3, null);
+		const chartHours = await testChart.getChart("hour", 3, null);
+		const chartDays = await testChart.getChart("day", 3, null);
 
 		assert.deepStrictEqual(chartHours, {
 			foo: {
@@ -328,7 +340,7 @@ describe('Chart', () => {
 
 	// 要求された範囲の最も古い箇所に位置するログが存在しない場合でもパディングできる
 	// Issue #3190
-	test('Can padding from past range 2', async () => {
+	test("Can padding from past range 2", async () => {
 		await testChart.increment();
 		await testChart.save();
 
@@ -337,8 +349,8 @@ describe('Chart', () => {
 		await testChart.increment();
 		await testChart.save();
 
-		const chartHours = await testChart.getChart('hour', 3, null);
-		const chartDays = await testChart.getChart('day', 3, null);
+		const chartHours = await testChart.getChart("hour", 3, null);
+		const chartDays = await testChart.getChart("day", 3, null);
 
 		assert.deepStrictEqual(chartHours, {
 			foo: {
@@ -357,7 +369,7 @@ describe('Chart', () => {
 		});
 	});
 
-	test('Can specify offset', async () => {
+	test("Can specify offset", async () => {
 		await testChart.increment();
 		await testChart.save();
 
@@ -366,8 +378,16 @@ describe('Chart', () => {
 		await testChart.increment();
 		await testChart.save();
 
-		const chartHours = await testChart.getChart('hour', 3, new Date(Date.UTC(2000, 0, 1, 0, 0, 0)));
-		const chartDays = await testChart.getChart('day', 3, new Date(Date.UTC(2000, 0, 1, 0, 0, 0)));
+		const chartHours = await testChart.getChart(
+			"hour",
+			3,
+			new Date(Date.UTC(2000, 0, 1, 0, 0, 0)),
+		);
+		const chartDays = await testChart.getChart(
+			"day",
+			3,
+			new Date(Date.UTC(2000, 0, 1, 0, 0, 0)),
+		);
 
 		assert.deepStrictEqual(chartHours, {
 			foo: {
@@ -386,7 +406,7 @@ describe('Chart', () => {
 		});
 	});
 
-	test('Can specify offset (floor time)', async () => {
+	test("Can specify offset (floor time)", async () => {
 		clock.tick({ minutes: 30 });
 
 		await testChart.increment();
@@ -397,8 +417,16 @@ describe('Chart', () => {
 		await testChart.increment();
 		await testChart.save();
 
-		const chartHours = await testChart.getChart('hour', 3, new Date(Date.UTC(2000, 0, 1, 0, 0, 0)));
-		const chartDays = await testChart.getChart('day', 3, new Date(Date.UTC(2000, 0, 1, 0, 0, 0)));
+		const chartHours = await testChart.getChart(
+			"hour",
+			3,
+			new Date(Date.UTC(2000, 0, 1, 0, 0, 0)),
+		);
+		const chartDays = await testChart.getChart(
+			"day",
+			3,
+			new Date(Date.UTC(2000, 0, 1, 0, 0, 0)),
+		);
 
 		assert.deepStrictEqual(chartHours, {
 			foo: {
@@ -417,15 +445,35 @@ describe('Chart', () => {
 		});
 	});
 
-	describe('Grouped', () => {
-		test('Can updates', async () => {
-			await testGroupedChart.increment('alice');
+	describe("Grouped", () => {
+		test("Can updates", async () => {
+			await testGroupedChart.increment("alice");
 			await testGroupedChart.save();
 
-			const aliceChartHours = await testGroupedChart.getChart('hour', 3, null, 'alice');
-			const aliceChartDays = await testGroupedChart.getChart('day', 3, null, 'alice');
-			const bobChartHours = await testGroupedChart.getChart('hour', 3, null, 'bob');
-			const bobChartDays = await testGroupedChart.getChart('day', 3, null, 'bob');
+			const aliceChartHours = await testGroupedChart.getChart(
+				"hour",
+				3,
+				null,
+				"alice",
+			);
+			const aliceChartDays = await testGroupedChart.getChart(
+				"day",
+				3,
+				null,
+				"alice",
+			);
+			const bobChartHours = await testGroupedChart.getChart(
+				"hour",
+				3,
+				null,
+				"bob",
+			);
+			const bobChartDays = await testGroupedChart.getChart(
+				"day",
+				3,
+				null,
+				"bob",
+			);
 
 			assert.deepStrictEqual(aliceChartHours, {
 				foo: {
@@ -461,15 +509,15 @@ describe('Chart', () => {
 		});
 	});
 
-	describe('Unique increment', () => {
-		test('Can updates', async () => {
-			await testUniqueChart.uniqueIncrement('alice');
-			await testUniqueChart.uniqueIncrement('alice');
-			await testUniqueChart.uniqueIncrement('bob');
+	describe("Unique increment", () => {
+		test("Can updates", async () => {
+			await testUniqueChart.uniqueIncrement("alice");
+			await testUniqueChart.uniqueIncrement("alice");
+			await testUniqueChart.uniqueIncrement("bob");
 			await testUniqueChart.save();
 
-			const chartHours = await testUniqueChart.getChart('hour', 3, null);
-			const chartDays = await testUniqueChart.getChart('day', 3, null);
+			const chartHours = await testUniqueChart.getChart("hour", 3, null);
+			const chartDays = await testUniqueChart.getChart("day", 3, null);
 
 			assert.deepStrictEqual(chartHours, {
 				foo: [2, 0, 0],
@@ -480,15 +528,19 @@ describe('Chart', () => {
 			});
 		});
 
-		describe('Intersection', () => {
-			test('条件が満たされていない場合はカウントされない', async () => {
-				await testIntersectionChart.addA('alice');
-				await testIntersectionChart.addA('bob');
-				await testIntersectionChart.addB('carol');
+		describe("Intersection", () => {
+			test("条件が満たされていない場合はカウントされない", async () => {
+				await testIntersectionChart.addA("alice");
+				await testIntersectionChart.addA("bob");
+				await testIntersectionChart.addB("carol");
 				await testIntersectionChart.save();
 
-				const chartHours = await testIntersectionChart.getChart('hour', 3, null);
-				const chartDays = await testIntersectionChart.getChart('day', 3, null);
+				const chartHours = await testIntersectionChart.getChart(
+					"hour",
+					3,
+					null,
+				);
+				const chartDays = await testIntersectionChart.getChart("day", 3, null);
 
 				assert.deepStrictEqual(chartHours, {
 					a: [2, 0, 0],
@@ -503,15 +555,19 @@ describe('Chart', () => {
 				});
 			});
 
-			test('条件が満たされている場合にカウントされる', async () => {
-				await testIntersectionChart.addA('alice');
-				await testIntersectionChart.addA('bob');
-				await testIntersectionChart.addB('carol');
-				await testIntersectionChart.addB('alice');
+			test("条件が満たされている場合にカウントされる", async () => {
+				await testIntersectionChart.addA("alice");
+				await testIntersectionChart.addA("bob");
+				await testIntersectionChart.addB("carol");
+				await testIntersectionChart.addB("alice");
 				await testIntersectionChart.save();
 
-				const chartHours = await testIntersectionChart.getChart('hour', 3, null);
-				const chartDays = await testIntersectionChart.getChart('day', 3, null);
+				const chartHours = await testIntersectionChart.getChart(
+					"hour",
+					3,
+					null,
+				);
+				const chartDays = await testIntersectionChart.getChart("day", 3, null);
 
 				assert.deepStrictEqual(chartHours, {
 					a: [2, 0, 0],
@@ -528,14 +584,14 @@ describe('Chart', () => {
 		});
 	});
 
-	describe('Resync', () => {
-		test('Can resync', async () => {
+	describe("Resync", () => {
+		test("Can resync", async () => {
 			testChart.total = 1;
 
 			await testChart.resync();
 
-			const chartHours = await testChart.getChart('hour', 3, null);
-			const chartDays = await testChart.getChart('day', 3, null);
+			const chartHours = await testChart.getChart("hour", 3, null);
+			const chartDays = await testChart.getChart("day", 3, null);
 
 			assert.deepStrictEqual(chartHours, {
 				foo: {
@@ -554,7 +610,7 @@ describe('Chart', () => {
 			});
 		});
 
-		test('Can resync (2)', async () => {
+		test("Can resync (2)", async () => {
 			await testChart.increment();
 			await testChart.save();
 
@@ -564,8 +620,8 @@ describe('Chart', () => {
 
 			await testChart.resync();
 
-			const chartHours = await testChart.getChart('hour', 3, null);
-			const chartDays = await testChart.getChart('day', 3, null);
+			const chartHours = await testChart.getChart("hour", 3, null);
+			const chartDays = await testChart.getChart("day", 3, null);
 
 			assert.deepStrictEqual(chartHours, {
 				foo: {

@@ -4,28 +4,33 @@
  */
 
 export const packedSigninSchema = {
-	type: 'object',
+	type: "object",
 	properties: {
 		id: {
-			type: 'string',
-			optional: false, nullable: false,
+			type: "string",
+			optional: false,
+			nullable: false,
 		},
 		createdAt: {
-			type: 'string',
-			optional: false, nullable: false,
-			format: 'date-time',
+			type: "string",
+			optional: false,
+			nullable: false,
+			format: "date-time",
 		},
 		ip: {
-			type: 'string',
-			optional: false, nullable: false,
+			type: "string",
+			optional: false,
+			nullable: false,
 		},
 		headers: {
-			type: 'object',
-			optional: false, nullable: false,
+			type: "object",
+			optional: false,
+			nullable: false,
 		},
 		success: {
-			type: 'boolean',
-			optional: false, nullable: false,
+			type: "boolean",
+			optional: false,
+			nullable: false,
 		},
 	},
 } as const;

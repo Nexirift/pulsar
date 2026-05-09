@@ -3,31 +3,29 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { QUEUE_TYPES, QueueService } from '@/core/QueueService.js';
+import { Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
+import { QUEUE_TYPES, QueueService } from "@/core/QueueService.js";
 
 export const meta = {
-	tags: ['admin'],
+	tags: ["admin"],
 
 	requireCredential: true,
 	requireModerator: true,
-	kind: 'read:admin:queue',
+	kind: "read:admin:queue",
 } as const;
 
 export const paramDef = {
-	type: 'object',
-	properties: {
-	},
+	type: "object",
+	properties: {},
 	required: [],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private queueService: QueueService,
-	) {
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
+	constructor(private queueService: QueueService) {
 		super(meta, paramDef, async (ps, me) => {
 			return await this.queueService.queueGetQueues();
 		});

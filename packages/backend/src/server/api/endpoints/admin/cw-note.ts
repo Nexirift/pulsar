@@ -3,35 +3,41 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { In } from 'typeorm';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { ChannelsRepository, DriveFilesRepository, MiNote, NotesRepository } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { NoteEditService, Option } from '@/core/NoteEditService.js';
-import { CacheService } from '@/core/CacheService.js';
-import { awaitAll } from '@/misc/prelude/await-all.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { In } from "typeorm";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type {
+	ChannelsRepository,
+	DriveFilesRepository,
+	MiNote,
+	NotesRepository,
+} from "@/models/_.js";
+import { DI } from "@/di-symbols.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
+import { NoteEditService, Option } from "@/core/NoteEditService.js";
+import { CacheService } from "@/core/CacheService.js";
+import { awaitAll } from "@/misc/prelude/await-all.js";
 
 export const meta = {
-	tags: ['admin'],
+	tags: ["admin"],
 
 	requireCredential: true,
 	requireModerator: true,
-	kind: 'write:admin:cw-note',
+	kind: "write:admin:cw-note",
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		noteId: { type: 'string', format: 'misskey:id' },
-		cw: { type: 'string', nullable: true },
+		noteId: { type: "string", format: "misskey:id" },
+		cw: { type: "string", nullable: true },
 	},
-	required: ['noteId', 'cw'],
+	required: ["noteId", "cw"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.notesRepository)
 		private readonly notesRepository: NotesRepository,
@@ -67,7 +73,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const update = await this.createUpdate(note, newCW);
 			await this.noteEditService.edit(user, note.id, update);
 
-			await this.moderationLogService.log(me, 'setMandatoryCWForNote', {
+			await this.moderationLogService.log(me, "setMandatoryCWForNote", {
 				newCW,
 				oldCW,
 				noteId: note.id,
@@ -84,21 +90,37 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		// noinspection ES6MissingAwait
 		return await awaitAll<Option>({
 			// Preserve these from original note
-			files: note.fileIds.length > 0
-				? this.driveFilesRepository.findBy({ id: In(note.fileIds) }) : null,
+			files:
+				note.fileIds.length > 0
+					? this.driveFilesRepository.findBy({ id: In(note.fileIds) })
+					: null,
 			poll: undefined,
 			text: undefined,
 			cw: undefined,
-			reply: note.reply
-				?? (note.replyId ? this.notesRepository.findOneByOrFail({ id: note.replyId }) : null),
-			renote: note.renote
-				?? (note.renoteId ? this.notesRepository.findOneByOrFail({ id: note.renoteId }) : null),
+			reply:
+				note.reply ??
+				(note.replyId
+					? this.notesRepository.findOneByOrFail({ id: note.replyId })
+					: null),
+			renote:
+				note.renote ??
+				(note.renoteId
+					? this.notesRepository.findOneByOrFail({ id: note.renoteId })
+					: null),
 			localOnly: note.localOnly,
 			reactionAcceptance: note.reactionAcceptance,
 			visibility: note.visibility,
-			visibleUsers: note.visibleUserIds.length > 0
-				? this.cacheService.findUsersById(note.visibleUserIds).then(us => Array.from(us.values())) : null,
-			channel: note.channel ?? (note.channelId ? this.channelsRepository.findOneByOrFail({ id: note.channelId }) : null),
+			visibleUsers:
+				note.visibleUserIds.length > 0
+					? this.cacheService
+							.findUsersById(note.visibleUserIds)
+							.then((us) => Array.from(us.values()))
+					: null,
+			channel:
+				note.channel ??
+				(note.channelId
+					? this.channelsRepository.findOneByOrFail({ id: note.channelId })
+					: null),
 			apMentions: undefined,
 			apHashtags: undefined,
 			apEmojis: undefined,

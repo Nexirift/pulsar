@@ -3,41 +3,47 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { GalleryLikesRepository, GalleryPostsRepository } from '@/models/_.js';
-import { FeaturedService, GALLERY_POSTS_RANKING_WINDOW } from '@/core/FeaturedService.js';
-import { IdService } from '@/core/IdService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { DI } from '@/di-symbols.js';
-import { ApiError } from '../../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type {
+	GalleryLikesRepository,
+	GalleryPostsRepository,
+} from "@/models/_.js";
+import {
+	FeaturedService,
+	GALLERY_POSTS_RANKING_WINDOW,
+} from "@/core/FeaturedService.js";
+import { IdService } from "@/core/IdService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { DI } from "@/di-symbols.js";
+import { ApiError } from "../../../error.js";
 
 export const meta = {
-	tags: ['gallery'],
+	tags: ["gallery"],
 
 	requireCredential: true,
 
 	prohibitMoved: true,
 
-	kind: 'write:gallery-likes',
+	kind: "write:gallery-likes",
 
 	errors: {
 		noSuchPost: {
-			message: 'No such post.',
-			code: 'NO_SUCH_POST',
-			id: '56c06af3-1287-442f-9701-c93f7c4a62ff',
+			message: "No such post.",
+			code: "NO_SUCH_POST",
+			id: "56c06af3-1287-442f-9701-c93f7c4a62ff",
 		},
 
 		yourPost: {
-			message: 'You cannot like your post.',
-			code: 'YOUR_POST',
-			id: 'f78f1511-5ebc-4478-a888-1198d752da68',
+			message: "You cannot like your post.",
+			code: "YOUR_POST",
+			id: "f78f1511-5ebc-4478-a888-1198d752da68",
 		},
 
 		alreadyLiked: {
-			message: 'The post has already been liked.',
-			code: 'ALREADY_LIKED',
-			id: '40e9ed56-a59c-473a-bf3f-f289c54fb5a7',
+			message: "The post has already been liked.",
+			code: "ALREADY_LIKED",
+			id: "40e9ed56-a59c-473a-bf3f-f289c54fb5a7",
 		},
 	},
 
@@ -49,15 +55,16 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		postId: { type: 'string', format: 'misskey:id' },
+		postId: { type: "string", format: "misskey:id" },
 	},
-	required: ['postId'],
+	required: ["postId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.galleryPostsRepository)
 		private galleryPostsRepository: GalleryPostsRepository,
@@ -70,7 +77,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const post = await this.galleryPostsRepository.findOneBy({ id: ps.postId });
+			const post = await this.galleryPostsRepository.findOneBy({
+				id: ps.postId,
+			});
 			if (post == null) {
 				throw new ApiError(meta.errors.noSuchPost);
 			}
@@ -99,11 +108,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			});
 
 			// ランキング更新
-			if (this.timeService.now - this.idService.parse(post.id).date.getTime() < GALLERY_POSTS_RANKING_WINDOW) {
+			if (
+				this.timeService.now - this.idService.parse(post.id).date.getTime() <
+				GALLERY_POSTS_RANKING_WINDOW
+			) {
 				await this.featuredService.updateGalleryPostsRanking(post, 1);
 			}
 
-			this.galleryPostsRepository.increment({ id: post.id }, 'likedCount', 1);
+			this.galleryPostsRepository.increment({ id: post.id }, "likedCount", 1);
 		});
 	}
 }

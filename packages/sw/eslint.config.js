@@ -1,14 +1,16 @@
-import globals from 'globals';
-import tsParser from '@typescript-eslint/parser';
-import sharedConfig from '../shared/eslint.config.js';
+import globals from "globals";
+import tsParser from "@typescript-eslint/parser";
+import sharedConfig from "../shared/eslint.config.js";
 
 export default [
 	...sharedConfig,
 	{
-		ignores: ['*.js'],
+		ignores: ["*.js"],
 		languageOptions: {
 			globals: {
-				...Object.fromEntries(Object.entries(globals.node).map(([key]) => [key, 'off'])),
+				...Object.fromEntries(
+					Object.entries(globals.node).map(([key]) => [key, "off"]),
+				),
 				require: false,
 				_DEV_: false,
 				_LANGS_: false,
@@ -19,19 +21,19 @@ export default [
 			},
 			parserOptions: {
 				parser: tsParser,
-				project: ['./tsconfig.scripts.json'],
-				sourceType: 'module',
+				project: ["./tsconfig.scripts.json"],
+				sourceType: "module",
 				tsconfigRootDir: import.meta.dirname,
 			},
 		},
 	},
 	{
-		files: ['src/**/*.ts', 'src/**/*.tsx'],
+		files: ["src/**/*.ts", "src/**/*.tsx"],
 		languageOptions: {
 			parserOptions: {
 				parser: tsParser,
-				project: ['./tsconfig.sw.json'],
-				sourceType: 'module',
+				project: ["./tsconfig.sw.json"],
+				sourceType: "module",
 				tsconfigRootDir: import.meta.dirname,
 			},
 		},

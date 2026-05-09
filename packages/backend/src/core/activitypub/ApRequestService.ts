@@ -3,24 +3,24 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as crypto from 'node:crypto';
-import { URL } from 'node:url';
-import { Inject, Injectable } from '@nestjs/common';
-import { load as cheerio } from 'cheerio/slim';
-import { DI } from '@/di-symbols.js';
-import type { Config } from '@/config.js';
-import type { MiUser } from '@/models/User.js';
-import { UserKeypairService } from '@/core/UserKeypairService.js';
-import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
-import { HttpRequestService } from '@/core/HttpRequestService.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { bindThis } from '@/decorators.js';
-import type Logger from '@/logger.js';
-import { validateContentTypeSetAsActivityPub } from '@/core/activitypub/misc/validator.js';
-import type { IObject, IObjectWithId } from './type.js';
-import type { Cheerio, CheerioAPI } from 'cheerio/slim';
-import type { AnyNode } from 'domhandler';
+import * as crypto from "node:crypto";
+import { URL } from "node:url";
+import { Inject, Injectable } from "@nestjs/common";
+import { load as cheerio } from "cheerio/slim";
+import { DI } from "@/di-symbols.js";
+import type { Config } from "@/config.js";
+import type { MiUser } from "@/models/User.js";
+import { UserKeypairService } from "@/core/UserKeypairService.js";
+import { ApUtilityService } from "@/core/activitypub/ApUtilityService.js";
+import { HttpRequestService } from "@/core/HttpRequestService.js";
+import { LoggerService } from "@/core/LoggerService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { bindThis } from "@/decorators.js";
+import type Logger from "@/logger.js";
+import { validateContentTypeSetAsActivityPub } from "@/core/activitypub/misc/validator.js";
+import type { IObject, IObjectWithId } from "./type.js";
+import type { Cheerio, CheerioAPI } from "cheerio/slim";
+import type { AnyNode } from "domhandler";
 
 type Request = {
 	url: string;
@@ -41,22 +41,37 @@ type PrivateKey = {
 };
 
 export class ApRequestCreator {
-	static createSignedPost(args: { key: PrivateKey, url: string, body: string, digest?: string, additionalHeaders: Record<string, string>, now: Date | string | number }): Signed {
+	static createSignedPost(args: {
+		key: PrivateKey;
+		url: string;
+		body: string;
+		digest?: string;
+		additionalHeaders: Record<string, string>;
+		now: Date | string | number;
+	}): Signed {
 		const u = new URL(args.url);
 		const digestHeader = args.digest ?? this.createDigest(args.body);
 
 		const request: Request = {
 			url: u.href,
-			method: 'POST',
-			headers: this.#objectAssignWithLcKey({
-				'Date': new Date(args.now).toUTCString(),
-				'Host': u.host,
-				'Content-Type': 'application/activity+json',
-				'Digest': digestHeader,
-			}, args.additionalHeaders),
+			method: "POST",
+			headers: this.#objectAssignWithLcKey(
+				{
+					Date: new Date(args.now).toUTCString(),
+					Host: u.host,
+					"Content-Type": "application/activity+json",
+					Digest: digestHeader,
+				},
+				args.additionalHeaders,
+			),
 		};
 
-		const result = this.#signToRequest(request, args.key, ['(request-target)', 'date', 'host', 'digest']);
+		const result = this.#signToRequest(request, args.key, [
+			"(request-target)",
+			"date",
+			"host",
+			"digest",
+		]);
 
 		return {
 			request,
@@ -67,23 +82,37 @@ export class ApRequestCreator {
 	}
 
 	static createDigest(body: string) {
-		return `SHA-256=${crypto.createHash('sha256').update(body).digest('base64')}`;
+		return `SHA-256=${crypto.createHash("sha256").update(body).digest("base64")}`;
 	}
 
-	static createSignedGet(args: { key: PrivateKey, url: string, additionalHeaders: Record<string, string>, now: Date | string | number }): Signed {
+	static createSignedGet(args: {
+		key: PrivateKey;
+		url: string;
+		additionalHeaders: Record<string, string>;
+		now: Date | string | number;
+	}): Signed {
 		const u = new URL(args.url);
 
 		const request: Request = {
 			url: u.href,
-			method: 'GET',
-			headers: this.#objectAssignWithLcKey({
-				'Accept': 'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
-				'Date': new Date(args.now).toUTCString(),
-				'Host': new URL(args.url).host,
-			}, args.additionalHeaders),
+			method: "GET",
+			headers: this.#objectAssignWithLcKey(
+				{
+					Accept:
+						'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
+					Date: new Date(args.now).toUTCString(),
+					Host: new URL(args.url).host,
+				},
+				args.additionalHeaders,
+			),
 		};
 
-		const result = this.#signToRequest(request, args.key, ['(request-target)', 'date', 'host', 'accept']);
+		const result = this.#signToRequest(request, args.key, [
+			"(request-target)",
+			"date",
+			"host",
+			"accept",
+		]);
 
 		return {
 			request,
@@ -93,16 +122,22 @@ export class ApRequestCreator {
 		};
 	}
 
-	static #signToRequest(request: Request, key: PrivateKey, includeHeaders: string[]): Signed {
+	static #signToRequest(
+		request: Request,
+		key: PrivateKey,
+		includeHeaders: string[],
+	): Signed {
 		const signingString = this.#genSigningString(request, includeHeaders);
-		const signature = crypto.sign('sha256', Buffer.from(signingString), key.privateKeyPem).toString('base64');
-		const signatureHeader = `keyId="${key.keyId}",algorithm="rsa-sha256",headers="${includeHeaders.join(' ')}",signature="${signature}"`;
+		const signature = crypto
+			.sign("sha256", Buffer.from(signingString), key.privateKeyPem)
+			.toString("base64");
+		const signatureHeader = `keyId="${key.keyId}",algorithm="rsa-sha256",headers="${includeHeaders.join(" ")}",signature="${signature}"`;
 
 		request.headers = this.#objectAssignWithLcKey(request.headers, {
 			Signature: signatureHeader,
 		});
 		// node-fetch will generate this for us. if we keep 'Host', it won't change with redirects!
-		delete request.headers['host'];
+		delete request.headers["host"];
 
 		return {
 			request,
@@ -117,24 +152,32 @@ export class ApRequestCreator {
 
 		const results: string[] = [];
 
-		for (const key of includeHeaders.map(x => x.toLowerCase())) {
-			if (key === '(request-target)') {
-				results.push(`(request-target): ${request.method.toLowerCase()} ${new URL(request.url).pathname}`);
+		for (const key of includeHeaders.map((x) => x.toLowerCase())) {
+			if (key === "(request-target)") {
+				results.push(
+					`(request-target): ${request.method.toLowerCase()} ${new URL(request.url).pathname}`,
+				);
 			} else {
 				results.push(`${key}: ${request.headers[key]}`);
 			}
 		}
 
-		return results.join('\n');
+		return results.join("\n");
 	}
 
 	static #lcObjectKey(src: Record<string, string>): Record<string, string> {
 		const dst: Record<string, string> = {};
-		for (const key of Object.keys(src).filter(x => x !== '__proto__' && typeof src[x] === 'string')) dst[key.toLowerCase()] = src[key];
+		for (const key of Object.keys(src).filter(
+			(x) => x !== "__proto__" && typeof src[x] === "string",
+		))
+			dst[key.toLowerCase()] = src[key];
 		return dst;
 	}
 
-	static #objectAssignWithLcKey(a: Record<string, string>, b: Record<string, string>): Record<string, string> {
+	static #objectAssignWithLcKey(
+		a: Record<string, string>,
+		b: Record<string, string>,
+	): Record<string, string> {
 		return Object.assign(this.#lcObjectKey(a), this.#lcObjectKey(b));
 	}
 }
@@ -154,12 +197,17 @@ export class ApRequestService {
 		private readonly timeService: TimeService,
 	) {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		this.logger = this.loggerService?.getLogger('ap-request'); // なぜか TypeError: Cannot read properties of undefined (reading 'getLogger') と言われる
+		this.logger = this.loggerService?.getLogger("ap-request"); // なぜか TypeError: Cannot read properties of undefined (reading 'getLogger') と言われる
 	}
 
 	@bindThis
-	public async signedPost(user: { id: MiUser['id'] }, url: string, object: unknown, digest?: string): Promise<void> {
-		const body = typeof object === 'string' ? object : JSON.stringify(object);
+	public async signedPost(
+		user: { id: MiUser["id"] },
+		url: string,
+		object: unknown,
+		digest?: string,
+	): Promise<void> {
+		const body = typeof object === "string" ? object : JSON.stringify(object);
 
 		const keypair = await this.userKeypairService.getUserKeypair(user.id);
 
@@ -171,8 +219,7 @@ export class ApRequestService {
 			url,
 			body,
 			digest,
-			additionalHeaders: {
-			},
+			additionalHeaders: {},
 			now: this.timeService.now,
 		});
 
@@ -191,7 +238,12 @@ export class ApRequestService {
 	 * @param followAlternate Whether to resolve HTML responses to their referenced canonical AP endpoint. (default: true)
 	 */
 	@bindThis
-	public async signedGet(url: string, user: { id: MiUser['id'] }, allowAnonymous = false, followAlternate?: boolean): Promise<IObjectWithId> {
+	public async signedGet(
+		url: string,
+		user: { id: MiUser["id"] },
+		allowAnonymous = false,
+		followAlternate?: boolean,
+	): Promise<IObjectWithId> {
 		const _followAlternate = followAlternate ?? true;
 		const keypair = await this.userKeypairService.getUserKeypair(user.id);
 
@@ -201,24 +253,28 @@ export class ApRequestService {
 				keyId: `${this.config.url}/users/${user.id}#main-key`,
 			},
 			url,
-			additionalHeaders: {
-			},
+			additionalHeaders: {},
 			now: this.timeService.now,
 		});
 
-		const res = await this.httpRequestService.send(url, {
-			method: req.request.method,
-			headers: req.request.headers,
-		}, {
-			throwErrorWhenResponseNotOk: true,
-		});
+		const res = await this.httpRequestService.send(
+			url,
+			{
+				method: req.request.method,
+				headers: req.request.headers,
+			},
+			{
+				throwErrorWhenResponseNotOk: true,
+			},
+		);
 
 		//#region リクエスト先がhtmlかつactivity+jsonへのalternate linkタグがあるとき
-		const contentType = res.headers.get('content-type');
+		const contentType = res.headers.get("content-type");
 
 		if (
 			res.ok &&
-			(contentType ?? '').split(';')[0].trimEnd().toLowerCase() === 'text/html' &&
+			(contentType ?? "").split(";")[0].trimEnd().toLowerCase() ===
+				"text/html" &&
 			_followAlternate === true
 		) {
 			let alternate: Cheerio<AnyNode> | null;
@@ -244,7 +300,7 @@ export class ApRequestService {
 			}
 
 			if (alternate) {
-				const href = alternate.attr('href');
+				const href = alternate.attr("href");
 				if (href && this.apUtilityService.haveSameAuthority(url, href)) {
 					return await this.signedGet(href, user, allowAnonymous, false);
 				}
@@ -254,7 +310,7 @@ export class ApRequestService {
 
 		validateContentTypeSetAsActivityPub(res);
 
-		const activity = await res.json() as IObject;
+		const activity = (await res.json()) as IObject;
 
 		// Make sure the object ID matches the final URL (which is where it actually exists).
 		// The caller (ApResolverService) will verify the ID against the original / entry URL, which ensures that all three match.
@@ -268,7 +324,10 @@ export class ApRequestService {
 	}
 }
 
-function selectFirst($: CheerioAPI, selectors: string[]): Cheerio<AnyNode> | null {
+function selectFirst(
+	$: CheerioAPI,
+	selectors: string[],
+): Cheerio<AnyNode> | null {
 	for (const selector of selectors) {
 		const selection = $(selector);
 		if (selection.length > 0) {

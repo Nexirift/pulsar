@@ -4,7 +4,7 @@
  */
 
 export function isLink(el: HTMLElement) {
-	if (el.tagName === 'A') return true;
+	if (el.tagName === "A") return true;
 	if (el.parentElement) {
 		return isLink(el.parentElement);
 	}

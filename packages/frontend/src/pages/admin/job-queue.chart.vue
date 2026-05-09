@@ -4,17 +4,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<canvas ref="chartEl"></canvas>
+	<canvas ref="chartEl"></canvas>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, useTemplateRef, watch } from 'vue';
-import { Chart } from 'chart.js';
-import { store } from '@/store.js';
-import { useChartTooltip } from '@/use/use-chart-tooltip.js';
-import { chartVLine } from '@/utility/chart-vline.js';
-import { alpha } from '@/utility/color.js';
-import { initChart } from '@/utility/init-chart.js';
+import { onMounted, useTemplateRef, watch } from "vue";
+import { Chart } from "chart.js";
+import { store } from "@/store.js";
+import { useChartTooltip } from "@/use/use-chart-tooltip.js";
+import { chartVLine } from "@/utility/chart-vline.js";
+import { alpha } from "@/utility/color.js";
+import { initChart } from "@/utility/init-chart.js";
 
 initChart();
 
@@ -26,7 +26,7 @@ const props = defineProps<{
 	aspectRatio?: number;
 }>();
 
-const chartEl = useTemplateRef('chartEl');
+const chartEl = useTemplateRef("chartEl");
 
 const { handler: externalTooltipHandler } = useChartTooltip();
 
@@ -35,46 +35,58 @@ let chartInstance: Chart;
 function setData() {
 	if (chartInstance == null) return;
 	chartInstance.data.labels = [];
-	for (let i = 0; i < Math.max(props.dataSet.completed.length, props.dataSet.failed.length); i++) {
-		chartInstance.data.labels.push('');
+	for (
+		let i = 0;
+		i < Math.max(props.dataSet.completed.length, props.dataSet.failed.length);
+		i++
+	) {
+		chartInstance.data.labels.push("");
 	}
 	chartInstance.data.datasets[0].data = props.dataSet.completed;
 	chartInstance.data.datasets[1].data = props.dataSet.failed;
 	chartInstance.update();
 }
 
-watch(() => props.dataSet, () => {
-	setData();
-});
+watch(
+	() => props.dataSet,
+	() => {
+		setData();
+	},
+);
 
 onMounted(() => {
-	const vLineColor = store.s.darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
+	const vLineColor = store.s.darkMode
+		? "rgba(255, 255, 255, 0.2)"
+		: "rgba(0, 0, 0, 0.2)";
 
 	chartInstance = new Chart(chartEl.value, {
-		type: 'line',
+		type: "line",
 		data: {
 			labels: [],
-			datasets: [{
-				label: 'Completed',
-				pointRadius: 0,
-				tension: 0.3,
-				borderWidth: 2,
-				borderJoinStyle: 'round',
-				borderColor: '#4caf50',
-				backgroundColor: alpha('#4caf50', 0.2),
-				fill: true,
-				data: [],
-			}, {
-				label: 'Failed',
-				pointRadius: 0,
-				tension: 0.3,
-				borderWidth: 2,
-				borderJoinStyle: 'round',
-				borderColor: '#ff0000',
-				backgroundColor: alpha('#ff0000', 0.2),
-				fill: true,
-				data: [],
-			}],
+			datasets: [
+				{
+					label: "Completed",
+					pointRadius: 0,
+					tension: 0.3,
+					borderWidth: 2,
+					borderJoinStyle: "round",
+					borderColor: "#4caf50",
+					backgroundColor: alpha("#4caf50", 0.2),
+					fill: true,
+					data: [],
+				},
+				{
+					label: "Failed",
+					pointRadius: 0,
+					tension: 0.3,
+					borderWidth: 2,
+					borderJoinStyle: "round",
+					borderColor: "#ff0000",
+					backgroundColor: alpha("#ff0000", 0.2),
+					fill: true,
+					data: [],
+				},
+			],
 		},
 		options: {
 			aspectRatio: props.aspectRatio ?? 2.5,
@@ -98,8 +110,7 @@ onMounted(() => {
 				},
 				y: {
 					min: 0,
-					grid: {
-					},
+					grid: {},
 				},
 			},
 			interaction: {
@@ -111,7 +122,7 @@ onMounted(() => {
 				},
 				tooltip: {
 					enabled: false,
-					mode: 'index',
+					mode: "index",
 					animation: {
 						duration: 0,
 					},

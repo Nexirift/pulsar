@@ -3,34 +3,37 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as http from 'node:http';
-import * as https from 'node:https';
-import * as net from 'node:net';
-import ipaddr from 'ipaddr.js';
-import CacheableLookup from 'cacheable-lookup';
-import fetch from 'node-fetch';
-import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent';
-import { Inject, Injectable } from '@nestjs/common';
-import { DI } from '@/di-symbols.js';
-import type { Config, PrivateNetwork } from '@/config.js';
-import { StatusError } from '@/misc/status-error.js';
-import { bindThis } from '@/decorators.js';
-import { validateContentTypeSetAsActivityPub } from '@/core/activitypub/misc/validator.js';
-import type { IObject, IObjectWithId } from '@/core/activitypub/type.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
-import { TimeService } from '@/global/TimeService.js';
-import type { Response } from 'node-fetch';
-import type { Socket } from 'node:net';
+import * as http from "node:http";
+import * as https from "node:https";
+import * as net from "node:net";
+import ipaddr from "ipaddr.js";
+import CacheableLookup from "cacheable-lookup";
+import fetch from "node-fetch";
+import { HttpProxyAgent, HttpsProxyAgent } from "hpagent";
+import { Inject, Injectable } from "@nestjs/common";
+import { DI } from "@/di-symbols.js";
+import type { Config, PrivateNetwork } from "@/config.js";
+import { StatusError } from "@/misc/status-error.js";
+import { bindThis } from "@/decorators.js";
+import { validateContentTypeSetAsActivityPub } from "@/core/activitypub/misc/validator.js";
+import type { IObject, IObjectWithId } from "@/core/activitypub/type.js";
+import { UtilityService } from "@/core/UtilityService.js";
+import { ApUtilityService } from "@/core/activitypub/ApUtilityService.js";
+import { TimeService } from "@/global/TimeService.js";
+import type { Response } from "node-fetch";
+import type { Socket } from "node:net";
 
 export type HttpRequestSendOptions = {
 	throwErrorWhenResponseNotOk: boolean;
 	validators?: ((res: Response) => void)[];
 };
 
-export async function isPrivateUrl(url: URL, lookup: net.LookupFunction): Promise<boolean> {
+export async function isPrivateUrl(
+	url: URL,
+	lookup: net.LookupFunction,
+): Promise<boolean> {
 	const ip = await resolveIp(url, lookup);
-	return ip.range() !== 'unicast';
+	return ip.range() !== "unicast";
 }
 
 export async function resolveIp(url: URL, lookup: net.LookupFunction) {
@@ -48,7 +51,11 @@ export async function resolveIp(url: URL, lookup: net.LookupFunction) {
 	return ipaddr.parse(resolvedIp);
 }
 
-export function isAllowedPrivateIp(allowedPrivateNetworks: PrivateNetwork[] | undefined, ip: string, port?: number): boolean {
+export function isAllowedPrivateIp(
+	allowedPrivateNetworks: PrivateNetwork[] | undefined,
+	ip: string,
+	port?: number,
+): boolean {
 	const parsedIp = ipaddr.parse(ip);
 
 	for (const { cidr, ports } of allowedPrivateNetworks ?? []) {
@@ -59,21 +66,29 @@ export function isAllowedPrivateIp(allowedPrivateNetworks: PrivateNetwork[] | un
 		}
 	}
 
-	return parsedIp.range() !== 'unicast';
+	return parsedIp.range() !== "unicast";
 }
 
-export function validateSocketConnect(allowedPrivateNetworks: PrivateNetwork[] | undefined, socket: Socket): void {
+export function validateSocketConnect(
+	allowedPrivateNetworks: PrivateNetwork[] | undefined,
+	socket: Socket,
+): void {
 	const address = socket.remoteAddress;
 	if (address && ipaddr.isValid(address)) {
-		if (isAllowedPrivateIp(allowedPrivateNetworks, address, socket.remotePort)) {
+		if (
+			isAllowedPrivateIp(allowedPrivateNetworks, address, socket.remotePort)
+		) {
 			socket.destroy(new Error(`Blocked address: ${address}`));
 		}
 	}
 }
 
-declare module 'node:http' {
+declare module "node:http" {
 	interface Agent {
-		createConnection(options: net.NetConnectOpts, callback?: (err: Error | null, stream: net.Socket) => void): net.Socket;
+		createConnection(
+			options: net.NetConnectOpts,
+			callback?: (err: Error | null, stream: net.Socket) => void,
+		): net.Socket;
 	}
 }
 
@@ -86,10 +101,14 @@ class HttpRequestServiceAgent extends http.Agent {
 	}
 
 	@bindThis
-	public createConnection(options: net.NetConnectOpts, callback?: (err: Error | null, stream: net.Socket) => void): net.Socket {
-		const socket = super.createConnection(options, callback)
-			.on('connect', () => {
-				if (process.env.NODE_ENV === 'production') {
+	public createConnection(
+		options: net.NetConnectOpts,
+		callback?: (err: Error | null, stream: net.Socket) => void,
+	): net.Socket {
+		const socket = super
+			.createConnection(options, callback)
+			.on("connect", () => {
+				if (process.env.NODE_ENV === "production") {
 					validateSocketConnect(this.config.allowedPrivateNetworks, socket);
 				}
 			});
@@ -106,10 +125,14 @@ class HttpsRequestServiceAgent extends https.Agent {
 	}
 
 	@bindThis
-	public createConnection(options: net.NetConnectOpts, callback?: (err: Error | null, stream: net.Socket) => void): net.Socket {
-		const socket = super.createConnection(options, callback)
-			.on('connect', () => {
-				if (process.env.NODE_ENV === 'production') {
+	public createConnection(
+		options: net.NetConnectOpts,
+		callback?: (err: Error | null, stream: net.Socket) => void,
+	): net.Socket {
+		const socket = super
+			.createConnection(options, callback)
+			.on("connect", () => {
+				if (process.env.NODE_ENV === "production") {
 					validateSocketConnect(this.config.allowedPrivateNetworks, socket);
 				}
 			});
@@ -163,9 +186,9 @@ export class HttpRequestService {
 		private readonly timeService: TimeService,
 	) {
 		const cache = new CacheableLookup({
-			maxTtl: 3600,	// 1hours
-			errorTtl: 30,	// 30secs
-			lookup: false,	// nativeのdns.lookupにfallbackしない
+			maxTtl: 3600, // 1hours
+			errorTtl: 30, // 30secs
+			lookup: false, // nativeのdns.lookupにfallbackしない
 		});
 
 		this.lookup = cache.lookup as unknown as net.LookupFunction;
@@ -189,26 +212,26 @@ export class HttpRequestService {
 
 		this.httpAgent = config.proxy
 			? new HttpProxyAgent({
-				keepAlive: true,
-				keepAliveMsecs: 30 * 1000,
-				maxSockets,
-				maxFreeSockets: 256,
-				scheduling: 'lifo',
-				proxy: config.proxy,
-				localAddress: config.outgoingAddress,
-			})
+					keepAlive: true,
+					keepAliveMsecs: 30 * 1000,
+					maxSockets,
+					maxFreeSockets: 256,
+					scheduling: "lifo",
+					proxy: config.proxy,
+					localAddress: config.outgoingAddress,
+				})
 			: this.http;
 
 		this.httpsAgent = config.proxy
 			? new HttpsProxyAgent({
-				keepAlive: true,
-				keepAliveMsecs: 30 * 1000,
-				maxSockets,
-				maxFreeSockets: 256,
-				scheduling: 'lifo',
-				proxy: config.proxy,
-				localAddress: config.outgoingAddress,
-			})
+					keepAlive: true,
+					keepAliveMsecs: 30 * 1000,
+					maxSockets,
+					maxFreeSockets: 256,
+					scheduling: "lifo",
+					proxy: config.proxy,
+					localAddress: config.outgoingAddress,
+				})
 			: this.https;
 	}
 
@@ -219,17 +242,24 @@ export class HttpRequestService {
 	 * @param isLocalAddressAllowed
 	 */
 	@bindThis
-	public getAgentByUrl(url: URL, bypassProxy = false, isLocalAddressAllowed = false): http.Agent | https.Agent {
-		if (bypassProxy || (this.config.proxyBypassHosts ?? []).includes(url.hostname)) {
+	public getAgentByUrl(
+		url: URL,
+		bypassProxy = false,
+		isLocalAddressAllowed = false,
+	): http.Agent | https.Agent {
+		if (
+			bypassProxy ||
+			(this.config.proxyBypassHosts ?? []).includes(url.hostname)
+		) {
 			if (isLocalAddressAllowed) {
-				return url.protocol === 'http:' ? this.httpNative : this.httpsNative;
+				return url.protocol === "http:" ? this.httpNative : this.httpsNative;
 			}
-			return url.protocol === 'http:' ? this.http : this.https;
+			return url.protocol === "http:" ? this.http : this.https;
 		} else {
-			if (isLocalAddressAllowed && (!this.config.proxy)) {
-				return url.protocol === 'http:' ? this.httpNative : this.httpsNative;
+			if (isLocalAddressAllowed && !this.config.proxy) {
+				return url.protocol === "http:" ? this.httpNative : this.httpsNative;
 			}
-			return url.protocol === 'http:' ? this.httpAgent : this.httpsAgent;
+			return url.protocol === "http:" ? this.httpAgent : this.httpsAgent;
 		}
 	}
 
@@ -241,9 +271,7 @@ export class HttpRequestService {
 	@bindThis
 	public getAgentForHttp(url: URL, isLocalAddressAllowed = false): http.Agent {
 		if ((this.config.proxyBypassHosts ?? []).includes(url.hostname)) {
-			return isLocalAddressAllowed
-				? this.httpNative
-				: this.http;
+			return isLocalAddressAllowed ? this.httpNative : this.http;
 		} else {
 			return this.httpAgent;
 		}
@@ -255,32 +283,42 @@ export class HttpRequestService {
 	 * @param isLocalAddressAllowed
 	 */
 	@bindThis
-	public getAgentForHttps(url: URL, isLocalAddressAllowed = false): https.Agent {
+	public getAgentForHttps(
+		url: URL,
+		isLocalAddressAllowed = false,
+	): https.Agent {
 		if ((this.config.proxyBypassHosts ?? []).includes(url.hostname)) {
-			return isLocalAddressAllowed
-				? this.httpsNative
-				: this.https;
+			return isLocalAddressAllowed ? this.httpsNative : this.https;
 		} else {
 			return this.httpsAgent;
 		}
 	}
 
 	@bindThis
-	public async getActivityJson(url: string, isLocalAddressAllowed = false, allowAnonymous = false): Promise<IObjectWithId> {
-		const res = await this.send(url, {
-			method: 'GET',
-			headers: {
-				Accept: 'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
+	public async getActivityJson(
+		url: string,
+		isLocalAddressAllowed = false,
+		allowAnonymous = false,
+	): Promise<IObjectWithId> {
+		const res = await this.send(
+			url,
+			{
+				method: "GET",
+				headers: {
+					Accept:
+						'application/activity+json, application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
+				},
+				timeout: 5000,
+				size: 1024 * 256,
+				isLocalAddressAllowed: isLocalAddressAllowed,
 			},
-			timeout: 5000,
-			size: 1024 * 256,
-			isLocalAddressAllowed: isLocalAddressAllowed,
-		}, {
-			throwErrorWhenResponseNotOk: true,
-			validators: [validateContentTypeSetAsActivityPub],
-		});
+			{
+				throwErrorWhenResponseNotOk: true,
+				validators: [validateContentTypeSetAsActivityPub],
+			},
+		);
 
-		const activity = await res.json() as IObject;
+		const activity = (await res.json()) as IObject;
 
 		// Make sure the object ID matches the final URL (which is where it actually exists).
 		// The caller (ApResolverService) will verify the ID against the original / entry URL, which ensures that all three match.
@@ -294,27 +332,43 @@ export class HttpRequestService {
 	}
 
 	@bindThis
-	public async getJson<T = unknown>(url: string, accept = 'application/json, */*', headers?: Record<string, string>, isLocalAddressAllowed = false): Promise<T> {
+	public async getJson<T = unknown>(
+		url: string,
+		accept = "application/json, */*",
+		headers?: Record<string, string>,
+		isLocalAddressAllowed = false,
+	): Promise<T> {
 		const res = await this.send(url, {
-			method: 'GET',
-			headers: Object.assign({
-				Accept: accept,
-			}, headers ?? {}),
+			method: "GET",
+			headers: Object.assign(
+				{
+					Accept: accept,
+				},
+				headers ?? {},
+			),
 			timeout: 5000,
 			size: 1024 * 256,
 			isLocalAddressAllowed: isLocalAddressAllowed,
 		});
 
-		return await res.json() as T;
+		return (await res.json()) as T;
 	}
 
 	@bindThis
-	public async getHtml(url: string, accept = 'text/html, */*', headers?: Record<string, string>, isLocalAddressAllowed = false): Promise<string> {
+	public async getHtml(
+		url: string,
+		accept = "text/html, */*",
+		headers?: Record<string, string>,
+		isLocalAddressAllowed = false,
+	): Promise<string> {
 		const res = await this.send(url, {
-			method: 'GET',
-			headers: Object.assign({
-				Accept: accept,
-			}, headers ?? {}),
+			method: "GET",
+			headers: Object.assign(
+				{
+					Accept: accept,
+				},
+				headers ?? {},
+			),
 			timeout: 5000,
 			isLocalAddressAllowed: isLocalAddressAllowed,
 		});
@@ -326,13 +380,13 @@ export class HttpRequestService {
 	public async send(
 		url: string,
 		args: {
-			method?: string,
-			body?: string,
-			headers?: Record<string, string>,
-			timeout?: number,
-			size?: number,
-			isLocalAddressAllowed?: boolean,
-			allowHttp?: boolean,
+			method?: string;
+			body?: string;
+			headers?: Record<string, string>;
+			timeout?: number;
+			size?: number;
+			isLocalAddressAllowed?: boolean;
+			allowHttp?: boolean;
 		} = {},
 		extra: HttpRequestSendOptions = {
 			throwErrorWhenResponseNotOk: true,
@@ -342,7 +396,8 @@ export class HttpRequestService {
 		const timeout = args.timeout ?? 5000;
 
 		const parsedUrl = new URL(url);
-		const allowHttp = args.allowHttp || await isPrivateUrl(parsedUrl, this.lookup);
+		const allowHttp =
+			args.allowHttp || (await isPrivateUrl(parsedUrl, this.lookup));
 		this.utilityService.assertUrl(parsedUrl, allowHttp);
 
 		const controller = new AbortController();
@@ -353,9 +408,9 @@ export class HttpRequestService {
 		const isLocalAddressAllowed = args.isLocalAddressAllowed ?? false;
 
 		const res = await fetch(parsedUrl, {
-			method: args.method ?? 'GET',
+			method: args.method ?? "GET",
 			headers: {
-				'User-Agent': this.config.userAgent,
+				"User-Agent": this.config.userAgent,
 				...(args.headers ?? {}),
 			},
 			body: args.body,
@@ -365,11 +420,15 @@ export class HttpRequestService {
 		});
 
 		if (!res.ok && extra.throwErrorWhenResponseNotOk) {
-			throw new StatusError(`request error from ${url}`, res.status, res.statusText);
+			throw new StatusError(
+				`request error from ${url}`,
+				res.status,
+				res.statusText,
+			);
 		}
 
 		if (res.ok) {
-			for (const validator of (extra.validators ?? [])) {
+			for (const validator of extra.validators ?? []) {
 				validator(res);
 			}
 		}

@@ -4,13 +4,15 @@
  */
 
 export class SidebarLogo1727027985575 {
-    name = 'SidebarLogo1727027985575';
+	name = "SidebarLogo1727027985575";
 
-    async up(queryRunner) {
-        await queryRunner.query(`ALTER TABLE "meta" ADD "sidebarLogoUrl" character varying(1024)`);
-    }
+	async up(queryRunner) {
+		await queryRunner.query(
+			`ALTER TABLE "meta" ADD "sidebarLogoUrl" character varying(1024)`,
+		);
+	}
 
-    async down(queryRunner) {
-        await queryRunner.query(`ALTER TABLE "meta" DROP COLUMN "sidebarLogoUrl"`);
-    }
+	async down(queryRunner) {
+		await queryRunner.query(`ALTER TABLE "meta" DROP COLUMN "sidebarLogoUrl"`);
+	}
 }

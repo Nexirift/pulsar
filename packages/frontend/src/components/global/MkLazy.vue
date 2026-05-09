@@ -4,37 +4,42 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div ref="rootEl" :class="$style.root">
-	<div v-if="!showing" :class="$style.placeholder"></div>
-	<slot v-else></slot>
-</div>
+	<div ref="rootEl" :class="$style.root">
+		<div v-if="!showing" :class="$style.placeholder"></div>
+		<slot v-else></slot>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, onActivated, onBeforeUnmount, ref, useTemplateRef } from 'vue';
+import {
+	nextTick,
+	onMounted,
+	onActivated,
+	onBeforeUnmount,
+	ref,
+	useTemplateRef,
+} from "vue";
 
-const rootEl = useTemplateRef('rootEl');
+const rootEl = useTemplateRef("rootEl");
 const showing = ref(false);
 
 defineExpose({ rootEl, showing });
 
 const emit = defineEmits<{
-	(ev: 'show'): void,
+	(ev: "show"): void;
 }>();
 
-const observer = new IntersectionObserver(
-	(entries) => {
-		if (entries.some((entry) => entry.isIntersecting)) {
-			showing.value = true;
+const observer = new IntersectionObserver((entries) => {
+	if (entries.some((entry) => entry.isIntersecting)) {
+		showing.value = true;
 
-			// Disconnect to avoid observer soft-leaks
-			observer.disconnect();
+		// Disconnect to avoid observer soft-leaks
+		observer.disconnect();
 
-			// Notify containing element to trigger edge logic
-			emit('show');
-		}
-	},
-);
+		// Notify containing element to trigger edge logic
+		emit("show");
+	}
+});
 
 onMounted(() => {
 	nextTick(() => {

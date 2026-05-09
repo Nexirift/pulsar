@@ -81,7 +81,7 @@ import: "Importă"
 export: "Exportă"
 files: "Fișiere"
 download: "Descarcă"
-driveFileDeleteConfirm: "Ești sigur(ă) că vrei să ștergi fișierul \"{name}\"? Notele atașate fișierului vor fi și ele șterse."
+driveFileDeleteConfirm: 'Ești sigur(ă) că vrei să ștergi fișierul "{name}"? Notele atașate fișierului vor fi și ele șterse.'
 unfollowConfirm: "Ești sigur(ă) că vrei să nu mai urmărești pe {name}?"
 exportRequested: "Ai cerut un export. S-ar putea să ia un pic. Va fi adăugat in Drive-ul tău odată completat."
 importRequested: "Ai cerut un import. S-ar putea să ia un pic."
@@ -136,7 +136,7 @@ pinnedEmojisSettingDescription: "Poți seta emoji-urile să fie fixate și afiș
 emojiPickerDisplay: "Meniu de selectare ale reacțiilor."
 overwriteFromPinnedEmojisForReaction: "Ignoră din setările de reacție."
 overwriteFromPinnedEmojis: "Ignoră din setările generale."
-reactionSettingDescription2: "Trage pentru a rearanja, apasă pe \"+\" pentru a adăuga."
+reactionSettingDescription2: 'Trage pentru a rearanja, apasă pe "+" pentru a adăuga.'
 rememberNoteVisibility: "Amintește setarea de vizibilitate a notelor"
 attachCancel: "Înlătură atașament"
 deleteFile: "Șterge fișierul."
@@ -391,7 +391,7 @@ bannerUrl: "URL-ul imaginii de banner"
 backgroundImageUrl: "URL-ul imaginii de fundal"
 basicInfo: "Informații de bază"
 pinnedUsers: "Utilizatori fixați"
-pinnedUsersDescription: "Scrie utilizatorii, separați prin o linie de rând, care vor fi fixați pe pagina \"Explorează\"."
+pinnedUsersDescription: 'Scrie utilizatorii, separați prin o linie de rând, care vor fi fixați pe pagina "Explorează".'
 pinnedPages: "Pagini fixate"
 pinnedPagesDescription: "Introdu linkurile Paginilor pe care le vrei fixate in vârful paginii acestei instanțe, separate de o linie de spațiere."
 pinnedClipId: "ID-ul clip-ului pe care să îl fixezi"
@@ -467,7 +467,7 @@ unregister: "Dezînregistrează"
 passwordLessLogin: "Autentificare fără parolă"
 passwordLessLoginDescription: "Permite autentificare fără parolă folosind doar o cheie de securitate sau o cheie de acces"
 resetPassword: "Resetează parola"
-newPasswordIs: "Noua parolă este \"{password}\""
+newPasswordIs: 'Noua parolă este "{password}"'
 reduceUiAnimation: "Redu animațiile interfeței"
 share: "Distribuie"
 notFound: "Nu a fost găsit"
@@ -567,7 +567,7 @@ objectStorageUseSSL: "Folosește SSl"
 objectStorageUseSSLDesc: "Oprește această opțiune dacă nu vei folosi HTTPS pentru conexiunile API-ului"
 objectStorageUseProxy: "Conectează-te prin Proxy"
 objectStorageUseProxyDesc: "Oprește această opțiune dacă vei nu folosi un Proxy pentru conexiunile API-ului"
-objectStorageSetPublicRead: "Setează \"public-read\" pentru încărcare"
+objectStorageSetPublicRead: 'Setează "public-read" pentru încărcare'
 s3ForcePathStyleDesc: "Dacă s3ForcePathStyle este activat, numele compartimentului trebuie inclus în calea adresei URL, spre deosebire de numele de gazdă(hostname) al adresei URL. Poate fi necesar să activezi această setare atunci când utilizezi servicii precum o instanță Minio găzduită de sine(self-hosted)."
 serverLogs: "Loguri server"
 deleteAll: "Șterge tot"
@@ -783,7 +783,7 @@ experimental: "Experimental"
 thisIsExperimentalFeature: "Aceasta este o funcție experimentală. Funcționalitatea sa este supusă modificării și este posibil să nu funcționeze conform intenției."
 developer: "Dezvoltator"
 makeExplorable: "Fă-ți contul vizibil în secțiunea„Explorați”"
-makeExplorableDescription: "Dacă dezactivezi această opțiune, contul dvs. nu va fi vizibil în secțiunea\"Explorați\"."
+makeExplorableDescription: 'Dacă dezactivezi această opțiune, contul dvs. nu va fi vizibil în secțiunea"Explorați".'
 showGapBetweenNotesInTimeline: "Afișați un decalaj între postările de pe cronologie"
 duplicate: "Duplicat"
 left: "Stânga"
@@ -1080,10 +1080,10 @@ rolesAssignedToMe: "Roluri asignate mie"
 resetPasswordConfirm: "Sigur vrei sa îți resetezi parola"
 sensitiveWords: "Cuvinte sensibile"
 sensitiveWordsDescription: "Vizibilitatea tuturor notelor care conțin oricare dintre cuvintele configurate va fi setate automat la „Acasă”. Puteți enumera mai multe, separându-le prin o linie de spațiere nouă."
-sensitiveWordsDescription2: "Folosirea spațiilor va crea expresii \"AND\" și înconjurând cuvintele cheie cu bare oblice le vor transforma într-o expresie obișnuită."
+sensitiveWordsDescription2: 'Folosirea spațiilor va crea expresii "AND" și înconjurând cuvintele cheie cu bare oblice le vor transforma într-o expresie obișnuită.'
 prohibitedWords: "Cuvinte interzise"
 prohibitedWordsDescription: "Activează o eroare la încercarea de a posta o notă care conține cuvintele setate. Pot fi setate mai multe cuvinte, separate printr-o linie de spațiere nouă."
-prohibitedWordsDescription2: "Folosirea spațiilor va crea expresii \"AND\" și înconjurând cuvintele cheie cu bare oblice le vor transforma într-o expresie obișnuită."
+prohibitedWordsDescription2: 'Folosirea spațiilor va crea expresii "AND" și înconjurând cuvintele cheie cu bare oblice le vor transforma într-o expresie obișnuită.'
 hiddenTags: "Hashtag-uri ascunse"
 hiddenTagsDescription: "Selectați hashtag-uri care nu vor fi afișate în lista de tendințe.\nMai multe hashtag-uri pot fi înregistrate pe o linie de spațiere noua."
 notesSearchNotAvailable: "Căutarea notelor este indisponibilă."
@@ -1243,7 +1243,7 @@ _initialTutorial:
       description: "În locul corpului, va fi afișat conținutul scris în câmpul „comentarii”. Apăsând „citește mai mult” va dezvălui corpul."
       useCases: "Acesta este folosit atunci când respectați instrucțiunile serverului, pentru notele necesare sau pentru auto-restrângerea spoilerului sau a textului sensibil."
 _timelineDescription:
-  social: "Cronologia socială afișează note atât din cronologia de ,,Acasă'', cât și din cea ,,Locală\"."
+  social: 'Cronologia socială afișează note atât din cronologia de ,,Acasă'''', cât și din cea ,,Locală".'
 _role:
   assignTarget: "Asignează"
   priority: "Prioritate"
@@ -1379,7 +1379,7 @@ _reversi:
   total: "Total"
 _contextMenu:
   app: "Aplicație"
-  appWithShift: "Aplicatie ce utilizeaza tasta ,,shift\""
+  appWithShift: 'Aplicatie ce utilizeaza tasta ,,shift"'
   native: "Nativ"
 _customEmojisManager:
   _gridCommon:

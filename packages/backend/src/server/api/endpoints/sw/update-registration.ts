@@ -3,44 +3,48 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import type { SwSubscriptionsRepository } from '@/models/_.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { DI } from '@/di-symbols.js';
-import { PushNotificationService } from '@/core/PushNotificationService.js';
-import { ApiError } from '../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import type { SwSubscriptionsRepository } from "@/models/_.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { DI } from "@/di-symbols.js";
+import { PushNotificationService } from "@/core/PushNotificationService.js";
+import { ApiError } from "../../error.js";
 
 export const meta = {
-	tags: ['account'],
+	tags: ["account"],
 
 	requireCredential: true,
 	secure: true,
 
-	description: 'Update push notification registration.',
+	description: "Update push notification registration.",
 
 	res: {
-		type: 'object',
-		optional: false, nullable: false,
+		type: "object",
+		optional: false,
+		nullable: false,
 		properties: {
 			userId: {
-				type: 'string',
-				optional: false, nullable: false,
+				type: "string",
+				optional: false,
+				nullable: false,
 			},
 			endpoint: {
-				type: 'string',
-				optional: false, nullable: false,
+				type: "string",
+				optional: false,
+				nullable: false,
 			},
 			sendReadMessage: {
-				type: 'boolean',
-				optional: false, nullable: false,
+				type: "boolean",
+				optional: false,
+				nullable: false,
 			},
 		},
 	},
 	errors: {
 		noSuchRegistration: {
-			message: 'No such registration.',
-			code: 'NO_SUCH_REGISTRATION',
-			id: ' b09d8066-8064-5613-efb6-0e963b21d012',
+			message: "No such registration.",
+			code: "NO_SUCH_REGISTRATION",
+			id: " b09d8066-8064-5613-efb6-0e963b21d012",
 		},
 	},
 
@@ -52,16 +56,17 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		endpoint: { type: 'string' },
-		sendReadMessage: { type: 'boolean' },
+		endpoint: { type: "string" },
+		sendReadMessage: { type: "boolean" },
 	},
-	required: ['endpoint'],
+	required: ["endpoint"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.swSubscriptionsRepository)
 		private swSubscriptionsRepository: SwSubscriptionsRepository,

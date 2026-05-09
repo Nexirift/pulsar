@@ -3,15 +3,15 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { parseFeed } from 'htmlparser2';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { HttpRequestService } from '@/core/HttpRequestService.js';
-import { ApiError } from '../error.js';
-import type { FeedItem } from 'domutils';
+import { Injectable } from "@nestjs/common";
+import { parseFeed } from "htmlparser2";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { HttpRequestService } from "@/core/HttpRequestService.js";
+import { ApiError } from "../error.js";
+import type { FeedItem } from "domutils";
 
 export const meta = {
-	tags: ['meta'],
+	tags: ["meta"],
 
 	requireCredential: false,
 	allowGet: true,
@@ -19,85 +19,85 @@ export const meta = {
 
 	errors: {
 		fetchFailed: {
-			id: '88f4356f-719d-4715-b4fc-703a10a812d2',
-			code: 'FETCH_FAILED',
-			message: 'Failed to fetch RSS feed',
+			id: "88f4356f-719d-4715-b4fc-703a10a812d2",
+			code: "FETCH_FAILED",
+			message: "Failed to fetch RSS feed",
 		},
 	},
 
 	res: {
-		type: 'object',
+		type: "object",
 		properties: {
 			type: {
-				type: 'string',
+				type: "string",
 				optional: false,
 			},
 			id: {
-				type: 'string',
+				type: "string",
 				optional: true,
 			},
 			updated: {
-				type: 'string',
+				type: "string",
 				optional: true,
 			},
 			author: {
-				type: 'string',
+				type: "string",
 				optional: true,
 			},
 			link: {
-				type: 'string',
+				type: "string",
 				optional: true,
 			},
 			title: {
-				type: 'string',
+				type: "string",
 				optional: true,
 			},
 			items: {
-				type: 'array',
+				type: "array",
 				optional: false,
 				items: {
-					type: 'object',
+					type: "object",
 					properties: {
 						link: {
-							type: 'string',
+							type: "string",
 							optional: true,
 						},
 						guid: {
-							type: 'string',
+							type: "string",
 							optional: true,
 						},
 						title: {
-							type: 'string',
+							type: "string",
 							optional: true,
 						},
 						pubDate: {
-							type: 'string',
+							type: "string",
 							optional: true,
 						},
 						description: {
-							type: 'string',
+							type: "string",
 							optional: true,
 						},
 						media: {
-							type: 'array',
+							type: "array",
 							optional: false,
 							items: {
-								type: 'object',
+								type: "object",
 								properties: {
 									medium: {
-										type: 'string',
+										type: "string",
 										optional: true,
 									},
 									url: {
-										type: 'string',
+										type: "string",
 										optional: true,
 									},
 									type: {
-										type: 'string',
+										type: "string",
 										optional: true,
 									},
 									lang: {
-										type: 'string',
+										type: "string",
 										optional: true,
 									},
 								},
@@ -107,7 +107,7 @@ export const meta = {
 				},
 			},
 			description: {
-				type: 'string',
+				type: "string",
 				optional: true,
 			},
 		},
@@ -121,23 +121,22 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		url: { type: 'string' },
+		url: { type: "string" },
 	},
-	required: ['url'],
+	required: ["url"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private httpRequestService: HttpRequestService,
-	) {
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
+	constructor(private httpRequestService: HttpRequestService) {
 		super(meta, paramDef, async (ps) => {
 			const res = await this.httpRequestService.send(ps.url, {
-				method: 'GET',
+				method: "GET",
 				headers: {
-					Accept: 'application/rss+xml, */*',
+					Accept: "application/rss+xml, */*",
 				},
 				timeout: 5000,
 			});
@@ -160,14 +159,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				updated: feed.updated?.toISOString(),
 				author: feed.author,
 				items: feed.items
-					.filter((item): item is FeedItem & { link: string, title: string } => !!item.link && !!item.title)
-					.map(item => ({
+					.filter(
+						(item): item is FeedItem & { link: string; title: string } =>
+							!!item.link && !!item.title,
+					)
+					.map((item) => ({
 						guid: item.id,
 						title: item.title,
 						link: item.link,
 						description: item.description,
 						pubDate: item.pubDate?.toISOString(),
-						media: item.media.map(media => ({
+						media: item.media.map((media) => ({
 							medium: media.medium,
 							url: media.url,
 							type: media.type,

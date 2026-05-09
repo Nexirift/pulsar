@@ -4,16 +4,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkTooltip ref="tooltip" :showing="showing" :targetElement="targetElement" :maxWidth="250" @closed="emit('closed')">
-	<div :class="$style.root">
-		{{ content }}
-	</div>
-</MkTooltip>
+	<MkTooltip
+		ref="tooltip"
+		:showing="showing"
+		:targetElement="targetElement"
+		:maxWidth="250"
+		@closed="emit('closed')"
+	>
+		<div :class="$style.root">
+			{{ content }}
+		</div>
+	</MkTooltip>
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
-import MkTooltip from '@/components/MkTooltip.vue';
+import {} from "vue";
+import MkTooltip from "@/components/MkTooltip.vue";
 
 defineProps<{
 	showing: boolean;
@@ -22,7 +28,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'closed'): void;
+	(ev: "closed"): void;
 }>();
 </script>
 

@@ -3,28 +3,29 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AppsRepository } from '@/models/_.js';
-import { AppEntityService } from '@/core/entities/AppEntityService.js';
-import { DI } from '@/di-symbols.js';
-import { ApiError } from '../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { AppsRepository } from "@/models/_.js";
+import { AppEntityService } from "@/core/entities/AppEntityService.js";
+import { DI } from "@/di-symbols.js";
+import { ApiError } from "../../error.js";
 
 export const meta = {
-	tags: ['app'],
+	tags: ["app"],
 
 	errors: {
 		noSuchApp: {
-			message: 'No such app.',
-			code: 'NO_SUCH_APP',
-			id: 'dce83913-2dc6-4093-8a7b-71dbb11718a3',
+			message: "No such app.",
+			code: "NO_SUCH_APP",
+			id: "dce83913-2dc6-4093-8a7b-71dbb11718a3",
 		},
 	},
 
 	res: {
-		type: 'object',
-		optional: false, nullable: false,
-		ref: 'App',
+		type: "object",
+		optional: false,
+		nullable: false,
+		ref: "App",
 	},
 
 	// 10 calls per 5 seconds
@@ -35,15 +36,16 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		appId: { type: 'string', format: 'misskey:id' },
+		appId: { type: "string", format: "misskey:id" },
 	},
-	required: ['appId'],
+	required: ["appId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.appsRepository)
 		private appsRepository: AppsRepository,
@@ -62,7 +64,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			return await this.appEntityService.pack(ap, user, {
 				detail: true,
-				includeSecret: isSecure && (ap.userId === user!.id),
+				includeSecret: isSecure && ap.userId === user!.id,
 			});
 		});
 	}

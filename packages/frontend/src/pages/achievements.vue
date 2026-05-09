@@ -4,29 +4,30 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader>
-	<div class="_spacer" style="--MI_SPACER-w: 1200px;">
-		<MkAchievements :user="$i"/>
-	</div>
-</PageWithHeader>
+	<PageWithHeader>
+		<div class="_spacer" style="--MI_SPACER-w: 1200px">
+			<MkAchievements :user="$i" />
+		</div>
+	</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { onActivated, onDeactivated, onMounted, onUnmounted } from 'vue';
-import MkAchievements from '@/components/MkAchievements.vue';
-import { i18n } from '@/i18n.js';
-import { definePage } from '@/page.js';
-import { $i } from '@/i.js';
-import { claimAchievement } from '@/utility/achievements.js';
+import { onActivated, onDeactivated, onMounted, onUnmounted } from "vue";
+import MkAchievements from "@/components/MkAchievements.vue";
+import { i18n } from "@/i18n.js";
+import { definePage } from "@/page.js";
+import { $i } from "@/i.js";
+import { claimAchievement } from "@/utility/achievements.js";
 
 let timer: number | null;
 
 function viewAchievements3min() {
-	claimAchievement('viewAchievements3min');
+	claimAchievement("viewAchievements3min");
 }
 
 onMounted(() => {
-	if (timer == null) timer = window.setTimeout(viewAchievements3min, 1000 * 60 * 3);
+	if (timer == null)
+		timer = window.setTimeout(viewAchievements3min, 1000 * 60 * 3);
 });
 
 onUnmounted(() => {
@@ -37,7 +38,8 @@ onUnmounted(() => {
 });
 
 onActivated(() => {
-	if (timer == null) timer = window.setTimeout(viewAchievements3min, 1000 * 60 * 3);
+	if (timer == null)
+		timer = window.setTimeout(viewAchievements3min, 1000 * 60 * 3);
 });
 
 onDeactivated(() => {
@@ -49,10 +51,8 @@ onDeactivated(() => {
 
 definePage(() => ({
 	title: i18n.ts.achievements,
-	icon: 'ti ti-medal',
+	icon: "ti ti-medal",
 }));
 </script>
 
-<style lang="scss" module>
-
-</style>
+<style lang="scss" module></style>

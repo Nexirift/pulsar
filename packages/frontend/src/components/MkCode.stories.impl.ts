@@ -5,8 +5,8 @@
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable import/no-default-export */
-import type { StoryObj } from '@storybook/vue3';
-import MkCode from './MkCode.vue';
+import type { StoryObj } from "@storybook/vue3";
+import MkCode from "./MkCode.vue";
 const code = `for (let i, 100) {
 	<: if (i % 15 == 0) "FizzBuzz"
 		elif (i % 3 == 0) "Fizz"
@@ -36,9 +36,9 @@ export const Default = {
 	},
 	args: {
 		code,
-		lang: 'is',
+		lang: "is",
 	},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkCode>;

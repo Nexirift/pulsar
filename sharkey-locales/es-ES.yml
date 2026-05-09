@@ -1,5 +1,5 @@
 ---
-antennaUsersDescription: "Elegir nombres de usuarios separados por una linea nueva. Utilice \"*@instance.com\" para especificar todos los usuarios de una instancia."
+antennaUsersDescription: 'Elegir nombres de usuarios separados por una linea nueva. Utilice "*@instance.com" para especificar todos los usuarios de una instancia.'
 disableDrawer: "No mostrar los menús en cajones"
 forwardReport: "Transferir un informe a una instancia remota"
 forwardReportIsAnonymous: "No puede ver su información de la instancia remota y aparecerá como una cuenta anónima del sistema"

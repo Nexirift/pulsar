@@ -3,13 +3,20 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Entity, Index, JoinColumn, Column, ManyToOne, PrimaryColumn } from 'typeorm';
-import { id } from './util/id.js';
-import { MiNote } from './Note.js';
-import { MiClip } from './Clip.js';
+import {
+	Entity,
+	Index,
+	JoinColumn,
+	Column,
+	ManyToOne,
+	PrimaryColumn,
+} from "typeorm";
+import { id } from "./util/id.js";
+import { MiNote } from "./Note.js";
+import { MiClip } from "./Clip.js";
 
-@Entity('clip_note')
-@Index(['noteId', 'clipId'], { unique: true })
+@Entity("clip_note")
+@Index(["noteId", "clipId"], { unique: true })
 export class MiClipNote {
 	@PrimaryColumn(id())
 	public id: string;
@@ -17,12 +24,12 @@ export class MiClipNote {
 	@Index()
 	@Column({
 		...id(),
-		comment: 'The note ID.',
+		comment: "The note ID.",
 	})
-	public noteId: MiNote['id'];
+	public noteId: MiNote["id"];
 
-	@ManyToOne(type => MiNote, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiNote, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public note: MiNote | null;
@@ -30,12 +37,12 @@ export class MiClipNote {
 	@Index()
 	@Column({
 		...id(),
-		comment: 'The clip ID.',
+		comment: "The clip ID.",
 	})
-	public clipId: MiClip['id'];
+	public clipId: MiClip["id"];
 
-	@ManyToOne(type => MiClip, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiClip, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public clip: MiClip | null;

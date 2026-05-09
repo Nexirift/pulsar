@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { permissions } from '@/const.js';
-import type { KeyOf, Schema } from '@/misc/json-schema.js';
-import type { RateLimit } from '@/misc/rate-limit-utils.js';
+import { permissions } from "@/const.js";
+import type { KeyOf, Schema } from "@/misc/json-schema.js";
+import type { RateLimit } from "@/misc/rate-limit-utils.js";
 
-import * as endpointsObject from './endpoint-list.js';
+import * as endpointsObject from "./endpoint-list.js";
 
 interface IEndpointMetaBase {
-	readonly stability?: 'deprecated' | 'experimental' | 'stable';
+	readonly stability?: "deprecated" | "experimental" | "stable";
 
 	readonly tags?: ReadonlyArray<string>;
 
@@ -40,7 +40,7 @@ interface IEndpointMetaBase {
 	 */
 	readonly requireAdmin?: boolean;
 
-	readonly requiredRolePolicy?: KeyOf<'RolePolicies'>;
+	readonly requiredRolePolicy?: KeyOf<"RolePolicies">;
 
 	/**
 	 * 引っ越し済みのユーザーによるリクエストを禁止するか
@@ -85,22 +85,30 @@ interface IEndpointMetaBase {
 	readonly cacheSec?: number;
 }
 
-export type IEndpointMeta = (Omit<IEndpointMetaBase, 'requireCrential' | 'requireModerator' | 'requireAdmin'> & {
-	requireCredential?: false,
-	requireAdmin?: false,
-	requireModerator?: false,
-}) | (Omit<IEndpointMetaBase, 'secure'> & {
-	secure: true,
-}) | (Omit<IEndpointMetaBase, 'requireCredential' | 'kind'> & {
-	requireCredential: true | 'optional',
-	kind: (typeof permissions)[number],
-}) | (Omit<IEndpointMetaBase, 'requireModerator' | 'kind'> & {
-	requireModerator: true,
-	kind: (typeof permissions)[number],
-}) | (Omit<IEndpointMetaBase, 'requireAdmin' | 'kind'> & {
-	requireAdmin: true,
-	kind: (typeof permissions)[number],
-});
+export type IEndpointMeta =
+	| (Omit<
+			IEndpointMetaBase,
+			"requireCrential" | "requireModerator" | "requireAdmin"
+	  > & {
+			requireCredential?: false;
+			requireAdmin?: false;
+			requireModerator?: false;
+	  })
+	| (Omit<IEndpointMetaBase, "secure"> & {
+			secure: true;
+	  })
+	| (Omit<IEndpointMetaBase, "requireCredential" | "kind"> & {
+			requireCredential: true | "optional";
+			kind: (typeof permissions)[number];
+	  })
+	| (Omit<IEndpointMetaBase, "requireModerator" | "kind"> & {
+			requireModerator: true;
+			kind: (typeof permissions)[number];
+	  })
+	| (Omit<IEndpointMetaBase, "requireAdmin" | "kind"> & {
+			requireAdmin: true;
+			kind: (typeof permissions)[number];
+	  });
 
 export interface IEndpoint {
 	name: string;
@@ -108,17 +116,19 @@ export interface IEndpoint {
 	params: Schema;
 }
 
-const endpoints: IEndpoint[] = Object.entries(endpointsObject).map(([name, ep]) => {
-	return {
-		name: name,
-		get meta() {
-			return ep.meta ?? {};
-		},
-		get params() {
-			return ep.paramDef;
-		},
-	};
-});
+const endpoints: IEndpoint[] = Object.entries(endpointsObject).map(
+	([name, ep]) => {
+		return {
+			name: name,
+			get meta() {
+				return ep.meta ?? {};
+			},
+			get params() {
+				return ep.paramDef;
+			},
+		};
+	},
+);
 
 // eslint-disable-next-line import/no-default-export
 export default endpoints;

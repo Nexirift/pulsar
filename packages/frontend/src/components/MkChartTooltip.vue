@@ -4,22 +4,37 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkTooltip ref="tooltip" :showing="showing" :x="x" :y="y" :maxWidth="340" :direction="'top'" :innerMargin="16" @closed="emit('closed')">
-	<div v-if="title || series">
-		<div v-if="title" :class="$style.title">{{ title }}</div>
-		<template v-if="series">
-			<div v-for="x in series">
-				<span :class="$style.color" :style="{ background: x.backgroundColor, borderColor: x.borderColor }"></span>
-				<span>{{ x.text }}</span>
-			</div>
-		</template>
-	</div>
-</MkTooltip>
+	<MkTooltip
+		ref="tooltip"
+		:showing="showing"
+		:x="x"
+		:y="y"
+		:maxWidth="340"
+		:direction="'top'"
+		:innerMargin="16"
+		@closed="emit('closed')"
+	>
+		<div v-if="title || series">
+			<div v-if="title" :class="$style.title">{{ title }}</div>
+			<template v-if="series">
+				<div v-for="x in series">
+					<span
+						:class="$style.color"
+						:style="{
+							background: x.backgroundColor,
+							borderColor: x.borderColor,
+						}"
+					></span>
+					<span>{{ x.text }}</span>
+				</div>
+			</template>
+		</div>
+	</MkTooltip>
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
-import MkTooltip from './MkTooltip.vue';
+import {} from "vue";
+import MkTooltip from "./MkTooltip.vue";
 
 defineProps<{
 	showing: boolean;
@@ -34,7 +49,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'closed'): void;
+	(ev: "closed"): void;
 }>();
 </script>
 

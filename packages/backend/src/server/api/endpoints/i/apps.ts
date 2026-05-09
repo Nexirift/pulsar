@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AccessTokensRepository } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
-import { IdService } from '@/core/IdService.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { CacheService } from '@/core/CacheService.js';
-import { QueryService } from '@/core/QueryService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { AccessTokensRepository } from "@/models/_.js";
+import { DI } from "@/di-symbols.js";
+import { IdService } from "@/core/IdService.js";
+import { UserEntityService } from "@/core/entities/UserEntityService.js";
+import { CacheService } from "@/core/CacheService.js";
+import { QueryService } from "@/core/QueryService.js";
 
 export const meta = {
 	requireCredential: true,
@@ -18,49 +18,49 @@ export const meta = {
 	secure: true,
 
 	res: {
-		type: 'array',
+		type: "array",
 		items: {
-			type: 'object',
+			type: "object",
 			properties: {
 				id: {
-					type: 'string',
+					type: "string",
 					optional: false,
-					format: 'misskey:id',
+					format: "misskey:id",
 				},
 				name: {
-					type: 'string',
+					type: "string",
 					optional: true,
 				},
 				createdAt: {
-					type: 'string',
+					type: "string",
 					optional: false,
-					format: 'date-time',
+					format: "date-time",
 				},
 				lastUsedAt: {
-					type: 'string',
+					type: "string",
 					optional: true,
-					format: 'date-time',
+					format: "date-time",
 				},
 				permission: {
-					type: 'array',
+					type: "array",
 					optional: false,
 					uniqueItems: true,
 					items: {
-						type: 'string',
+						type: "string",
 					},
 				},
 				grantees: {
-					type: 'array',
+					type: "array",
 					optional: false,
 					items: {
-						ref: 'UserLite',
+						ref: "UserLite",
 					},
 				},
 				rank: {
-					type: 'string',
+					type: "string",
 					optional: false,
 					nullable: true,
-					enum: ['admin', 'mod', 'user'],
+					enum: ["admin", "mod", "user"],
 				},
 			},
 		},
@@ -74,19 +74,23 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		sort: { type: 'string', enum: ['+createdAt', '-createdAt', '+lastUsedAt', '-lastUsedAt'] },
-		onlySharedAccess: { type: 'boolean' },
-		limit: { type: 'integer', minimum: 1, maximum: 100, default: 30 },
-		sinceId: { type: 'string', format: 'misskey:id' },
-		untilId: { type: 'string', format: 'misskey:id' },
+		sort: {
+			type: "string",
+			enum: ["+createdAt", "-createdAt", "+lastUsedAt", "-lastUsedAt"],
+		},
+		onlySharedAccess: { type: "boolean" },
+		limit: { type: "integer", minimum: 1, maximum: 100, default: 30 },
+		sinceId: { type: "string", format: "misskey:id" },
+		untilId: { type: "string", format: "misskey:id" },
 	},
 	required: [],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.accessTokensRepository)
 		private accessTokensRepository: AccessTokensRepository,
@@ -97,30 +101,50 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private idService: IdService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const query = this.queryService.makePaginationQuery(this.accessTokensRepository.createQueryBuilder('token'), ps.sinceId, ps.untilId)
-				.where('token.userId = :userId', { userId: me.id })
+			const query = this.queryService
+				.makePaginationQuery(
+					this.accessTokensRepository.createQueryBuilder("token"),
+					ps.sinceId,
+					ps.untilId,
+				)
+				.where("token.userId = :userId", { userId: me.id })
 				.limit(ps.limit)
-				.leftJoinAndSelect('token.app', 'app');
+				.leftJoinAndSelect("token.app", "app");
 
 			switch (ps.sort) {
-				case '+createdAt': query.orderBy('token.id', 'DESC'); break;
-				case '-createdAt': query.orderBy('token.id', 'ASC'); break;
-				case '+lastUsedAt': query.orderBy('token.lastUsedAt', 'DESC'); break;
-				case '-lastUsedAt': query.orderBy('token.lastUsedAt', 'ASC'); break;
-				default: query.orderBy('token.id', 'ASC'); break;
+				case "+createdAt":
+					query.orderBy("token.id", "DESC");
+					break;
+				case "-createdAt":
+					query.orderBy("token.id", "ASC");
+					break;
+				case "+lastUsedAt":
+					query.orderBy("token.lastUsedAt", "DESC");
+					break;
+				case "-lastUsedAt":
+					query.orderBy("token.lastUsedAt", "ASC");
+					break;
+				default:
+					query.orderBy("token.id", "ASC");
+					break;
 			}
 
 			if (ps.onlySharedAccess) {
-				query.andWhere('token.granteeIds != \'{}\'');
+				query.andWhere("token.granteeIds != '{}'");
 			}
 
 			const tokens = await query.getMany();
 
-			const users = await this.cacheService.findUsersById(tokens.flatMap(token => token.granteeIds));
-			const packedUsers = await this.userEntityService.packMany(Array.from(users.values()), me);
-			const packedUserMap = new Map(packedUsers.map(u => [u.id, u]));
+			const users = await this.cacheService.findUsersById(
+				tokens.flatMap((token) => token.granteeIds),
+			);
+			const packedUsers = await this.userEntityService.packMany(
+				Array.from(users.values()),
+				me,
+			);
+			const packedUserMap = new Map(packedUsers.map((u) => [u.id, u]));
 
-			return tokens.map(token => ({
+			return tokens.map((token) => ({
 				id: token.id,
 				name: token.name ?? token.app?.name,
 				createdAt: this.idService.parse(token.id).date.toISOString(),
@@ -128,8 +152,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				permission: token.app ? token.app.permission : token.permission,
 				rank: token.rank,
 				grantees: token.granteeIds
-					.map(id => packedUserMap.get(id))
-					.filter(user => user != null),
+					.map((id) => packedUserMap.get(id))
+					.filter((user) => user != null),
 			}));
 		});
 	}

@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Game } from './game.js';
+import { Game } from "./game.js";
 
 export type Log = {
 	time: number;
 	player: boolean;
-	operation: 'put';
+	operation: "put";
 	pos: number;
 };
 
@@ -22,7 +22,7 @@ export function serializeLogs(logs: Log[]) {
 		const timeDelta = i === 0 ? log.time : log.time - logs[i - 1].time;
 
 		switch (log.operation) {
-			case 'put':
+			case "put":
 				_logs.push([timeDelta, log.player ? 1 : 0, 0, log.pos]);
 				break;
 			//case 'surrender':
@@ -51,7 +51,7 @@ export function deserializeLogs(logs: SerializedLog[]) {
 				_logs.push({
 					time,
 					player: player === 1,
-					operation: 'put',
+					operation: "put",
 					pos: log[3],
 				});
 				break;
@@ -85,7 +85,7 @@ export function restoreGame(env: {
 
 	for (const log of logs) {
 		switch (log.operation) {
-			case 'put':
+			case "put":
 				game.putStone(log.pos);
 				break;
 			//case 'surrender':

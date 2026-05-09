@@ -5,10 +5,10 @@
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable import/no-default-export */
-import type { StoryObj } from '@storybook/vue3';
-import { userEvent, within } from '@storybook/test';
-import MkContextMenu from './MkContextMenu.vue';
-import * as os from '@/os.js';
+import type { StoryObj } from "@storybook/vue3";
+import { userEvent, within } from "@storybook/test";
+import MkContextMenu from "./MkContextMenu.vue";
+import * as os from "@/os.js";
 export const Empty = {
 	render(args) {
 		return {
@@ -37,11 +37,11 @@ export const Empty = {
 	},
 	async play({ canvasElement }) {
 		const canvas = within(canvasElement);
-		const target = canvas.getByText('Right Click Here');
-		await userEvent.pointer({ keys: '[MouseRight>]', target });
+		const target = canvas.getByText("Right Click Here");
+		await userEvent.pointer({ keys: "[MouseRight>]", target });
 	},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkContextMenu>;
 export const SomeTabs = {
@@ -49,8 +49,8 @@ export const SomeTabs = {
 	args: {
 		items: [
 			{
-				text: 'Home',
-				icon: 'ti ti-home',
+				text: "Home",
+				icon: "ti ti-home",
 				action() {},
 			},
 		],

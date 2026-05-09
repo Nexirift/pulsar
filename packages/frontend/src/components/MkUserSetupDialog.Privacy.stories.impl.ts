@@ -4,8 +4,8 @@
  */
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import type { StoryObj } from '@storybook/vue3';
-import MkUserSetupDialog_Privacy from './MkUserSetupDialog.Privacy.vue';
+import type { StoryObj } from "@storybook/vue3";
+import MkUserSetupDialog_Privacy from "./MkUserSetupDialog.Privacy.vue";
 export const Default = {
 	render(args) {
 		return {
@@ -27,10 +27,8 @@ export const Default = {
 			template: '<MkUserSetupDialog_Privacy v-bind="props" />',
 		};
 	},
-	args: {
-
-	},
+	args: {},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkUserSetupDialog_Privacy>;

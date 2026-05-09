@@ -4,137 +4,198 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<Transition
-	:enterActiveClass="prefer.s.animation ? $style.transition_menuDrawerBg_enterActive : ''"
-	:leaveActiveClass="prefer.s.animation ? $style.transition_menuDrawerBg_leaveActive : ''"
-	:enterFromClass="prefer.s.animation ? $style.transition_menuDrawerBg_enterFrom : ''"
-	:leaveToClass="prefer.s.animation ? $style.transition_menuDrawerBg_leaveTo : ''"
->
-	<div
-		v-if="drawerMenuShowing"
-		:class="$style.menuDrawerBg"
-		class="_modalBg"
-		@click="drawerMenuShowing = false"
-		@touchstart.passive="drawerMenuShowing = false"
-	></div>
-</Transition>
+	<Transition
+		:enterActiveClass="
+			prefer.s.animation ? $style.transition_menuDrawerBg_enterActive : ''
+		"
+		:leaveActiveClass="
+			prefer.s.animation ? $style.transition_menuDrawerBg_leaveActive : ''
+		"
+		:enterFromClass="
+			prefer.s.animation ? $style.transition_menuDrawerBg_enterFrom : ''
+		"
+		:leaveToClass="
+			prefer.s.animation ? $style.transition_menuDrawerBg_leaveTo : ''
+		"
+	>
+		<div
+			v-if="drawerMenuShowing"
+			:class="$style.menuDrawerBg"
+			class="_modalBg"
+			@click="drawerMenuShowing = false"
+			@touchstart.passive="drawerMenuShowing = false"
+		></div>
+	</Transition>
 
-<Transition
-	:enterActiveClass="prefer.s.animation ? $style.transition_menuDrawer_enterActive : ''"
-	:leaveActiveClass="prefer.s.animation ? $style.transition_menuDrawer_leaveActive : ''"
-	:enterFromClass="prefer.s.animation ? $style.transition_menuDrawer_enterFrom : ''"
-	:leaveToClass="prefer.s.animation ? $style.transition_menuDrawer_leaveTo : ''"
->
-	<div v-if="drawerMenuShowing" :class="$style.menuDrawer">
-		<XDrawerMenu/>
+	<Transition
+		:enterActiveClass="
+			prefer.s.animation ? $style.transition_menuDrawer_enterActive : ''
+		"
+		:leaveActiveClass="
+			prefer.s.animation ? $style.transition_menuDrawer_leaveActive : ''
+		"
+		:enterFromClass="
+			prefer.s.animation ? $style.transition_menuDrawer_enterFrom : ''
+		"
+		:leaveToClass="
+			prefer.s.animation ? $style.transition_menuDrawer_leaveTo : ''
+		"
+	>
+		<div v-if="drawerMenuShowing" :class="$style.menuDrawer">
+			<XDrawerMenu />
+		</div>
+	</Transition>
+
+	<Transition
+		:enterActiveClass="
+			prefer.s.animation ? $style.transition_widgetsDrawerBg_enterActive : ''
+		"
+		:leaveActiveClass="
+			prefer.s.animation ? $style.transition_widgetsDrawerBg_leaveActive : ''
+		"
+		:enterFromClass="
+			prefer.s.animation ? $style.transition_widgetsDrawerBg_enterFrom : ''
+		"
+		:leaveToClass="
+			prefer.s.animation ? $style.transition_widgetsDrawerBg_leaveTo : ''
+		"
+	>
+		<div
+			v-if="widgetsShowing"
+			:class="$style.widgetsDrawerBg"
+			class="_modalBg"
+			@click="widgetsShowing = false"
+			@touchstart.passive="widgetsShowing = false"
+		></div>
+	</Transition>
+
+	<Transition
+		:enterActiveClass="
+			prefer.s.animation ? $style.transition_widgetsDrawer_enterActive : ''
+		"
+		:leaveActiveClass="
+			prefer.s.animation ? $style.transition_widgetsDrawer_leaveActive : ''
+		"
+		:enterFromClass="
+			prefer.s.animation ? $style.transition_widgetsDrawer_enterFrom : ''
+		"
+		:leaveToClass="
+			prefer.s.animation ? $style.transition_widgetsDrawer_leaveTo : ''
+		"
+	>
+		<div v-if="widgetsShowing" :class="$style.widgetsDrawer">
+			<button
+				class="_button"
+				:class="$style.widgetsCloseButton"
+				@click="widgetsShowing = false"
+			>
+				<i class="ti ti-x"></i>
+			</button>
+			<XWidgets />
+		</div>
+	</Transition>
+
+	<component
+		:is="popup.component"
+		v-for="popup in popups"
+		:key="popup.id"
+		v-bind="popup.props"
+		v-on="popup.events"
+	/>
+
+	<XUpload v-if="uploads.length > 0" />
+
+	<SkTransitionGroup
+		tag="div"
+		:class="[
+			$style.notifications,
+			{
+				[$style.notificationsPosition_leftTop]:
+					prefer.s.notificationPosition === 'leftTop',
+				[$style.notificationsPosition_leftBottom]:
+					prefer.s.notificationPosition === 'leftBottom',
+				[$style.notificationsPosition_rightTop]:
+					prefer.s.notificationPosition === 'rightTop',
+				[$style.notificationsPosition_rightBottom]:
+					prefer.s.notificationPosition === 'rightBottom',
+				[$style.notificationsStackAxis_vertical]:
+					prefer.s.notificationStackAxis === 'vertical',
+				[$style.notificationsStackAxis_horizontal]:
+					prefer.s.notificationStackAxis === 'horizontal',
+			},
+		]"
+		:moveClass="$style.transition_notification_move"
+		:enterActiveClass="$style.transition_notification_enterActive"
+		:leaveActiveClass="$style.transition_notification_leaveActive"
+		:enterFromClass="$style.transition_notification_enterFrom"
+		:leaveToClass="$style.transition_notification_leaveTo"
+	>
+		<div
+			v-for="notification in notifications"
+			:key="notification.id"
+			:class="$style.notification"
+			:style="{ pointerEvents: getPointerEvents() }"
+		>
+			<XNotification :notification="notification" />
+		</div>
+	</SkTransitionGroup>
+
+	<XOfflineBanner />
+
+	<XStreamIndicator />
+
+	<div v-if="pendingApiRequestsCount > 0" id="wait"></div>
+
+	<div v-if="dev" id="devTicker">
+		<span style="animation: dev-ticker-blink 2s infinite">DEV BUILD</span>
 	</div>
-</Transition>
 
-<Transition
-	:enterActiveClass="prefer.s.animation ? $style.transition_widgetsDrawerBg_enterActive : ''"
-	:leaveActiveClass="prefer.s.animation ? $style.transition_widgetsDrawerBg_leaveActive : ''"
-	:enterFromClass="prefer.s.animation ? $style.transition_widgetsDrawerBg_enterFrom : ''"
-	:leaveToClass="prefer.s.animation ? $style.transition_widgetsDrawerBg_leaveTo : ''"
->
-	<div
-		v-if="widgetsShowing"
-		:class="$style.widgetsDrawerBg"
-		class="_modalBg"
-		@click="widgetsShowing = false"
-		@touchstart.passive="widgetsShowing = false"
-	></div>
-</Transition>
-
-<Transition
-	:enterActiveClass="prefer.s.animation ? $style.transition_widgetsDrawer_enterActive : ''"
-	:leaveActiveClass="prefer.s.animation ? $style.transition_widgetsDrawer_leaveActive : ''"
-	:enterFromClass="prefer.s.animation ? $style.transition_widgetsDrawer_enterFrom : ''"
-	:leaveToClass="prefer.s.animation ? $style.transition_widgetsDrawer_leaveTo : ''"
->
-	<div v-if="widgetsShowing" :class="$style.widgetsDrawer">
-		<button class="_button" :class="$style.widgetsCloseButton" @click="widgetsShowing = false"><i class="ti ti-x"></i></button>
-		<XWidgets/>
+	<div v-if="$i && $i.isBot" id="botWarn">
+		<span>{{ i18n.ts.loggedInAsBot }}</span>
 	</div>
-</Transition>
 
-<component
-	:is="popup.component"
-	v-for="popup in popups"
-	:key="popup.id"
-	v-bind="popup.props"
-	v-on="popup.events"
-/>
-
-<XUpload v-if="uploads.length > 0"/>
-
-<SkTransitionGroup
-	tag="div"
-	:class="[$style.notifications, {
-		[$style.notificationsPosition_leftTop]: prefer.s.notificationPosition === 'leftTop',
-		[$style.notificationsPosition_leftBottom]: prefer.s.notificationPosition === 'leftBottom',
-		[$style.notificationsPosition_rightTop]: prefer.s.notificationPosition === 'rightTop',
-		[$style.notificationsPosition_rightBottom]: prefer.s.notificationPosition === 'rightBottom',
-		[$style.notificationsStackAxis_vertical]: prefer.s.notificationStackAxis === 'vertical',
-		[$style.notificationsStackAxis_horizontal]: prefer.s.notificationStackAxis === 'horizontal',
-	}]"
-	:moveClass="$style.transition_notification_move"
-	:enterActiveClass="$style.transition_notification_enterActive"
-	:leaveActiveClass="$style.transition_notification_leaveActive"
-	:enterFromClass="$style.transition_notification_enterFrom"
-	:leaveToClass="$style.transition_notification_leaveTo"
->
-	<div v-for="notification in notifications" :key="notification.id" :class="$style.notification" :style="{ pointerEvents: getPointerEvents() }">
-		<XNotification :notification="notification"/>
-	</div>
-</SkTransitionGroup>
-
-<XOfflineBanner/>
-
-<XStreamIndicator/>
-
-<div v-if="pendingApiRequestsCount > 0" id="wait"></div>
-
-<div v-if="dev" id="devTicker"><span style="animation: dev-ticker-blink 2s infinite;">DEV BUILD</span></div>
-
-<div v-if="$i && $i.isBot" id="botWarn"><span>{{ i18n.ts.loggedInAsBot }}</span></div>
-
-<SkOneko v-if="prefer.r.oneko.value"/>
+	<SkOneko v-if="prefer.r.oneko.value" />
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, ref, TransitionGroup } from 'vue';
-import * as Misskey from 'misskey-js';
-import { swInject } from './sw-inject.js';
-import XNotification from './notification.vue';
-import XOfflineBanner from './offline-banner.vue';
-import { popups } from '@/os.js';
-import { pendingApiRequestsCount } from '@/utility/misskey-api.js';
-import { uploads } from '@/utility/upload.js';
-import * as sound from '@/utility/sound.js';
-import { $i } from '@/i.js';
-import { useStream } from '@/stream.js';
-import { i18n } from '@/i18n.js';
-import { prefer } from '@/preferences.js';
-import { globalEvents } from '@/events.js';
-import XDrawerMenu from '@/ui/_common_/navbar-for-mobile.vue';
-import SkTransitionGroup from '@/components/SkTransitionGroup.vue';
-const XStreamIndicator = defineAsyncComponent(() => import('./stream-indicator.vue'));
-const XUpload = defineAsyncComponent(() => import('./upload.vue'));
-const SkOneko = defineAsyncComponent(() => import('@/components/SkOneko.vue'));
-const XWidgets = defineAsyncComponent(() => import('./widgets.vue'));
+import { defineAsyncComponent, ref, TransitionGroup } from "vue";
+import * as Misskey from "misskey-js";
+import { swInject } from "./sw-inject.js";
+import XNotification from "./notification.vue";
+import XOfflineBanner from "./offline-banner.vue";
+import { popups } from "@/os.js";
+import { pendingApiRequestsCount } from "@/utility/misskey-api.js";
+import { uploads } from "@/utility/upload.js";
+import * as sound from "@/utility/sound.js";
+import { $i } from "@/i.js";
+import { useStream } from "@/stream.js";
+import { i18n } from "@/i18n.js";
+import { prefer } from "@/preferences.js";
+import { globalEvents } from "@/events.js";
+import XDrawerMenu from "@/ui/_common_/navbar-for-mobile.vue";
+import SkTransitionGroup from "@/components/SkTransitionGroup.vue";
+const XStreamIndicator = defineAsyncComponent(
+	() => import("./stream-indicator.vue"),
+);
+const XUpload = defineAsyncComponent(() => import("./upload.vue"));
+const SkOneko = defineAsyncComponent(() => import("@/components/SkOneko.vue"));
+const XWidgets = defineAsyncComponent(() => import("./widgets.vue"));
 
-const drawerMenuShowing = defineModel<boolean>('drawerMenuShowing');
-const widgetsShowing = defineModel<boolean>('widgetsShowing');
+const drawerMenuShowing = defineModel<boolean>("drawerMenuShowing");
+const widgetsShowing = defineModel<boolean>("widgetsShowing");
 
 const dev = _DEV_;
 
 const notifications = ref<Misskey.entities.Notification[]>([]);
 
-function onNotification(notification: Misskey.entities.Notification, isClient = false) {
-	if (window.document.visibilityState === 'visible') {
-		if (!isClient && notification.type !== 'test') {
+function onNotification(
+	notification: Misskey.entities.Notification,
+	isClient = false,
+) {
+	if (window.document.visibilityState === "visible") {
+		if (!isClient && notification.type !== "test") {
 			// サーバーサイドのテスト通知の際は自動で既読をつけない（テストできないので）
-			useStream().send('readNotification');
+			useStream().send("readNotification");
 		}
 
 		notifications.value.unshift(notification);
@@ -143,26 +204,30 @@ function onNotification(notification: Misskey.entities.Notification, isClient = 
 		}, 500);
 
 		window.setTimeout(() => {
-			notifications.value = notifications.value.filter(x => x.id !== notification.id);
+			notifications.value = notifications.value.filter(
+				(x) => x.id !== notification.id,
+			);
 		}, 6000);
 	}
 
-	sound.playMisskeySfx('notification');
+	sound.playMisskeySfx("notification");
 }
 
 if ($i) {
-	const connection = useStream().useChannel('main', null, 'UI');
-	connection.on('notification', onNotification);
-	globalEvents.on('clientNotification', notification => onNotification(notification, true));
+	const connection = useStream().useChannel("main", null, "UI");
+	connection.on("notification", onNotification);
+	globalEvents.on("clientNotification", (notification) =>
+		onNotification(notification, true),
+	);
 
 	//#region Listen message from SW
-	if ('serviceWorker' in navigator) {
+	if ("serviceWorker" in navigator) {
 		swInject();
 	}
 }
 
 function getPointerEvents() {
-	return prefer.s.notificationClickable ? 'all' : 'none';
+	return prefer.s.notificationClickable ? "all" : "none";
 }
 </script>
 
@@ -181,7 +246,9 @@ function getPointerEvents() {
 .transition_menuDrawer_leaveActive {
 	opacity: 1;
 	transform: translateX(0);
-	transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
+	transition:
+		transform 300ms cubic-bezier(0.23, 1, 0.32, 1),
+		opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .transition_menuDrawer_enterFrom,
 .transition_menuDrawer_leaveTo {
@@ -203,7 +270,9 @@ function getPointerEvents() {
 .transition_widgetsDrawer_leaveActive {
 	opacity: 1;
 	transform: translateX(0);
-	transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
+	transition:
+		transform 300ms cubic-bezier(0.23, 1, 0.32, 1),
+		opacity 300ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .transition_widgetsDrawer_enterFrom,
 .transition_widgetsDrawer_leaveTo {
@@ -214,7 +283,9 @@ function getPointerEvents() {
 .transition_notification_move,
 .transition_notification_enterActive,
 .transition_notification_leaveActive {
-	transition: opacity 0.3s, transform 0.3s !important;
+	transition:
+		opacity 0.3s,
+		transform 0.3s !important;
 }
 .transition_notification_enterFrom {
 	opacity: 0;
@@ -254,7 +325,8 @@ function getPointerEvents() {
 	z-index: 1001;
 	width: 310px;
 	height: 100dvh;
-	padding: var(--MI-margin) var(--MI-margin) calc(var(--MI-margin) + env(safe-area-inset-bottom, 0px)) !important;
+	padding: var(--MI-margin) var(--MI-margin)
+		calc(var(--MI-margin) + env(safe-area-inset-bottom, 0px)) !important;
 	box-sizing: border-box;
 	overflow: auto;
 	overscroll-behavior: contain;
@@ -365,9 +437,15 @@ function getPointerEvents() {
 
 <style lang="scss">
 @keyframes dev-ticker-blink {
-	0% { opacity: 1; }
-	50% { opacity: 0; }
-	100% { opacity: 1; }
+	0% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
 }
 
 @keyframes progress-spinner {

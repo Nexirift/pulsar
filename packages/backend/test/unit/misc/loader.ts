@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { DebounceLoader } from '@/misc/loader.js';
+import { DebounceLoader } from "@/misc/loader.js";
 
 class Mock {
 	loadCountByKey = new Map<number, number>();
 	load = async (key: number): Promise<number> => {
 		const count = this.loadCountByKey.get(key);
-		if (typeof count === 'undefined') {
+		if (typeof count === "undefined") {
 			this.loadCountByKey.set(key, 1);
 		} else {
 			this.loadCountByKey.set(key, count + 1);
@@ -22,8 +22,8 @@ class Mock {
 }
 
 describe(DebounceLoader, () => {
-	describe('single request', () => {
-		it('loads once', async () => {
+	describe("single request", () => {
+		it("loads once", async () => {
 			const mock = new Mock();
 			const loader = new DebounceLoader(mock.load);
 			expect(await loader.load(7)).toBe(14);
@@ -32,14 +32,11 @@ describe(DebounceLoader, () => {
 		});
 	});
 
-	describe('two duplicated requests at same time', () => {
-		it('loads once', async () => {
+	describe("two duplicated requests at same time", () => {
+		it("loads once", async () => {
 			const mock = new Mock();
 			const loader = new DebounceLoader(mock.load);
-			const [v1, v2] = await Promise.all([
-				loader.load(7),
-				loader.load(7),
-			]);
+			const [v1, v2] = await Promise.all([loader.load(7), loader.load(7)]);
 			expect(v1).toBe(14);
 			expect(v2).toBe(14);
 			expect(mock.loadCountByKey.size).toBe(1);
@@ -47,14 +44,11 @@ describe(DebounceLoader, () => {
 		});
 	});
 
-	describe('two different requests at same time', () => {
-		it('loads twice', async () => {
+	describe("two different requests at same time", () => {
+		it("loads twice", async () => {
 			const mock = new Mock();
 			const loader = new DebounceLoader(mock.load);
-			const [v1, v2] = await Promise.all([
-				loader.load(7),
-				loader.load(13),
-			]);
+			const [v1, v2] = await Promise.all([loader.load(7), loader.load(13)]);
 			expect(v1).toBe(14);
 			expect(v2).toBe(26);
 			expect(mock.loadCountByKey.size).toBe(2);
@@ -63,8 +57,8 @@ describe(DebounceLoader, () => {
 		});
 	});
 
-	describe('non-continuous same two requests', () => {
-		it('loads twice', async () => {
+	describe("non-continuous same two requests", () => {
+		it("loads twice", async () => {
 			const mock = new Mock();
 			const loader = new DebounceLoader(mock.load);
 			expect(await loader.load(7)).toBe(14);
@@ -77,8 +71,8 @@ describe(DebounceLoader, () => {
 		});
 	});
 
-	describe('non-continuous different two requests', () => {
-		it('loads twice', async () => {
+	describe("non-continuous different two requests", () => {
+		it("loads twice", async () => {
 			const mock = new Mock();
 			const loader = new DebounceLoader(mock.load);
 			expect(await loader.load(7)).toBe(14);

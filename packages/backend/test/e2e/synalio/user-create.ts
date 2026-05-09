@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { setTimeout } from 'node:timers/promises';
-import type { entities } from 'misskey-js';
-import { beforeEach, describe, test } from '@jest/globals';
+import { setTimeout } from "node:timers/promises";
+import type { entities } from "misskey-js";
+import { beforeEach, describe, test } from "@jest/globals";
 import {
 	api,
 	captureWebhook,
@@ -15,20 +15,23 @@ import {
 	startJobQueue,
 	UserToken,
 	WEBHOOK_HOST,
-} from '../../utils.js';
-import type { INestApplicationContext } from '@nestjs/common';
+} from "../../utils.js";
+import type { INestApplicationContext } from "@nestjs/common";
 
-describe('[シナリオ] ユーザ作成', () => {
+describe("[シナリオ] ユーザ作成", () => {
 	let queue: INestApplicationContext;
 	let admin: entities.SignupResponse;
 
-	async function createSystemWebhook(args?: Partial<entities.AdminSystemWebhookCreateRequest>, credential?: UserToken): Promise<entities.AdminSystemWebhookCreateResponse> {
+	async function createSystemWebhook(
+		args?: Partial<entities.AdminSystemWebhookCreateRequest>,
+		credential?: UserToken,
+	): Promise<entities.AdminSystemWebhookCreateResponse> {
 		const res = await api(
-			'admin/system-webhook/create',
+			"admin/system-webhook/create",
 			{
 				isActive: true,
 				name: randomString(),
-				on: ['userCreated'],
+				on: ["userCreated"],
 				url: WEBHOOK_HOST,
 				secret: randomString(),
 				...args,
@@ -40,12 +43,15 @@ describe('[シナリオ] ユーザ作成', () => {
 
 	// -------------------------------------------------------------------------------------------
 
-	beforeAll(async () => {
-		queue = await startJobQueue();
-		admin = await signup({ username: 'admin' });
+	beforeAll(
+		async () => {
+			queue = await startJobQueue();
+			admin = await signup({ username: "admin" });
 
-		await role(admin, { isAdministrator: true });
-	}, 1000 * 60 * 2);
+			await role(admin, { isAdministrator: true });
+		},
+		1000 * 60 * 2,
+	);
 
 	afterAll(async () => {
 		await queue.close();
@@ -53,23 +59,23 @@ describe('[シナリオ] ユーザ作成', () => {
 
 	// -------------------------------------------------------------------------------------------
 
-	describe('SystemWebhook', () => {
+	describe("SystemWebhook", () => {
 		beforeEach(async () => {
-			const webhooks = await api('admin/system-webhook/list', {}, admin);
+			const webhooks = await api("admin/system-webhook/list", {}, admin);
 			for (const webhook of webhooks.body) {
-				await api('admin/system-webhook/delete', { id: webhook.id }, admin);
+				await api("admin/system-webhook/delete", { id: webhook.id }, admin);
 			}
 		});
 
-		test('ユーザが作成された -> userCreatedが送出される', async () => {
+		test("ユーザが作成された -> userCreatedが送出される", async () => {
 			const webhook = await createSystemWebhook({
-				on: ['userCreated'],
+				on: ["userCreated"],
 				isActive: true,
 			});
 
 			let alice: any = null;
 			const webhookBody = await captureWebhook(async () => {
-				alice = await signup({ username: 'alice' });
+				alice = await signup({ username: "alice" });
 			});
 
 			// webhookの送出後にいろいろやってるのでちょっと待つ必要がある
@@ -79,7 +85,7 @@ describe('[シナリオ] ユーザ作成', () => {
 			console.log(JSON.stringify(webhookBody, null, 2));
 
 			expect(webhookBody.hookId).toBe(webhook.id);
-			expect(webhookBody.type).toBe('userCreated');
+			expect(webhookBody.type).toBe("userCreated");
 
 			const body = webhookBody.body as entities.UserLite;
 			expect(alice.id).toBe(body.id);
@@ -97,7 +103,7 @@ describe('[シナリオ] ユーザ作成', () => {
 			expect(alice.badgeRoles).toEqual(body.badgeRoles);
 		});
 
-		test('ユーザ作成 -> userCreatedが未許可の場合は送出されない', async () => {
+		test("ユーザ作成 -> userCreatedが未許可の場合は送出されない", async () => {
 			await createSystemWebhook({
 				on: [],
 				isActive: true,
@@ -105,25 +111,25 @@ describe('[シナリオ] ユーザ作成', () => {
 
 			let alice: any = null;
 			const webhookBody = await captureWebhook(async () => {
-				alice = await signup({ username: 'alice' });
-			}).catch(e => e.message);
+				alice = await signup({ username: "alice" });
+			}).catch((e) => e.message);
 
-			expect(webhookBody).toBe('timeout');
+			expect(webhookBody).toBe("timeout");
 			expect(alice.id).not.toBeNull();
 		});
 
-		test('ユーザ作成 -> Webhookが無効の場合は送出されない', async () => {
+		test("ユーザ作成 -> Webhookが無効の場合は送出されない", async () => {
 			await createSystemWebhook({
-				on: ['userCreated'],
+				on: ["userCreated"],
 				isActive: false,
 			});
 
 			let alice: any = null;
 			const webhookBody = await captureWebhook(async () => {
-				alice = await signup({ username: 'alice' });
-			}).catch(e => e.message);
+				alice = await signup({ username: "alice" });
+			}).catch((e) => e.message);
 
-			expect(webhookBody).toBe('timeout');
+			expect(webhookBody).toBe("timeout");
 			expect(alice.id).not.toBeNull();
 		});
 	});

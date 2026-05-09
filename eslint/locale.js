@@ -1,7 +1,7 @@
 /*
  * SPDX-FileCopyrightText: dakkar and other Sharkey contributors
  * SPDX-License-Identifier: AGPL-3.0-only
-*/
+ */
 
 /* This is a ESLint rule to report use of the `i18n.ts` and `i18n.tsx`
  * objects that reference translation items that don't actually exist
@@ -16,10 +16,10 @@
  */
 function collectMembers(node) {
 	if (!node) return [];
-	if (node.type !== 'MemberExpression') return [];
+	if (node.type !== "MemberExpression") return [];
 	// this is something like `foo[bar]`
 	if (node.computed) return [];
-	return [ node.property.name, ...collectMembers(node.parent) ];
+	return [node.property.name, ...collectMembers(node.parent)];
 }
 
 /* given an object and an array of names, recursively descends the
@@ -52,8 +52,10 @@ function findCallExpression(node) {
 	// the second half of this guard protects from cases like
 	// `foo(one.two.three)` where the CallExpression is parent of the
 	// MemberExpressions, but via `arguments`, not `callee`
-	if (node.parent.type === 'CallExpression' && node.parent.callee === node) return node.parent;
-	if (node.parent.type === 'MemberExpression') return findCallExpression(node.parent);
+	if (node.parent.type === "CallExpression" && node.parent.callee === node)
+		return node.parent;
+	if (node.parent.type === "MemberExpression")
+		return findCallExpression(node.parent);
 	return null;
 }
 
@@ -61,31 +63,36 @@ function findCallExpression(node) {
 function findVueExpression(node) {
 	if (!node.parent) return null;
 
-	if (node.parent.type.match(/^VExpr/) && node.parent.expression === node) return node.parent;
-	if (node.parent.type === 'MemberExpression') return findVueExpression(node.parent);
+	if (node.parent.type.match(/^VExpr/) && node.parent.expression === node)
+		return node.parent;
+	if (node.parent.type === "MemberExpression")
+		return findVueExpression(node.parent);
 	return null;
 }
 
 function areArgumentsOneObject(node) {
-	return node.arguments.length === 1 &&
-		node.arguments[0].type === 'ObjectExpression';
+	return (
+		node.arguments.length === 1 && node.arguments[0].type === "ObjectExpression"
+	);
 }
 
 // only call if `areArgumentsOneObject(node)` is true
 function getArgumentObjectProperties(node) {
-	return new Set(node.arguments[0].properties.map(
-		p => {
-			if (p.key && p.key.type === 'Identifier') return p.key.name;
+	return new Set(
+		node.arguments[0].properties.map((p) => {
+			if (p.key && p.key.type === "Identifier") return p.key.name;
 			return null;
-		},
-	));
+		}),
+	);
 }
 
 function getTranslationParameters(translation) {
-	return new Set(Array.from(translation.matchAll(/\{(\w+)\}/g)).map( m => m[1] ));
+	return new Set(
+		Array.from(translation.matchAll(/\{(\w+)\}/g)).map((m) => m[1]),
+	);
 }
 
-function setDifference(a,b) {
+function setDifference(a, b) {
 	const result = [];
 	for (const element of a.values()) {
 		if (!b.has(element)) {
@@ -98,7 +105,7 @@ function setDifference(a,b) {
 
 /* the actual rule body
  */
-function theRuleBody(context,node) {
+function theRuleBody(context, node) {
 	// we get the locale/translations via the options; it's the data
 	// that goes into a specific language's JSON file, see
 	// `scripts/build-assets.mjs`
@@ -107,14 +114,14 @@ function theRuleBody(context,node) {
 	// sometimes we get MemberExpression nodes that have a
 	// *descendent* with the right identifier: skip them, we'll get
 	// the right ones as well
-	if (node.object?.name !== 'i18n') {
+	if (node.object?.name !== "i18n") {
 		return;
 	}
 
 	// `method` is going to be `'ts'` or `'tsx'`, `path` is going to
 	// be the various translation steps/names
-	const [ method, ...path ] = collectMembers(node);
-	const pathStr = `i18n.${method}.${path.join('.')}`;
+	const [method, ...path] = collectMembers(node);
+	const pathStr = `i18n.${method}.${path.join(".")}`;
 
 	// does that path point to a real translation?
 	const translation = walkDown(locale, path);
@@ -129,13 +136,13 @@ function theRuleBody(context,node) {
 	// we hit something weird, assume the programmers know what
 	// they're doing (this is usually some complicated slicing of
 	// the translation structure)
-	if (typeof(translation) !== 'string') return;
+	if (typeof translation !== "string") return;
 
 	const callExpression = findCallExpression(node);
 	const vueExpression = findVueExpression(node);
 
 	// some more checks on how the translation is called
-	if (method === 'ts') {
+	if (method === "ts") {
 		// the `<I18n> component gets parametric translations via
 		// `i18n.ts.*`, but we error out elsewhere
 		if (translation.match(/\{/) && !vueExpression) {
@@ -154,7 +161,7 @@ function theRuleBody(context,node) {
 		}
 	}
 
-	if (method === 'tsx') {
+	if (method === "tsx") {
 		if (!translation.match(/\{/)) {
 			context.report({
 				node,
@@ -198,19 +205,22 @@ function theRuleBody(context,node) {
 
 		// node 20 doesn't have `Set.difference`...
 		const extraArguments = setDifference(callArguments, translationParameters);
-		const missingArguments = setDifference(translationParameters, callArguments);
+		const missingArguments = setDifference(
+			translationParameters,
+			callArguments,
+		);
 
 		if (extraArguments.length > 0) {
 			context.report({
 				node,
-				message: `translation for ${pathStr} passes unused arguments ${extraArguments.join(' ')}`,
+				message: `translation for ${pathStr} passes unused arguments ${extraArguments.join(" ")}`,
 			});
 		}
 
 		if (missingArguments.length > 0) {
 			context.report({
 				node,
-				message: `translation for ${pathStr} does not pass arguments ${missingArguments.join(' ')}`,
+				message: `translation for ${pathStr} does not pass arguments ${missingArguments.join(" ")}`,
 			});
 		}
 	}
@@ -226,25 +236,28 @@ function theRule(context) {
 	return context.getSourceCode().parserServices.defineTemplateBodyVisitor(
 		{
 			// this is for <template> bits, needs work
-			'MemberExpression:has(Identifier[name=i18n])': (node) => theRuleBody(context, node),
+			"MemberExpression:has(Identifier[name=i18n])": (node) =>
+				theRuleBody(context, node),
 		},
 		{
 			// this is for normal code
-			'MemberExpression:has(Identifier[name=i18n])': (node) => theRuleBody(context, node),
+			"MemberExpression:has(Identifier[name=i18n])": (node) =>
+				theRuleBody(context, node),
 		},
 	);
 }
 
 module.exports = {
 	meta: {
-		type: 'problem',
+		type: "problem",
 		docs: {
-			description: 'assert that all translations used are present in the locale files',
+			description:
+				"assert that all translations used are present in the locale files",
 		},
 		schema: [
 			// here we declare that we need the locale/translation as a
 			// generic object
-			{ type: 'object', additionalProperties: true },
+			{ type: "object", additionalProperties: true },
 		],
 	},
 	create: theRule,

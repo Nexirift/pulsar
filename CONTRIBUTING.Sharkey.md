@@ -2,7 +2,7 @@
 
 We're glad you're interested in contributing to Sharkey! In this
 document you will find the information you need to contribute to the
-project. Please *also* read Misskey's contribution guide,
+project. Please _also_ read Misskey's contribution guide,
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Issues
@@ -13,7 +13,6 @@ Before creating an issue, please check the following:
   creating a new issue.
 
 - Do not use Issues to ask questions or for troubleshooting.
-
   - Issues should only be used for feature requests, suggestions, and
     bug tracking.
   - For questions and troubleshooting, join [our Discord
@@ -31,7 +30,6 @@ Before creating an issue, please check the following:
 - **`stable`** branch is tracking the latest release and used for
   production purposes.
 - **`develop`** branch is where we work for the next release.
-
   - When you create a merge request, target it to this branch.
 
 ## Creating a Merge Request
@@ -62,7 +60,7 @@ following:
 
 - If this MR includes new translated strings, or changes to existing
   translations, make sure you have edited `sharkey-locales/en-US.yml`
-  and *not* any of the files under `locales/` (the files under
+  and _not_ any of the files under `locales/` (the files under
   `locales/` must stay identical to Misskey)
 
 - If this MR includes UI changes, please attach a screenshot in the
@@ -74,10 +72,12 @@ following:
 wiki](https://activitypub.software/TransFem-org/Sharkey/-/wikis/release-process))
 
 ### Creating a release
-#### Prerequisites
-Before creating a release, we must ensure that:
-- `develop` contains exactly the code we want to release.
 
+#### Prerequisites
+
+Before creating a release, we must ensure that:
+
+- `develop` contains exactly the code we want to release.
   - It can be useful to mark MRs we want to release with the
     [`for-next-release`
     label](https://activitypub.software/TransFem-org/Sharkey/-/merge_requests?label_name[]=for-next-release).
@@ -99,52 +99,50 @@ Before creating a release, we must ensure that:
   contain all the changes we want to announce.
 
 #### To release
+
 To create a release, we must:
 
 1. Create a new Branch based on `develop` to change the version to a
-  prod-looking one (e.g. `2027.12.1`).
-
-	- Try to avoid using the same version as Misskey, both to reduce
-    confusion, and because (unlike branches) tags are not scoped by
-    remote and will confuse multi-remote clones.
+   prod-looking one (e.g. `2027.12.1`).
+   - Try to avoid using the same version as Misskey, both to reduce
+     confusion, and because (unlike branches) tags are not scoped by
+     remote and will confuse multi-remote clones.
 
 2. Create an MR to merge the new branch into `stable`.
 
 3. Once that MR is merged, go to
-  https://activitypub.software/TransFem-org/Sharkey/-/releases and
-  create a new release.
+   https://activitypub.software/TransFem-org/Sharkey/-/releases and
+   create a new release.
 
-  - For the tag, use the same version you just set on `stable`
-    (e.g. `2027.12.1`).
+- For the tag, use the same version you just set on `stable`
+  (e.g. `2027.12.1`).
 
-  - Make sure the tag will be created on `stable`.
+- Make sure the tag will be created on `stable`.
+  - For the release name, again use the version (e.g. `2027.12.1`).
 
-	- For the release name, again use the version (e.g. `2027.12.1`).
-
-	- For the release notes, copy the [changelogs](changelogs).
+  - For the release notes, copy the [changelogs](changelogs).
 
 4. Wait for all the pipelines to complete.
-
-	- In the [container
-    registry](https://activitypub.software/TransFem-org/Sharkey/container_registry/2?orderBy=NAME&sort=desc&search[]=)
-    you should get (of course with the right version):
-
-	  - `latest`
-		- `2027.12.1-amd64`
-		- `2027.12.1-arm64`
+   - In the [container
+     registry](https://activitypub.software/TransFem-org/Sharkey/container_registry/2?orderBy=NAME&sort=desc&search[]=)
+     you should get (of course with the right version):
+     - `latest`
+       - `2027.12.1-amd64`
+       - `2027.12.1-arm64`
 
 5. Announce the release on the official account!
 
 #### Post release
+
 After creating a release, we must:
 
 - Branch off `develop`, merge `stable` into that new branch, change the version
-  to the *next* number (e.g. `2028.1.0-dev`), create a MR for this
+  to the _next_ number (e.g. `2028.1.0-dev`), create a MR for this
   branch, and get it merged.
 
 ### Hotfixes / security releases
 
-Sometimes we need to release changes to the latest stable release, *without* whatever has been merged into `develop`. For example, a security fix.
+Sometimes we need to release changes to the latest stable release, _without_ whatever has been merged into `develop`. For example, a security fix.
 
 In these cases:
 
@@ -255,8 +253,8 @@ pnpm dev
 - Service Worker is watched by esbuild.
 
 - Sharkey is served on the port configured with `port` in
-	`.config/default.yml`.  If you have not changed it from the default,
-	you can access it at `http://localhost:3000`.
+  `.config/default.yml`. If you have not changed it from the default,
+  you can access it at `http://localhost:3000`.
 
 ### Testing
 
@@ -265,21 +263,20 @@ pnpm dev
 To run many of the tests, you need a dedicated database. To set this up:
 
 1. Start PostgreSQL and Redis
-
-	- This is covered in the [environment setup](#Environment%20setup) section.
+   - This is covered in the [environment setup](#Environment%20setup) section.
 
 2. Create the test configuration file, by copying
    `.config/test-example.yml` to `.config/test.yml`.
 
-	```bash
-	cp .config/test-example.yml .config/test.yml
-	```
+   ```bash
+   cp .config/test-example.yml .config/test.yml
+   ```
 
 3. Start the database container:
 
-	```bash
-	docker compose -f packages/backend/test/compose.yml up -d
-	```
+   ```bash
+   docker compose -f packages/backend/test/compose.yml up -d
+   ```
 
 Now you can run `pnpm test` and `pnpm --filter=backend test:e2e` to
 run the tests.
@@ -326,41 +323,42 @@ git checkout -m merge/$(date +%Y-%m-%d)   # Create/switch to a merge branch for 
 git merge --no-ff misskey/develop   # Merge from Misskey's develop branch, forcing a merge commit.
 ```
 
-Fix conflicts and *commit!*
+Fix conflicts and _commit!_
+
 - Conflicts in `pnpm-lock.yaml` can be fixed by rejecting changes and running `pnpm install`.
 - Conflicts in `packages/misskey-js/etc` and `packages/misskey-js/src/autogen` can be fixed by rejecting changes and running `pnpm run build-misskey-js-with-types`.
 - Conflicts in `locales/index.d.ts` can be fixed by rejecting changes and running `pnpm run build-assets`.
 - Conflicts in any `package.json` file can be fixed by merging only added/removed dependencies, then running `pnpm run sync-dependency-versions`. Other changes (not dependencies) will need to be merged manually.
 - Conflicts involving `this.timeService.now` or `this.timeService.date` can be resolved by accepting remote changes. ESLint will highlight all the missing references in a later step.
 
-*After that commit*, do all the extra work on the same branch:
+_After that commit_, do all the extra work on the same branch:
 
 - Copy all changes (commit after each step):
-    - in `packages/backend/src/core/activitypub/models/ApNoteService.ts`, from `createNote` to `updateNote`
-    - from `packages/backend/src/core/NoteCreateService.ts` to `packages/backend/src/core/NoteEditService.ts`
-    - from `packages/backend/src/server/api/endpoints/notes/create.ts` to `packages/backend/src/server/api/endpoints/notes/edit.ts`
-    - from MK note components to SK note components (if sensible)
-        - from `packages/frontend/src/components/MkNote.vue` to `packages/frontend/src/components/SkNote.vue`
-        - from `packages/frontend/src/components/MkNoteDetailed.vue` to `packages/frontend/src/components/SkNoteDetailed.vue`
-        - from `packages/frontend/src/components/MkNoteHeader.vue` to `packages/frontend/src/components/SkNoteHeader.vue`
-        - from `packages/frontend/src/components/MkNoteSimple.vue` to `packages/frontend/src/components/SkNoteSimple.vue`
-        - from `packages/frontend/src/components/MkNoteSub.vue` to `packages/frontend/src/components/SkNoteSub.vue`
-    - from MK note components to Dynamic note components (if the public signature changed)
-        - from `packages/frontend/src/components/MkNote.vue` to `packages/frontend/src/components/DynamicNote.vue`
-        - from `packages/frontend/src/components/MkNoteDetailed.vue` to `packages/frontend/src/components/DynamicNoteDetailed.vue`
-        - from `packages/frontend/src/components/MkNoteSimple.vue` to `packages/frontend/src/components/DynamicNoteSimple.vue`
-    - from the global timeline to the bubble timeline
-        - `packages/backend/src/server/api/stream/channels/global-timeline.ts`
-        - `packages/backend/src/server/api/stream/channels/bubble-timeline.ts`
-        - `packages/frontend/src/timelines.ts`
-        - `packages/frontend/src/components/MkTimeline.vue`
-        - `packages/frontend/src/pages/timeline.vue`
-        - `packages/frontend/src/ui/deck/tl-column.vue`
-        - `packages/frontend/src/widgets/WidgetTimeline.vue`
-    - from `packages/backend/src/queue/processors/InboxProcessorService.ts` to `packages/backend/src/core/UpdateInstanceQueue.ts`, where `updateInstanceQueue` is impacted
-    - from `.config/example.yml` to `.config/ci.yml` and `chart/files/default.yml`
-    - in `packages/backend/src/core/MfmService.ts`, from `toHtml` to `toMastoApiHtml`
-    - from `verifyLink` in `packages/backend/src/core/activitypub/models/ApPersonService.ts` to `verifyFieldLinks` in `packages/backend/src/misc/verify-field-link.ts` (if sensible)
+  - in `packages/backend/src/core/activitypub/models/ApNoteService.ts`, from `createNote` to `updateNote`
+  - from `packages/backend/src/core/NoteCreateService.ts` to `packages/backend/src/core/NoteEditService.ts`
+  - from `packages/backend/src/server/api/endpoints/notes/create.ts` to `packages/backend/src/server/api/endpoints/notes/edit.ts`
+  - from MK note components to SK note components (if sensible)
+    - from `packages/frontend/src/components/MkNote.vue` to `packages/frontend/src/components/SkNote.vue`
+    - from `packages/frontend/src/components/MkNoteDetailed.vue` to `packages/frontend/src/components/SkNoteDetailed.vue`
+    - from `packages/frontend/src/components/MkNoteHeader.vue` to `packages/frontend/src/components/SkNoteHeader.vue`
+    - from `packages/frontend/src/components/MkNoteSimple.vue` to `packages/frontend/src/components/SkNoteSimple.vue`
+    - from `packages/frontend/src/components/MkNoteSub.vue` to `packages/frontend/src/components/SkNoteSub.vue`
+  - from MK note components to Dynamic note components (if the public signature changed)
+    - from `packages/frontend/src/components/MkNote.vue` to `packages/frontend/src/components/DynamicNote.vue`
+    - from `packages/frontend/src/components/MkNoteDetailed.vue` to `packages/frontend/src/components/DynamicNoteDetailed.vue`
+    - from `packages/frontend/src/components/MkNoteSimple.vue` to `packages/frontend/src/components/DynamicNoteSimple.vue`
+  - from the global timeline to the bubble timeline
+    - `packages/backend/src/server/api/stream/channels/global-timeline.ts`
+    - `packages/backend/src/server/api/stream/channels/bubble-timeline.ts`
+    - `packages/frontend/src/timelines.ts`
+    - `packages/frontend/src/components/MkTimeline.vue`
+    - `packages/frontend/src/pages/timeline.vue`
+    - `packages/frontend/src/ui/deck/tl-column.vue`
+    - `packages/frontend/src/widgets/WidgetTimeline.vue`
+  - from `packages/backend/src/queue/processors/InboxProcessorService.ts` to `packages/backend/src/core/UpdateInstanceQueue.ts`, where `updateInstanceQueue` is impacted
+  - from `.config/example.yml` to `.config/ci.yml` and `chart/files/default.yml`
+  - in `packages/backend/src/core/MfmService.ts`, from `toHtml` to `toMastoApiHtml`
+  - from `verifyLink` in `packages/backend/src/core/activitypub/models/ApPersonService.ts` to `verifyFieldLinks` in `packages/backend/src/misc/verify-field-link.ts` (if sensible)
 - Check for changes that may require additional work:
   - If there have been any changes to the federated user data (the
     `renderPerson` function in
@@ -371,7 +369,7 @@ Fix conflicts and *commit!*
     correct.
   - Check for any new instances of any memory cache class.
     (`MemoryKVCache`, `MemorySingleCache`, `RedisKVCache`, `RedisSingleCache`, and `QuantumKVCache` are the current ones.)
-  	These can usually be kept as-is, but all instances must be managed by `CacheManagementService`.
+    These can usually be kept as-is, but all instances must be managed by `CacheManagementService`.
     The conversion is easy:
     1. Make sure that `CacheManagementService` is available.
        In most cases, it can be injected through DI.
@@ -385,18 +383,18 @@ Fix conflicts and *commit!*
        Disposal is managed by `CacheManagementService`, so attempting to call any `dispose` or `onApplicationShutdown` method will produce a type error.
   - Check for any new calls to native time functions:
     - `Date.now()` - replace with `this.timeService.now`.
-       Inject `TimeService` via DI if it's not already available.
+      Inject `TimeService` via DI if it's not already available.
     - `new Date()` - if there's a value passed in, then leave it.
-    But the no-args constructor should be replaced with `this.timeService.date`.
+      But the no-args constructor should be replaced with `this.timeService.date`.
       Inject `TimeService` via DI if it's not already available.
     - `setTimeout` - migrate to `this.timeService.startTimer` or `this.timeService.startPromiseTimer`.
       The parameters should be the same, but the return type is different.
       You may need to replace some `NodeJS.Timeout` types with `this.timerHandle`.
-			Inject `TimeService` via DI if it's not already available.
+      Inject `TimeService` via DI if it's not already available.
     - `setInterval` - migrate to `this.timeService.startTimer`.
-    	Migration is mostly the same as `setTimeout`, but with one major difference:
-    	You must add `{ repeated: true }` as the final option parameter.
-    	If this is omitted, the code will compile but the interval will only fire once!
+      Migration is mostly the same as `setTimeout`, but with one major difference:
+      You must add `{ repeated: true }` as the final option parameter.
+      If this is omitted, the code will compile but the interval will only fire once!
   - Check for any new Chart subclasses, and make sure to inject `TimeService` and implement `getCurrentDate`.
   - Check for any new Channel subclasses and add all missing DI parameters.
 
@@ -410,26 +408,25 @@ Fix conflicts and *commit!*
 
 - Build the frontend with this command:
 
-    ```bash
-    rm -rf built/
-    NODE_ENV=development pnpm --filter=frontend --filter=frontend-embed --filter=frontend-shared build
-    ```
+  ```bash
+  rm -rf built/
+  NODE_ENV=development pnpm --filter=frontend --filter=frontend-embed --filter=frontend-shared build
+  ```
 
 - Make sure there aren't any new `ti-*` classes (Tabler Icons), and
   replace them with appropriate `ph-*` ones (Phosphor Icons) in
   [`vite.replaceicons.ts`](packages/frontend/vite.replaceIcons.ts).
+  - This command should show you want to change: `grep -ohrP
+'(?<=["'\''](ti )?)(ti-(?!fw)[\w\-]+)' --exclude \*.map --
+built/ | sort -u`.
 
-    - This command should show you want to change: `grep -ohrP
-      '(?<=["'\''](ti )?)(ti-(?!fw)[\w\-]+)' --exclude \*.map --
-      built/ | sort -u`.
+  - NOTE: `ti-fw` is a special class that's defined by Misskey,
+    leave it alone.
 
-    - NOTE: `ti-fw` is a special class that's defined by Misskey,
-      leave it alone.
+  - After every change, re-build the frontend and check again, until
+    there are no more `ti-*` classes in the built files.
 
-    - After every change, re-build the frontend and check again, until
-      there are no more `ti-*` classes in the built files.
-
-    - Commit!
+  - Commit!
 
 - Double-check the new migration, that they won't conflict with our db
   changes: `git diff develop -- packages/backend/migration/`
@@ -439,7 +436,7 @@ Fix conflicts and *commit!*
 - Run tests `pnpm test; pnpm --filter backend test:e2e` (requires a
   test database, [see above](#testing)) and fix them all (the e2e
   tests randomly fail with weird errors like `relation "users" does
-  not exist`, run them again if that happens).
+not exist`, run them again if that happens).
 
 - Run lint `pnpm --filter=backend --filter=frontend-shared lint` +
   `pnpm --filter=frontend --filter=frontend-embed eslint` and fix all
@@ -454,7 +451,7 @@ different use case. The following table compares the available
 options:
 
 | Cache               | Type      | Consistency | Persistence | Data Source | Cardinality | Eviction | Description                                                                                                                                                                                                                                                                |
-|---------------------|-----------|-------------|-------------|-------------|-------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------- | --------- | ----------- | ----------- | ----------- | ----------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `MemoryKVCache`     | Key-Value | None        | None        | Caller      | Single      | Lifetime | Implements a basic in-memory Key-Value store. The implementation is entirely synchronous, except for user-provided data sources.                                                                                                                                           |
 | `MemorySingleCache` | Single    | None        | None        | Caller      | Single      | Lifetime | Implements a basic in-memory Single Value store. The implementation is entirely synchronous, except for user-provided data sources.                                                                                                                                        |
 | `RedisKVCache`      | Key-Value | Eventual    | Redis       | Callback    | Single      | Lifetime | Extends `MemoryKVCache` with Redis-backed persistence and a pre-defined callback data source. This provides eventual consistency guarantees based on the memory cache lifetime.                                                                                            |
@@ -462,17 +459,17 @@ options:
 | `QuantumKVCache`    | Key-Value | Immediate   | None        | Callback    | Multiple    | Lifetime | Combines `MemoryKVCache` with a pre-defined callback data source and immediate consistency via Redis sync events. The implementation offers multi-item batch overloads for efficient bulk operations. **This is the recommended cache implementation for most use cases.** |
 
 Key-Value caches store multiple entries per cache, while Single caches
-store a single value that can be accessed directly.  Consistency
+store a single value that can be accessed directly. Consistency
 refers to the consistency of cached data between different processes
 in the instance cluster: "None" means no consistency guarantees,
 "Eventual" caches will gradually become consistent after some unknown
 time, and "Immediate" consistency ensures accurate data ASAP after the
-update.  Caches with persistence can retain their data after a reboot
-through an external service such as Redis.  If a data source is
+update. Caches with persistence can retain their data after a reboot
+through an external service such as Redis. If a data source is
 supported, then this allows the cache to directly load missing data in
-response to a fetch.  "Caller" data sources are passed into the fetch
+response to a fetch. "Caller" data sources are passed into the fetch
 method(s) directly, while "Callback" sources are passed in as a
-function when the cache is first initialized.  The cardinality of a
+function when the cache is first initialized. The cardinality of a
 cache refers to the number of items that can be updated in a single
 operation, and eviction, finally, is the method that the cache uses to
 evict stale data.
@@ -511,15 +508,16 @@ This is accomplished through the use of **Redis IPC**.
 #### IPC Options
 
 There are three methods to access this IPC system, all of which are available through Dependency Injection:
-* Using the `pub` and `sub` Redis instances to directly establish channels.
+
+- Using the `pub` and `sub` Redis instances to directly establish channels.
   This should only be done when necessary, like when implementing very low-level utilities.
-* The `publishInternalEvent` method of `GlobalEventService`.
+- The `publishInternalEvent` method of `GlobalEventService`.
   This method will asynchronously publish an event to redis, which will forward it to all connected processes - **including the sending process**.
   Due to this and other issues, `publishInternalEvent` should be considered obsolete and avoided in new code.
   Instead, consider one of the other options.
-* `InternalEventService`, which is the newest and recommended way to handle IPC.
+- `InternalEventService`, which is the newest and recommended way to handle IPC.
   The `emit` method accepts arguments identical to `publishInternalEvent`, which eases migration, while also accepting a configuration object to control event propagation.
-  Additionally, `InternalEventService` ensures that local event listeners are called *before* notifying other processes, avoiding potential data races and other weirdness.
+  Additionally, `InternalEventService` ensures that local event listeners are called _before_ notifying other processes, avoiding potential data races and other weirdness.
 
 #### When to use IPC
 

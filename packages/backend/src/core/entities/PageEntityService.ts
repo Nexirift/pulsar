@@ -3,19 +3,23 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { DI } from '@/di-symbols.js';
-import type { DriveFilesRepository, PagesRepository, PageLikesRepository } from '@/models/_.js';
-import { awaitAll } from '@/misc/prelude/await-all.js';
-import type { Packed } from '@/misc/json-schema.js';
-import type { } from '@/models/Blocking.js';
-import type { MiUser } from '@/models/User.js';
-import type { MiPage } from '@/models/Page.js';
-import type { MiDriveFile } from '@/models/DriveFile.js';
-import { bindThis } from '@/decorators.js';
-import { IdService } from '@/core/IdService.js';
-import { UserEntityService } from './UserEntityService.js';
-import { DriveFileEntityService } from './DriveFileEntityService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { DI } from "@/di-symbols.js";
+import type {
+	DriveFilesRepository,
+	PagesRepository,
+	PageLikesRepository,
+} from "@/models/_.js";
+import { awaitAll } from "@/misc/prelude/await-all.js";
+import type { Packed } from "@/misc/json-schema.js";
+import type {} from "@/models/Blocking.js";
+import type { MiUser } from "@/models/User.js";
+import type { MiPage } from "@/models/Page.js";
+import type { MiDriveFile } from "@/models/DriveFile.js";
+import { bindThis } from "@/decorators.js";
+import { IdService } from "@/core/IdService.js";
+import { UserEntityService } from "./UserEntityService.js";
+import { DriveFileEntityService } from "./DriveFileEntityService.js";
 
 @Injectable()
 export class PageEntityService {
@@ -32,28 +36,32 @@ export class PageEntityService {
 		private userEntityService: UserEntityService,
 		private driveFileEntityService: DriveFileEntityService,
 		private idService: IdService,
-	) {
-	}
+	) {}
 
 	@bindThis
 	public async pack(
-		src: MiPage['id'] | MiPage,
-		me?: { id: MiUser['id'] } | null | undefined,
+		src: MiPage["id"] | MiPage,
+		me?: { id: MiUser["id"] } | null | undefined,
 		hint?: {
-			packedUser?: Packed<'UserLite'>
+			packedUser?: Packed<"UserLite">;
 		},
-	): Promise<Packed<'Page'>> {
+	): Promise<Packed<"Page">> {
 		const meId = me ? me.id : null;
-		const page = typeof src === 'object' ? src : await this.pagesRepository.findOneByOrFail({ id: src });
+		const page =
+			typeof src === "object"
+				? src
+				: await this.pagesRepository.findOneByOrFail({ id: src });
 
 		const attachedFiles: Promise<MiDriveFile | null>[] = [];
 		const collectFile = (xs: any[]) => {
 			for (const x of xs) {
-				if (x.type === 'image') {
-					attachedFiles.push(this.driveFilesRepository.findOneBy({
-						id: x.fileId,
-						userId: page.userId,
-					}));
+				if (x.type === "image") {
+					attachedFiles.push(
+						this.driveFilesRepository.findOneBy({
+							id: x.fileId,
+							userId: page.userId,
+						}),
+					);
 				}
 				if (x.children) {
 					collectFile(x.children);
@@ -66,12 +74,12 @@ export class PageEntityService {
 		let migrated = false;
 		const migrate = (xs: any[]) => {
 			for (const x of xs) {
-				if (x.type === 'input') {
-					if (x.inputType === 'text') {
-						x.type = 'textInput';
+				if (x.type === "input") {
+					if (x.inputType === "text") {
+						x.type = "textInput";
 					}
-					if (x.inputType === 'number') {
-						x.type = 'numberInput';
+					if (x.inputType === "number") {
+						x.type = "numberInput";
 						if (x.default) x.default = parseInt(x.default, 10);
 					}
 					migrated = true;
@@ -94,7 +102,9 @@ export class PageEntityService {
 			createdAt: this.idService.parse(page.id).date.toISOString(),
 			updatedAt: page.updatedAt.toISOString(),
 			userId: page.userId,
-			user: hint?.packedUser ?? this.userEntityService.pack(page.user ?? page.userId, me), // { schema: 'UserDetailed' } すると無限ループするので注意
+			user:
+				hint?.packedUser ??
+				this.userEntityService.pack(page.user ?? page.userId, me), // { schema: 'UserDetailed' } すると無限ループするので注意
 			content: page.content,
 			variables: page.variables,
 			title: page.title,
@@ -105,25 +115,34 @@ export class PageEntityService {
 			font: page.font,
 			script: page.script,
 			eyeCatchingImageId: page.eyeCatchingImageId,
-			eyeCatchingImage: page.eyeCatchingImageId ? this.driveFileEntityService.pack(page.eyeCatchingImageId) : null,
-			attachedFiles: Promise
-				.all(attachedFiles)
-				.then(fs => fs.filter(x => x != null))
-				.then(fs => this.driveFileEntityService.packMany(fs)),
+			eyeCatchingImage: page.eyeCatchingImageId
+				? this.driveFileEntityService.pack(page.eyeCatchingImageId)
+				: null,
+			attachedFiles: Promise.all(attachedFiles)
+				.then((fs) => fs.filter((x) => x != null))
+				.then((fs) => this.driveFileEntityService.packMany(fs)),
 			likedCount: page.likedCount,
-			isLiked: meId ? this.pageLikesRepository.exists({ where: { pageId: page.id, userId: meId } }) : undefined,
+			isLiked: meId
+				? this.pageLikesRepository.exists({
+						where: { pageId: page.id, userId: meId },
+					})
+				: undefined,
 		});
 	}
 
 	@bindThis
 	public async packMany(
 		pages: MiPage[],
-		me?: { id: MiUser['id'] } | null | undefined,
+		me?: { id: MiUser["id"] } | null | undefined,
 	) {
 		const _users = pages.map(({ user, userId }) => user ?? userId);
-		const _userMap = await this.userEntityService.packMany(_users, me)
-			.then(users => new Map(users.map(u => [u.id, u])));
-		return await Promise.all(pages.map(page => this.pack(page, me, { packedUser: _userMap.get(page.userId) })));
+		const _userMap = await this.userEntityService
+			.packMany(_users, me)
+			.then((users) => new Map(users.map((u) => [u.id, u])));
+		return await Promise.all(
+			pages.map((page) =>
+				this.pack(page, me, { packedUser: _userMap.get(page.userId) }),
+			),
+		);
 	}
 }
-

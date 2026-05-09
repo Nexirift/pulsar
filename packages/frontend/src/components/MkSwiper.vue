@@ -4,36 +4,52 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div
-	ref="rootEl"
-	:class="[$style.transitionRoot, { [$style.enableAnimation]: shouldAnimate }]"
-	@touchstart.passive="touchStart"
-	@touchmove.passive="touchMove"
-	@touchend.passive="touchEnd"
->
-	<Transition
-		:class="[{ [$style.swiping]: isSwipingForClass, [$style.transitionChildren]: !isUserHome }]"
-		:enterActiveClass="$style.swipeAnimation_enterActive"
-		:leaveActiveClass="$style.swipeAnimation_leaveActive"
-		:enterFromClass="transitionName === 'swipeAnimationLeft' ? $style.swipeAnimationLeft_enterFrom : $style.swipeAnimationRight_enterFrom"
-		:leaveToClass="transitionName === 'swipeAnimationLeft' ? $style.swipeAnimationLeft_leaveTo : $style.swipeAnimationRight_leaveTo"
-		:style="`--swipe: ${pullDistance}px;`"
+	<div
+		ref="rootEl"
+		:class="[
+			$style.transitionRoot,
+			{ [$style.enableAnimation]: shouldAnimate },
+		]"
+		@touchstart.passive="touchStart"
+		@touchmove.passive="touchMove"
+		@touchend.passive="touchEnd"
 	>
-		<div :key="tabModel">
-			<slot></slot>
-		</div>
-	</Transition>
-</div>
+		<Transition
+			:class="[
+				{
+					[$style.swiping]: isSwipingForClass,
+					[$style.transitionChildren]: !isUserHome,
+				},
+			]"
+			:enterActiveClass="$style.swipeAnimation_enterActive"
+			:leaveActiveClass="$style.swipeAnimation_leaveActive"
+			:enterFromClass="
+				transitionName === 'swipeAnimationLeft'
+					? $style.swipeAnimationLeft_enterFrom
+					: $style.swipeAnimationRight_enterFrom
+			"
+			:leaveToClass="
+				transitionName === 'swipeAnimationLeft'
+					? $style.swipeAnimationLeft_leaveTo
+					: $style.swipeAnimationRight_leaveTo
+			"
+			:style="`--swipe: ${pullDistance}px;`"
+		>
+			<div :key="tabModel">
+				<slot></slot>
+			</div>
+		</Transition>
+	</div>
 </template>
 <script lang="ts" setup>
-import { ref, useTemplateRef, computed, nextTick, watch } from 'vue';
-import type { Tab } from '@/components/global/MkPageHeader.tabs.vue';
-import { isHorizontalSwipeSwiping as isSwiping } from '@/utility/touch.js';
-import { prefer } from '@/preferences.js';
+import { ref, useTemplateRef, computed, nextTick, watch } from "vue";
+import type { Tab } from "@/components/global/MkPageHeader.tabs.vue";
+import { isHorizontalSwipeSwiping as isSwiping } from "@/utility/touch.js";
+import { prefer } from "@/preferences.js";
 
-const rootEl = useTemplateRef('rootEl');
+const rootEl = useTemplateRef("rootEl");
 
-const tabModel = defineModel<string>('tab');
+const tabModel = defineModel<string>("tab");
 
 const props = defineProps<{
 	tabs: Tab[];
@@ -41,10 +57,12 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'swiped', newKey: string, direction: 'left' | 'right'): void;
+	(ev: "swiped", newKey: string, direction: "left" | "right"): void;
 }>();
 
-const shouldAnimate = computed(() => prefer.r.enableHorizontalSwipe.value || prefer.r.animation.value);
+const shouldAnimate = computed(
+	() => prefer.r.enableHorizontalSwipe.value || prefer.r.animation.value,
+);
 
 // ▼ しきい値 ▼ //
 
@@ -65,13 +83,15 @@ const SWIPE_DIRECTION_ANGLE_THRESHOLD = 50;
 let startScreenX: number | null = null;
 let startScreenY: number | null = null;
 
-const currentTabIndex = computed(() => props.tabs.findIndex(tab => tab.key === tabModel.value));
+const currentTabIndex = computed(() =>
+	props.tabs.findIndex((tab) => tab.key === tabModel.value),
+);
 
 const pullDistance = ref(0);
 const isSwipingForClass = ref(false);
 let swipeAborted = false;
-const isUserHome = props.page === 'user' && tabModel.value === 'home';
-let swipeDirectionLocked: 'horizontal' | 'vertical' | null = null;
+const isUserHome = props.page === "user" && tabModel.value === "home";
+let swipeDirectionLocked: "horizontal" | "vertical" | null = null;
 
 function touchStart(event: TouchEvent) {
 	if (!prefer.r.enableHorizontalSwipe.value) return;
@@ -102,15 +122,18 @@ function touchMove(event: TouchEvent) {
 	// スワイプ方向をロック
 	if (!swipeDirectionLocked) {
 		const angle = Math.abs(Math.atan2(distanceY, distanceX) * (180 / Math.PI));
-		if (angle > 90 - SWIPE_DIRECTION_ANGLE_THRESHOLD && angle < 90 + SWIPE_DIRECTION_ANGLE_THRESHOLD) {
-			swipeDirectionLocked = 'vertical';
+		if (
+			angle > 90 - SWIPE_DIRECTION_ANGLE_THRESHOLD &&
+			angle < 90 + SWIPE_DIRECTION_ANGLE_THRESHOLD
+		) {
+			swipeDirectionLocked = "vertical";
 		} else {
-			swipeDirectionLocked = 'horizontal';
+			swipeDirectionLocked = "horizontal";
 		}
 	}
 
 	// 縦方向のスワイプの場合は中断
-	if (swipeDirectionLocked === 'vertical') {
+	if (swipeDirectionLocked === "vertical") {
 		swipeAborted = true;
 		pullDistance.value = 0;
 		isSwiping.value = false;
@@ -123,10 +146,16 @@ function touchMove(event: TouchEvent) {
 	if (Math.abs(distanceX) < MIN_SWIPE_DISTANCE) return;
 	if (Math.abs(distanceX) > MAX_SWIPE_DISTANCE) return;
 
-	if (currentTabIndex.value === 0 || props.tabs[currentTabIndex.value - 1].onClick) {
+	if (
+		currentTabIndex.value === 0 ||
+		props.tabs[currentTabIndex.value - 1].onClick
+	) {
 		distanceX = Math.min(distanceX, 0);
 	}
-	if (currentTabIndex.value === props.tabs.length - 1 || props.tabs[currentTabIndex.value + 1].onClick) {
+	if (
+		currentTabIndex.value === props.tabs.length - 1 ||
+		props.tabs[currentTabIndex.value + 1].onClick
+	) {
 		distanceX = Math.max(distanceX, 0);
 	}
 	if (distanceX === 0) return;
@@ -160,14 +189,20 @@ function touchEnd(event: TouchEvent) {
 
 	if (Math.abs(distance) > SWIPE_DISTANCE_THRESHOLD) {
 		if (distance > 0) {
-			if (props.tabs[currentTabIndex.value - 1] && !props.tabs[currentTabIndex.value - 1].onClick) {
+			if (
+				props.tabs[currentTabIndex.value - 1] &&
+				!props.tabs[currentTabIndex.value - 1].onClick
+			) {
 				tabModel.value = props.tabs[currentTabIndex.value - 1].key;
-				emit('swiped', props.tabs[currentTabIndex.value - 1].key, 'right');
+				emit("swiped", props.tabs[currentTabIndex.value - 1].key, "right");
 			}
 		} else {
-			if (props.tabs[currentTabIndex.value + 1] && !props.tabs[currentTabIndex.value + 1].onClick) {
+			if (
+				props.tabs[currentTabIndex.value + 1] &&
+				!props.tabs[currentTabIndex.value + 1].onClick
+			) {
 				tabModel.value = props.tabs[currentTabIndex.value + 1].key;
-				emit('swiped', props.tabs[currentTabIndex.value + 1].key, 'left');
+				emit("swiped", props.tabs[currentTabIndex.value + 1].key, "left");
 			}
 		}
 	}
@@ -183,14 +218,14 @@ function touchEnd(event: TouchEvent) {
 
 /** 横スワイプに関与する可能性のある要素を調べる */
 function hasSomethingToDoWithXSwipe(el: HTMLElement) {
-	if (['INPUT', 'TEXTAREA'].includes(el.tagName)) return true;
+	if (["INPUT", "TEXTAREA"].includes(el.tagName)) return true;
 	if (el.isContentEditable) return true;
 	if (el.scrollWidth > el.clientWidth) return true;
 
 	const style = window.getComputedStyle(el);
-	if (['absolute', 'fixed', 'sticky'].includes(style.position)) return true;
-	if (['scroll', 'auto'].includes(style.overflowX)) return true;
-	if (style.touchAction === 'pan-x') return true;
+	if (["absolute", "fixed", "sticky"].includes(style.position)) return true;
+	if (["scroll", "auto"].includes(style.overflowX)) return true;
+	if (style.touchAction === "pan-x") return true;
 
 	if (el.parentElement && el.parentElement !== rootEl.value) {
 		return hasSomethingToDoWithXSwipe(el.parentElement);
@@ -199,16 +234,18 @@ function hasSomethingToDoWithXSwipe(el: HTMLElement) {
 	}
 }
 
-const transitionName = ref<'swipeAnimationLeft' | 'swipeAnimationRight' | undefined>(undefined);
+const transitionName = ref<
+	"swipeAnimationLeft" | "swipeAnimationRight" | undefined
+>(undefined);
 
 watch(tabModel, (newTab, oldTab) => {
-	const newIndex = props.tabs.findIndex(tab => tab.key === newTab);
-	const oldIndex = props.tabs.findIndex(tab => tab.key === oldTab);
+	const newIndex = props.tabs.findIndex((tab) => tab.key === newTab);
+	const oldIndex = props.tabs.findIndex((tab) => tab.key === oldTab);
 
 	if (oldIndex >= 0 && newIndex >= 0 && oldIndex < newIndex) {
-		transitionName.value = 'swipeAnimationLeft';
+		transitionName.value = "swipeAnimationLeft";
 	} else {
-		transitionName.value = 'swipeAnimationRight';
+		transitionName.value = "swipeAnimationRight";
 	}
 
 	window.setTimeout(() => {
@@ -233,7 +270,7 @@ watch(tabModel, (newTab, oldTab) => {
 .enableAnimation .transitionChildren {
 	&.swipeAnimation_enterActive,
 	&.swipeAnimation_leaveActive {
-		transition: transform .3s cubic-bezier(0.65, 0.05, 0.36, 1);
+		transition: transform 0.3s cubic-bezier(0.65, 0.05, 0.36, 1);
 	}
 
 	&.swipeAnimationRight_leaveTo,
@@ -248,6 +285,6 @@ watch(tabModel, (newTab, oldTab) => {
 }
 
 .swiping {
-	transition: transform .2s ease-out;
+	transition: transform 0.2s ease-out;
 }
 </style>

@@ -3,31 +3,32 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { UserProfilesRepository } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
-import { CacheService } from '@/core/CacheService.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { UserProfilesRepository } from "@/models/_.js";
+import { DI } from "@/di-symbols.js";
+import { CacheService } from "@/core/CacheService.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
 
 export const meta = {
-	tags: ['admin'],
+	tags: ["admin"],
 
 	requireCredential: true,
 	requireModerator: true,
-	kind: 'write:admin:unnsfw-user',
+	kind: "write:admin:unnsfw-user",
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		userId: { type: 'string', format: 'misskey:id' },
+		userId: { type: "string", format: "misskey:id" },
 	},
-	required: ['userId'],
+	required: ["userId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		private readonly cacheService: CacheService,
 		private readonly moderationLogService: ModerationLogService,
@@ -47,7 +48,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			await this.cacheService.userProfileCache.delete(ps.userId);
 
-			await this.moderationLogService.log(me, 'unNsfwUser', {
+			await this.moderationLogService.log(me, "unNsfwUser", {
 				userId: ps.userId,
 				userUsername: user.username,
 				userHost: user.host,

@@ -105,7 +105,7 @@ port: 61812
 
 # but we should not listen to "every address" because we really want
 # to only be contactable from the reverse proxy, so we suggest:
-address: '127.0.0.1'
+address: "127.0.0.1"
 
 # You can also use UNIX domain socket.
 # socket: /path/to/sharkey.sock
@@ -139,7 +139,6 @@ db:
   #  ssl: true
   #  # Set a higher value if you have timeout issues during migration
   #  statement_timeout: 10000
-
 
 dbReplications: false
 
@@ -283,7 +282,7 @@ fulltextSearch:
 # ONCE YOU HAVE STARTED THE INSTANCE, DO NOT CHANGE THE
 # ID SETTINGS AFTER THAT!
 
-id: 'aidx'
+id: "aidx"
 
 #   ┌────────────────┐
 #───┘ Error tracking └──────────────────────────────────────────
@@ -477,17 +476,17 @@ attachLdSignatureForRelays: true
 # Settings for the activity logger, which records inbound activities to the database.
 # Disabled by default due to the large volume of data it saves.
 #activityLogging:
-  # Log activities to the database (default: false)
-  #enabled: false
+# Log activities to the database (default: false)
+#enabled: false
 
-  # Save the activity before processing, then update later with the results.
-  # This has the advantage of capturing activities that cause a hard-crash, but doubles the number of queries used.
-  # Default: false
-  #preSave: false
+# Save the activity before processing, then update later with the results.
+# This has the advantage of capturing activities that cause a hard-crash, but doubles the number of queries used.
+# Default: false
+#preSave: false
 
-  # How long to save each log entry before deleting it.
-  # Default: 2592000000 (1 week)
-  #maxAge: 2592000000
+# How long to save each log entry before deleting it.
+# Default: 2592000000 (1 week)
+#maxAge: 2592000000
 
 # Transparently compress every websocket message on clients that support it.
 # Trades server CPU usage for reduced bandwidth usage and a faster frontend on the client.

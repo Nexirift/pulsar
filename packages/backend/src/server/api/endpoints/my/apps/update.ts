@@ -3,32 +3,33 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AppsRepository } from '@/models/_.js';
-import { unique } from '@/misc/prelude/array.js';
-import { AppEntityService } from '@/core/entities/AppEntityService.js';
-import { DI } from '@/di-symbols.js';
-import { ApiError } from '../../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { AppsRepository } from "@/models/_.js";
+import { unique } from "@/misc/prelude/array.js";
+import { AppEntityService } from "@/core/entities/AppEntityService.js";
+import { DI } from "@/di-symbols.js";
+import { ApiError } from "../../../error.js";
 
 export const meta = {
-	tags: ['account', 'app'],
+	tags: ["account", "app"],
 
 	requireCredential: true,
-	kind: 'write:account',
+	kind: "write:account",
 
 	errors: {
 		noSuchApp: {
-			message: 'No such app.',
-			code: 'NO_SUCH_APP',
-			id: '2b5d3b8b-1f88-4e5b-9c7e-1e8c1e2e3e4e',
+			message: "No such app.",
+			code: "NO_SUCH_APP",
+			id: "2b5d3b8b-1f88-4e5b-9c7e-1e8c1e2e3e4e",
 		},
 	},
 
 	res: {
-		type: 'object',
-		optional: false, nullable: false,
-		ref: 'App',
+		type: "object",
+		optional: false,
+		nullable: false,
+		ref: "App",
 	},
 
 	// 5 calls per second
@@ -39,21 +40,26 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		appId: { type: 'string', format: 'misskey:id' },
-		name: { type: 'string', minLength: 1, maxLength: 128 },
-		description: { type: 'string', minLength: 0, maxLength: 512 },
-		permission: { type: 'array', uniqueItems: true, items: {
-			type: 'string',
-		} },
-		callbackUrl: { type: 'string', nullable: true, maxLength: 512 },
+		appId: { type: "string", format: "misskey:id" },
+		name: { type: "string", minLength: 1, maxLength: 128 },
+		description: { type: "string", minLength: 0, maxLength: 512 },
+		permission: {
+			type: "array",
+			uniqueItems: true,
+			items: {
+				type: "string",
+			},
+		},
+		callbackUrl: { type: "string", nullable: true, maxLength: 512 },
 	},
-	required: ['appId'],
+	required: ["appId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.appsRepository)
 		private appsRepository: AppsRepository,
@@ -87,7 +93,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.permission !== undefined) {
 				// for backward compatibility
-				updateData.permission = unique(ps.permission.map(v => v.replace(/^(.+)(\/|-)(read|write)$/, '$3:$1')));
+				updateData.permission = unique(
+					ps.permission.map((v) =>
+						v.replace(/^(.+)(\/|-)(read|write)$/, "$3:$1"),
+					),
+				);
 			}
 
 			if (ps.callbackUrl !== undefined) {
@@ -98,7 +108,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				await this.appsRepository.update(app.id, updateData);
 			}
 
-			const updatedApp = await this.appsRepository.findOneByOrFail({ id: app.id });
+			const updatedApp = await this.appsRepository.findOneByOrFail({
+				id: app.id,
+			});
 
 			return await this.appEntityService.pack(updatedApp, me, {
 				detail: true,

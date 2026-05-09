@@ -12,12 +12,20 @@ export class StatusError extends Error {
 	public isClientError: boolean;
 	public isRetryable: boolean;
 
-	constructor(message: string, statusCode: number, statusMessage?: string, cause?: unknown) {
+	constructor(
+		message: string,
+		statusCode: number,
+		statusMessage?: string,
+		cause?: unknown,
+	) {
 		super(message, cause ? { cause } : undefined);
-		this.name = 'StatusError';
+		this.name = "StatusError";
 		this.statusCode = statusCode;
 		this.statusMessage = statusMessage;
-		this.isClientError = typeof this.statusCode === 'number' && this.statusCode >= 400 && this.statusCode < 500;
+		this.isClientError =
+			typeof this.statusCode === "number" &&
+			this.statusCode >= 400 &&
+			this.statusCode < 500;
 		this.isRetryable = !this.isClientError || this.statusCode === 429;
 	}
 }

@@ -4,32 +4,36 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root" @click="(ev) => emit('click', ev)">
-	<span v-if="iconClass" :class="[$style.icon, iconClass]"></span>
-	<span :class="$style.content">{{ content }}</span>
-	<MkButton v-if="exButtonIconClass" :class="$style.exButton" @click="(ev) => emit('exButtonClick', ev)">
-		<span :class="[$style.exButtonIcon, exButtonIconClass]"></span>
-	</MkButton>
-</div>
+	<div :class="$style.root" @click="(ev) => emit('click', ev)">
+		<span v-if="iconClass" :class="[$style.icon, iconClass]"></span>
+		<span :class="$style.content">{{ content }}</span>
+		<MkButton
+			v-if="exButtonIconClass"
+			:class="$style.exButton"
+			@click="(ev) => emit('exButtonClick', ev)"
+		>
+			<span :class="[$style.exButtonIcon, exButtonIconClass]"></span>
+		</MkButton>
+	</div>
 </template>
 
 <script setup lang="ts">
-import MkButton from '@/components/MkButton.vue';
+import MkButton from "@/components/MkButton.vue";
 
 const emit = defineEmits<{
-	(ev: 'click', payload: MouseEvent): void;
-	(ev: 'exButtonClick', payload: MouseEvent): void;
+	(ev: "click", payload: MouseEvent): void;
+	(ev: "exButtonClick", payload: MouseEvent): void;
 }>();
 
 defineProps<{
 	iconClass?: string;
 	content: string;
-	exButtonIconClass?: string
+	exButtonIconClass?: string;
 }>();
 </script>
 
 <style module lang="scss">
-$buttonSize : 1.8em;
+$buttonSize: 1.8em;
 
 .root {
 	display: inline-flex;
@@ -50,7 +54,7 @@ $buttonSize : 1.8em;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 0.70em;
+	font-size: 0.7em;
 }
 
 .exButton {
@@ -71,6 +75,6 @@ $buttonSize : 1.8em;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 0.80em;
+	font-size: 0.8em;
 }
 </style>

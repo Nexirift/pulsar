@@ -3,12 +3,19 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
-import { id } from './util/id.js';
-import { MiUser } from './User.js';
+import {
+	Column,
+	Entity,
+	Index,
+	JoinColumn,
+	ManyToOne,
+	PrimaryColumn,
+} from "typeorm";
+import { id } from "./util/id.js";
+import { MiUser } from "./User.js";
 
-@Entity('user_memo')
-@Index(['userId', 'targetUserId'], { unique: true })
+@Entity("user_memo")
+@Index(["userId", "targetUserId"], { unique: true })
 export class MiUserMemo {
 	@PrimaryColumn(id())
 	public id: string;
@@ -16,12 +23,12 @@ export class MiUserMemo {
 	@Index()
 	@Column({
 		...id(),
-		comment: 'The ID of author.',
+		comment: "The ID of author.",
 	})
-	public userId: MiUser['id'];
+	public userId: MiUser["id"];
 
-	@ManyToOne(type => MiUser, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiUser, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public user: MiUser | null;
@@ -29,19 +36,19 @@ export class MiUserMemo {
 	@Index()
 	@Column({
 		...id(),
-		comment: 'The ID of target user.',
+		comment: "The ID of target user.",
 	})
-	public targetUserId: MiUser['id'];
+	public targetUserId: MiUser["id"];
 
-	@ManyToOne(type => MiUser, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiUser, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public targetUser: MiUser | null;
 
-	@Column('varchar', {
+	@Column("varchar", {
 		length: 2048,
-		comment: 'Memo.',
+		comment: "Memo.",
 	})
 	public memo: string;
 }

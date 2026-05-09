@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { entities } from 'misskey-js';
-import { warningExternalWebsite } from './warning-external-website';
-import { useRouter } from '@/router';
-import { notePage } from '@/filters/note.js';
+import { entities } from "misskey-js";
+import { warningExternalWebsite } from "./warning-external-website";
+import { useRouter } from "@/router";
+import { notePage } from "@/filters/note.js";
 
 const router = useRouter();
 

@@ -4,41 +4,51 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader :actions="headerActions" :tabs="headerTabs">
-	<div class="_spacer" style="--MI_SPACER-w: 900px;">
-		<div class="_gaps">
-			<div :class="$style.decorations">
-				<div
-					v-for="avatarDecoration in avatarDecorations"
-					:key="avatarDecoration.id"
-					v-panel
-					:class="$style.decoration"
-					@click="edit(avatarDecoration)"
-				>
-					<div :class="$style.decorationName"><MkCondensedLine :minScale="0.5">{{ avatarDecoration.name }}</MkCondensedLine></div>
-					<MkAvatar style="width: 60px; height: 60px;" :user="$i" :decorations="[{ url: avatarDecoration.url }]" forceShowDecoration/>
+	<PageWithHeader :actions="headerActions" :tabs="headerTabs">
+		<div class="_spacer" style="--MI_SPACER-w: 900px">
+			<div class="_gaps">
+				<div :class="$style.decorations">
+					<div
+						v-for="avatarDecoration in avatarDecorations"
+						:key="avatarDecoration.id"
+						v-panel
+						:class="$style.decoration"
+						@click="edit(avatarDecoration)"
+					>
+						<div :class="$style.decorationName">
+							<MkCondensedLine :minScale="0.5">{{
+								avatarDecoration.name
+							}}</MkCondensedLine>
+						</div>
+						<MkAvatar
+							style="width: 60px; height: 60px"
+							:user="$i"
+							:decorations="[{ url: avatarDecoration.url }]"
+							forceShowDecoration
+						/>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-</PageWithHeader>
+	</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, defineAsyncComponent } from 'vue';
-import * as Misskey from 'misskey-js';
-import { ensureSignin } from '@/i.js';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { i18n } from '@/i18n.js';
-import { definePage } from '@/page.js';
+import { ref, computed, defineAsyncComponent } from "vue";
+import * as Misskey from "misskey-js";
+import { ensureSignin } from "@/i.js";
+import * as os from "@/os.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { i18n } from "@/i18n.js";
+import { definePage } from "@/page.js";
 
 const $i = ensureSignin();
 
-const avatarDecorations = ref<Misskey.entities.AdminAvatarDecorationsListResponse>([]);
+const avatarDecorations =
+	ref<Misskey.entities.AdminAvatarDecorationsListResponse>([]);
 
 function load() {
-	misskeyApi('admin/avatar-decorations/list').then(_avatarDecorations => {
+	misskeyApi("admin/avatar-decorations/list").then((_avatarDecorations) => {
 		avatarDecorations.value = _avatarDecorations;
 	});
 }
@@ -46,48 +56,61 @@ function load() {
 load();
 
 async function add(ev: MouseEvent) {
-	const { dispose } = os.popup(defineAsyncComponent(() => import('./avatar-decoration-edit-dialog.vue')), {
-	}, {
-		done: result => {
-			if (result.created) {
-				avatarDecorations.value.unshift(result.created);
-			}
+	const { dispose } = os.popup(
+		defineAsyncComponent(() => import("./avatar-decoration-edit-dialog.vue")),
+		{},
+		{
+			done: (result) => {
+				if (result.created) {
+					avatarDecorations.value.unshift(result.created);
+				}
+			},
+			closed: () => dispose(),
 		},
-		closed: () => dispose(),
-	});
+	);
 }
 
 function edit(avatarDecoration) {
-	const { dispose } = os.popup(defineAsyncComponent(() => import('./avatar-decoration-edit-dialog.vue')), {
-		avatarDecoration: avatarDecoration,
-	}, {
-		done: result => {
-			if (result.updated) {
-				const index = avatarDecorations.value.findIndex(x => x.id === avatarDecoration.id);
-				avatarDecorations.value[index] = {
-					...avatarDecorations.value[index],
-					...result.updated,
-				};
-			} else if (result.deleted) {
-				avatarDecorations.value = avatarDecorations.value.filter(x => x.id !== avatarDecoration.id);
-			}
+	const { dispose } = os.popup(
+		defineAsyncComponent(() => import("./avatar-decoration-edit-dialog.vue")),
+		{
+			avatarDecoration: avatarDecoration,
 		},
-		closed: () => dispose(),
-	});
+		{
+			done: (result) => {
+				if (result.updated) {
+					const index = avatarDecorations.value.findIndex(
+						(x) => x.id === avatarDecoration.id,
+					);
+					avatarDecorations.value[index] = {
+						...avatarDecorations.value[index],
+						...result.updated,
+					};
+				} else if (result.deleted) {
+					avatarDecorations.value = avatarDecorations.value.filter(
+						(x) => x.id !== avatarDecoration.id,
+					);
+				}
+			},
+			closed: () => dispose(),
+		},
+	);
 }
 
-const headerActions = computed(() => [{
-	asFullButton: true,
-	icon: 'ti ti-plus',
-	text: i18n.ts.add,
-	handler: add,
-}]);
+const headerActions = computed(() => [
+	{
+		asFullButton: true,
+		icon: "ti ti-plus",
+		text: i18n.ts.add,
+		handler: add,
+	},
+]);
 
 const headerTabs = computed(() => []);
 
 definePage(() => ({
 	title: i18n.ts.avatarDecorations,
-	icon: 'ti ti-sparkles',
+	icon: "ti ti-sparkles",
 }));
 </script>
 

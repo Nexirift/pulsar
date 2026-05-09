@@ -3,12 +3,19 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Entity, JoinColumn, Column, ManyToOne, PrimaryColumn, Index } from 'typeorm';
-import { id } from './util/id.js';
-import { MiNote } from './Note.js';
-import type { MiDriveFile } from './DriveFile.js';
-import { MiUser } from '@/models/User.js';
-import { noteVisibilities } from '@/types.js';
+import {
+	Entity,
+	JoinColumn,
+	Column,
+	ManyToOne,
+	PrimaryColumn,
+	Index,
+} from "typeorm";
+import { id } from "./util/id.js";
+import { MiNote } from "./Note.js";
+import type { MiDriveFile } from "./DriveFile.js";
+import { MiUser } from "@/models/User.js";
+import { noteVisibilities } from "@/types.js";
 
 @Entity()
 export class NoteEdit {
@@ -18,24 +25,24 @@ export class NoteEdit {
 	@Index()
 	@Column({
 		...id(),
-		comment: 'The ID of note.',
+		comment: "The ID of note.",
 	})
-	public noteId: MiNote['id'];
+	public noteId: MiNote["id"];
 
 	@ManyToOne(() => MiNote, {
-		onDelete: 'CASCADE',
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public note: MiNote | null;
 
 	@Column({
 		...id(),
-		comment: 'The ID of author.',
+		comment: "The ID of author.",
 	})
-	public userId: MiUser['id'];
+	public userId: MiUser["id"];
 
-	@ManyToOne(type => MiUser, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiUser, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public user: MiUser | null;
@@ -43,12 +50,12 @@ export class NoteEdit {
 	@Column({
 		...id(),
 		nullable: true,
-		comment: 'The ID of renote target. Will always be null for older edits',
+		comment: "The ID of renote target. Will always be null for older edits",
 	})
-	public renoteId: MiNote['id'] | null;
+	public renoteId: MiNote["id"] | null;
 
 	@ManyToOne(() => MiNote, {
-		onDelete: 'CASCADE',
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public renote: MiNote | null;
@@ -56,31 +63,31 @@ export class NoteEdit {
 	@Column({
 		...id(),
 		nullable: true,
-		comment: 'The ID of reply target. Will always be null for older edits',
+		comment: "The ID of reply target. Will always be null for older edits",
 	})
-	public replyId: MiNote['id'] | null;
+	public replyId: MiNote["id"] | null;
 
 	@ManyToOne(() => MiNote, {
-		onDelete: 'CASCADE',
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public reply: MiNote | null;
 
-	@Column('enum', { enum: noteVisibilities })
-	public visibility: typeof noteVisibilities[number];
+	@Column("enum", { enum: noteVisibilities })
+	public visibility: (typeof noteVisibilities)[number];
 
-	@Column('text', {
+	@Column("text", {
 		nullable: true,
 	})
 	public newText: string | null;
 
-	@Column('text', {
+	@Column("text", {
 		nullable: true,
-		comment: 'Will always be null for older edits',
+		comment: "Will always be null for older edits",
 	})
 	public cw: string | null;
 
-	@Column('text', {
+	@Column("text", {
 		nullable: true,
 	})
 	public newCw: string | null;
@@ -88,29 +95,30 @@ export class NoteEdit {
 	@Column({
 		...id(),
 		array: true,
-		default: '{}',
+		default: "{}",
 	})
-	public fileIds: MiDriveFile['id'][];
+	public fileIds: MiDriveFile["id"][];
 
-	@Column('timestamp with time zone', {
-		comment: 'The updated date of the Note.',
+	@Column("timestamp with time zone", {
+		comment: "The updated date of the Note.",
 	})
 	public updatedAt: Date;
 
-	@Column('text', {
+	@Column("text", {
 		nullable: true,
 	})
 	public text: string | null;
 
-	@Column('timestamp with time zone', {
-		comment: 'The old date from before the edit',
+	@Column("timestamp with time zone", {
+		comment: "The old date from before the edit",
 		nullable: true,
 	})
 	public oldDate: Date | null;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
-		comment: 'Whether this revision had a poll. Will always be false for older edits',
+		comment:
+			"Whether this revision had a poll. Will always be false for older edits",
 	})
 	public hasPoll: boolean;
 }

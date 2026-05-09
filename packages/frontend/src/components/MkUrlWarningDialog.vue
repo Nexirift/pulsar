@@ -4,37 +4,59 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkModal ref="modal" :preferType="'dialog'" :zPriority="'high'" @click="done(true)" @closed="emit('closed')">
-	<div :class="$style.root" class="_gaps">
-		<div class="_gaps_s">
-			<div :class="$style.header">
-				<div :class="$style.icon">
-					<i class="ti ti-alert-triangle"></i>
+	<MkModal
+		ref="modal"
+		:preferType="'dialog'"
+		:zPriority="'high'"
+		@click="done(true)"
+		@closed="emit('closed')"
+	>
+		<div :class="$style.root" class="_gaps">
+			<div class="_gaps_s">
+				<div :class="$style.header">
+					<div :class="$style.icon">
+						<i class="ti ti-alert-triangle"></i>
+					</div>
+					<div :class="$style.title">
+						{{ i18n.ts._externalNavigationWarning.title }}
+					</div>
 				</div>
-				<div :class="$style.title">{{ i18n.ts._externalNavigationWarning.title }}</div>
+				<div>
+					<Mfm
+						:text="
+							i18n.tsx._externalNavigationWarning.description({
+								host: instanceName,
+							})
+						"
+					/>
+				</div>
+				<div class="_monospace" :class="$style.urlAddress">{{ url }}</div>
+				<div>
+					<MkSwitch v-model="trustThisDomain">{{
+						i18n.ts._externalNavigationWarning.trustThisDomain
+					}}</MkSwitch>
+				</div>
 			</div>
-			<div><Mfm :text="i18n.tsx._externalNavigationWarning.description({ host: instanceName })"/></div>
-			<div class="_monospace" :class="$style.urlAddress">{{ url }}</div>
-			<div>
-				<MkSwitch v-model="trustThisDomain">{{ i18n.ts._externalNavigationWarning.trustThisDomain }}</MkSwitch>
+			<div :class="$style.buttons">
+				<MkButton data-cy-modal-dialog-cancel inline rounded @click="cancel">{{
+					i18n.ts.cancel
+				}}</MkButton>
+				<MkButton data-cy-modal-dialog-ok inline primary rounded @click="ok"
+					><i class="ti ti-external-link"></i> {{ i18n.ts.open }}</MkButton
+				>
 			</div>
 		</div>
-		<div :class="$style.buttons">
-			<MkButton data-cy-modal-dialog-cancel inline rounded @click="cancel">{{ i18n.ts.cancel }}</MkButton>
-			<MkButton data-cy-modal-dialog-ok inline primary rounded @click="ok"><i class="ti ti-external-link"></i> {{ i18n.ts.open }}</MkButton>
-		</div>
-	</div>
-</MkModal>
+	</MkModal>
 </template>
 
 <script lang="ts" setup>
-import { onBeforeUnmount, onMounted, ref, shallowRef, computed } from 'vue';
-import { instanceName } from '@@/js/config.js';
-import MkModal from '@/components/MkModal.vue';
-import MkButton from '@/components/MkButton.vue';
-import MkSwitch from '@/components/MkSwitch.vue';
-import { i18n } from '@/i18n.js';
-import { prefer } from '@/preferences.js';
+import { onBeforeUnmount, onMounted, ref, shallowRef, computed } from "vue";
+import { instanceName } from "@@/js/config.js";
+import MkModal from "@/components/MkModal.vue";
+import MkButton from "@/components/MkButton.vue";
+import MkSwitch from "@/components/MkSwitch.vue";
+import { i18n } from "@/i18n.js";
+import { prefer } from "@/preferences.js";
 
 type Result = string | number | true | null;
 
@@ -43,8 +65,11 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'done', v: { canceled: true } | { canceled: false, result: Result }): void;
-	(ev: 'closed'): void;
+	(
+		ev: "done",
+		v: { canceled: true } | { canceled: false; result: Result },
+	): void;
+	(ev: "closed"): void;
 }>();
 
 const modal = shallowRef<InstanceType<typeof MkModal>>();
@@ -56,15 +81,24 @@ const domain = computed(() => new URL(props.url).hostname);
 function done(canceled: true): void;
 function done(canceled: false, result: Result): void; // eslint-disable-line no-redeclare
 
-function done(canceled: boolean, result?: Result): void { // eslint-disable-line no-redeclare
-	emit('done', { canceled, result } as { canceled: true } | { canceled: false, result: Result });
+function done(canceled: boolean, result?: Result): void {
+	// eslint-disable-line no-redeclare
+	emit("done", { canceled, result } as
+		| { canceled: true }
+		| { canceled: false; result: Result });
 	modal.value?.close();
 }
 
 async function ok() {
 	const result = true;
-	if (!prefer.s.trustedDomains.includes(domain.value) && trustThisDomain.value) {
-		prefer.commit('trustedDomains', prefer.s.trustedDomains.concat(domain.value));
+	if (
+		!prefer.s.trustedDomains.includes(domain.value) &&
+		trustThisDomain.value
+	) {
+		prefer.commit(
+			"trustedDomains",
+			prefer.s.trustedDomains.concat(domain.value),
+		);
 	}
 	done(false, result);
 }
@@ -74,15 +108,15 @@ function cancel() {
 }
 
 function onKeydown(evt: KeyboardEvent) {
-	if (evt.key === 'Escape') cancel();
+	if (evt.key === "Escape") cancel();
 }
 
 onMounted(() => {
-	window.document.addEventListener('keydown', onKeydown);
+	window.document.addEventListener("keydown", onKeydown);
 });
 
 onBeforeUnmount(() => {
-	window.document.removeEventListener('keydown', onKeydown);
+	window.document.removeEventListener("keydown", onKeydown);
 });
 </script>
 

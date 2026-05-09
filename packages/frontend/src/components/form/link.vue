@@ -4,43 +4,61 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="[$style.root, { [$style.inline]: inline }]">
-	<a v-if="external" :class="$style.main" class="_button" :href="to" target="_blank">
-		<span :class="$style.icon"><slot name="icon"></slot></span>
-		<span :class="$style.text"><slot></slot></span>
-		<span :class="$style.suffix">
-			<span :class="$style.suffixText"><slot name="suffix"></slot></span>
-			<i class="ti ti-external-link"></i>
-		</span>
-	</a>
-	<a v-else-if="onClick" :class="[$style.main, { [$style.active]: active }]" class="_button" :behavior="behavior" @click="onClick">
-		<span :class="$style.icon"><slot name="icon"></slot></span>
-		<span :class="$style.text"><slot></slot></span>
-		<span :class="$style.suffix">
-			<span :class="$style.suffixText"><slot name="suffix"></slot></span>
-			<i class="ph-caret-right ph-bold ph-lg"></i>
-		</span>
-	</a>
-	<MkA v-else :class="[$style.main, { [$style.active]: active }]" class="_button" :to="to" :behavior="behavior">
-		<span :class="$style.icon"><slot name="icon"></slot></span>
-		<span :class="$style.text"><slot></slot></span>
-		<span :class="$style.suffix">
-			<span :class="$style.suffixText"><slot name="suffix"></slot></span>
-			<i class="ti ti-chevron-right"></i>
-		</span>
-	</MkA>
-</div>
+	<div :class="[$style.root, { [$style.inline]: inline }]">
+		<a
+			v-if="external"
+			:class="$style.main"
+			class="_button"
+			:href="to"
+			target="_blank"
+		>
+			<span :class="$style.icon"><slot name="icon"></slot></span>
+			<span :class="$style.text"><slot></slot></span>
+			<span :class="$style.suffix">
+				<span :class="$style.suffixText"><slot name="suffix"></slot></span>
+				<i class="ti ti-external-link"></i>
+			</span>
+		</a>
+		<a
+			v-else-if="onClick"
+			:class="[$style.main, { [$style.active]: active }]"
+			class="_button"
+			:behavior="behavior"
+			@click="onClick"
+		>
+			<span :class="$style.icon"><slot name="icon"></slot></span>
+			<span :class="$style.text"><slot></slot></span>
+			<span :class="$style.suffix">
+				<span :class="$style.suffixText"><slot name="suffix"></slot></span>
+				<i class="ph-caret-right ph-bold ph-lg"></i>
+			</span>
+		</a>
+		<MkA
+			v-else
+			:class="[$style.main, { [$style.active]: active }]"
+			class="_button"
+			:to="to"
+			:behavior="behavior"
+		>
+			<span :class="$style.icon"><slot name="icon"></slot></span>
+			<span :class="$style.text"><slot></slot></span>
+			<span :class="$style.suffix">
+				<span :class="$style.suffixText"><slot name="suffix"></slot></span>
+				<i class="ti ti-chevron-right"></i>
+			</span>
+		</MkA>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
+import {} from "vue";
 
 const props = defineProps<{
 	to: string;
 	active?: boolean;
 	external?: boolean;
 	onClick?: () => void;
-	behavior?: null | 'window' | 'browser';
+	behavior?: null | "window" | "browser";
 	inline?: boolean;
 }>();
 </script>

@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import Redis from 'ioredis';
-import type { MiUser } from '@/models/_.js';
-import { TimeService } from '@/global/TimeService.js';
-import { EnvService } from '@/global/EnvService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import Redis from "ioredis";
+import type { MiUser } from "@/models/_.js";
+import { TimeService } from "@/global/TimeService.js";
+import { EnvService } from "@/global/EnvService.js";
 import {
 	type BucketRateLimit,
 	type LegacyRateLimit,
@@ -20,16 +20,19 @@ import {
 	isLegacyRateLimit,
 	hasMaxLimit,
 	disabledLimitInfo,
-} from '@/misc/rate-limit-utils.js';
-import { RoleService } from '@/core/RoleService.js';
-import { CacheManagementService, type ManagedMemoryKVCache } from '@/global/CacheManagementService.js';
-import { ConflictError } from '@/misc/errors/ConflictError.js';
-import { DI } from '@/di-symbols.js';
-import { bindThis } from '@/decorators.js';
+} from "@/misc/rate-limit-utils.js";
+import { RoleService } from "@/core/RoleService.js";
+import {
+	CacheManagementService,
+	type ManagedMemoryKVCache,
+} from "@/global/CacheManagementService.js";
+import { ConflictError } from "@/misc/errors/ConflictError.js";
+import { DI } from "@/di-symbols.js";
+import { bindThis } from "@/decorators.js";
 
 // Sentinel value used for caching the default role template.
 // Required because MemoryKVCache doesn't support null keys.
-const defaultUserKey = '';
+const defaultUserKey = "";
 
 interface ParsedLimit {
 	key: string;
@@ -49,7 +52,6 @@ export class SkRateLimiterService {
 	private readonly disabled: boolean;
 
 	constructor(
-
 		@Inject(DI.redisForRateLimit)
 		private readonly redisClient: Redis.Redis,
 
@@ -59,9 +61,15 @@ export class SkRateLimiterService {
 		envService: EnvService,
 		cacheManagementService: CacheManagementService,
 	) {
-		this.factorCache = cacheManagementService.createMemoryKVCache<number>('rateLimitFactor', 1000 * 60); // 1m
-		this.lockoutCache = cacheManagementService.createMemoryKVCache<number>('rateLimitLockout', 1000 * 10); // 10s
-		this.disabled = envService.env.NODE_ENV === 'test';
+		this.factorCache = cacheManagementService.createMemoryKVCache<number>(
+			"rateLimitFactor",
+			1000 * 60,
+		); // 1m
+		this.lockoutCache = cacheManagementService.createMemoryKVCache<number>(
+			"rateLimitLockout",
+			1000 * 10,
+		); // 10s
+		this.disabled = envService.env.NODE_ENV === "test";
 	}
 
 	/**
@@ -78,20 +86,27 @@ export class SkRateLimiterService {
 	 * @param actorOrUser authenticated client user or IP hash
 	 */
 	@bindThis
-	public async limit(limit: Keyed<RateLimit>, actorOrUser: string | MiUser): Promise<LimitInfo> {
+	public async limit(
+		limit: Keyed<RateLimit>,
+		actorOrUser: string | MiUser,
+	): Promise<LimitInfo> {
 		if (this.disabled) {
 			return disabledLimitInfo;
 		}
 
-		const actor = typeof(actorOrUser) === 'object' ? actorOrUser.id : actorOrUser;
+		const actor =
+			typeof actorOrUser === "object" ? actorOrUser.id : actorOrUser;
 		const actorKey = `@${actor}#${limit.key}`;
 
-		const userCacheKey = typeof(actorOrUser) === 'object' ? actorOrUser.id : defaultUserKey;
-		const userRoleKey = typeof(actorOrUser) === 'object' ? actorOrUser.id : null;
-		const factor = this.factorCache.get(userCacheKey) ?? await this.factorCache.fetch(userCacheKey, async () => {
-			const role = await this.roleService.getUserPolicies(userRoleKey);
-			return role.rateLimitFactor;
-		});
+		const userCacheKey =
+			typeof actorOrUser === "object" ? actorOrUser.id : defaultUserKey;
+		const userRoleKey = typeof actorOrUser === "object" ? actorOrUser.id : null;
+		const factor =
+			this.factorCache.get(userCacheKey) ??
+			(await this.factorCache.fetch(userCacheKey, async () => {
+				const role = await this.roleService.getUserPolicies(userRoleKey);
+				return role.rateLimitFactor;
+			}));
 
 		if (factor === 0) {
 			return disabledLimitInfo;
@@ -156,7 +171,10 @@ export class SkRateLimiterService {
 		};
 	}
 
-	private parseLimit(limit: Keyed<RateLimit>, factor: number): ParsedLimit | null {
+	private parseLimit(
+		limit: Keyed<RateLimit>,
+		factor: number,
+	): ParsedLimit | null {
 		if (isLegacyRateLimit(limit)) {
 			return this.parseLegacyLimit(limit, factor);
 		} else {
@@ -164,7 +182,10 @@ export class SkRateLimiterService {
 		}
 	}
 
-	private parseLegacyLimit(limit: Keyed<LegacyRateLimit>, factor: number): ParsedLimit | null {
+	private parseLegacyLimit(
+		limit: Keyed<LegacyRateLimit>,
+		factor: number,
+	): ParsedLimit | null {
 		if (hasMaxLimit(limit)) {
 			return this.parseLegacyMinMax(limit, factor);
 		} else if (hasMinLimit(limit)) {
@@ -174,47 +195,89 @@ export class SkRateLimiterService {
 		}
 	}
 
-	private parseLegacyMinMax(limit: Keyed<MaxLegacyLimit>, factor: number): ParsedLimit | null {
+	private parseLegacyMinMax(
+		limit: Keyed<MaxLegacyLimit>,
+		factor: number,
+	): ParsedLimit | null {
 		if (limit.duration === 0) return null;
-		if (limit.duration < 0) throw new Error(`Invalid rate limit ${limit.key}: duration is negative (${limit.duration})`);
-		if (limit.max < 1) throw new Error(`Invalid rate limit ${limit.key}: max is less than 1 (${limit.max})`);
+		if (limit.duration < 0)
+			throw new Error(
+				`Invalid rate limit ${limit.key}: duration is negative (${limit.duration})`,
+			);
+		if (limit.max < 1)
+			throw new Error(
+				`Invalid rate limit ${limit.key}: max is less than 1 (${limit.max})`,
+			);
 
 		// Derive initial dripRate from minInterval OR duration/max.
-		const initialDripRate = Math.max(limit.minInterval ?? Math.round(limit.duration / limit.max), 1);
+		const initialDripRate = Math.max(
+			limit.minInterval ?? Math.round(limit.duration / limit.max),
+			1,
+		);
 
 		// Calculate dripSize to reach max at exactly duration
-		const dripSize = Math.max(Math.round(limit.max / (limit.duration / initialDripRate)), 1);
+		const dripSize = Math.max(
+			Math.round(limit.max / (limit.duration / initialDripRate)),
+			1,
+		);
 
 		// Calculate final dripRate from dripSize and duration/max
-		const dripRate = Math.max(Math.round(limit.duration / (limit.max / dripSize)), 1);
+		const dripRate = Math.max(
+			Math.round(limit.duration / (limit.max / dripSize)),
+			1,
+		);
 
-		return this.parseBucketLimit({
-			type: 'bucket',
-			key: limit.key,
-			size: limit.max,
-			dripRate,
-			dripSize,
-		}, factor);
+		return this.parseBucketLimit(
+			{
+				type: "bucket",
+				key: limit.key,
+				size: limit.max,
+				dripRate,
+				dripSize,
+			},
+			factor,
+		);
 	}
 
-	private parseLegacyMinOnly(limit: Keyed<MinLegacyLimit>, factor: number): ParsedLimit | null {
+	private parseLegacyMinOnly(
+		limit: Keyed<MinLegacyLimit>,
+		factor: number,
+	): ParsedLimit | null {
 		if (limit.minInterval === 0) return null;
-		if (limit.minInterval < 0) throw new Error(`Invalid rate limit ${limit.key}: minInterval is negative (${limit.minInterval})`);
+		if (limit.minInterval < 0)
+			throw new Error(
+				`Invalid rate limit ${limit.key}: minInterval is negative (${limit.minInterval})`,
+			);
 
 		const dripRate = Math.max(Math.round(limit.minInterval), 1);
-		return this.parseBucketLimit({
-			type: 'bucket',
-			key: limit.key,
-			size: 1,
-			dripRate,
-			dripSize: 1,
-		}, factor);
+		return this.parseBucketLimit(
+			{
+				type: "bucket",
+				key: limit.key,
+				size: 1,
+				dripRate,
+				dripSize: 1,
+			},
+			factor,
+		);
 	}
 
-	private parseBucketLimit(limit: Keyed<BucketRateLimit>, factor: number): ParsedLimit {
-		if (limit.size < 1) throw new Error(`Invalid rate limit ${limit.key}: size is less than 1 (${limit.size})`);
-		if (limit.dripRate != null && limit.dripRate < 1) throw new Error(`Invalid rate limit ${limit.key}: dripRate is less than 1 (${limit.dripRate})`);
-		if (limit.dripSize != null && limit.dripSize < 1) throw new Error(`Invalid rate limit ${limit.key}: dripSize is less than 1 (${limit.dripSize})`);
+	private parseBucketLimit(
+		limit: Keyed<BucketRateLimit>,
+		factor: number,
+	): ParsedLimit {
+		if (limit.size < 1)
+			throw new Error(
+				`Invalid rate limit ${limit.key}: size is less than 1 (${limit.size})`,
+			);
+		if (limit.dripRate != null && limit.dripRate < 1)
+			throw new Error(
+				`Invalid rate limit ${limit.key}: dripRate is less than 1 (${limit.dripRate})`,
+			);
+		if (limit.dripSize != null && limit.dripSize < 1)
+			throw new Error(
+				`Invalid rate limit ${limit.key}: dripSize is less than 1 (${limit.dripSize})`,
+			);
 
 		// 0 - Calculate
 		const now = this.timeService.now;
@@ -238,30 +301,34 @@ export class SkRateLimiterService {
 	/**
 	 * Implementation of Leaky Bucket rate limiting - see SkRateLimiterService.md for details.
 	 */
-	private async limitBucket(limit: ParsedLimit, actor: string): Promise<LimitInfo> {
+	private async limitBucket(
+		limit: ParsedLimit,
+		actor: string,
+	): Promise<LimitInfo> {
 		// 0 - Calculate (extracted to other function)
 		const { now, bucketSize, dripRate, dripSize } = limit;
 		const expirationSec = limit.fullResetSec;
 
 		// 1 - Read
-		const counterKey = createLimitKey(limit, actor, 'c');
-		const timestampKey = createLimitKey(limit, actor, 't');
+		const counterKey = createLimitKey(limit, actor, "c");
+		const timestampKey = createLimitKey(limit, actor, "t");
 		const counter = await this.getLimitCounter(counterKey, timestampKey);
 
 		// 2 - Drip
-		const dripsSinceLastTick = Math.floor((now - counter.timestamp) / dripRate) * dripSize;
+		const dripsSinceLastTick =
+			Math.floor((now - counter.timestamp) / dripRate) * dripSize;
 		const deltaCounter = Math.min(dripsSinceLastTick, counter.counter);
 		const deltaTimestamp = dripsSinceLastTick * dripRate;
 		if (deltaCounter > 0) {
 			// Execute the next drip(s)
 			const results = await this.executeRedisMulti(
-				['get', timestampKey],
-				['incrby', timestampKey, deltaTimestamp],
-				['expire', timestampKey, expirationSec],
-				['get', timestampKey],
-				['decrby', counterKey, deltaCounter],
-				['expire', counterKey, expirationSec],
-				['get', counterKey],
+				["get", timestampKey],
+				["incrby", timestampKey, deltaTimestamp],
+				["expire", timestampKey, expirationSec],
+				["get", timestampKey],
+				["decrby", counterKey, deltaCounter],
+				["expire", counterKey, expirationSec],
+				["get", counterKey],
 			);
 			const expectedTimestamp = counter.timestamp;
 			const canaryTimestamp = results[0] ? parseInt(results[0]) : 0;
@@ -271,12 +338,14 @@ export class SkRateLimiterService {
 			// Check for a data collision and rollback
 			if (canaryTimestamp !== expectedTimestamp) {
 				const rollbackResults = await this.executeRedisMulti(
-					['decrby', timestampKey, deltaTimestamp],
-					['get', timestampKey],
-					['incrby', counterKey, deltaCounter],
-					['get', counterKey],
+					["decrby", timestampKey, deltaTimestamp],
+					["get", timestampKey],
+					["incrby", counterKey, deltaCounter],
+					["get", counterKey],
 				);
-				counter.timestamp = rollbackResults[1] ? parseInt(rollbackResults[1]) : 0;
+				counter.timestamp = rollbackResults[1]
+					? parseInt(rollbackResults[1])
+					: 0;
 				counter.counter = rollbackResults[3] ? parseInt(rollbackResults[3]) : 0;
 			}
 		}
@@ -286,28 +355,31 @@ export class SkRateLimiterService {
 		if (!blocked) {
 			if (counter.timestamp === 0) {
 				const results = await this.executeRedisMulti(
-					['set', timestampKey, now],
-					['expire', timestampKey, expirationSec],
-					['incr', counterKey],
-					['expire', counterKey, expirationSec],
-					['get', counterKey],
+					["set", timestampKey, now],
+					["expire", timestampKey, expirationSec],
+					["incr", counterKey],
+					["expire", counterKey, expirationSec],
+					["get", counterKey],
 				);
 				counter.timestamp = now;
 				counter.counter = results[4] ? parseInt(results[4]) : 0;
 			} else {
 				const results = await this.executeRedisMulti(
-					['incr', counterKey],
-					['expire', counterKey, expirationSec],
-					['get', counterKey],
+					["incr", counterKey],
+					["expire", counterKey, expirationSec],
+					["get", counterKey],
 				);
 				counter.counter = results[2] ? parseInt(results[2]) : 0;
 			}
 		}
 
 		// Calculate how much time is needed to free up a bucket slot
-		const overflow = Math.max((counter.counter + 1) - bucketSize, 0);
+		const overflow = Math.max(counter.counter + 1 - bucketSize, 0);
 		const dripsNeeded = Math.ceil(overflow / dripSize);
-		const timeNeeded = Math.max((dripRate * dripsNeeded) - (this.timeService.now - counter.timestamp), 0);
+		const timeNeeded = Math.max(
+			dripRate * dripsNeeded - (this.timeService.now - counter.timestamp),
+			0,
+		);
 
 		// Calculate limit status
 		const remaining = Math.max(bucketSize - counter.counter, 0);
@@ -318,10 +390,13 @@ export class SkRateLimiterService {
 		return { blocked, remaining, resetSec, resetMs, fullResetSec, fullResetMs };
 	}
 
-	private async getLimitCounter(counterKey: string, timestampKey: string): Promise<LimitCounter> {
+	private async getLimitCounter(
+		counterKey: string,
+		timestampKey: string,
+	): Promise<LimitCounter> {
 		const [counter, timestamp] = await this.executeRedisMulti(
-			['get', counterKey],
-			['get', timestampKey],
+			["get", counterKey],
+			["get", timestampKey],
 		);
 
 		return {
@@ -330,17 +405,19 @@ export class SkRateLimiterService {
 		};
 	}
 
-	private async executeRedisMulti(...batch: RedisCommand[]): Promise<RedisResult[]> {
+	private async executeRedisMulti(
+		...batch: RedisCommand[]
+	): Promise<RedisResult[]> {
 		const results = await this.redisClient.multi(batch).exec();
 
 		// Transaction conflict (retryable)
 		if (!results) {
-			throw new ConflictError('Redis error: transaction conflict');
+			throw new ConflictError("Redis error: transaction conflict");
 		}
 
 		// Transaction failed (fatal)
 		if (results.length !== batch.length) {
-			throw new Error('Redis error: failed to execute batch');
+			throw new Error("Redis error: failed to execute batch");
 		}
 
 		// Map responses
@@ -355,14 +432,20 @@ export class SkRateLimiterService {
 		if (errors.length > 0) {
 			const errorMessages = errors
 				.map((e, i) => `Error in command ${i}: ${e}`)
-				.join('\', \'');
-			throw new AggregateError(errors, `Redis error: failed to execute command(s): '${errorMessages}'`);
+				.join("', '");
+			throw new AggregateError(
+				errors,
+				`Redis error: failed to execute command(s): '${errorMessages}'`,
+			);
 		}
 
 		return responses;
 	}
 
-	private incrementOverflow(actorKey: string, limit: ParsedLimit): LimitInfo | null {
+	private incrementOverflow(
+		actorKey: string,
+		limit: ParsedLimit,
+	): LimitInfo | null {
 		const oldCount = this.requestCounts.get(actorKey) ?? 0;
 
 		if (oldCount >= limit.bucketSize) {
@@ -398,7 +481,11 @@ export class SkRateLimiterService {
 type RedisResult = string | null;
 type RedisCommand = [command: string, ...args: unknown[]];
 
-function createLimitKey(limit: ParsedLimit, actor: string, value: string): string {
+function createLimitKey(
+	limit: ParsedLimit,
+	actor: string,
+	value: string,
+): string {
 	return `rl_${actor}_${limit.key}_${value}`;
 }
 

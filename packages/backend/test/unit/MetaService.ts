@@ -3,28 +3,25 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-process.env.NODE_ENV = 'test';
+process.env.NODE_ENV = "test";
 
-import { jest } from '@jest/globals';
-import { Test } from '@nestjs/testing';
-import { GlobalModule } from '@/GlobalModule.js';
-import { DI } from '@/di-symbols.js';
-import { MetaService } from '@/core/MetaService.js';
-import { CoreModule } from '@/core/CoreModule.js';
-import { MetasRepository } from '@/models/_.js';
-import type { TestingModule } from '@nestjs/testing';
-import type { DataSource } from 'typeorm';
+import { jest } from "@jest/globals";
+import { Test } from "@nestjs/testing";
+import { GlobalModule } from "@/GlobalModule.js";
+import { DI } from "@/di-symbols.js";
+import { MetaService } from "@/core/MetaService.js";
+import { CoreModule } from "@/core/CoreModule.js";
+import { MetasRepository } from "@/models/_.js";
+import type { TestingModule } from "@nestjs/testing";
+import type { DataSource } from "typeorm";
 
-describe('MetaService', () => {
+describe("MetaService", () => {
 	let app: TestingModule;
 	let metaService: MetaService;
 
 	beforeAll(async () => {
 		app = await Test.createTestingModule({
-			imports: [
-				GlobalModule,
-				CoreModule,
-			],
+			imports: [GlobalModule, CoreModule],
 		}).compile();
 
 		await app.init();
@@ -40,23 +37,23 @@ describe('MetaService', () => {
 		await app.close();
 	});
 
-	test('fetch (cache)', async () => {
+	test("fetch (cache)", async () => {
 		const metasRepository = app.get<MetasRepository>(DI.metasRepository);
-		const spy = jest.spyOn(metasRepository, 'createQueryBuilder');
+		const spy = jest.spyOn(metasRepository, "createQueryBuilder");
 
 		const result = await metaService.fetch();
 
-		expect(result.id).toBe('x');
+		expect(result.id).toBe("x");
 		expect(spy).toHaveBeenCalledTimes(0);
 	});
 
-	test('fetch (force)', async () => {
+	test("fetch (force)", async () => {
 		const metasRepository = app.get<MetasRepository>(DI.metasRepository);
-		const spy = jest.spyOn(metasRepository, 'createQueryBuilder');
+		const spy = jest.spyOn(metasRepository, "createQueryBuilder");
 
 		const result = await metaService.fetch(true);
 
-		expect(result.id).toBe('x');
+		expect(result.id).toBe("x");
 		expect(spy).toHaveBeenCalled();
 	});
 });

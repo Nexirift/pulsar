@@ -4,19 +4,25 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<button
-	class="_button"
-	:class="[$style.root, { [$style.reacted]: note.myReaction == reaction }]"
->
-	<EmReactionIcon :class="$style.limitWidth" :reaction="reaction" :emojiUrl="note.reactionEmojis[reaction.substring(1, reaction.length - 1)]"/>
-	<span :class="$style.count">{{ count }}</span>
-</button>
+	<button
+		class="_button"
+		:class="[$style.root, { [$style.reacted]: note.myReaction == reaction }]"
+	>
+		<EmReactionIcon
+			:class="$style.limitWidth"
+			:reaction="reaction"
+			:emojiUrl="
+				note.reactionEmojis[reaction.substring(1, reaction.length - 1)]
+			"
+		/>
+		<span :class="$style.count">{{ count }}</span>
+	</button>
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
-import * as Misskey from 'misskey-js';
-import EmReactionIcon from '@/components/EmReactionIcon.vue';
+import {} from "vue";
+import * as Misskey from "misskey-js";
+import EmReactionIcon from "@/components/EmReactionIcon.vue";
 
 const props = defineProps<{
 	reaction: string;
@@ -71,7 +77,8 @@ const props = defineProps<{
 		}
 	}
 
-	&.reacted, &.reacted:hover {
+	&.reacted,
+	&.reacted:hover {
 		background: var(--MI_THEME-accentedBg);
 		color: var(--MI_THEME-accent);
 		box-shadow: 0 0 0 1px var(--MI_THEME-accent) inset;

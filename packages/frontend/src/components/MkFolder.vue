@@ -4,127 +4,163 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div ref="rootEl" :class="$style.root" role="group" :aria-expanded="opened">
-	<MkStickyContainer :sticky="sticky">
-		<template #header>
-			<button :class="[$style.header, { [$style.opened]: opened }]" class="_button" role="button" data-cy-folder-header @click="toggle">
-				<div :class="$style.headerIcon"><slot name="icon"></slot></div>
-				<div :class="$style.headerText">
-					<div :class="$style.headerTextMain">
-						<MkCondensedLine :minScale="2 / 3"><slot name="label"></slot></MkCondensedLine>
+	<div ref="rootEl" :class="$style.root" role="group" :aria-expanded="opened">
+		<MkStickyContainer :sticky="sticky">
+			<template #header>
+				<button
+					:class="[$style.header, { [$style.opened]: opened }]"
+					class="_button"
+					role="button"
+					data-cy-folder-header
+					@click="toggle"
+				>
+					<div :class="$style.headerIcon"><slot name="icon"></slot></div>
+					<div :class="$style.headerText">
+						<div :class="$style.headerTextMain">
+							<MkCondensedLine :minScale="2 / 3"
+								><slot name="label"></slot
+							></MkCondensedLine>
+						</div>
+						<div :class="$style.headerTextSub">
+							<slot name="caption"></slot>
+						</div>
 					</div>
-					<div :class="$style.headerTextSub">
-						<slot name="caption"></slot>
+					<div :class="$style.headerRight">
+						<span :class="$style.headerRightText"
+							><slot name="suffix"></slot
+						></span>
+						<i v-if="opened" class="ti ti-chevron-up icon"></i>
+						<i v-else class="ti ti-chevron-down icon"></i>
 					</div>
-				</div>
-				<div :class="$style.headerRight">
-					<span :class="$style.headerRightText"><slot name="suffix"></slot></span>
-					<i v-if="opened" class="ti ti-chevron-up icon"></i>
-					<i v-else class="ti ti-chevron-down icon"></i>
-				</div>
-			</button>
-		</template>
+				</button>
+			</template>
 
-		<div v-if="openedAtLeastOnce" :class="[$style.body, { [$style.bgSame]: bgSame }]" :style="{ maxHeight: maxHeight ? `${maxHeight}px` : undefined, overflow: maxHeight ? `auto` : undefined }" :aria-hidden="!opened">
-			<Transition
-				:enterActiveClass="prefer.s.animation ? $style.transition_toggle_enterActive : ''"
-				:leaveActiveClass="prefer.s.animation ? $style.transition_toggle_leaveActive : ''"
-				:enterFromClass="prefer.s.animation ? $style.transition_toggle_enterFrom : ''"
-				:leaveToClass="prefer.s.animation ? $style.transition_toggle_leaveTo : ''"
-				@enter="enter"
-				@afterEnter="afterEnter"
-				@leave="leave"
-				@afterLeave="afterLeave"
+			<div
+				v-if="openedAtLeastOnce"
+				:class="[$style.body, { [$style.bgSame]: bgSame }]"
+				:style="{
+					maxHeight: maxHeight ? `${maxHeight}px` : undefined,
+					overflow: maxHeight ? `auto` : undefined,
+				}"
+				:aria-hidden="!opened"
 			>
-				<KeepAlive>
-					<div v-show="opened">
-						<MkStickyContainer :sticky="sticky">
-							<template #header>
-								<div v-if="$slots.header" :class="$style.inBodyHeader">
-									<slot name="header"></slot>
-								</div>
-							</template>
+				<Transition
+					:enterActiveClass="
+						prefer.s.animation ? $style.transition_toggle_enterActive : ''
+					"
+					:leaveActiveClass="
+						prefer.s.animation ? $style.transition_toggle_leaveActive : ''
+					"
+					:enterFromClass="
+						prefer.s.animation ? $style.transition_toggle_enterFrom : ''
+					"
+					:leaveToClass="
+						prefer.s.animation ? $style.transition_toggle_leaveTo : ''
+					"
+					@enter="enter"
+					@afterEnter="afterEnter"
+					@leave="leave"
+					@afterLeave="afterLeave"
+				>
+					<KeepAlive>
+						<div v-show="opened">
+							<MkStickyContainer :sticky="sticky">
+								<template #header>
+									<div v-if="$slots.header" :class="$style.inBodyHeader">
+										<slot name="header"></slot>
+									</div>
+								</template>
 
-							<div v-if="withSpacer" class="_spacer" :style="{ '--MI_SPACER-min': props.spacerMin + 'px', '--MI_SPACER-max': props.spacerMax + 'px' }">
-								<slot></slot>
-							</div>
-							<div v-else>
-								<slot></slot>
-							</div>
-
-							<template #footer>
-								<div v-if="$slots.footer" :class="$style.inBodyFooter">
-									<slot name="footer"></slot>
+								<div
+									v-if="withSpacer"
+									class="_spacer"
+									:style="{
+										'--MI_SPACER-min': props.spacerMin + 'px',
+										'--MI_SPACER-max': props.spacerMax + 'px',
+									}"
+								>
+									<slot></slot>
 								</div>
-							</template>
-						</MkStickyContainer>
-					</div>
-				</KeepAlive>
-			</Transition>
-		</div>
-	</MkStickyContainer>
-</div>
+								<div v-else>
+									<slot></slot>
+								</div>
+
+								<template #footer>
+									<div v-if="$slots.footer" :class="$style.inBodyFooter">
+										<slot name="footer"></slot>
+									</div>
+								</template>
+							</MkStickyContainer>
+						</div>
+					</KeepAlive>
+				</Transition>
+			</div>
+		</MkStickyContainer>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, ref, useTemplateRef } from 'vue';
-import { prefer } from '@/preferences.js';
-import { getBgColor } from '@/utility/get-bg-color.js';
+import { nextTick, onMounted, ref, useTemplateRef } from "vue";
+import { prefer } from "@/preferences.js";
+import { getBgColor } from "@/utility/get-bg-color.js";
 
-const props = withDefaults(defineProps<{
-	defaultOpen?: boolean;
-	maxHeight?: number | null;
-	withSpacer?: boolean;
-	spacerMin?: number;
-	spacerMax?: number;
-	sticky?: boolean;
-}>(), {
-	defaultOpen: false,
-	maxHeight: null,
-	withSpacer: true,
-	spacerMin: 14,
-	spacerMax: 22,
-	sticky: true,
-});
+const props = withDefaults(
+	defineProps<{
+		defaultOpen?: boolean;
+		maxHeight?: number | null;
+		withSpacer?: boolean;
+		spacerMin?: number;
+		spacerMax?: number;
+		sticky?: boolean;
+	}>(),
+	{
+		defaultOpen: false,
+		maxHeight: null,
+		withSpacer: true,
+		spacerMin: 14,
+		spacerMax: 22,
+		sticky: true,
+	},
+);
 
-const rootEl = useTemplateRef('rootEl');
+const rootEl = useTemplateRef("rootEl");
 const bgSame = ref(false);
 const opened = ref(props.defaultOpen);
 const openedAtLeastOnce = ref(props.defaultOpen);
 
 //#region interpolate-sizeに対応していないブラウザ向け（TODO: 主要ブラウザが対応したら消す）
 function enter(el: Element) {
-	if (CSS.supports('interpolate-size', 'allow-keywords')) return;
+	if (CSS.supports("interpolate-size", "allow-keywords")) return;
 	if (!(el instanceof HTMLElement)) return;
 
 	const elementHeight = el.getBoundingClientRect().height;
-	el.style.height = '0';
+	el.style.height = "0";
 	el.offsetHeight; // reflow
 	el.style.height = `${Math.min(elementHeight, props.maxHeight ?? Infinity)}px`;
 }
 
 function afterEnter(el: Element) {
-	if (CSS.supports('interpolate-size', 'allow-keywords')) return;
+	if (CSS.supports("interpolate-size", "allow-keywords")) return;
 	if (!(el instanceof HTMLElement)) return;
 
-	el.style.height = '';
+	el.style.height = "";
 }
 
 function leave(el: Element) {
-	if (CSS.supports('interpolate-size', 'allow-keywords')) return;
+	if (CSS.supports("interpolate-size", "allow-keywords")) return;
 	if (!(el instanceof HTMLElement)) return;
 
 	const elementHeight = el.getBoundingClientRect().height;
 	el.style.height = `${elementHeight}px`;
 	el.offsetHeight; // reflow
-	el.style.height = '0';
+	el.style.height = "0";
 }
 
 function afterLeave(el: Element) {
-	if (CSS.supports('interpolate-size', 'allow-keywords')) return;
+	if (CSS.supports("interpolate-size", "allow-keywords")) return;
 	if (!(el instanceof HTMLElement)) return;
 
-	el.style.height = '';
+	el.style.height = "";
 }
 //#endregion
 
@@ -140,8 +176,8 @@ function toggle() {
 
 onMounted(() => {
 	const computedStyle = getComputedStyle(window.document.documentElement);
-	const parentBg = getBgColor(rootEl.value?.parentElement) ?? 'transparent';
-	const myBg = computedStyle.getPropertyValue('--MI_THEME-panel');
+	const parentBg = getBgColor(rootEl.value?.parentElement) ?? "transparent";
+	const myBg = computedStyle.getPropertyValue("--MI_THEME-panel");
 	bgSame.value = parentBg === myBg;
 });
 </script>
@@ -150,7 +186,9 @@ onMounted(() => {
 .transition_toggle_enterActive,
 .transition_toggle_leaveActive {
 	overflow-y: hidden; // 子要素のmarginが突き出るため clip を使ってはいけない
-	transition: opacity 0.3s, height 0.3s;
+	transition:
+		opacity 0.3s,
+		height 0.3s;
 }
 
 @supports (interpolate-size: allow-keywords) {
@@ -211,7 +249,7 @@ onMounted(() => {
 
 .headerLower {
 	color: color(from var(--MI_THEME-fg) srgb r g b / 0.75);
-	font-size: .85em;
+	font-size: 0.85em;
 	padding-left: 4px;
 }
 
@@ -245,7 +283,7 @@ onMounted(() => {
 
 .headerTextSub {
 	color: color(from var(--MI_THEME-fg) srgb r g b / 0.75);
-	font-size: .85em;
+	font-size: 0.85em;
 }
 
 .headerRight {
@@ -285,7 +323,13 @@ onMounted(() => {
 	-webkit-backdrop-filter: var(--MI-blur, blur(15px));
 	backdrop-filter: var(--MI-blur, blur(15px));
 	background-size: auto auto;
-	background-image: repeating-linear-gradient(135deg, transparent, transparent 5px, var(--MI_THEME-panel) 5px, var(--MI_THEME-panel) 10px);
+	background-image: repeating-linear-gradient(
+		135deg,
+		transparent,
+		transparent 5px,
+		var(--MI_THEME-panel) 5px,
+		var(--MI_THEME-panel) 10px
+	);
 	border-radius: 0 0 6px 6px;
 }
 </style>

@@ -3,19 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { AnnouncementService } from '@/core/AnnouncementService.js';
+import { Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { AnnouncementService } from "@/core/AnnouncementService.js";
 
 export const meta = {
-	tags: ['account'],
+	tags: ["account"],
 
 	requireCredential: true,
 
-	kind: 'write:account',
+	kind: "write:account",
 
-	errors: {
-	},
+	errors: {},
 
 	// 10 calls per 5 seconds
 	limit: {
@@ -25,18 +24,17 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		announcementId: { type: 'string', format: 'misskey:id' },
+		announcementId: { type: "string", format: "misskey:id" },
 	},
-	required: ['announcementId'],
+	required: ["announcementId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private announcementService: AnnouncementService,
-	) {
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
+	constructor(private announcementService: AnnouncementService) {
 		super(meta, paramDef, async (ps, me) => {
 			await this.announcementService.read(me, ps.announcementId);
 		});

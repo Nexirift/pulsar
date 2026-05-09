@@ -1,16 +1,20 @@
-import { DataSource } from 'typeorm';
-import { loadConfig } from './built/config.js';
-import { entities } from './built/postgres.js';
+import { DataSource } from "typeorm";
+import { loadConfig } from "./built/config.js";
+import { entities } from "./built/postgres.js";
 import { isConcurrentIndexMigrationEnabled } from "./migration/js/migration-config.js";
-import { LoggerService } from './built/core/LoggerService.js';
-import { NativeTimeService } from './built/global/TimeService.js';
-import { EnvService } from './built/global/EnvService.js';
+import { LoggerService } from "./built/core/LoggerService.js";
+import { NativeTimeService } from "./built/global/TimeService.js";
+import { EnvService } from "./built/global/EnvService.js";
 
-const loggerService = new LoggerService(console, new NativeTimeService(), new EnvService());
+const loggerService = new LoggerService(
+	console,
+	new NativeTimeService(),
+	new EnvService(),
+);
 const config = loadConfig(loggerService);
 
 export default new DataSource({
-	type: 'postgres',
+	type: "postgres",
 	host: config.db.host,
 	port: config.db.port,
 	username: config.db.user,
@@ -22,6 +26,8 @@ export default new DataSource({
 		statement_timeout: (config.db.extra?.statement_timeout ?? 1000 * 10) * 100,
 	},
 	entities: entities,
-	migrations: ['migration/*.js'],
-	migrationsTransactionMode: isConcurrentIndexMigrationEnabled() ? 'each' : 'all',
+	migrations: ["migration/*.js"],
+	migrationsTransactionMode: isConcurrentIndexMigrationEnabled()
+		? "each"
+		: "all",
 });

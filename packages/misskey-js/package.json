@@ -29,7 +29,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://code.nexirift.com/Nexirift/pulsar.git",
+		"url": "https://git.codeguilds.org/Nexirift/pulsar.git",
 		"directory": "packages/misskey-js"
 	},
 	"devDependencies": {

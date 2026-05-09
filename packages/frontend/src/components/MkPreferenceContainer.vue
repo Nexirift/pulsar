@@ -4,30 +4,46 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root" @contextmenu.prevent.stop="showMenu($event, true)">
-	<div :class="$style.body">
-		<slot></slot>
-	</div>
-	<div :class="$style.menu">
-		<i v-if="isSyncEnabled" class="ti ti-cloud-cog" style="color: var(--MI_THEME-accent); opacity: 0.7;"></i>
-		<i v-if="isAccountOverrided" class="ti ti-user-cog" style="color: var(--MI_THEME-accent); opacity: 0.7;"></i>
-		<div :class="$style.buttons">
-			<button class="_button" style="color: var(--MI_THEME-fg)" @click="showMenu($event)"><i class="ti ti-dots"></i></button>
+	<div :class="$style.root" @contextmenu.prevent.stop="showMenu($event, true)">
+		<div :class="$style.body">
+			<slot></slot>
+		</div>
+		<div :class="$style.menu">
+			<i
+				v-if="isSyncEnabled"
+				class="ti ti-cloud-cog"
+				style="color: var(--MI_THEME-accent); opacity: 0.7"
+			></i>
+			<i
+				v-if="isAccountOverrided"
+				class="ti ti-user-cog"
+				style="color: var(--MI_THEME-accent); opacity: 0.7"
+			></i>
+			<div :class="$style.buttons">
+				<button
+					class="_button"
+					style="color: var(--MI_THEME-fg)"
+					@click="showMenu($event)"
+				>
+					<i class="ti ti-dots"></i>
+				</button>
+			</div>
 		</div>
 	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import type { PREF_DEF } from '@/preferences/def.js';
-import * as os from '@/os.js';
-import { prefer } from '@/preferences.js';
+import { ref } from "vue";
+import type { PREF_DEF } from "@/preferences/def.js";
+import * as os from "@/os.js";
+import { prefer } from "@/preferences.js";
 
-const props = withDefaults(defineProps<{
-	k: keyof typeof PREF_DEF;
-}>(), {
-});
+const props = withDefaults(
+	defineProps<{
+		k: keyof typeof PREF_DEF;
+	}>(),
+	{},
+);
 
 const isAccountOverrided = ref(prefer.isAccountOverrided(props.k));
 const isSyncEnabled = ref(prefer.isSyncEnabled(props.k));
@@ -42,11 +58,15 @@ function showMenu(ev: MouseEvent, contextmenu?: boolean) {
 			window.clearInterval(i);
 		});
 	} else {
-		os.popupMenu(prefer.getPerPrefMenu(props.k), ev.currentTarget ?? ev.target, {
-			onClosing: () => {
-				window.clearInterval(i);
+		os.popupMenu(
+			prefer.getPerPrefMenu(props.k),
+			ev.currentTarget ?? ev.target,
+			{
+				onClosing: () => {
+					window.clearInterval(i);
+				},
 			},
-		});
+		);
 	}
 }
 </script>
@@ -58,7 +78,7 @@ function showMenu(ev: MouseEvent, contextmenu?: boolean) {
 
 	&:hover {
 		&::before {
-			content: '';
+			content: "";
 			position: absolute;
 			top: -8px;
 			left: -8px;

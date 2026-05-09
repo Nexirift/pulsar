@@ -3,16 +3,20 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { MoreThan } from 'typeorm';
-import { DI } from '@/di-symbols.js';
-import type { UsersRepository, DriveFilesRepository, MiDriveFile } from '@/models/_.js';
-import type Logger from '@/logger.js';
-import { DriveService } from '@/core/DriveService.js';
-import { bindThis } from '@/decorators.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type * as Bull from 'bullmq';
-import type { DbJobDataWithUser } from '../types.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { MoreThan } from "typeorm";
+import { DI } from "@/di-symbols.js";
+import type {
+	UsersRepository,
+	DriveFilesRepository,
+	MiDriveFile,
+} from "@/models/_.js";
+import type Logger from "@/logger.js";
+import { DriveService } from "@/core/DriveService.js";
+import { bindThis } from "@/decorators.js";
+import { QueueLoggerService } from "../QueueLoggerService.js";
+import type * as Bull from "bullmq";
+import type { DbJobDataWithUser } from "../types.js";
 
 @Injectable()
 export class DeleteDriveFilesProcessorService {
@@ -28,7 +32,8 @@ export class DeleteDriveFilesProcessorService {
 		private driveService: DriveService,
 		private queueLoggerService: QueueLoggerService,
 	) {
-		this.logger = this.queueLoggerService.logger.createSubLogger('delete-drive-files');
+		this.logger =
+			this.queueLoggerService.logger.createSubLogger("delete-drive-files");
 	}
 
 	@bindThis
@@ -41,7 +46,7 @@ export class DeleteDriveFilesProcessorService {
 		}
 
 		let deletedCount = 0;
-		let cursor: MiDriveFile['id'] | null = null;
+		let cursor: MiDriveFile["id"] | null = null;
 
 		while (true) {
 			const files = await this.driveFilesRepository.find({
@@ -74,6 +79,8 @@ export class DeleteDriveFilesProcessorService {
 			job.updateProgress(deletedCount / total);
 		}
 
-		this.logger.info(`All drive files (${deletedCount}) of ${user.id} has been deleted.`);
+		this.logger.info(
+			`All drive files (${deletedCount}) of ${user.id} has been deleted.`,
+		);
 	}
 }

@@ -17,14 +17,16 @@ export type DroppedDirectory = {
 	children: DroppedItem[];
 };
 
-export async function extractDroppedItems(ev: DragEvent): Promise<DroppedItem[]> {
+export async function extractDroppedItems(
+	ev: DragEvent,
+): Promise<DroppedItem[]> {
 	const dropItems = ev.dataTransfer?.items;
 	if (!dropItems || dropItems.length === 0) {
 		return [];
 	}
 
 	const apiTestItem = dropItems[0];
-	if ('webkitGetAsEntry' in apiTestItem) {
+	if ("webkitGetAsEntry" in apiTestItem) {
 		return readDataTransferItems(dropItems);
 	} else {
 		// webkitGetAsEntryに対応していない場合はfilesから取得する（ディレクトリのサポートは出来ない）
@@ -52,7 +54,9 @@ export async function extractDroppedItems(ev: DragEvent): Promise<DroppedItem[]>
 /**
  * ドラッグ＆ドロップされたファイルのリストからディレクトリ構造とファイルへの参照（{@link File}）を取得する。
  */
-export async function readDataTransferItems(itemList: DataTransferItemList): Promise<DroppedItem[]> {
+export async function readDataTransferItems(
+	itemList: DataTransferItemList,
+): Promise<DroppedItem[]> {
 	async function readEntry(entry: FileSystemEntry): Promise<DroppedItem> {
 		if (entry.isFile) {
 			return {
@@ -75,12 +79,16 @@ export async function readDataTransferItems(itemList: DataTransferItemList): Pro
 		});
 	}
 
-	function readDirectory(fileSystemDirectoryEntry: FileSystemDirectoryEntry): Promise<DroppedItem[]> {
+	function readDirectory(
+		fileSystemDirectoryEntry: FileSystemDirectoryEntry,
+	): Promise<DroppedItem[]> {
 		return new Promise(async (resolve) => {
 			const allEntries = Array.of<FileSystemEntry>();
 			const reader = fileSystemDirectoryEntry.createReader();
 			while (true) {
-				const entries = await new Promise<FileSystemEntry[]>((res, rej) => reader.readEntries(res, rej));
+				const entries = await new Promise<FileSystemEntry[]>((res, rej) =>
+					reader.readEntries(res, rej),
+				);
 				if (entries.length === 0) {
 					break;
 				}
@@ -99,9 +107,9 @@ export async function readDataTransferItems(itemList: DataTransferItemList): Pro
 
 	return Promise.all(
 		items
-			.map(it => it.webkitGetAsEntry())
-			.filter(it => it)
-			.map(it => readEntry(it!)),
+			.map((it) => it.webkitGetAsEntry())
+			.filter((it) => it)
+			.map((it) => readEntry(it!)),
 	);
 }
 

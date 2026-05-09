@@ -4,11 +4,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<span :class="$style.container">
-	<span ref="content" :class="$style.content" :style="{ maxWidth: `${100 / minScale}%` }">
-		<slot/>
+	<span :class="$style.container">
+		<span
+			ref="content"
+			:class="$style.content"
+			:style="{ maxWidth: `${100 / minScale}%` }"
+		>
+			<slot />
+		</span>
 	</span>
-</span>
 </template>
 
 <script lang="ts">
@@ -23,12 +27,19 @@ const observer = new ResizeObserver((entries) => {
 		transform: string;
 	}[] = [];
 	for (const entry of entries) {
-		const content = (entry.target[contentSymbol] ? entry.target : entry.target.firstElementChild) as HTMLSpanElement;
+		const content = (
+			entry.target[contentSymbol]
+				? entry.target
+				: entry.target.firstElementChild
+		) as HTMLSpanElement;
 		const props: Required<Props> = content[contentSymbol];
 		const container = content.parentElement as HTMLSpanElement;
 		const contentWidth = content.getBoundingClientRect().width;
 		const containerWidth = container.getBoundingClientRect().width;
-		results.push({ container, transform: `scaleX(${Math.max(props.minScale, Math.min(1, containerWidth / contentWidth))})` });
+		results.push({
+			container,
+			transform: `scaleX(${Math.max(props.minScale, Math.min(1, containerWidth / contentWidth))})`,
+		});
 	}
 	for (const result of results) {
 		result.container.style.transform = result.transform;
@@ -37,7 +48,7 @@ const observer = new ResizeObserver((entries) => {
 </script>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch } from "vue";
 
 const props = withDefaults(defineProps<Props>(), {
 	minScale: 0,

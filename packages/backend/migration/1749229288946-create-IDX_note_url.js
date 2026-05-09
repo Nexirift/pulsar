@@ -4,10 +4,12 @@
  */
 
 export class CreateIDXNoteUrl1749229288946 {
-	name = 'CreateIDXNoteUrl1749229288946'
+	name = "CreateIDXNoteUrl1749229288946";
 
 	async up(queryRunner) {
-		await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_note_url" ON "note" ("url") `);
+		await queryRunner.query(
+			`CREATE INDEX IF NOT EXISTS "IDX_note_url" ON "note" ("url") `,
+		);
 	}
 
 	async down(queryRunner) {

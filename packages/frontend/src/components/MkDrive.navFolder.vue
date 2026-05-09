@@ -4,24 +4,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div
-	:class="[$style.root, { [$style.draghover]: draghover }]"
-	@click="onClick"
-	@dragover.prevent.stop="onDragover"
-	@dragenter="onDragenter"
-	@dragleave="onDragleave"
-	@drop.stop="onDrop"
->
-	<i v-if="folder == null" class="ti ti-cloud" style="margin-right: 4px;"></i>
-	<span>{{ folder == null ? i18n.ts.drive : folder.name }}</span>
-</div>
+	<div
+		:class="[$style.root, { [$style.draghover]: draghover }]"
+		@click="onClick"
+		@dragover.prevent.stop="onDragover"
+		@dragenter="onDragenter"
+		@dragleave="onDragleave"
+		@drop.stop="onDrop"
+	>
+		<i v-if="folder == null" class="ti ti-cloud" style="margin-right: 4px"></i>
+		<span>{{ folder == null ? i18n.ts.drive : folder.name }}</span>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { i18n } from '@/i18n.js';
+import { ref } from "vue";
+import * as Misskey from "misskey-js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { i18n } from "@/i18n.js";
 
 const props = defineProps<{
 	folder?: Misskey.entities.DriveFolder;
@@ -29,17 +29,21 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'move', v?: Misskey.entities.DriveFolder): void;
-	(ev: 'upload', file: File, folder?: Misskey.entities.DriveFolder | null): void;
-	(ev: 'removeFile', v: Misskey.entities.DriveFile['id']): void;
-	(ev: 'removeFolder', v: Misskey.entities.DriveFolder['id']): void;
+	(ev: "move", v?: Misskey.entities.DriveFolder): void;
+	(
+		ev: "upload",
+		file: File,
+		folder?: Misskey.entities.DriveFolder | null,
+	): void;
+	(ev: "removeFile", v: Misskey.entities.DriveFile["id"]): void;
+	(ev: "removeFolder", v: Misskey.entities.DriveFolder["id"]): void;
 }>();
 
 const hover = ref(false);
 const draghover = ref(false);
 
 function onClick() {
-	emit('move', props.folder);
+	emit("move", props.folder);
 }
 
 function onMouseover() {
@@ -55,32 +59,33 @@ function onDragover(ev: DragEvent) {
 
 	// このフォルダがルートかつカレントディレクトリならドロップ禁止
 	if (props.folder == null && props.parentFolder == null) {
-		ev.dataTransfer.dropEffect = 'none';
+		ev.dataTransfer.dropEffect = "none";
 	}
 
-	const isFile = ev.dataTransfer.items[0].kind === 'file';
+	const isFile = ev.dataTransfer.items[0].kind === "file";
 	const isDriveFile = ev.dataTransfer.types[0] === _DATA_TRANSFER_DRIVE_FILE_;
-	const isDriveFolder = ev.dataTransfer.types[0] === _DATA_TRANSFER_DRIVE_FOLDER_;
+	const isDriveFolder =
+		ev.dataTransfer.types[0] === _DATA_TRANSFER_DRIVE_FOLDER_;
 
 	if (isFile || isDriveFile || isDriveFolder) {
 		switch (ev.dataTransfer.effectAllowed) {
-			case 'all':
-			case 'uninitialized':
-			case 'copy':
-			case 'copyLink':
-			case 'copyMove':
-				ev.dataTransfer.dropEffect = 'copy';
+			case "all":
+			case "uninitialized":
+			case "copy":
+			case "copyLink":
+			case "copyMove":
+				ev.dataTransfer.dropEffect = "copy";
 				break;
-			case 'linkMove':
-			case 'move':
-				ev.dataTransfer.dropEffect = 'move';
+			case "linkMove":
+			case "move":
+				ev.dataTransfer.dropEffect = "move";
 				break;
 			default:
-				ev.dataTransfer.dropEffect = 'none';
+				ev.dataTransfer.dropEffect = "none";
 				break;
 		}
 	} else {
-		ev.dataTransfer.dropEffect = 'none';
+		ev.dataTransfer.dropEffect = "none";
 	}
 
 	return false;
@@ -102,17 +107,17 @@ function onDrop(ev: DragEvent) {
 	// ファイルだったら
 	if (ev.dataTransfer.files.length > 0) {
 		for (const file of Array.from(ev.dataTransfer.files)) {
-			emit('upload', file, props.folder);
+			emit("upload", file, props.folder);
 		}
 		return;
 	}
 
 	//#region ドライブのファイル
 	const driveFile = ev.dataTransfer.getData(_DATA_TRANSFER_DRIVE_FILE_);
-	if (driveFile != null && driveFile !== '') {
+	if (driveFile != null && driveFile !== "") {
 		const file = JSON.parse(driveFile);
-		emit('removeFile', file.id);
-		misskeyApi('drive/files/update', {
+		emit("removeFile", file.id);
+		misskeyApi("drive/files/update", {
 			fileId: file.id,
 			folderId: props.folder ? props.folder.id : null,
 		});
@@ -121,12 +126,12 @@ function onDrop(ev: DragEvent) {
 
 	//#region ドライブのフォルダ
 	const driveFolder = ev.dataTransfer.getData(_DATA_TRANSFER_DRIVE_FOLDER_);
-	if (driveFolder != null && driveFolder !== '') {
+	if (driveFolder != null && driveFolder !== "") {
 		const folder = JSON.parse(driveFolder);
 		// 移動先が自分自身ならreject
 		if (props.folder && folder.id === props.folder.id) return;
-		emit('removeFolder', folder.id);
-		misskeyApi('drive/folders/update', {
+		emit("removeFolder", folder.id);
+		misskeyApi("drive/folders/update", {
 			folderId: folder.id,
 			parentId: props.folder ? props.folder.id : null,
 		});

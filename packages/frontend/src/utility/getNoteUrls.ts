@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as config from '@@/js/config.js';
-import type * as Misskey from 'misskey-js';
+import * as config from "@@/js/config.js";
+import type * as Misskey from "misskey-js";
 
 export function getNoteUrls(note: Misskey.entities.Note): string[] {
 	const urls: string[] = [

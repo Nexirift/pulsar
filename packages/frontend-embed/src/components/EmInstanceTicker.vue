@@ -4,37 +4,50 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root" :style="bg">
-	<img v-if="faviconUrl" :class="$style.icon" :src="faviconUrl"/>
-	<div :class="$style.name">{{ instance.name }}</div>
-</div>
+	<div :class="$style.root" :style="bg">
+		<img v-if="faviconUrl" :class="$style.icon" :src="faviconUrl" />
+		<div :class="$style.name">{{ instance.name }}</div>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { computed, inject } from 'vue';
+import { computed, inject } from "vue";
 
-import { DI } from '@/di.js';
+import { DI } from "@/di.js";
 
 const serverMetadata = inject(DI.serverMetadata)!;
 const mediaProxy = inject(DI.mediaProxy)!;
 
 const props = defineProps<{
 	instance?: {
-		faviconUrl?: string | null
-		name?: string | null
-		themeColor?: string | null
-	}
+		faviconUrl?: string | null;
+		name?: string | null;
+		themeColor?: string | null;
+	};
 }>();
 
 // if no instance data is given, this is for the local instance
 const instance = props.instance ?? {
 	name: serverMetadata.name,
-	themeColor: (document.querySelector('meta[name="theme-color-orig"]') as HTMLMetaElement)?.content,
+	themeColor: (
+		document.querySelector('meta[name="theme-color-orig"]') as HTMLMetaElement
+	)?.content,
 };
 
-const faviconUrl = computed(() => props.instance ? mediaProxy.getProxiedImageUrlNullable(props.instance.faviconUrl, 'preview') : mediaProxy.getProxiedImageUrlNullable(serverMetadata.iconUrl, 'preview') ?? '/favicon.ico');
+const faviconUrl = computed(() =>
+	props.instance
+		? mediaProxy.getProxiedImageUrlNullable(
+				props.instance.faviconUrl,
+				"preview",
+			)
+		: (mediaProxy.getProxiedImageUrlNullable(
+				serverMetadata.iconUrl,
+				"preview",
+			) ?? "/favicon.ico"),
+);
 
-const themeColor = props.instance?.themeColor ?? serverMetadata.themeColor ?? '#777777';
+const themeColor =
+	props.instance?.themeColor ?? serverMetadata.themeColor ?? "#777777";
 
 const bg = {
 	background: `linear-gradient(90deg, ${themeColor}, ${themeColor}00)`,
@@ -53,21 +66,22 @@ $height: 2ex;
 	color: #fff;
 	text-shadow: /* .866 ≈ sin(60deg) */
 		1px 0 1px #000,
-		.866px .5px 1px #000,
-		.5px .866px 1px #000,
+		0.866px 0.5px 1px #000,
+		0.5px 0.866px 1px #000,
 		0 1px 1px #000,
-		-.5px .866px 1px #000,
-		-.866px .5px 1px #000,
+		-0.5px 0.866px 1px #000,
+		-0.866px 0.5px 1px #000,
 		-1px 0 1px #000,
-		-.866px -.5px 1px #000,
-		-.5px -.866px 1px #000,
+		-0.866px -0.5px 1px #000,
+		-0.5px -0.866px 1px #000,
 		0 -1px 1px #000,
-		.5px -.866px 1px #000,
-		.866px -.5px 1px #000;
-	mask-image: linear-gradient(90deg,
-		rgb(0,0,0),
-		rgb(0,0,0) calc(100% - 16px),
-		rgba(0,0,0,0) 100%
+		0.5px -0.866px 1px #000,
+		0.866px -0.5px 1px #000;
+	mask-image: linear-gradient(
+		90deg,
+		rgb(0, 0, 0),
+		rgb(0, 0, 0) calc(100% - 16px),
+		rgba(0, 0, 0, 0) 100%
 	);
 }
 

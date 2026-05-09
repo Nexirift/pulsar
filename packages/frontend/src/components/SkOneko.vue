@@ -6,14 +6,14 @@ Displays Oneko, a cat that follows the cursor.
 -->
 
 <template>
-<div ref="nekoEl" :class="$style.oneko" aria-hidden="true"></div>
+	<div ref="nekoEl" :class="$style.oneko" aria-hidden="true"></div>
 </template>
 
 <script lang="ts" setup>
 // oneko.js: https://github.com/adryd325/oneko.js
 // modified to be a vue component by ShittyKopper :3
 
-import { shallowRef, onMounted, onUnmounted } from 'vue';
+import { shallowRef, onMounted, onUnmounted } from "vue";
 
 const nekoEl = shallowRef<HTMLDivElement>();
 
@@ -104,13 +104,15 @@ function init() {
 	nekoEl.value.style.left = `${nekoPosX - 16}px`;
 	nekoEl.value.style.top = `${nekoPosY - 16}px`;
 
-	window.document.addEventListener('mousemove', mouseCallback, { passive: true });
+	window.document.addEventListener("mousemove", mouseCallback, {
+		passive: true,
+	});
 
 	window.requestAnimationFrame(onAnimationFrame);
 }
 
 function uninit() {
-	window.removeEventListener('mousemove', mouseCallback, { passive: true });
+	window.removeEventListener("mousemove", mouseCallback, { passive: true });
 }
 
 function onAnimationFrame(timestamp) {
@@ -147,49 +149,51 @@ function idle() {
 	// every ~ 20 seconds
 	if (
 		idleTime > 10 &&
-      Math.floor(Math.random() * 200) === 0 &&
-      idleAnimation == null
+		Math.floor(Math.random() * 200) === 0 &&
+		idleAnimation == null
 	) {
-		let avalibleIdleAnimations = ['sleeping', 'scratchSelf'];
+		let avalibleIdleAnimations = ["sleeping", "scratchSelf"];
 		if (nekoPosX < 32) {
-			avalibleIdleAnimations.push('scratchWallW');
+			avalibleIdleAnimations.push("scratchWallW");
 		}
 		if (nekoPosY < 32) {
-			avalibleIdleAnimations.push('scratchWallN');
+			avalibleIdleAnimations.push("scratchWallN");
 		}
 		if (nekoPosX > window.innerWidth - 32) {
-			avalibleIdleAnimations.push('scratchWallE');
+			avalibleIdleAnimations.push("scratchWallE");
 		}
 		if (nekoPosY > window.innerHeight - 32) {
-			avalibleIdleAnimations.push('scratchWallS');
+			avalibleIdleAnimations.push("scratchWallS");
 		}
 		idleAnimation =
-        avalibleIdleAnimations[Math.floor(Math.random() * avalibleIdleAnimations.length)];
+			avalibleIdleAnimations[
+				Math.floor(Math.random() * avalibleIdleAnimations.length)
+			];
 	}
 
 	switch (idleAnimation) {
-		case 'sleeping':
+		case "sleeping":
 			if (idleAnimationFrame < 8) {
-				setSprite('tired', 0);
+				setSprite("tired", 0);
 				break;
 			}
-			setSprite('sleeping', Math.floor(idleAnimationFrame / 4));
+			setSprite("sleeping", Math.floor(idleAnimationFrame / 4));
 			if (idleAnimationFrame > 192) {
 				resetIdleAnimation();
 			}
 			break;
-		case 'scratchWallN':
-		case 'scratchWallS':
-		case 'scratchWallE':
-		case 'scratchWallW':
-		case 'scratchSelf':
+		case "scratchWallN":
+		case "scratchWallS":
+		case "scratchWallE":
+		case "scratchWallW":
+		case "scratchSelf":
 			setSprite(idleAnimation, idleAnimationFrame);
 			if (idleAnimationFrame > 9) {
 				resetIdleAnimation();
 			}
 			break;
 		default:
-			setSprite('idle', 0);
+			setSprite("idle", 0);
 			return;
 	}
 	idleAnimationFrame += 1;
@@ -212,7 +216,7 @@ function frame() {
 	idleAnimationFrame = 0;
 
 	if (idleTime > 1) {
-		setSprite('alert', 0);
+		setSprite("alert", 0);
 		// count down after being alerted before moving
 		idleTime = Math.min(idleTime, 7);
 		idleTime -= 1;
@@ -220,10 +224,10 @@ function frame() {
 	}
 
 	let direction;
-	direction = diffY / distance > 0.5 ? 'N' : '';
-	direction += diffY / distance < -0.5 ? 'S' : '';
-	direction += diffX / distance > 0.5 ? 'W' : '';
-	direction += diffX / distance < -0.5 ? 'E' : '';
+	direction = diffY / distance > 0.5 ? "N" : "";
+	direction += diffY / distance < -0.5 ? "S" : "";
+	direction += diffX / distance > 0.5 ? "W" : "";
+	direction += diffX / distance < -0.5 ? "E" : "";
 	setSprite(direction, frameCount);
 
 	nekoPosX -= (diffX / distance) * nekoSpeed;

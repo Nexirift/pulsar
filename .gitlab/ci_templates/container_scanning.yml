@@ -12,7 +12,7 @@ container_scanning:
     - amd64
 
   variables:
-    AST_ENABLE_MR_PIPELINES: 'false'
+    AST_ENABLE_MR_PIPELINES: "false"
     CS_IMAGE: "${CI_REGISTRY_IMAGE}:${REGISTRY_PUSH_TAG}"
 
   needs:

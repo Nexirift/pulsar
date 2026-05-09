@@ -1,10 +1,12 @@
-import { endpointReqTypes } from './autogen/endpoint.js';
-import type { SwitchCaseResponseType, Endpoints, EndpointsWithOptionalParams } from './api.types.js';
-import type { EmptyRequest } from './autogen/entities.js';
-
-export type {
+import { endpointReqTypes } from "./autogen/endpoint.js";
+import type {
 	SwitchCaseResponseType,
-} from './api.types.js';
+	Endpoints,
+	EndpointsWithOptionalParams,
+} from "./api.types.js";
+import type { EmptyRequest } from "./autogen/entities.js";
+
+export type { SwitchCaseResponseType } from "./api.types.js";
 
 const MK_API_ERROR = Symbol();
 
@@ -12,26 +14,35 @@ export type APIError = {
 	id: string;
 	code: string;
 	message: string;
-	kind: 'client' | 'server';
+	kind: "client" | "server";
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	info: Record<string, any>;
 };
 
 export function isAPIError(reason: unknown): reason is APIError {
 	if (reason == null) return false;
-	if (typeof(reason) !== 'object') return false;
+	if (typeof reason !== "object") return false;
 	if (!(MK_API_ERROR in reason)) return false;
-	if (typeof(reason[MK_API_ERROR]) !== 'boolean') return false;
+	if (typeof reason[MK_API_ERROR] !== "boolean") return false;
 	return reason[MK_API_ERROR] === true;
 }
 
-export type FetchLike = (input: string, init?: {
-	method?: string;
-	body?: Blob | FormData | string;
-	credentials?: 'include' | 'omit' | 'same-origin';
-	cache?: 'default' | 'force-cache' | 'no-cache' | 'no-store' | 'only-if-cached' | 'reload';
-	headers: { [key in string]: string }
-}) => Promise<{
+export type FetchLike = (
+	input: string,
+	init?: {
+		method?: string;
+		body?: Blob | FormData | string;
+		credentials?: "include" | "omit" | "same-origin";
+		cache?:
+			| "default"
+			| "force-cache"
+			| "no-cache"
+			| "no-store"
+			| "only-if-cached"
+			| "reload";
+		headers: { [key in string]: string };
+	},
+) => Promise<{
 	status: number;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	json(): Promise<any>;
@@ -43,11 +54,11 @@ export class APIClient {
 	public fetch: FetchLike;
 
 	constructor(opts: {
-		origin: APIClient['origin'];
-		credential?: APIClient['credential'];
-		fetch?: APIClient['fetch'] | null | undefined;
+		origin: APIClient["origin"];
+		credential?: APIClient["credential"];
+		fetch?: APIClient["fetch"] | null | undefined;
 	}) {
-		this.origin = opts.origin.replace(/\/$/, '');
+		this.origin = opts.origin.replace(/\/$/, "");
 		this.credential = opts.credential;
 		// ネイティブ関数をそのまま変数に代入して使おうとするとChromiumではIllegal invocationエラーが発生するため、
 		// 環境で実装されているfetchを使う場合は無名関数でラップして使用する
@@ -56,10 +67,12 @@ export class APIClient {
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private assertIsRecord<T>(obj: T): obj is T & Record<string, any> {
-		return obj !== null && typeof obj === 'object' && !Array.isArray(obj);
+		return obj !== null && typeof obj === "object" && !Array.isArray(obj);
 	}
 
-	private assertSpecialEpReqType(ep: keyof Endpoints): ep is keyof typeof endpointReqTypes {
+	private assertSpecialEpReqType(
+		ep: keyof Endpoints,
+	): ep is keyof typeof endpointReqTypes {
 		return ep in endpointReqTypes;
 	}
 
@@ -68,36 +81,39 @@ export class APIClient {
 		params?: Record<string, never>,
 		credential?: string | null,
 	): Promise<SwitchCaseResponseType<E, EmptyRequest>>;
-	public request<E extends keyof Endpoints, P extends Endpoints[E]['req']>(
+	public request<E extends keyof Endpoints, P extends Endpoints[E]["req"]>(
 		endpoint: E,
 		params: P,
 		credential?: string | null,
 	): Promise<SwitchCaseResponseType<E, P>>;
-	public request<E extends keyof Endpoints, P extends Endpoints[E]['req']>(
+	public request<E extends keyof Endpoints, P extends Endpoints[E]["req"]>(
 		endpoint: E,
 		params: P = {} as P,
 		credential?: string | null,
 	): Promise<SwitchCaseResponseType<E, P>> {
 		return new Promise((resolve, reject) => {
-			let mediaType = 'application/json';
+			let mediaType = "application/json";
 			// （autogenがバグったときのため、念の為nullチェックも行う）
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-			if (this.assertSpecialEpReqType(endpoint) && endpointReqTypes[endpoint] != null) {
+			if (
+				this.assertSpecialEpReqType(endpoint) &&
+				endpointReqTypes[endpoint] != null
+			) {
 				mediaType = endpointReqTypes[endpoint];
 			}
 
-			let payload: FormData | string = '{}';
+			let payload: FormData | string = "{}";
 
-			if (mediaType === 'application/json') {
+			if (mediaType === "application/json") {
 				payload = JSON.stringify({
 					...params,
 					i: credential !== undefined ? credential : this.credential,
 				});
-			} else if (mediaType === 'multipart/form-data') {
+			} else if (mediaType === "multipart/form-data") {
 				payload = new FormData();
 				const i = credential !== undefined ? credential : this.credential;
 				if (i != null) {
-					payload.append('i', i);
+					payload.append("i", i);
 				}
 				if (this.assertIsRecord(params)) {
 					for (const key in params) {
@@ -107,7 +123,7 @@ export class APIClient {
 
 						if (value instanceof File || value instanceof Blob) {
 							payload.append(key, value);
-						} else if (typeof value === 'object') {
+						} else if (typeof value === "object") {
 							payload.append(key, JSON.stringify(value));
 						} else {
 							payload.append(key, value);
@@ -117,25 +133,27 @@ export class APIClient {
 			}
 
 			this.fetch(`${this.origin}/api/${endpoint}`, {
-				method: 'POST',
+				method: "POST",
 				body: payload,
 				headers: {
-					'Content-Type': mediaType,
+					"Content-Type": mediaType,
 				},
-				credentials: 'omit',
-				cache: 'no-cache',
-			}).then(async (res) => {
-				const body = res.status === 204 ? null : await res.json();
+				credentials: "omit",
+				cache: "no-cache",
+			})
+				.then(async (res) => {
+					const body = res.status === 204 ? null : await res.json();
 
-				if (res.status === 200 || res.status === 204) {
-					resolve(body);
-				} else {
-					reject({
-						[MK_API_ERROR]: true,
-						...body.error,
-					});
-				}
-			}).catch(reject);
+					if (res.status === 200 || res.status === 204) {
+						resolve(body);
+					} else {
+						reject({
+							[MK_API_ERROR]: true,
+							...body.error,
+						});
+					}
+				})
+				.catch(reject);
 		});
 	}
 }

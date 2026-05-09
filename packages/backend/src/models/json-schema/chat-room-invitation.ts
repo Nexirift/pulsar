@@ -4,34 +4,40 @@
  */
 
 export const packedChatRoomInvitationSchema = {
-	type: 'object',
+	type: "object",
 	properties: {
 		id: {
-			type: 'string',
-			optional: false, nullable: false,
+			type: "string",
+			optional: false,
+			nullable: false,
 		},
 		createdAt: {
-			type: 'string',
-			format: 'date-time',
-			optional: false, nullable: false,
+			type: "string",
+			format: "date-time",
+			optional: false,
+			nullable: false,
 		},
 		userId: {
-			type: 'string',
-			optional: false, nullable: false,
+			type: "string",
+			optional: false,
+			nullable: false,
 		},
 		user: {
-			type: 'object',
-			optional: false, nullable: false,
-			ref: 'UserLite',
+			type: "object",
+			optional: false,
+			nullable: false,
+			ref: "UserLite",
 		},
 		roomId: {
-			type: 'string',
-			optional: false, nullable: false,
+			type: "string",
+			optional: false,
+			nullable: false,
 		},
 		room: {
-			type: 'object',
-			optional: false, nullable: false,
-			ref: 'ChatRoom',
+			type: "object",
+			optional: false,
+			nullable: false,
+			ref: "ChatRoom",
 		},
 	},
 } as const;

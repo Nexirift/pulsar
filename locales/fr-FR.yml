@@ -2,7 +2,7 @@
 _lang_: "Français"
 headlineMisskey: "Réseau relié par des notes"
 introMisskey: "Bienvenue ! Misskey est un service de microblogage décentralisé, libre et ouvert.\nÉcrivez des « notes » et partagez ce qui se passe à l’instant présent, autour de vous avec les autres 📡\nLa fonction « réactions », vous permet également d’ajouter une réaction rapide aux notes des autres utilisateur·rice·s 👍\nExplorons un nouveau monde 🚀"
-poweredByMisskeyDescription: "{name} est l'un des services propulsés par la plateforme ouverte <b>Misskey</b> (appelée \"instance Misskey\")."
+poweredByMisskeyDescription: '{name} est l''un des services propulsés par la plateforme ouverte <b>Misskey</b> (appelée "instance Misskey").'
 monthAndDay: "{day}/{month}"
 search: "Rechercher"
 notifications: "Notifications"
@@ -377,7 +377,7 @@ bannerUrl: "URL de l’image de la bannière"
 backgroundImageUrl: "URL de l'image d'arrière-plan"
 basicInfo: "Informations basiques"
 pinnedUsers: "Utilisateur·rice épinglé·e"
-pinnedUsersDescription: "Listez les utilisateur·rice·s que vous souhaitez voir épinglé·e·s sur la page \"Découvrir\", un·e par ligne."
+pinnedUsersDescription: 'Listez les utilisateur·rice·s que vous souhaitez voir épinglé·e·s sur la page "Découvrir", un·e par ligne.'
 pinnedPages: "Pages épinglées"
 pinnedPagesDescription: "Inscrivez le chemin des pages que vous souhaitez épingler en haut de la page de l'instance. Séparez les pages d'un retour à la ligne."
 pinnedClipId: "Identifiant du clip épinglé"
@@ -452,7 +452,7 @@ unregister: "Se désinscrire"
 passwordLessLogin: "Se connecter sans mot de passe"
 passwordLessLoginDescription: "Se connecter uniquement avec une clé de sécurité ou une clé d'accès sans utiliser de mot de passe"
 resetPassword: "Réinitialiser le mot de passe"
-newPasswordIs: "Votre nouveau mot de passe est \"{password}\""
+newPasswordIs: 'Votre nouveau mot de passe est "{password}"'
 reduceUiAnimation: "Réduire les animations dans l’interface"
 share: "Partager"
 notFound: "Non trouvé"
@@ -740,7 +740,7 @@ driveFilesCount: "Nombre de fichiers sur le Disque"
 driveUsage: "Utilisation du Disque"
 noCrawle: "Refuser l'indexation par les robots"
 noCrawleDescription: "Demandez aux moteurs de recherche de ne pas indexer votre page de profil, vos notes, vos pages, etc."
-lockedAccountInfo: "À moins que vous ne définissiez la visibilité de votre note sur \"Abonné-e-s\", vos notes sont visibles par tous, même si vous exigez que les demandes d'abonnement soient approuvées manuellement."
+lockedAccountInfo: 'À moins que vous ne définissiez la visibilité de votre note sur "Abonné-e-s", vos notes sont visibles par tous, même si vous exigez que les demandes d''abonnement soient approuvées manuellement.'
 alwaysMarkSensitive: "Marquer les médias comme contenu sensible par défaut"
 loadRawImages: "Affichage complet des images jointes au lieu des vignettes"
 disableShowingAnimatedImages: "Désactiver l'animation des images"
@@ -758,8 +758,8 @@ experimentalFeatures: "Fonctionnalités expérimentales"
 experimental: "Expérimental"
 thisIsExperimentalFeature: "Ceci est une fonctionnalité expérimentale. Il y a une possibilité que les spécifications changent ou qu'elle ne fonctionne pas correctement."
 developer: "Développeur"
-makeExplorable: "Rendre le compte visible sur la page \"Découvrir\"."
-makeExplorableDescription: "Si vous désactivez cette option, votre compte n'apparaîtra pas sur la page \"Découvrir\"."
+makeExplorable: 'Rendre le compte visible sur la page "Découvrir".'
+makeExplorableDescription: 'Si vous désactivez cette option, votre compte n''apparaîtra pas sur la page "Découvrir".'
 showGapBetweenNotesInTimeline: "Afficher un écart entre les notes sur la Timeline"
 duplicate: "Duliquer"
 left: "Gauche"
@@ -1712,12 +1712,12 @@ _preferencesBackups:
   save: "Sauvegarder les changements"
   inputName: "Entrez le nom de la sauvegarde"
   cannotSave: "Impossible de sauvegarder"
-  nameAlreadyExists: "Le nom de sauvegarde \"{name}\" existe déjà. Veuillez spécifier un autre nom."
+  nameAlreadyExists: 'Le nom de sauvegarde "{name}" existe déjà. Veuillez spécifier un autre nom.'
   applyConfirm: "Voulez-vous appliquer la sauvegarde '{name}' au dispositif actuel ? La configuration actuelle de l'appareil sera perdue."
   saveConfirm: "Voulez-vous écraser {name} ?"
   deleteConfirm: "Êtes-vous sûr·e de vouloir supprimer {name} ?"
-  renameConfirm: "Voulez-vous remplacer \"{old}\" par \"{new}\" ?"
-  noBackups: "Aucune sauvegarde n'est disponible. L'option \"Nouvelle sauvegarde\" vous permet de sauvegarder la configuration actuelle du client sur le serveur."
+  renameConfirm: 'Voulez-vous remplacer "{old}" par "{new}" ?'
+  noBackups: 'Aucune sauvegarde n''est disponible. L''option "Nouvelle sauvegarde" vous permet de sauvegarder la configuration actuelle du client sur le serveur.'
   createdAt: "Créé : {date} {time}"
   updatedAt: "Mis à jour : {date} {time}"
   cannotLoad: "Échec du chargement"
@@ -1951,7 +1951,7 @@ _permissions:
   "write:admin:roles": "Gérer les rôles"
   "write:chat": "Gérer les discussions"
 _auth:
-  shareAccess: "Autoriser \"{name}\" à accéder à votre compte ?"
+  shareAccess: 'Autoriser "{name}" à accéder à votre compte ?'
   shareAccessAsk: "Voulez-vous vraiment autoriser cette application à accéder à votre compte?"
   permissionAsk: "Cette application nécessite les autorisations suivantes :"
   pleaseGoBack: "Veuillez retourner à l’application"

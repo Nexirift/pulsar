@@ -3,29 +3,36 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import push from 'web-push';
-import * as Redis from 'ioredis';
-import { DI } from '@/di-symbols.js';
-import type { Config } from '@/config.js';
-import type { Packed } from '@/misc/json-schema.js';
-import { getNoteSummary } from '@/misc/get-note-summary.js';
-import type { MiMeta, MiSwSubscription, SwSubscriptionsRepository } from '@/models/_.js';
-import { bindThis } from '@/decorators.js';
-import { CacheManagementService, type ManagedQuantumKVCache } from '@/global/CacheManagementService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import type { Logger } from '@/logger.js';
+import { Inject, Injectable, OnApplicationShutdown } from "@nestjs/common";
+import push from "web-push";
+import * as Redis from "ioredis";
+import { DI } from "@/di-symbols.js";
+import type { Config } from "@/config.js";
+import type { Packed } from "@/misc/json-schema.js";
+import { getNoteSummary } from "@/misc/get-note-summary.js";
+import type {
+	MiMeta,
+	MiSwSubscription,
+	SwSubscriptionsRepository,
+} from "@/models/_.js";
+import { bindThis } from "@/decorators.js";
+import {
+	CacheManagementService,
+	type ManagedQuantumKVCache,
+} from "@/global/CacheManagementService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { LoggerService } from "@/core/LoggerService.js";
+import type { Logger } from "@/logger.js";
 
 // Defined also packages/sw/types.ts#L13
 type PushNotificationsTypes = {
-	'notification': Packed<'Notification'>;
-	'unreadAntennaNote': {
-		antenna: { id: string, name: string };
-		note: Packed<'Note'>;
+	notification: Packed<"Notification">;
+	unreadAntennaNote: {
+		antenna: { id: string; name: string };
+		note: Packed<"Note">;
 	};
-	'readAllNotifications': undefined;
-	newChatMessage: Packed<'ChatMessage'>;
+	readAllNotifications: undefined;
+	newChatMessage: Packed<"ChatMessage">;
 };
 
 // Helper function to retry operations with DNS failures
@@ -35,57 +42,69 @@ async function retryWithBackoff<T>(
 	initialDelay: number = 1000,
 ): Promise<T> {
 	let lastError: any;
-	
+
 	for (let attempt = 0; attempt < maxRetries; attempt++) {
 		try {
 			return await operation();
 		} catch (err: any) {
 			lastError = err;
-			
+
 			// Check if it's a DNS error that might succeed on retry
-			const isDnsError = err.code === 'EAI_AGAIN' || 
-				err.code === 'ENOTFOUND' || 
-				err.code === 'ETIMEDOUT' ||
-				err.code === 'ECONNREFUSED' ||
-				err.message?.includes('getaddrinfo');
-			
+			const isDnsError =
+				err.code === "EAI_AGAIN" ||
+				err.code === "ENOTFOUND" ||
+				err.code === "ETIMEDOUT" ||
+				err.code === "ECONNREFUSED" ||
+				err.message?.includes("getaddrinfo");
+
 			if (!isDnsError || attempt === maxRetries - 1) {
 				throw err;
 			}
-			
+
 			// Exponential backoff
 			const delay = initialDelay * Math.pow(2, attempt);
-			await new Promise(resolve => setTimeout(resolve, delay));
+			await new Promise((resolve) => setTimeout(resolve, delay));
 		}
 	}
-	
+
 	throw lastError;
 }
 
 // Reduce length because push message servers have character limits
-function truncateBody<T extends keyof PushNotificationsTypes>(type: T, body: PushNotificationsTypes[T]): PushNotificationsTypes[T] {
-	if (typeof body !== 'object') return body;
+function truncateBody<T extends keyof PushNotificationsTypes>(
+	type: T,
+	body: PushNotificationsTypes[T],
+): PushNotificationsTypes[T] {
+	if (typeof body !== "object") return body;
 
 	return {
 		...body,
-		...(('note' in body && body.note) ? {
-			note: {
-				...body.note,
-				// textをgetNoteSummaryしたものに置き換える
-				text: getNoteSummary(('type' in body && body.type === 'renote') ? body.note.renote as Packed<'Note'> : body.note),
+		...("note" in body && body.note
+			? {
+					note: {
+						...body.note,
+						// textをgetNoteSummaryしたものに置き換える
+						text: getNoteSummary(
+							"type" in body && body.type === "renote"
+								? (body.note.renote as Packed<"Note">)
+								: body.note,
+						),
 
-				cw: undefined,
-				reply: undefined,
-				renote: undefined,
-				user: type === 'notification' ? undefined as any : body.note.user,
-			},
-		} : {}),
+						cw: undefined,
+						reply: undefined,
+						renote: undefined,
+						user: type === "notification" ? (undefined as any) : body.note.user,
+					},
+				}
+			: {}),
 	};
 }
 
 @Injectable()
 export class PushNotificationService {
-	private readonly subscriptionsCache: ManagedQuantumKVCache<MiSwSubscription[]>;
+	private readonly subscriptionsCache: ManagedQuantumKVCache<
+		MiSwSubscription[]
+	>;
 	private logger: Logger;
 
 	constructor(
@@ -106,26 +125,41 @@ export class PushNotificationService {
 		loggerService: LoggerService,
 		cacheManagementService: CacheManagementService,
 	) {
-		this.logger = loggerService.getLogger('push-notification');
-		this.subscriptionsCache = cacheManagementService.createQuantumKVCache<MiSwSubscription[]>('userSwSubscriptions', {
+		this.logger = loggerService.getLogger("push-notification");
+		this.subscriptionsCache = cacheManagementService.createQuantumKVCache<
+			MiSwSubscription[]
+		>("userSwSubscriptions", {
 			lifetime: 1000 * 60 * 60 * 1, // 1h
-			fetcher: async userId => await this.swSubscriptionsRepository.findBy({ userId }),
+			fetcher: async (userId) =>
+				await this.swSubscriptionsRepository.findBy({ userId }),
 			// optionalFetcher not needed
 			// bulkFetcher not needed
 		});
 	}
 
 	@bindThis
-	public async pushNotification<T extends keyof PushNotificationsTypes>(userId: string, type: T, body: PushNotificationsTypes[T]) {
-		if (!this.meta.enableServiceWorker || this.meta.swPublicKey == null || this.meta.swPrivateKey == null) {
-			this.logger.warn('Push notifications are disabled or not configured properly');
+	public async pushNotification<T extends keyof PushNotificationsTypes>(
+		userId: string,
+		type: T,
+		body: PushNotificationsTypes[T],
+	) {
+		if (
+			!this.meta.enableServiceWorker ||
+			this.meta.swPublicKey == null ||
+			this.meta.swPrivateKey == null
+		) {
+			this.logger.warn(
+				"Push notifications are disabled or not configured properly",
+			);
 			return;
 		}
 
 		// アプリケーションの連絡先と、サーバーサイドの鍵ペアの情報を登録
-		push.setVapidDetails(this.config.url,
+		push.setVapidDetails(
+			this.config.url,
 			this.meta.swPublicKey,
-			this.meta.swPrivateKey);
+			this.meta.swPrivateKey,
+		);
 
 		const subscriptions = await this.subscriptionsCache.fetch(userId);
 
@@ -136,9 +170,11 @@ export class PushNotificationService {
 
 		// Send all notifications concurrently and handle failures individually
 		const promises = subscriptions.map(async (subscription) => {
-			if ([
-				'readAllNotifications',
-			].includes(type) && !subscription.sendReadMessage) return;
+			if (
+				["readAllNotifications"].includes(type) &&
+				!subscription.sendReadMessage
+			)
+				return;
 
 			const pushSubscription = {
 				endpoint: subscription.endpoint,
@@ -150,16 +186,25 @@ export class PushNotificationService {
 
 			try {
 				await retryWithBackoff(async () => {
-					return await push.sendNotification(pushSubscription, JSON.stringify({
-						type,
-						body: (type === 'notification' || type === 'unreadAntennaNote') ? truncateBody(type, body) : body,
-						userId,
-						dateTime: this.timeService.now,
-					}), {
-						proxy: this.config.proxy,
-					});
+					return await push.sendNotification(
+						pushSubscription,
+						JSON.stringify({
+							type,
+							body:
+								type === "notification" || type === "unreadAntennaNote"
+									? truncateBody(type, body)
+									: body,
+							userId,
+							dateTime: this.timeService.now,
+						}),
+						{
+							proxy: this.config.proxy,
+						},
+					);
 				});
-				this.logger.debug(`Push notification sent successfully to ${subscription.endpoint}`);
+				this.logger.debug(
+					`Push notification sent successfully to ${subscription.endpoint}`,
+				);
 			} catch (err: any) {
 				// Log the full error with all available details
 				const errorDetails: any = {
@@ -182,10 +227,11 @@ export class PushNotificationService {
 				}
 
 				// Special handling for DNS errors
-				const isDnsError = err.code === 'EAI_AGAIN' || 
-					err.code === 'ENOTFOUND' || 
-					err.message?.includes('getaddrinfo');
-				
+				const isDnsError =
+					err.code === "EAI_AGAIN" ||
+					err.code === "ENOTFOUND" ||
+					err.message?.includes("getaddrinfo");
+
 				if (isDnsError) {
 					this.logger.error(
 						`DNS resolution failed for push notification endpoint (this may indicate DNS or network issues)`,
@@ -193,7 +239,7 @@ export class PushNotificationService {
 					);
 				} else {
 					this.logger.error(
-						`Failed to send push notification: ${err.statusCode ? `HTTP ${err.statusCode}` : err.message || err.name || 'Unknown error'}`,
+						`Failed to send push notification: ${err.statusCode ? `HTTP ${err.statusCode}` : err.message || err.name || "Unknown error"}`,
 						errorDetails,
 					);
 				}

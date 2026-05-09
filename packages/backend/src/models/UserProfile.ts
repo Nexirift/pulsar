@@ -3,61 +3,77 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Entity, Column, Index, OneToOne, JoinColumn, PrimaryColumn } from 'typeorm';
-import { obsoleteNotificationTypes, followingVisibilities, followersVisibilities, notificationTypes, defaultCWPriorities } from '@/types.js';
-import { id } from './util/id.js';
-import { MiUser } from './User.js';
-import { MiPage } from './Page.js';
-import { MiUserList } from './UserList.js';
+import {
+	Entity,
+	Column,
+	Index,
+	OneToOne,
+	JoinColumn,
+	PrimaryColumn,
+} from "typeorm";
+import {
+	obsoleteNotificationTypes,
+	followingVisibilities,
+	followersVisibilities,
+	notificationTypes,
+	defaultCWPriorities,
+} from "@/types.js";
+import { id } from "./util/id.js";
+import { MiUser } from "./User.js";
+import { MiPage } from "./Page.js";
+import { MiUserList } from "./UserList.js";
 
 // TODO: このテーブルで管理している情報すべてレジストリで管理するようにしても良いかも
 //       ただ、「emailVerified が true なユーザーを find する」のようなクエリは書けなくなるからウーン
-@Entity('user_profile')
+@Entity("user_profile")
 export class MiUserProfile {
 	@PrimaryColumn(id())
-	public userId: MiUser['id'];
+	public userId: MiUser["id"];
 
-	@OneToOne(() => MiUser, user => user.userProfile, {
-		onDelete: 'CASCADE',
+	@OneToOne(() => MiUser, (user) => user.userProfile, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public user: MiUser | null;
 
-	@Column('varchar', {
-		length: 128, nullable: true,
-		comment: 'The location of the User.',
+	@Column("varchar", {
+		length: 128,
+		nullable: true,
+		comment: "The location of the User.",
 	})
 	public location: string | null;
 
 	@Index()
-	@Column('char', {
-		length: 10, nullable: true,
-		comment: 'The birthday (YYYY-MM-DD) of the User.',
+	@Column("char", {
+		length: 10,
+		nullable: true,
+		comment: "The birthday (YYYY-MM-DD) of the User.",
 	})
 	public birthday: string | null;
 
-	@Column('varchar', {
+	@Column("varchar", {
 		length: 128,
 		nullable: true,
-		comment: 'The ListenBrainz username of the User.',
+		comment: "The ListenBrainz username of the User.",
 	})
 	public listenbrainz: string | null;
 
-	@Column('text', {
+	@Column("text", {
 		nullable: true,
-		comment: 'The description (bio) of the User.',
+		comment: "The description (bio) of the User.",
 	})
 	public description: string | null;
 
 	// フォローされた際のメッセージ
-	@Column('varchar', {
-		length: 256, nullable: true,
+	@Column("varchar", {
+		length: 256,
+		nullable: true,
 	})
 	public followedMessage: string | null;
 
 	// TODO: 鍵アカウントの場合の、フォローリクエスト受信時のメッセージも設定できるようにする
 
-	@Column('jsonb', {
+	@Column("jsonb", {
 		default: [],
 	})
 	public fields: {
@@ -65,165 +81,175 @@ export class MiUserProfile {
 		value: string;
 	}[];
 
-	@Column('varchar', {
+	@Column("varchar", {
 		array: true,
-		default: '{}',
+		default: "{}",
 	})
 	public verifiedLinks: string[];
 
-	@Column('varchar', {
-		length: 32, nullable: true,
+	@Column("varchar", {
+		length: 32,
+		nullable: true,
 	})
 	public lang: string | null;
 
-	@Column('varchar', {
-		length: 512, nullable: true,
-		comment: 'Remote URL of the user.',
+	@Column("varchar", {
+		length: 512,
+		nullable: true,
+		comment: "Remote URL of the user.",
 	})
 	public url: string | null;
 
-	@Column('varchar', {
-		length: 128, nullable: true,
-		comment: 'The email address of the User.',
+	@Column("varchar", {
+		length: 128,
+		nullable: true,
+		comment: "The email address of the User.",
 	})
 	public email: string | null;
 
-	@Column('varchar', {
-		length: 128, nullable: true,
+	@Column("varchar", {
+		length: 128,
+		nullable: true,
 	})
 	public emailVerifyCode: string | null;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public emailVerified: boolean;
 
-	@Column('jsonb', {
-		default: ['follow', 'receiveFollowRequest'],
+	@Column("jsonb", {
+		default: ["follow", "receiveFollowRequest"],
 	})
 	public emailNotificationTypes: string[];
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: true,
 	})
 	public publicReactions: boolean;
 
-	@Column('enum', {
+	@Column("enum", {
 		enum: followingVisibilities,
-		enumName: 'user_profile_followingVisibility_enum',
-		default: 'public',
+		enumName: "user_profile_followingVisibility_enum",
+		default: "public",
 	})
-	public followingVisibility: typeof followingVisibilities[number];
+	public followingVisibility: (typeof followingVisibilities)[number];
 
-	@Column('enum', {
+	@Column("enum", {
 		enum: followersVisibilities,
-		enumName: 'user_profile_followersVisibility_enum',
-		default: 'public',
+		enumName: "user_profile_followersVisibility_enum",
+		default: "public",
 	})
-	public followersVisibility: typeof followersVisibilities[number];
+	public followersVisibility: (typeof followersVisibilities)[number];
 
-	@Column('varchar', {
-		length: 128, nullable: true,
+	@Column("varchar", {
+		length: 128,
+		nullable: true,
 	})
 	public twoFactorTempSecret: string | null;
 
-	@Column('varchar', {
-		length: 128, nullable: true,
+	@Column("varchar", {
+		length: 128,
+		nullable: true,
 	})
 	public twoFactorSecret: string | null;
 
-	@Column('varchar', {
-		nullable: true, array: true,
+	@Column("varchar", {
+		nullable: true,
+		array: true,
 	})
 	public twoFactorBackupSecret: string[] | null;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public twoFactorEnabled: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public securityKeysAvailable: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public usePasswordLessLogin: boolean;
 
-	@Column('varchar', {
-		length: 128, nullable: true,
-		comment: 'The password hash of the User. It will be null if the origin of the user is local.',
+	@Column("varchar", {
+		length: 128,
+		nullable: true,
+		comment:
+			"The password hash of the User. It will be null if the origin of the user is local.",
 	})
 	public password: string | null;
 
-	@Column('varchar', {
-		length: 8192, default: '',
+	@Column("varchar", {
+		length: 8192,
+		default: "",
 	})
 	public moderationNote: string | null;
 
 	// TODO: そのうち消す
-	@Column('jsonb', {
+	@Column("jsonb", {
 		default: {},
-		comment: 'The client-specific data of the User.',
+		comment: "The client-specific data of the User.",
 	})
 	public clientData: Record<string, any>;
 
 	// TODO: そのうち消す
-	@Column('jsonb', {
+	@Column("jsonb", {
 		default: {},
-		comment: 'The room data of the User.',
+		comment: "The room data of the User.",
 	})
 	public room: Record<string, any>;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public autoAcceptFollowed: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
-		comment: 'Whether reject index by crawler.',
+		comment: "Whether reject index by crawler.",
 	})
 	public noCrawle: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: true,
 	})
 	public preventAiLearning: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public alwaysMarkNsfw: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public defaultSensitive: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public autoSensitive: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public carefulBot: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: true,
 	})
 	public injectFeaturedNote: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: true,
 	})
 	public receiveAnnouncementEmail: boolean;
 
-	@Column('text', {
+	@Column("text", {
 		nullable: true,
 	})
 	public oneClickUnsubscribeToken: string | null;
@@ -232,89 +258,100 @@ export class MiUserProfile {
 		...id(),
 		nullable: true,
 	})
-	public pinnedPageId: MiPage['id'] | null;
+	public pinnedPageId: MiPage["id"] | null;
 
-	@OneToOne(type => MiPage, {
-		onDelete: 'SET NULL',
+	@OneToOne((type) => MiPage, {
+		onDelete: "SET NULL",
 	})
 	@JoinColumn()
 	public pinnedPage: MiPage | null;
 
 	@Index()
-	@Column('boolean', {
-		default: false, select: false,
+	@Column("boolean", {
+		default: false,
+		select: false,
 	})
 	public enableWordMute: boolean;
 
-	@Column('jsonb', {
+	@Column("jsonb", {
 		default: [],
 	})
 	public mutedWords: (string[] | string)[];
 
-	@Column('jsonb', {
+	@Column("jsonb", {
 		default: [],
 	})
 	public hardMutedWords: (string[] | string)[];
 
-	@Column('jsonb', {
+	@Column("jsonb", {
 		default: [],
-		comment: 'List of instances muted by the user.',
+		comment: "List of instances muted by the user.",
 	})
 	public mutedInstances: string[];
 
-	@Column('jsonb', {
+	@Column("jsonb", {
 		default: {},
 	})
 	public notificationRecieveConfig: {
-		[notificationType in typeof notificationTypes[number]]?: {
-			type: 'all';
-		} | {
-			type: 'never';
-		} | {
-			type: 'following';
-		} | {
-			type: 'follower';
-		} | {
-			type: 'mutualFollow';
-		} | {
-			type: 'followingOrFollower';
-		} | {
-			type: 'list';
-			userListId: MiUserList['id'];
-		};
+		[notificationType in (typeof notificationTypes)[number]]?:
+			| {
+					type: "all";
+			  }
+			| {
+					type: "never";
+			  }
+			| {
+					type: "following";
+			  }
+			| {
+					type: "follower";
+			  }
+			| {
+					type: "mutualFollow";
+			  }
+			| {
+					type: "followingOrFollower";
+			  }
+			| {
+					type: "list";
+					userListId: MiUserList["id"];
+			  };
 	};
 
-	@Column('varchar', {
-		length: 32, array: true, default: '{}',
+	@Column("varchar", {
+		length: 32,
+		array: true,
+		default: "{}",
 	})
 	public loggedInDates: string[];
 
-	@Column('jsonb', {
+	@Column("jsonb", {
 		default: [],
 	})
 	public achievements: {
-		name: typeof ACHIEVEMENT_TYPES[number];
+		name: (typeof ACHIEVEMENT_TYPES)[number];
 		unlockedAt: number;
 	}[];
 
-	@Column('text', {
-		name: 'default_cw',
+	@Column("text", {
+		name: "default_cw",
 		nullable: true,
 	})
 	public defaultCW: string | null;
 
-	@Column('enum', {
-		name: 'default_cw_priority',
+	@Column("enum", {
+		name: "default_cw_priority",
 		enum: defaultCWPriorities,
-		default: 'parent',
+		default: "parent",
 	})
-	public defaultCWPriority: typeof defaultCWPriorities[number];
+	public defaultCWPriority: (typeof defaultCWPriorities)[number];
 
 	//#region Denormalized fields
 	@Index()
-	@Column('varchar', {
-		length: 128, nullable: true,
-		comment: '[Denormalized]',
+	@Column("varchar", {
+		length: 128,
+		nullable: true,
+		comment: "[Denormalized]",
 	})
 	public userHost: string | null;
 	//#endregion
@@ -329,82 +366,82 @@ export class MiUserProfile {
 }
 
 export const ACHIEVEMENT_TYPES = [
-	'notes1',
-	'notes10',
-	'notes100',
-	'notes500',
-	'notes1000',
-	'notes5000',
-	'notes10000',
-	'notes20000',
-	'notes30000',
-	'notes40000',
-	'notes50000',
-	'notes60000',
-	'notes70000',
-	'notes80000',
-	'notes90000',
-	'notes100000',
-	'login3',
-	'login7',
-	'login15',
-	'login30',
-	'login60',
-	'login100',
-	'login200',
-	'login300',
-	'login400',
-	'login500',
-	'login600',
-	'login700',
-	'login800',
-	'login900',
-	'login1000',
-	'passedSinceAccountCreated1',
-	'passedSinceAccountCreated2',
-	'passedSinceAccountCreated3',
-	'loggedInOnBirthday',
-	'loggedInOnNewYearsDay',
-	'noteClipped1',
-	'noteFavorited1',
-	'myNoteFavorited1',
-	'profileFilled',
-	'markedAsCat',
-	'following1',
-	'following10',
-	'following50',
-	'following100',
-	'following300',
-	'followers1',
-	'followers10',
-	'followers50',
-	'followers100',
-	'followers300',
-	'followers500',
-	'followers1000',
-	'collectAchievements30',
-	'viewAchievements3min',
-	'iLoveMisskey',
-	'foundTreasure',
-	'client30min',
-	'client60min',
-	'noteDeletedWithin1min',
-	'postedAtLateNight',
-	'postedAt0min0sec',
-	'selfQuote',
-	'htl20npm',
-	'viewInstanceChart',
-	'outputHelloWorldOnScratchpad',
-	'open3windows',
-	'driveFolderCircularReference',
-	'reactWithoutRead',
-	'clickedClickHere',
-	'justPlainLucky',
-	'setNameToSyuilo',
-	'cookieClicked',
-	'brainDiver',
-	'smashTestNotificationButton',
-	'tutorialCompleted',
-	'bubbleGameExplodingHead',
-	'bubbleGameDoubleExplodingHead',
+	"notes1",
+	"notes10",
+	"notes100",
+	"notes500",
+	"notes1000",
+	"notes5000",
+	"notes10000",
+	"notes20000",
+	"notes30000",
+	"notes40000",
+	"notes50000",
+	"notes60000",
+	"notes70000",
+	"notes80000",
+	"notes90000",
+	"notes100000",
+	"login3",
+	"login7",
+	"login15",
+	"login30",
+	"login60",
+	"login100",
+	"login200",
+	"login300",
+	"login400",
+	"login500",
+	"login600",
+	"login700",
+	"login800",
+	"login900",
+	"login1000",
+	"passedSinceAccountCreated1",
+	"passedSinceAccountCreated2",
+	"passedSinceAccountCreated3",
+	"loggedInOnBirthday",
+	"loggedInOnNewYearsDay",
+	"noteClipped1",
+	"noteFavorited1",
+	"myNoteFavorited1",
+	"profileFilled",
+	"markedAsCat",
+	"following1",
+	"following10",
+	"following50",
+	"following100",
+	"following300",
+	"followers1",
+	"followers10",
+	"followers50",
+	"followers100",
+	"followers300",
+	"followers500",
+	"followers1000",
+	"collectAchievements30",
+	"viewAchievements3min",
+	"iLoveMisskey",
+	"foundTreasure",
+	"client30min",
+	"client60min",
+	"noteDeletedWithin1min",
+	"postedAtLateNight",
+	"postedAt0min0sec",
+	"selfQuote",
+	"htl20npm",
+	"viewInstanceChart",
+	"outputHelloWorldOnScratchpad",
+	"open3windows",
+	"driveFolderCircularReference",
+	"reactWithoutRead",
+	"clickedClickHere",
+	"justPlainLucky",
+	"setNameToSyuilo",
+	"cookieClicked",
+	"brainDiver",
+	"smashTestNotificationButton",
+	"tutorialCompleted",
+	"bubbleGameExplodingHead",
+	"bubbleGameDoubleExplodingHead",
 ] as const;

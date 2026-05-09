@@ -4,98 +4,147 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader v-model:tab="tab" :actions="headerActions" :tabs="headerTabs" :swipable="true">
-	<div class="_spacer" style="--MI_SPACER-w: 800px;">
-		<MkPagination ref="paginationComponent" :pagination="pagination">
-			<template #empty><MkResult type="empty" :text="i18n.ts.noFollowRequests"/></template>
-			<template #default="{items}">
-				<div class="mk-follow-requests _gaps">
-					<div v-for="req in items" :key="req.id" class="user _panel">
-						<MkAvatar class="avatar" :user="displayUser(req)" indicator link preview/>
-						<div class="body">
-							<div class="name">
-								<MkA v-user-preview="displayUser(req).id" class="name" :to="userPage(displayUser(req))"><MkUserName :user="displayUser(req)"/></MkA>
-								<p class="acct">@{{ acct(displayUser(req)) }}</p>
-							</div>
-							<div v-if="tab === 'list'" class="commands">
-								<MkButton class="command" rounded primary @click="accept(displayUser(req))"><i class="ti ti-check"/> {{ i18n.ts.accept }}</MkButton>
-								<MkButton class="command" rounded danger @click="reject(displayUser(req))"><i class="ti ti-x"/> {{ i18n.ts.reject }}</MkButton>
-							</div>
-							<div v-else class="commands">
-								<MkButton class="command" rounded danger @click="cancel(displayUser(req))"><i class="ti ti-x"/> {{ i18n.ts.cancel }}</MkButton>
+	<PageWithHeader
+		v-model:tab="tab"
+		:actions="headerActions"
+		:tabs="headerTabs"
+		:swipable="true"
+	>
+		<div class="_spacer" style="--MI_SPACER-w: 800px">
+			<MkPagination ref="paginationComponent" :pagination="pagination">
+				<template #empty
+					><MkResult type="empty" :text="i18n.ts.noFollowRequests"
+				/></template>
+				<template #default="{ items }">
+					<div class="mk-follow-requests _gaps">
+						<div v-for="req in items" :key="req.id" class="user _panel">
+							<MkAvatar
+								class="avatar"
+								:user="displayUser(req)"
+								indicator
+								link
+								preview
+							/>
+							<div class="body">
+								<div class="name">
+									<MkA
+										v-user-preview="displayUser(req).id"
+										class="name"
+										:to="userPage(displayUser(req))"
+										><MkUserName :user="displayUser(req)"
+									/></MkA>
+									<p class="acct">@{{ acct(displayUser(req)) }}</p>
+								</div>
+								<div v-if="tab === 'list'" class="commands">
+									<MkButton
+										class="command"
+										rounded
+										primary
+										@click="accept(displayUser(req))"
+										><i class="ti ti-check" /> {{ i18n.ts.accept }}</MkButton
+									>
+									<MkButton
+										class="command"
+										rounded
+										danger
+										@click="reject(displayUser(req))"
+										><i class="ti ti-x" /> {{ i18n.ts.reject }}</MkButton
+									>
+								</div>
+								<div v-else class="commands">
+									<MkButton
+										class="command"
+										rounded
+										danger
+										@click="cancel(displayUser(req))"
+										><i class="ti ti-x" /> {{ i18n.ts.cancel }}</MkButton
+									>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			</template>
-		</MkPagination>
-	</div>
-</PageWithHeader>
+				</template>
+			</MkPagination>
+		</div>
+	</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import * as Misskey from 'misskey-js';
-import { useTemplateRef, computed, ref } from 'vue';
-import type { Paging } from '@/components/MkPagination.vue';
-import MkPagination from '@/components/MkPagination.vue';
-import MkButton from '@/components/MkButton.vue';
-import { userPage, acct } from '@/filters/user.js';
-import * as os from '@/os.js';
-import { i18n } from '@/i18n.js';
-import { definePage } from '@/page.js';
-import { $i } from '@/i.js';
+import * as Misskey from "misskey-js";
+import { useTemplateRef, computed, ref } from "vue";
+import type { Paging } from "@/components/MkPagination.vue";
+import MkPagination from "@/components/MkPagination.vue";
+import MkButton from "@/components/MkButton.vue";
+import { userPage, acct } from "@/filters/user.js";
+import * as os from "@/os.js";
+import { i18n } from "@/i18n.js";
+import { definePage } from "@/page.js";
+import { $i } from "@/i.js";
 
-const paginationComponent = useTemplateRef('paginationComponent');
+const paginationComponent = useTemplateRef("paginationComponent");
 
-const pagination = computed<Paging>(() => tab.value === 'list' ? {
-	endpoint: 'following/requests/list',
-	limit: 10,
-} : {
-	endpoint: 'following/requests/sent',
-	limit: 10,
-});
+const pagination = computed<Paging>(() =>
+	tab.value === "list"
+		? {
+				endpoint: "following/requests/list",
+				limit: 10,
+			}
+		: {
+				endpoint: "following/requests/sent",
+				limit: 10,
+			},
+);
 
 function accept(user: Misskey.entities.UserLite) {
-	os.apiWithDialog('following/requests/accept', { userId: user.id }).then(() => {
-		paginationComponent.value?.reload();
-	});
+	os.apiWithDialog("following/requests/accept", { userId: user.id }).then(
+		() => {
+			paginationComponent.value?.reload();
+		},
+	);
 }
 
 function reject(user: Misskey.entities.UserLite) {
-	os.apiWithDialog('following/requests/reject', { userId: user.id }).then(() => {
-		paginationComponent.value?.reload();
-	});
+	os.apiWithDialog("following/requests/reject", { userId: user.id }).then(
+		() => {
+			paginationComponent.value?.reload();
+		},
+	);
 }
 
 function cancel(user: Misskey.entities.UserLite) {
-	os.apiWithDialog('following/requests/cancel', { userId: user.id }).then(() => {
-		paginationComponent.value?.reload();
-	});
+	os.apiWithDialog("following/requests/cancel", { userId: user.id }).then(
+		() => {
+			paginationComponent.value?.reload();
+		},
+	);
 }
 
 function displayUser(req) {
-	return tab.value === 'list' ? req.follower : req.followee;
+	return tab.value === "list" ? req.follower : req.followee;
 }
 
 const headerActions = computed(() => []);
 
 const headerTabs = computed(() => [
 	{
-		key: 'list',
+		key: "list",
 		title: i18n.ts._followRequest.recieved,
-		icon: 'ph-envelope ph-bold ph-lg',
-	}, {
-		key: 'sent',
+		icon: "ph-envelope ph-bold ph-lg",
+	},
+	{
+		key: "sent",
 		title: i18n.ts._followRequest.sent,
-		icon: 'ph-paper-plane-tilt ph-bold ph-lg',
+		icon: "ph-paper-plane-tilt ph-bold ph-lg",
 	},
 ]);
 
-const tab = ref($i?.isLocked || !$i.hasPendingSentFollowRequest ? 'list' : 'sent');
+const tab = ref(
+	$i?.isLocked || !$i.hasPendingSentFollowRequest ? "list" : "sent",
+);
 
 definePage(() => ({
 	title: i18n.ts.followRequests,
-	icon: 'ti ti-user-plus',
+	icon: "ti ti-user-plus",
 }));
 </script>
 

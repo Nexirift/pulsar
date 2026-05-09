@@ -3,18 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-process.env.NODE_ENV = 'test';
+process.env.NODE_ENV = "test";
 
-import { jest } from '@jest/globals';
-import { ModuleMocker } from 'jest-mock';
-import { Test } from '@nestjs/testing';
-import type { TestingModule } from '@nestjs/testing';
-import type { MockMetadata } from 'jest-mock';
-import { GodOfTimeService } from '../misc/GodOfTimeService.js';
-import { CacheManagementService } from '@/global/CacheManagementService.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import { RoleService } from '@/core/RoleService.js';
-import { CoreModule } from '@/core/CoreModule.js';
+import { jest } from "@jest/globals";
+import { ModuleMocker } from "jest-mock";
+import { Test } from "@nestjs/testing";
+import type { TestingModule } from "@nestjs/testing";
+import type { MockMetadata } from "jest-mock";
+import { GodOfTimeService } from "../misc/GodOfTimeService.js";
+import { CacheManagementService } from "@/global/CacheManagementService.js";
+import { GlobalModule } from "@/GlobalModule.js";
+import { RoleService } from "@/core/RoleService.js";
+import { CoreModule } from "@/core/CoreModule.js";
 import {
 	InstancesRepository,
 	MetasRepository,
@@ -25,23 +25,23 @@ import {
 	RoleAssignmentsRepository,
 	RolesRepository,
 	UsersRepository,
-} from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
-import { MetaService } from '@/core/MetaService.js';
-import { genAidx } from '@/misc/id/aidx.js';
-import { CacheService } from '@/core/CacheService.js';
-import { IdService } from '@/core/IdService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { secureRndstr } from '@/misc/secure-rndstr.js';
-import { NotificationService } from '@/core/NotificationService.js';
-import { RoleCondFormulaValue } from '@/models/Role.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
-import { TimeService } from '@/global/TimeService.js';
+} from "@/models/_.js";
+import { DI } from "@/di-symbols.js";
+import { MetaService } from "@/core/MetaService.js";
+import { genAidx } from "@/misc/id/aidx.js";
+import { CacheService } from "@/core/CacheService.js";
+import { IdService } from "@/core/IdService.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { secureRndstr } from "@/misc/secure-rndstr.js";
+import { NotificationService } from "@/core/NotificationService.js";
+import { RoleCondFormulaValue } from "@/models/Role.js";
+import { UserEntityService } from "@/core/entities/UserEntityService.js";
+import { InternalEventService } from "@/global/InternalEventService.js";
+import { TimeService } from "@/global/TimeService.js";
 
 const moduleMocker = new ModuleMocker(global);
 
-describe('RoleService', () => {
+describe("RoleService", () => {
 	let app: TestingModule;
 	let roleService: RoleService;
 	let instancesRepository: InstancesRepository;
@@ -57,7 +57,7 @@ describe('RoleService', () => {
 	async function createUser(data: Partial<MiUser> = {}) {
 		if (data.host != null) {
 			await instancesRepository
-				.createQueryBuilder('instance')
+				.createQueryBuilder("instance")
 				.insert()
 				.values({
 					id: genAidx(timeService.now),
@@ -89,17 +89,20 @@ describe('RoleService', () => {
 			id: genAidx(timeService.now),
 			updatedAt: timeService.date,
 			lastUsedAt: timeService.date,
-			name: '',
-			description: '',
+			name: "",
+			description: "",
 			...data,
 		});
 		return await rolesRepository.findOneByOrFail(x.identifiers[0]);
 	}
 
-	function createConditionalRole(condFormula: RoleCondFormulaValue, data: Partial<MiRole> = {}) {
+	function createConditionalRole(
+		condFormula: RoleCondFormulaValue,
+		data: Partial<MiRole> = {},
+	) {
 		return createRole({
 			name: `[conditional] ${condFormula.type}`,
-			target: 'conditional',
+			target: "conditional",
 			condFormula: condFormula,
 			...data,
 		});
@@ -125,21 +128,24 @@ describe('RoleService', () => {
 
 	beforeAll(async () => {
 		app = await Test.createTestingModule({
-			imports: [
-				GlobalModule,
-				CoreModule,
-			],
+			imports: [GlobalModule, CoreModule],
 		})
 			.useMocker((token) => {
-				if (typeof token === 'function') {
-					const mockMetadata = moduleMocker.getMetadata(token) as MockMetadata<any, any>;
+				if (typeof token === "function") {
+					const mockMetadata = moduleMocker.getMetadata(token) as MockMetadata<
+						any,
+						any
+					>;
 					const Mock = moduleMocker.generateFromMetadata(mockMetadata);
 					return new Mock();
 				}
 			})
-			.overrideProvider(MetaService).useValue({ fetch: jest.fn() })
-			.overrideProvider(TimeService).useClass(GodOfTimeService)
-			.overrideProvider(NotificationService).useValue({ createNotification: jest.fn() })
+			.overrideProvider(MetaService)
+			.useValue({ fetch: jest.fn() })
+			.overrideProvider(TimeService)
+			.useClass(GodOfTimeService)
+			.overrideProvider(NotificationService)
+			.useValue({ createNotification: jest.fn() })
 			.compile();
 
 		await app.init();
@@ -149,7 +155,9 @@ describe('RoleService', () => {
 		instancesRepository = app.get<InstancesRepository>(DI.instancesRepository);
 		usersRepository = app.get<UsersRepository>(DI.usersRepository);
 		rolesRepository = app.get<RolesRepository>(DI.rolesRepository);
-		roleAssignmentsRepository = app.get<RoleAssignmentsRepository>(DI.roleAssignmentsRepository);
+		roleAssignmentsRepository = app.get<RoleAssignmentsRepository>(
+			DI.roleAssignmentsRepository,
+		);
 		metasRepository = app.get<MetasRepository>(DI.metasRepository);
 		cacheManagementService = app.get(CacheManagementService);
 
@@ -157,7 +165,9 @@ describe('RoleService', () => {
 		timeService.resetToNow();
 
 		meta = app.get<MiMeta>(DI.meta) as jest.Mocked<MiMeta>;
-		notificationService = app.get<NotificationService>(NotificationService) as jest.Mocked<NotificationService>;
+		notificationService = app.get<NotificationService>(
+			NotificationService,
+		) as jest.Mocked<NotificationService>;
 	});
 
 	afterAll(async () => {
@@ -178,8 +188,8 @@ describe('RoleService', () => {
 		cacheManagementService.clear();
 	});
 
-	describe('getUserPolicies', () => {
-		test('instance default policies', async () => {
+	describe("getUserPolicies", () => {
+		test("instance default policies", async () => {
 			const user = await createUser();
 			meta.policies = {
 				canManageCustomEmojis: false,
@@ -190,7 +200,7 @@ describe('RoleService', () => {
 			expect(result.canManageCustomEmojis).toBe(false);
 		});
 
-		test('instance default policies 2', async () => {
+		test("instance default policies 2", async () => {
 			const user = await createUser();
 			meta.policies = {
 				canManageCustomEmojis: true,
@@ -201,10 +211,10 @@ describe('RoleService', () => {
 			expect(result.canManageCustomEmojis).toBe(true);
 		});
 
-		test('with role', async () => {
+		test("with role", async () => {
 			const user = await createUser();
 			const role = await createRole({
-				name: 'a',
+				name: "a",
 				policies: {
 					canManageCustomEmojis: {
 						useDefault: false,
@@ -223,10 +233,10 @@ describe('RoleService', () => {
 			expect(result.canManageCustomEmojis).toBe(true);
 		});
 
-		test('priority', async () => {
+		test("priority", async () => {
 			const user = await createUser();
 			const role1 = await createRole({
-				name: 'role1',
+				name: "role1",
 				policies: {
 					driveCapacityMb: {
 						useDefault: false,
@@ -236,7 +246,7 @@ describe('RoleService', () => {
 				},
 			});
 			const role2 = await createRole({
-				name: 'role2',
+				name: "role2",
 				policies: {
 					driveCapacityMb: {
 						useDefault: false,
@@ -256,10 +266,10 @@ describe('RoleService', () => {
 			expect(result.driveCapacityMb).toBe(100);
 		});
 
-		test('expired role', async () => {
+		test("expired role", async () => {
 			const user = await createUser();
 			const role = await createRole({
-				name: 'a',
+				name: "a",
 				policies: {
 					canManageCustomEmojis: {
 						useDefault: false,
@@ -268,7 +278,11 @@ describe('RoleService', () => {
 					},
 				},
 			});
-			await roleService.assign(user.id, role.id, new Date(timeService.now + (1000 * 60 * 60 * 24)));
+			await roleService.assign(
+				user.id,
+				role.id,
+				new Date(timeService.now + 1000 * 60 * 60 * 24),
+			);
 			meta.policies = {
 				canManageCustomEmojis: false,
 			};
@@ -287,7 +301,7 @@ describe('RoleService', () => {
 
 			// ストリーミング経由で反映されるまでちょっと待つ
 			// Wait 100ms for the task queue to complete.
-			await new Promise(r => setTimeout(r, 100));
+			await new Promise((r) => setTimeout(r, 100));
 
 			// Condition 3: user regains role within 100ms after assigning again
 			const resultAfter25hAgain = await roleService.getUserPolicies(user.id);
@@ -295,23 +309,49 @@ describe('RoleService', () => {
 		});
 	});
 
-	describe('getModeratorIds', () => {
-		test('includeAdmins = false, includeRoot = false, excludeExpire = false', async () => {
-			const [adminUser1, adminUser2, modeUser1, modeUser2, normalUser1, normalUser2, rootUser] = await Promise.all([
-				createUser(), createUser(), createUser(), createUser(), createUser(), createUser(), createRoot(),
+	describe("getModeratorIds", () => {
+		test("includeAdmins = false, includeRoot = false, excludeExpire = false", async () => {
+			const [
+				adminUser1,
+				adminUser2,
+				modeUser1,
+				modeUser2,
+				normalUser1,
+				normalUser2,
+				rootUser,
+			] = await Promise.all([
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createRoot(),
 			]);
 
-			const role1 = await createRole({ name: 'admin', isAdministrator: true });
-			const role2 = await createRole({ name: 'moderator', isModerator: true });
-			const role3 = await createRole({ name: 'normal' });
+			const role1 = await createRole({ name: "admin", isAdministrator: true });
+			const role2 = await createRole({ name: "moderator", isModerator: true });
+			const role3 = await createRole({ name: "normal" });
 
 			await Promise.all([
 				assignRole({ userId: adminUser1.id, roleId: role1.id }),
-				assignRole({ userId: adminUser2.id, roleId: role1.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: adminUser2.id,
+					roleId: role1.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 				assignRole({ userId: modeUser1.id, roleId: role2.id }),
-				assignRole({ userId: modeUser2.id, roleId: role2.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: modeUser2.id,
+					roleId: role2.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 				assignRole({ userId: normalUser1.id, roleId: role3.id }),
-				assignRole({ userId: normalUser2.id, roleId: role3.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: normalUser2.id,
+					roleId: role3.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 			]);
 
 			const result = await roleService.getModeratorIds({
@@ -322,22 +362,48 @@ describe('RoleService', () => {
 			expect(result).toEqual([modeUser1.id, modeUser2.id]);
 		});
 
-		test('includeAdmins = false, includeRoot = false, excludeExpire = true', async () => {
-			const [adminUser1, adminUser2, modeUser1, modeUser2, normalUser1, normalUser2, rootUser] = await Promise.all([
-				createUser(), createUser(), createUser(), createUser(), createUser(), createUser(), createRoot(),
+		test("includeAdmins = false, includeRoot = false, excludeExpire = true", async () => {
+			const [
+				adminUser1,
+				adminUser2,
+				modeUser1,
+				modeUser2,
+				normalUser1,
+				normalUser2,
+				rootUser,
+			] = await Promise.all([
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createRoot(),
 			]);
 
-			const role1 = await createRole({ name: 'admin', isAdministrator: true });
-			const role2 = await createRole({ name: 'moderator', isModerator: true });
-			const role3 = await createRole({ name: 'normal' });
+			const role1 = await createRole({ name: "admin", isAdministrator: true });
+			const role2 = await createRole({ name: "moderator", isModerator: true });
+			const role3 = await createRole({ name: "normal" });
 
 			await Promise.all([
 				assignRole({ userId: adminUser1.id, roleId: role1.id }),
-				assignRole({ userId: adminUser2.id, roleId: role1.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: adminUser2.id,
+					roleId: role1.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 				assignRole({ userId: modeUser1.id, roleId: role2.id }),
-				assignRole({ userId: modeUser2.id, roleId: role2.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: modeUser2.id,
+					roleId: role2.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 				assignRole({ userId: normalUser1.id, roleId: role3.id }),
-				assignRole({ userId: normalUser2.id, roleId: role3.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: normalUser2.id,
+					roleId: role3.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 			]);
 
 			const result = await roleService.getModeratorIds({
@@ -348,22 +414,48 @@ describe('RoleService', () => {
 			expect(result).toEqual([modeUser1.id]);
 		});
 
-		test('includeAdmins = true, includeRoot = false, excludeExpire = false', async () => {
-			const [adminUser1, adminUser2, modeUser1, modeUser2, normalUser1, normalUser2, rootUser] = await Promise.all([
-				createUser(), createUser(), createUser(), createUser(), createUser(), createUser(), createRoot(),
+		test("includeAdmins = true, includeRoot = false, excludeExpire = false", async () => {
+			const [
+				adminUser1,
+				adminUser2,
+				modeUser1,
+				modeUser2,
+				normalUser1,
+				normalUser2,
+				rootUser,
+			] = await Promise.all([
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createRoot(),
 			]);
 
-			const role1 = await createRole({ name: 'admin', isAdministrator: true });
-			const role2 = await createRole({ name: 'moderator', isModerator: true });
-			const role3 = await createRole({ name: 'normal' });
+			const role1 = await createRole({ name: "admin", isAdministrator: true });
+			const role2 = await createRole({ name: "moderator", isModerator: true });
+			const role3 = await createRole({ name: "normal" });
 
 			await Promise.all([
 				assignRole({ userId: adminUser1.id, roleId: role1.id }),
-				assignRole({ userId: adminUser2.id, roleId: role1.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: adminUser2.id,
+					roleId: role1.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 				assignRole({ userId: modeUser1.id, roleId: role2.id }),
-				assignRole({ userId: modeUser2.id, roleId: role2.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: modeUser2.id,
+					roleId: role2.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 				assignRole({ userId: normalUser1.id, roleId: role3.id }),
-				assignRole({ userId: normalUser2.id, roleId: role3.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: normalUser2.id,
+					roleId: role3.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 			]);
 
 			const result = await roleService.getModeratorIds({
@@ -371,25 +463,56 @@ describe('RoleService', () => {
 				includeRoot: false,
 				excludeExpire: false,
 			});
-			expect(result).toEqual([adminUser1.id, adminUser2.id, modeUser1.id, modeUser2.id]);
+			expect(result).toEqual([
+				adminUser1.id,
+				adminUser2.id,
+				modeUser1.id,
+				modeUser2.id,
+			]);
 		});
 
-		test('includeAdmins = true, includeRoot = false, excludeExpire = true', async () => {
-			const [adminUser1, adminUser2, modeUser1, modeUser2, normalUser1, normalUser2, rootUser] = await Promise.all([
-				createUser(), createUser(), createUser(), createUser(), createUser(), createUser(), createRoot(),
+		test("includeAdmins = true, includeRoot = false, excludeExpire = true", async () => {
+			const [
+				adminUser1,
+				adminUser2,
+				modeUser1,
+				modeUser2,
+				normalUser1,
+				normalUser2,
+				rootUser,
+			] = await Promise.all([
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createRoot(),
 			]);
 
-			const role1 = await createRole({ name: 'admin', isAdministrator: true });
-			const role2 = await createRole({ name: 'moderator', isModerator: true });
-			const role3 = await createRole({ name: 'normal' });
+			const role1 = await createRole({ name: "admin", isAdministrator: true });
+			const role2 = await createRole({ name: "moderator", isModerator: true });
+			const role3 = await createRole({ name: "normal" });
 
 			await Promise.all([
 				assignRole({ userId: adminUser1.id, roleId: role1.id }),
-				assignRole({ userId: adminUser2.id, roleId: role1.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: adminUser2.id,
+					roleId: role1.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 				assignRole({ userId: modeUser1.id, roleId: role2.id }),
-				assignRole({ userId: modeUser2.id, roleId: role2.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: modeUser2.id,
+					roleId: role2.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 				assignRole({ userId: normalUser1.id, roleId: role3.id }),
-				assignRole({ userId: normalUser2.id, roleId: role3.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: normalUser2.id,
+					roleId: role3.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 			]);
 
 			const result = await roleService.getModeratorIds({
@@ -400,22 +523,48 @@ describe('RoleService', () => {
 			expect(result).toEqual([adminUser1.id, modeUser1.id]);
 		});
 
-		test('includeAdmins = false, includeRoot = true, excludeExpire = false', async () => {
-			const [adminUser1, adminUser2, modeUser1, modeUser2, normalUser1, normalUser2, rootUser] = await Promise.all([
-				createUser(), createUser(), createUser(), createUser(), createUser(), createUser(), createRoot(),
+		test("includeAdmins = false, includeRoot = true, excludeExpire = false", async () => {
+			const [
+				adminUser1,
+				adminUser2,
+				modeUser1,
+				modeUser2,
+				normalUser1,
+				normalUser2,
+				rootUser,
+			] = await Promise.all([
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createRoot(),
 			]);
 
-			const role1 = await createRole({ name: 'admin', isAdministrator: true });
-			const role2 = await createRole({ name: 'moderator', isModerator: true });
-			const role3 = await createRole({ name: 'normal' });
+			const role1 = await createRole({ name: "admin", isAdministrator: true });
+			const role2 = await createRole({ name: "moderator", isModerator: true });
+			const role3 = await createRole({ name: "normal" });
 
 			await Promise.all([
 				assignRole({ userId: adminUser1.id, roleId: role1.id }),
-				assignRole({ userId: adminUser2.id, roleId: role1.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: adminUser2.id,
+					roleId: role1.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 				assignRole({ userId: modeUser1.id, roleId: role2.id }),
-				assignRole({ userId: modeUser2.id, roleId: role2.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: modeUser2.id,
+					roleId: role2.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 				assignRole({ userId: normalUser1.id, roleId: role3.id }),
-				assignRole({ userId: normalUser2.id, roleId: role3.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: normalUser2.id,
+					roleId: role3.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 			]);
 
 			const result = await roleService.getModeratorIds({
@@ -426,14 +575,17 @@ describe('RoleService', () => {
 			expect(result).toEqual([modeUser1.id, modeUser2.id, rootUser.id]);
 		});
 
-		test('root has moderator role', async () => {
+		test("root has moderator role", async () => {
 			const [adminUser1, modeUser1, normalUser1, rootUser] = await Promise.all([
-				createUser(), createUser(), createUser(), createRoot(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createRoot(),
 			]);
 
-			const role1 = await createRole({ name: 'admin', isAdministrator: true });
-			const role2 = await createRole({ name: 'moderator', isModerator: true });
-			const role3 = await createRole({ name: 'normal' });
+			const role1 = await createRole({ name: "admin", isAdministrator: true });
+			const role2 = await createRole({ name: "moderator", isModerator: true });
+			const role3 = await createRole({ name: "normal" });
 
 			await Promise.all([
 				assignRole({ userId: adminUser1.id, roleId: role1.id }),
@@ -450,14 +602,17 @@ describe('RoleService', () => {
 			expect(result).toEqual([modeUser1.id, rootUser.id]);
 		});
 
-		test('root has administrator role', async () => {
+		test("root has administrator role", async () => {
 			const [adminUser1, modeUser1, normalUser1, rootUser] = await Promise.all([
-				createUser(), createUser(), createUser(), createRoot(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createRoot(),
 			]);
 
-			const role1 = await createRole({ name: 'admin', isAdministrator: true });
-			const role2 = await createRole({ name: 'moderator', isModerator: true });
-			const role3 = await createRole({ name: 'normal' });
+			const role1 = await createRole({ name: "admin", isAdministrator: true });
+			const role2 = await createRole({ name: "moderator", isModerator: true });
+			const role3 = await createRole({ name: "normal" });
 
 			await Promise.all([
 				assignRole({ userId: adminUser1.id, roleId: role1.id }),
@@ -474,19 +629,30 @@ describe('RoleService', () => {
 			expect(result).toEqual([adminUser1.id, modeUser1.id, rootUser.id]);
 		});
 
-		test('root has moderator role(expire)', async () => {
+		test("root has moderator role(expire)", async () => {
 			const [adminUser1, modeUser1, normalUser1, rootUser] = await Promise.all([
-				createUser(), createUser(), createUser(), createRoot(),
+				createUser(),
+				createUser(),
+				createUser(),
+				createRoot(),
 			]);
 
-			const role1 = await createRole({ name: 'admin', isAdministrator: true });
-			const role2 = await createRole({ name: 'moderator', isModerator: true });
-			const role3 = await createRole({ name: 'normal' });
+			const role1 = await createRole({ name: "admin", isAdministrator: true });
+			const role2 = await createRole({ name: "moderator", isModerator: true });
+			const role3 = await createRole({ name: "normal" });
 
 			await Promise.all([
 				assignRole({ userId: adminUser1.id, roleId: role1.id }),
-				assignRole({ userId: modeUser1.id, roleId: role2.id, expiresAt: new Date(timeService.now - 1000) }),
-				assignRole({ userId: rootUser.id, roleId: role2.id, expiresAt: new Date(timeService.now - 1000) }),
+				assignRole({
+					userId: modeUser1.id,
+					roleId: role2.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
+				assignRole({
+					userId: rootUser.id,
+					roleId: role2.id,
+					expiresAt: new Date(timeService.now - 1000),
+				}),
 				assignRole({ userId: normalUser1.id, roleId: role3.id }),
 			]);
 
@@ -499,8 +665,8 @@ describe('RoleService', () => {
 		});
 	});
 
-	describe('conditional role', () => {
-		test('～かつ～', async () => {
+	describe("conditional role", () => {
+		test("～かつ～", async () => {
 			const [user1, user2, user3, user4] = await Promise.all([
 				createUser({ isBot: true, isCat: false, isSuspended: false }),
 				createUser({ isBot: false, isCat: true, isSuspended: false }),
@@ -509,19 +675,19 @@ describe('RoleService', () => {
 			]);
 			const role1 = await createConditionalRole({
 				id: aidx(),
-				type: 'isBot',
+				type: "isBot",
 			});
 			const role2 = await createConditionalRole({
 				id: aidx(),
-				type: 'isCat',
+				type: "isCat",
 			});
 			const role3 = await createConditionalRole({
 				id: aidx(),
-				type: 'isSuspended',
+				type: "isSuspended",
 			});
 			const role4 = await createConditionalRole({
 				id: aidx(),
-				type: 'and',
+				type: "and",
 				values: [role1.condFormula, role2.condFormula],
 			});
 
@@ -529,13 +695,13 @@ describe('RoleService', () => {
 			const actual2 = await roleService.getUserRoles(user2.id);
 			const actual3 = await roleService.getUserRoles(user3.id);
 			const actual4 = await roleService.getUserRoles(user4.id);
-			expect(actual1.some(r => r.id === role4.id)).toBe(false);
-			expect(actual2.some(r => r.id === role4.id)).toBe(false);
-			expect(actual3.some(r => r.id === role4.id)).toBe(true);
-			expect(actual4.some(r => r.id === role4.id)).toBe(false);
+			expect(actual1.some((r) => r.id === role4.id)).toBe(false);
+			expect(actual2.some((r) => r.id === role4.id)).toBe(false);
+			expect(actual3.some((r) => r.id === role4.id)).toBe(true);
+			expect(actual4.some((r) => r.id === role4.id)).toBe(false);
 		});
 
-		test('～または～', async () => {
+		test("～または～", async () => {
 			const [user1, user2, user3, user4] = await Promise.all([
 				createUser({ isBot: true, isCat: false, isSuspended: false }),
 				createUser({ isBot: false, isCat: true, isSuspended: false }),
@@ -544,19 +710,19 @@ describe('RoleService', () => {
 			]);
 			const role1 = await createConditionalRole({
 				id: aidx(),
-				type: 'isBot',
+				type: "isBot",
 			});
 			const role2 = await createConditionalRole({
 				id: aidx(),
-				type: 'isCat',
+				type: "isCat",
 			});
 			const role3 = await createConditionalRole({
 				id: aidx(),
-				type: 'isSuspended',
+				type: "isSuspended",
 			});
 			const role4 = await createConditionalRole({
 				id: aidx(),
-				type: 'or',
+				type: "or",
 				values: [role1.condFormula, role2.condFormula],
 			});
 
@@ -564,13 +730,13 @@ describe('RoleService', () => {
 			const actual2 = await roleService.getUserRoles(user2.id);
 			const actual3 = await roleService.getUserRoles(user3.id);
 			const actual4 = await roleService.getUserRoles(user4.id);
-			expect(actual1.some(r => r.id === role4.id)).toBe(true);
-			expect(actual2.some(r => r.id === role4.id)).toBe(true);
-			expect(actual3.some(r => r.id === role4.id)).toBe(true);
-			expect(actual4.some(r => r.id === role4.id)).toBe(false);
+			expect(actual1.some((r) => r.id === role4.id)).toBe(true);
+			expect(actual2.some((r) => r.id === role4.id)).toBe(true);
+			expect(actual3.some((r) => r.id === role4.id)).toBe(true);
+			expect(actual4.some((r) => r.id === role4.id)).toBe(false);
 		});
 
-		test('～ではない', async () => {
+		test("～ではない", async () => {
 			const [user1, user2, user3] = await Promise.all([
 				createUser({ isBot: true, isCat: false, isSuspended: false }),
 				createUser({ isBot: false, isCat: true, isSuspended: false }),
@@ -578,37 +744,37 @@ describe('RoleService', () => {
 			]);
 			const role1 = await createConditionalRole({
 				id: aidx(),
-				type: 'isBot',
+				type: "isBot",
 			});
 			const role2 = await createConditionalRole({
 				id: aidx(),
-				type: 'isCat',
+				type: "isCat",
 			});
 			const role4 = await createConditionalRole({
 				id: aidx(),
-				type: 'not',
+				type: "not",
 				value: role1.condFormula,
 			});
 
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
 			const actual3 = await roleService.getUserRoles(user3.id);
-			expect(actual1.some(r => r.id === role4.id)).toBe(false);
-			expect(actual2.some(r => r.id === role4.id)).toBe(true);
-			expect(actual3.some(r => r.id === role4.id)).toBe(false);
+			expect(actual1.some((r) => r.id === role4.id)).toBe(false);
+			expect(actual2.some((r) => r.id === role4.id)).toBe(true);
+			expect(actual3.some((r) => r.id === role4.id)).toBe(false);
 		});
 
-		test('マニュアルロールにアサイン済み', async () => {
+		test("マニュアルロールにアサイン済み", async () => {
 			const [user1, user2, role1] = await Promise.all([
 				createUser(),
 				createUser(),
 				createRole({
-					name: 'manual role',
+					name: "manual role",
 				}),
 			]);
 			const role2 = await createConditionalRole({
 				id: aidx(),
-				type: 'roleAssignedTo',
+				type: "roleAssignedTo",
 				roleId: role1.id,
 			});
 			await roleService.assign(user2.id, role1.id);
@@ -617,123 +783,123 @@ describe('RoleService', () => {
 				roleService.getUserRoles(user1.id),
 				roleService.getUserRoles(user2.id),
 			]);
-			expect(u1role.some(r => r.id === role2.id)).toBe(false);
-			expect(u2role.some(r => r.id === role2.id)).toBe(true);
+			expect(u1role.some((r) => r.id === role2.id)).toBe(false);
+			expect(u2role.some((r) => r.id === role2.id)).toBe(true);
 		});
 
-		test('ローカルユーザのみ', async () => {
+		test("ローカルユーザのみ", async () => {
 			const [user1, user2] = await Promise.all([
 				createUser({ host: null }),
-				createUser({ host: 'example.com' }),
+				createUser({ host: "example.com" }),
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'isLocal',
+				type: "isLocal",
 			});
 
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(true);
-			expect(actual2.some(r => r.id === role.id)).toBe(false);
+			expect(actual1.some((r) => r.id === role.id)).toBe(true);
+			expect(actual2.some((r) => r.id === role.id)).toBe(false);
 		});
 
-		test('リモートユーザのみ', async () => {
+		test("リモートユーザのみ", async () => {
 			const [user1, user2] = await Promise.all([
 				createUser({ host: null }),
-				createUser({ host: 'example.com' }),
+				createUser({ host: "example.com" }),
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'isRemote',
+				type: "isRemote",
 			});
 
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(false);
-			expect(actual2.some(r => r.id === role.id)).toBe(true);
+			expect(actual1.some((r) => r.id === role.id)).toBe(false);
+			expect(actual2.some((r) => r.id === role.id)).toBe(true);
 		});
 
-		test('サスペンド済みユーザである', async () => {
+		test("サスペンド済みユーザである", async () => {
 			const [user1, user2] = await Promise.all([
 				createUser({ isSuspended: false }),
 				createUser({ isSuspended: true }),
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'isSuspended',
+				type: "isSuspended",
 			});
 
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(false);
-			expect(actual2.some(r => r.id === role.id)).toBe(true);
+			expect(actual1.some((r) => r.id === role.id)).toBe(false);
+			expect(actual2.some((r) => r.id === role.id)).toBe(true);
 		});
 
-		test('鍵アカウントユーザである', async () => {
+		test("鍵アカウントユーザである", async () => {
 			const [user1, user2] = await Promise.all([
 				createUser({ isLocked: false }),
 				createUser({ isLocked: true }),
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'isLocked',
+				type: "isLocked",
 			});
 
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(false);
-			expect(actual2.some(r => r.id === role.id)).toBe(true);
+			expect(actual1.some((r) => r.id === role.id)).toBe(false);
+			expect(actual2.some((r) => r.id === role.id)).toBe(true);
 		});
 
-		test('botユーザである', async () => {
+		test("botユーザである", async () => {
 			const [user1, user2] = await Promise.all([
 				createUser({ isBot: false }),
 				createUser({ isBot: true }),
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'isBot',
+				type: "isBot",
 			});
 
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(false);
-			expect(actual2.some(r => r.id === role.id)).toBe(true);
+			expect(actual1.some((r) => r.id === role.id)).toBe(false);
+			expect(actual2.some((r) => r.id === role.id)).toBe(true);
 		});
 
-		test('猫である', async () => {
+		test("猫である", async () => {
 			const [user1, user2] = await Promise.all([
 				createUser({ isCat: false }),
 				createUser({ isCat: true }),
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'isCat',
+				type: "isCat",
 			});
 
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(false);
-			expect(actual2.some(r => r.id === role.id)).toBe(true);
+			expect(actual1.some((r) => r.id === role.id)).toBe(false);
+			expect(actual2.some((r) => r.id === role.id)).toBe(true);
 		});
 
-		test('「ユーザを見つけやすくする」が有効なアカウント', async () => {
+		test("「ユーザを見つけやすくする」が有効なアカウント", async () => {
 			const [user1, user2] = await Promise.all([
 				createUser({ isExplorable: false }),
 				createUser({ isExplorable: true }),
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'isExplorable',
+				type: "isExplorable",
 			});
 
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(false);
-			expect(actual2.some(r => r.id === role.id)).toBe(true);
+			expect(actual1.some((r) => r.id === role.id)).toBe(false);
+			expect(actual2.some((r) => r.id === role.id)).toBe(true);
 		});
 
-		test('ユーザが作成されてから指定期間経過した', async () => {
+		test("ユーザが作成されてから指定期間経過した", async () => {
 			const base = timeService.date;
 			base.setMinutes(base.getMinutes() - 5);
 
@@ -753,7 +919,7 @@ describe('RoleService', () => {
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'createdLessThan',
+				type: "createdLessThan",
 				// 5 minutes
 				sec: 300,
 			});
@@ -761,12 +927,12 @@ describe('RoleService', () => {
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
 			const actual3 = await roleService.getUserRoles(user3.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(false);
-			expect(actual2.some(r => r.id === role.id)).toBe(false);
-			expect(actual3.some(r => r.id === role.id)).toBe(true);
+			expect(actual1.some((r) => r.id === role.id)).toBe(false);
+			expect(actual2.some((r) => r.id === role.id)).toBe(false);
+			expect(actual3.some((r) => r.id === role.id)).toBe(true);
 		});
 
-		test('ユーザが作成されてから指定期間経っていない', async () => {
+		test("ユーザが作成されてから指定期間経っていない", async () => {
 			const base = timeService.date;
 			base.setMinutes(base.getMinutes() - 5);
 
@@ -786,7 +952,7 @@ describe('RoleService', () => {
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'createdMoreThan',
+				type: "createdMoreThan",
 				// 5 minutes
 				sec: 300,
 			});
@@ -794,12 +960,12 @@ describe('RoleService', () => {
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
 			const actual3 = await roleService.getUserRoles(user3.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(true);
-			expect(actual2.some(r => r.id === role.id)).toBe(false);
-			expect(actual3.some(r => r.id === role.id)).toBe(false);
+			expect(actual1.some((r) => r.id === role.id)).toBe(true);
+			expect(actual2.some((r) => r.id === role.id)).toBe(false);
+			expect(actual3.some((r) => r.id === role.id)).toBe(false);
 		});
 
-		test('フォロワー数が指定値以下', async () => {
+		test("フォロワー数が指定値以下", async () => {
 			const [user1, user2, user3] = await Promise.all([
 				createUser({ followersCount: 99 }),
 				createUser({ followersCount: 100 }),
@@ -807,19 +973,19 @@ describe('RoleService', () => {
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'followersLessThanOrEq',
+				type: "followersLessThanOrEq",
 				value: 100,
 			});
 
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
 			const actual3 = await roleService.getUserRoles(user3.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(true);
-			expect(actual2.some(r => r.id === role.id)).toBe(true);
-			expect(actual3.some(r => r.id === role.id)).toBe(false);
+			expect(actual1.some((r) => r.id === role.id)).toBe(true);
+			expect(actual2.some((r) => r.id === role.id)).toBe(true);
+			expect(actual3.some((r) => r.id === role.id)).toBe(false);
 		});
 
-		test('フォロワー数が指定値以下', async () => {
+		test("フォロワー数が指定値以下", async () => {
 			const [user1, user2, user3] = await Promise.all([
 				createUser({ followersCount: 99 }),
 				createUser({ followersCount: 100 }),
@@ -827,19 +993,19 @@ describe('RoleService', () => {
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'followersMoreThanOrEq',
+				type: "followersMoreThanOrEq",
 				value: 100,
 			});
 
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
 			const actual3 = await roleService.getUserRoles(user3.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(false);
-			expect(actual2.some(r => r.id === role.id)).toBe(true);
-			expect(actual3.some(r => r.id === role.id)).toBe(true);
+			expect(actual1.some((r) => r.id === role.id)).toBe(false);
+			expect(actual2.some((r) => r.id === role.id)).toBe(true);
+			expect(actual3.some((r) => r.id === role.id)).toBe(true);
 		});
 
-		test('フォロー数が指定値以下', async () => {
+		test("フォロー数が指定値以下", async () => {
 			const [user1, user2, user3] = await Promise.all([
 				createUser({ followingCount: 99 }),
 				createUser({ followingCount: 100 }),
@@ -847,19 +1013,19 @@ describe('RoleService', () => {
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'followingLessThanOrEq',
+				type: "followingLessThanOrEq",
 				value: 100,
 			});
 
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
 			const actual3 = await roleService.getUserRoles(user3.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(true);
-			expect(actual2.some(r => r.id === role.id)).toBe(true);
-			expect(actual3.some(r => r.id === role.id)).toBe(false);
+			expect(actual1.some((r) => r.id === role.id)).toBe(true);
+			expect(actual2.some((r) => r.id === role.id)).toBe(true);
+			expect(actual3.some((r) => r.id === role.id)).toBe(false);
 		});
 
-		test('フォロー数が指定値以上', async () => {
+		test("フォロー数が指定値以上", async () => {
 			const [user1, user2, user3] = await Promise.all([
 				createUser({ followingCount: 99 }),
 				createUser({ followingCount: 100 }),
@@ -867,19 +1033,19 @@ describe('RoleService', () => {
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'followingMoreThanOrEq',
+				type: "followingMoreThanOrEq",
 				value: 100,
 			});
 
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
 			const actual3 = await roleService.getUserRoles(user3.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(false);
-			expect(actual2.some(r => r.id === role.id)).toBe(true);
-			expect(actual3.some(r => r.id === role.id)).toBe(true);
+			expect(actual1.some((r) => r.id === role.id)).toBe(false);
+			expect(actual2.some((r) => r.id === role.id)).toBe(true);
+			expect(actual3.some((r) => r.id === role.id)).toBe(true);
 		});
 
-		test('ノート数が指定値以下', async () => {
+		test("ノート数が指定値以下", async () => {
 			const [user1, user2, user3] = await Promise.all([
 				createUser({ notesCount: 9 }),
 				createUser({ notesCount: 10 }),
@@ -887,19 +1053,19 @@ describe('RoleService', () => {
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'notesLessThanOrEq',
+				type: "notesLessThanOrEq",
 				value: 10,
 			});
 
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
 			const actual3 = await roleService.getUserRoles(user3.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(true);
-			expect(actual2.some(r => r.id === role.id)).toBe(true);
-			expect(actual3.some(r => r.id === role.id)).toBe(false);
+			expect(actual1.some((r) => r.id === role.id)).toBe(true);
+			expect(actual2.some((r) => r.id === role.id)).toBe(true);
+			expect(actual3.some((r) => r.id === role.id)).toBe(false);
 		});
 
-		test('ノート数が指定値以上', async () => {
+		test("ノート数が指定値以上", async () => {
 			const [user1, user2, user3] = await Promise.all([
 				createUser({ notesCount: 9 }),
 				createUser({ notesCount: 10 }),
@@ -907,25 +1073,25 @@ describe('RoleService', () => {
 			]);
 			const role = await createConditionalRole({
 				id: aidx(),
-				type: 'notesMoreThanOrEq',
+				type: "notesMoreThanOrEq",
 				value: 10,
 			});
 
 			const actual1 = await roleService.getUserRoles(user1.id);
 			const actual2 = await roleService.getUserRoles(user2.id);
 			const actual3 = await roleService.getUserRoles(user3.id);
-			expect(actual1.some(r => r.id === role.id)).toBe(false);
-			expect(actual2.some(r => r.id === role.id)).toBe(true);
-			expect(actual3.some(r => r.id === role.id)).toBe(true);
+			expect(actual1.some((r) => r.id === role.id)).toBe(false);
+			expect(actual2.some((r) => r.id === role.id)).toBe(true);
+			expect(actual3.some((r) => r.id === role.id)).toBe(true);
 		});
 	});
 
-	describe('assign', () => {
-		test('公開ロールの場合は通知される', async () => {
+	describe("assign", () => {
+		test("公開ロールの場合は通知される", async () => {
 			const user = await createUser();
 			const role = await createRole({
 				isPublic: true,
-				name: 'a',
+				name: "a",
 			});
 
 			await roleService.assign(user.id, role.id);
@@ -941,18 +1107,22 @@ describe('RoleService', () => {
 			expect(assignments).toHaveLength(1);
 
 			expect(notificationService.createNotification).toHaveBeenCalled();
-			expect(notificationService.createNotification.mock.lastCall![0]).toBe(user.id);
-			expect(notificationService.createNotification.mock.lastCall![1]).toBe('roleAssigned');
+			expect(notificationService.createNotification.mock.lastCall![0]).toBe(
+				user.id,
+			);
+			expect(notificationService.createNotification.mock.lastCall![1]).toBe(
+				"roleAssigned",
+			);
 			expect(notificationService.createNotification.mock.lastCall![2]).toEqual({
 				roleId: role.id,
 			});
 		});
 
-		test('非公開ロールの場合は通知されない', async () => {
+		test("非公開ロールの場合は通知されない", async () => {
 			const user = await createUser();
 			const role = await createRole({
 				isPublic: false,
-				name: 'a',
+				name: "a",
 			});
 
 			await roleService.assign(user.id, role.id);
@@ -971,11 +1141,11 @@ describe('RoleService', () => {
 		});
 	});
 
-	describe('clone', () => {
-		test('clones a role', async () => {
+	describe("clone", () => {
+		test("clones a role", async () => {
 			const role = await createRole({
-				name: 'original role',
-				color: '#ff0000',
+				name: "original role",
+				color: "#ff0000",
 				policies: {
 					canManageCustomEmojis: {
 						useDefault: false,
@@ -991,28 +1161,30 @@ describe('RoleService', () => {
 			expect(clonedRole.id).not.toBe(role.id);
 			expect(clonedRole.name).toBe(`${role.name} (cloned)`);
 
-			expect(clonedRole).toEqual(expect.objectContaining({
-				color: role.color,
-				policies: {
-					canManageCustomEmojis: {
-						useDefault: false,
-						priority: 0,
-						value: true,
+			expect(clonedRole).toEqual(
+				expect.objectContaining({
+					color: role.color,
+					policies: {
+						canManageCustomEmojis: {
+							useDefault: false,
+							priority: 0,
+							value: true,
+						},
 					},
-				},
-			}));
+				}),
+			);
 		});
 
-		test('clones a role with a too long name', async () => {
+		test("clones a role with a too long name", async () => {
 			const role = await createRole({
-				name: 'a'.repeat(254),
+				name: "a".repeat(254),
 			});
 
 			const clonedRole = await roleService.clone(role);
 
 			expect(clonedRole).toBeDefined();
 			expect(clonedRole.id).not.toBe(role.id);
-			expect(clonedRole.name.endsWith(' (cloned)')).toBeTruthy();
+			expect(clonedRole.name.endsWith(" (cloned)")).toBeTruthy();
 			expect(clonedRole.name.length).toBe(256);
 		});
 	});

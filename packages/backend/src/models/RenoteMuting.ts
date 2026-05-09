@@ -3,12 +3,19 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { PrimaryColumn, Entity, Index, JoinColumn, Column, ManyToOne } from 'typeorm';
-import { id } from './util/id.js';
-import { MiUser } from './User.js';
+import {
+	PrimaryColumn,
+	Entity,
+	Index,
+	JoinColumn,
+	Column,
+	ManyToOne,
+} from "typeorm";
+import { id } from "./util/id.js";
+import { MiUser } from "./User.js";
 
-@Entity('renote_muting')
-@Index(['muterId', 'muteeId'], { unique: true })
+@Entity("renote_muting")
+@Index(["muterId", "muteeId"], { unique: true })
 export class MiRenoteMuting {
 	@PrimaryColumn(id())
 	public id: string;
@@ -16,12 +23,12 @@ export class MiRenoteMuting {
 	@Index()
 	@Column({
 		...id(),
-		comment: 'The mutee user ID.',
+		comment: "The mutee user ID.",
 	})
-	public muteeId: MiUser['id'];
+	public muteeId: MiUser["id"];
 
-	@ManyToOne(type => MiUser, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiUser, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public mutee: MiUser | null;
@@ -29,12 +36,12 @@ export class MiRenoteMuting {
 	@Index()
 	@Column({
 		...id(),
-		comment: 'The muter user ID.',
+		comment: "The muter user ID.",
 	})
-	public muterId: MiUser['id'];
+	public muterId: MiUser["id"];
 
-	@ManyToOne(type => MiUser, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiUser, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public muter: MiUser | null;

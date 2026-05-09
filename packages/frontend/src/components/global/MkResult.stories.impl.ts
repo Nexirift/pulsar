@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import MkResult from './MkResult.vue';
-import type { StoryObj } from '@storybook/vue3';
+import MkResult from "./MkResult.vue";
+import type { StoryObj } from "@storybook/vue3";
 export const Default = {
 	render(args) {
 		return {
@@ -27,11 +27,11 @@ export const Default = {
 		};
 	},
 	args: {
-		type: 'empty',
-		text: 'Lorem Ipsum',
+		type: "empty",
+		text: "Lorem Ipsum",
 	},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkResult>;
 export const emptyWithNoText = {
@@ -45,13 +45,13 @@ export const notFound = {
 	...Default,
 	args: {
 		...Default.args,
-		type: 'notFound',
+		type: "notFound",
 	},
 } satisfies StoryObj<typeof MkResult>;
 export const errorType = {
 	...Default,
 	args: {
 		...Default.args,
-		type: 'error',
+		type: "error",
 	},
 } satisfies StoryObj<typeof MkResult>;

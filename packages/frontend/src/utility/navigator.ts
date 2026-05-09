@@ -4,5 +4,5 @@
  */
 
 export function isSupportShare(): boolean {
-	return 'share' in navigator;
+	return "share" in navigator;
 }

@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as OTPAuth from 'otpauth';
-import { Inject, Injectable } from '@nestjs/common';
-import ms from 'ms';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import type { UserProfilesRepository } from '@/models/_.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { DI } from '@/di-symbols.js';
+import * as OTPAuth from "otpauth";
+import { Inject, Injectable } from "@nestjs/common";
+import ms from "ms";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { UserEntityService } from "@/core/entities/UserEntityService.js";
+import type { UserProfilesRepository } from "@/models/_.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { DI } from "@/di-symbols.js";
 
 export const meta = {
 	requireCredential: true,
@@ -18,35 +18,36 @@ export const meta = {
 	secure: true,
 
 	res: {
-		type: 'object',
+		type: "object",
 		properties: {
 			backupCodes: {
-				type: 'array',
+				type: "array",
 				optional: false,
 				items: {
-					type: 'string',
+					type: "string",
 				},
 			},
 		},
 	},
 
 	limit: {
-		duration: ms('1hour'),
+		duration: ms("1hour"),
 		max: 10,
-		minInterval: ms('1sec'),
+		minInterval: ms("1sec"),
 	},
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		token: { type: 'string' },
+		token: { type: "string" },
 	},
-	required: ['token'],
+	required: ["token"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
@@ -55,12 +56,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private globalEventService: GlobalEventService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const token = ps.token.replace(/\s/g, '');
+			const token = ps.token.replace(/\s/g, "");
 
-			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });
+			const profile = await this.userProfilesRepository.findOneByOrFail({
+				userId: me.id,
+			});
 
 			if (profile.twoFactorTempSecret == null) {
-				throw new Error('二段階認証の設定が開始されていません');
+				throw new Error("二段階認証の設定が開始されていません");
 			}
 
 			const delta = OTPAuth.TOTP.validate({
@@ -71,10 +74,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			});
 
 			if (delta === null) {
-				throw new Error('not verified');
+				throw new Error("not verified");
 			}
 
-			const backupCodes = Array.from({ length: 5 }, () => new OTPAuth.Secret().base32);
+			const backupCodes = Array.from(
+				{ length: 5 },
+				() => new OTPAuth.Secret().base32,
+			);
 
 			await this.userProfilesRepository.update(me.id, {
 				twoFactorSecret: profile.twoFactorTempSecret,
@@ -83,10 +89,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			});
 
 			// Publish meUpdated event
-			this.globalEventService.publishMainStream(me.id, 'meUpdated', await this.userEntityService.pack(me.id, me, {
-				schema: 'MeDetailed',
-				includeSecrets: true,
-			}));
+			this.globalEventService.publishMainStream(
+				me.id,
+				"meUpdated",
+				await this.userEntityService.pack(me.id, me, {
+					schema: "MeDetailed",
+					includeSecrets: true,
+				}),
+			);
 
 			return {
 				backupCodes: backupCodes,

@@ -3,32 +3,32 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import type { ClipsRepository, ClipFavoritesRepository } from '@/models/_.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { DI } from '@/di-symbols.js';
-import { ApiError } from '../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import type { ClipsRepository, ClipFavoritesRepository } from "@/models/_.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { DI } from "@/di-symbols.js";
+import { ApiError } from "../../error.js";
 
 export const meta = {
-	tags: ['clip'],
+	tags: ["clip"],
 
 	requireCredential: true,
 
 	prohibitMoved: true,
 
-	kind: 'write:clip-favorite',
+	kind: "write:clip-favorite",
 
 	errors: {
 		noSuchClip: {
-			message: 'No such clip.',
-			code: 'NO_SUCH_CLIP',
-			id: '2603966e-b865-426c-94a7-af4a01241dc1',
+			message: "No such clip.",
+			code: "NO_SUCH_CLIP",
+			id: "2603966e-b865-426c-94a7-af4a01241dc1",
 		},
 
 		notFavorited: {
-			message: 'You have not favorited the clip.',
-			code: 'NOT_FAVORITED',
-			id: '90c3a9e8-b321-4dae-bf57-2bf79bbcc187',
+			message: "You have not favorited the clip.",
+			code: "NOT_FAVORITED",
+			id: "90c3a9e8-b321-4dae-bf57-2bf79bbcc187",
 		},
 	},
 
@@ -40,15 +40,16 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		clipId: { type: 'string', format: 'misskey:id' },
+		clipId: { type: "string", format: "misskey:id" },
 	},
-	required: ['clipId'],
+	required: ["clipId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.clipsRepository)
 		private clipsRepository: ClipsRepository,

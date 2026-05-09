@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { StatusError } from '@/misc/status-error.js';
-import { CaptchaError } from '@/misc/captcha-error.js';
+import { IdentifiableError } from "@/misc/identifiable-error.js";
+import { StatusError } from "@/misc/status-error.js";
+import { CaptchaError } from "@/misc/captcha-error.js";
 
 export function renderInlineError(err: unknown): string {
 	const parts: string[] = [];
 	renderTo(err, parts);
-	return parts.join('');
+	return parts.join("");
 }
 
 function renderTo(err: unknown, parts: string[]): void {
@@ -25,7 +25,7 @@ function renderTo(err: unknown, parts: string[]): void {
 
 	if (err instanceof Error) {
 		if (err.cause) {
-			parts.push(' [caused by]: ');
+			parts.push(" [caused by]: ");
 			renderTo(err.cause, parts);
 			// const cause = renderInlineError(err.cause);
 			// parts.push(' [caused by]: ', cause);
@@ -34,8 +34,8 @@ function renderTo(err: unknown, parts: string[]): void {
 }
 
 function printError(err: unknown): string {
-	if (err === undefined) return 'undefined';
-	if (err === null) return 'null';
+	if (err === undefined) return "undefined";
+	if (err === null) return "null";
 
 	if (err instanceof IdentifiableError) {
 		if (err.message) {

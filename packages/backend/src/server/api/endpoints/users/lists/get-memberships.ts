@@ -3,54 +3,58 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import type { UserListsRepository, UserListFavoritesRepository, UserListMembershipsRepository } from '@/models/_.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { UserListEntityService } from '@/core/entities/UserListEntityService.js';
-import { UserListService } from '@/core/UserListService.js';
-import { DI } from '@/di-symbols.js';
-import { QueryService } from '@/core/QueryService.js';
-import { ApiError } from '../../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import type {
+	UserListsRepository,
+	UserListFavoritesRepository,
+	UserListMembershipsRepository,
+} from "@/models/_.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { UserListEntityService } from "@/core/entities/UserListEntityService.js";
+import { UserListService } from "@/core/UserListService.js";
+import { DI } from "@/di-symbols.js";
+import { QueryService } from "@/core/QueryService.js";
+import { ApiError } from "../../../error.js";
 
 export const meta = {
-	tags: ['lists', 'account'],
+	tags: ["lists", "account"],
 
 	requireCredential: false,
 
-	kind: 'read:account',
+	kind: "read:account",
 
 	errors: {
 		noSuchList: {
-			message: 'No such list.',
-			code: 'NO_SUCH_LIST',
-			id: '7bc05c21-1d7a-41ae-88f1-66820f4dc686',
+			message: "No such list.",
+			code: "NO_SUCH_LIST",
+			id: "7bc05c21-1d7a-41ae-88f1-66820f4dc686",
 		},
 	},
 
 	res: {
-		type: 'array',
+		type: "array",
 		items: {
-			type: 'object',
+			type: "object",
 			nullable: false,
 			properties: {
 				id: {
-					type: 'string',
-					format: 'misskey:id',
+					type: "string",
+					format: "misskey:id",
 				},
 				createdAt: {
-					type: 'string',
-					format: 'date-time',
+					type: "string",
+					format: "date-time",
 				},
 				userId: {
-					type: 'string',
-					format: 'misskey:id',
+					type: "string",
+					format: "misskey:id",
 				},
 				user: {
-					type: 'object',
-					ref: 'UserLite',
+					type: "object",
+					ref: "UserLite",
 				},
 				withReplies: {
-					type: 'boolean',
+					type: "boolean",
 				},
 			},
 		},
@@ -64,15 +68,15 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		listId: { type: 'string', format: 'misskey:id' },
-		forPublic: { type: 'boolean', default: false },
-		limit: { type: 'integer', minimum: 1, maximum: 100, default: 30 },
-		sinceId: { type: 'string', format: 'misskey:id' },
-		untilId: { type: 'string', format: 'misskey:id' },
+		listId: { type: "string", format: "misskey:id" },
+		forPublic: { type: "boolean", default: false },
+		limit: { type: "integer", minimum: 1, maximum: 100, default: 30 },
+		sinceId: { type: "string", format: "misskey:id" },
+		untilId: { type: "string", format: "misskey:id" },
 	},
-	required: ['listId'],
+	required: ["listId"],
 } as const;
 
 @Injectable() // eslint-disable-next-line import/no-default-export
@@ -90,7 +94,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			// Fetch the list
-			const userList = await this.userListService.userListsCache.fetchMaybe(ps.listId);
+			const userList = await this.userListService.userListsCache.fetchMaybe(
+				ps.listId,
+			);
 
 			if (userList == null) {
 				throw new ApiError(meta.errors.noSuchList);
@@ -100,13 +106,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				throw new ApiError(meta.errors.noSuchList);
 			}
 
-			const query = this.queryService.makePaginationQuery(this.userListMembershipsRepository.createQueryBuilder('membership'), ps.sinceId, ps.untilId)
-				.andWhere('membership.userListId = :userListId', { userListId: userList.id })
-				.innerJoinAndSelect('membership.user', 'user');
+			const query = this.queryService
+				.makePaginationQuery(
+					this.userListMembershipsRepository.createQueryBuilder("membership"),
+					ps.sinceId,
+					ps.untilId,
+				)
+				.andWhere("membership.userListId = :userListId", {
+					userListId: userList.id,
+				})
+				.innerJoinAndSelect("membership.user", "user");
 
-			const memberships = await query
-				.limit(ps.limit)
-				.getMany();
+			const memberships = await query.limit(ps.limit).getMany();
 
 			return await this.userListEntityService.packMembershipsMany(memberships);
 		});

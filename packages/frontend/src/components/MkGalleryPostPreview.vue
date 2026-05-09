@@ -4,45 +4,59 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkA :to="`/gallery/${post.id}`" class="ttasepnz _panel" tabindex="-1" @pointerenter="enterHover" @pointerleave="leaveHover">
-	<div class="thumbnail">
-		<Transition>
-			<ImgWithBlurhash
-				class="img layered"
-				:transition="safe ? null : {
-					duration: 500,
-					leaveActiveClass: $style.transition_toggle_leaveActive,
-					leaveToClass: $style.transition_toggle_leaveTo,
-				}"
-				:src="post.files?.[0]?.thumbnailUrl"
-				:hash="post.files?.[0]?.blurhash"
-				:forceBlurhash="!show"
-			/>
-		</Transition>
-	</div>
-	<article>
-		<header>
-			<MkAvatar :user="post.user" class="avatar" link preview/>
-		</header>
-		<footer>
-			<span class="title">{{ post.title }}</span>
-		</footer>
-	</article>
-</MkA>
+	<MkA
+		:to="`/gallery/${post.id}`"
+		class="ttasepnz _panel"
+		tabindex="-1"
+		@pointerenter="enterHover"
+		@pointerleave="leaveHover"
+	>
+		<div class="thumbnail">
+			<Transition>
+				<ImgWithBlurhash
+					class="img layered"
+					:transition="
+						safe
+							? null
+							: {
+									duration: 500,
+									leaveActiveClass: $style.transition_toggle_leaveActive,
+									leaveToClass: $style.transition_toggle_leaveTo,
+								}
+					"
+					:src="post.files?.[0]?.thumbnailUrl"
+					:hash="post.files?.[0]?.blurhash"
+					:forceBlurhash="!show"
+				/>
+			</Transition>
+		</div>
+		<article>
+			<header>
+				<MkAvatar :user="post.user" class="avatar" link preview />
+			</header>
+			<footer>
+				<span class="title">{{ post.title }}</span>
+			</footer>
+		</article>
+	</MkA>
 </template>
 
 <script lang="ts" setup>
-import * as Misskey from 'misskey-js';
-import { computed, ref } from 'vue';
-import ImgWithBlurhash from '@/components/MkImgWithBlurhash.vue';
-import { prefer } from '@/preferences.js';
+import * as Misskey from "misskey-js";
+import { computed, ref } from "vue";
+import ImgWithBlurhash from "@/components/MkImgWithBlurhash.vue";
+import { prefer } from "@/preferences.js";
 
 const props = defineProps<{
 	post: Misskey.entities.GalleryPost;
 }>();
 
 const hover = ref(false);
-const safe = computed(() => prefer.s.nsfw === 'ignore' || prefer.s.nsfw === 'respect' && !props.post.isSensitive);
+const safe = computed(
+	() =>
+		prefer.s.nsfw === "ignore" ||
+		(prefer.s.nsfw === "respect" && !props.post.isSensitive),
+);
 const show = computed(() => safe.value || hover.value);
 
 function enterHover(): void {
@@ -56,7 +70,7 @@ function leaveHover(): void {
 
 <style lang="scss" module>
 .transition_toggle_leaveActive {
-	transition: opacity .5s;
+	transition: opacity 0.5s;
 	position: absolute;
 	top: 0;
 	left: 0;

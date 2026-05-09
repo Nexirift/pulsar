@@ -3,32 +3,42 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { MiAbuseUserReport, MiNote, MiUser, MiWebhook } from '@/models/_.js';
-import { bindThis } from '@/decorators.js';
-import { MiSystemWebhook, type SystemWebhookEventType } from '@/models/SystemWebhook.js';
-import { type AbuseReportPayload, SystemWebhookPayload, SystemWebhookService } from '@/core/SystemWebhookService.js';
-import { type Packed } from '@/misc/json-schema.js';
-import { type WebhookEventTypes } from '@/models/Webhook.js';
-import { CustomEmojiService } from '@/core/CustomEmojiService.js';
-import { type UserWebhookPayload, UserWebhookService } from '@/core/UserWebhookService.js';
-import { QueueService } from '@/core/QueueService.js';
-import { IdService } from '@/core/IdService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { ModeratorInactivityRemainingTime } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
+import { Injectable } from "@nestjs/common";
+import { MiAbuseUserReport, MiNote, MiUser, MiWebhook } from "@/models/_.js";
+import { bindThis } from "@/decorators.js";
+import {
+	MiSystemWebhook,
+	type SystemWebhookEventType,
+} from "@/models/SystemWebhook.js";
+import {
+	type AbuseReportPayload,
+	SystemWebhookPayload,
+	SystemWebhookService,
+} from "@/core/SystemWebhookService.js";
+import { type Packed } from "@/misc/json-schema.js";
+import { type WebhookEventTypes } from "@/models/Webhook.js";
+import { CustomEmojiService } from "@/core/CustomEmojiService.js";
+import {
+	type UserWebhookPayload,
+	UserWebhookService,
+} from "@/core/UserWebhookService.js";
+import { QueueService } from "@/core/QueueService.js";
+import { IdService } from "@/core/IdService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { ModeratorInactivityRemainingTime } from "@/queue/processors/CheckModeratorsActivityProcessorService.js";
 
 const oneDayMillis = 24 * 60 * 60 * 1000;
 
 function generateDummyUser(now: number, override?: Partial<MiUser>): MiUser {
 	return {
-		id: 'dummy-user-1',
+		id: "dummy-user-1",
 		updatedAt: new Date(now - oneDayMillis * 7),
 		lastFetchedAt: new Date(now - oneDayMillis * 5),
 		lastActiveDate: new Date(now - oneDayMillis * 3),
 		hideOnlineStatus: false,
-		username: 'dummy1',
-		usernameLower: 'dummy1',
-		name: 'DummyUser1',
+		username: "dummy1",
+		usernameLower: "dummy1",
+		name: "DummyUser1",
 		followersCount: 10,
 		followingCount: 5,
 		movedToUri: null,
@@ -61,7 +71,7 @@ function generateDummyUser(now: number, override?: Partial<MiUser>): MiUser {
 		requireSigninToViewContents: false,
 		makeNotesFollowersOnlyBefore: null,
 		makeNotesHiddenBefore: null,
-		chatScope: 'mutual',
+		chatScope: "mutual",
 		emojis: [],
 		score: 0,
 		host: null,
@@ -78,7 +88,7 @@ function generateDummyUser(now: number, override?: Partial<MiUser>): MiUser {
 		enableRss: true,
 		mandatoryCW: null,
 		rejectQuotes: false,
-		allowUnsignedFetch: 'staff',
+		allowUnsignedFetch: "staff",
 		userProfile: null,
 		attributionDomains: [],
 		...override,
@@ -87,31 +97,31 @@ function generateDummyUser(now: number, override?: Partial<MiUser>): MiUser {
 
 function generateDummyNote(override?: Partial<MiNote>): MiNote {
 	return {
-		id: 'dummy-note-1',
+		id: "dummy-note-1",
 		replyId: null,
 		reply: null,
 		renoteId: null,
 		renote: null,
 		threadId: null,
-		text: 'This is a dummy note for testing purposes.',
+		text: "This is a dummy note for testing purposes.",
 		name: null,
 		cw: null,
-		userId: 'dummy-user-1',
+		userId: "dummy-user-1",
 		user: null,
 		localOnly: true,
-		reactionAcceptance: 'likeOnly',
+		reactionAcceptance: "likeOnly",
 		renoteCount: 10,
 		repliesCount: 5,
 		clippedCount: 0,
 		reactions: {},
-		visibility: 'public',
+		visibility: "public",
 		uri: null,
 		url: null,
 		fileIds: [],
 		attachedFileTypes: [],
 		visibleUserIds: [],
 		mentions: [],
-		mentionedRemoteUsers: '[]',
+		mentionedRemoteUsers: "[]",
 		reactionAndUserPairCache: [],
 		emojis: [],
 		tags: [],
@@ -136,25 +146,25 @@ function generateDummyNote(override?: Partial<MiNote>): MiNote {
 function makeDummyUsers(now: number) {
 	const dummyUser1 = generateDummyUser(now);
 	const dummyUser2 = generateDummyUser(now, {
-		id: 'dummy-user-2',
+		id: "dummy-user-2",
 		updatedAt: new Date(now - oneDayMillis * 30),
 		lastFetchedAt: new Date(now - oneDayMillis),
 		lastActiveDate: new Date(now - oneDayMillis),
-		username: 'dummy2',
-		usernameLower: 'dummy2',
-		name: 'DummyUser2',
+		username: "dummy2",
+		usernameLower: "dummy2",
+		name: "DummyUser2",
 		followersCount: 40,
 		followingCount: 50,
 		notesCount: 900,
 	});
 	const dummyUser3 = generateDummyUser(now, {
-		id: 'dummy-user-3',
+		id: "dummy-user-3",
 		updatedAt: new Date(now - oneDayMillis * 15),
 		lastFetchedAt: new Date(now - oneDayMillis * 2),
 		lastActiveDate: new Date(now - oneDayMillis * 2),
-		username: 'dummy3',
-		usernameLower: 'dummy3',
-		name: 'DummyUser3',
+		username: "dummy3",
+		usernameLower: "dummy3",
+		name: "DummyUser3",
 		followersCount: 60,
 		followingCount: 70,
 		notesCount: 15900,
@@ -164,8 +174,7 @@ function makeDummyUsers(now: number) {
 
 @Injectable()
 export class WebhookTestService {
-	public static NoSuchWebhookError = class extends Error {
-	};
+	public static NoSuchWebhookError = class extends Error {};
 
 	constructor(
 		private customEmojiService: CustomEmojiService,
@@ -174,8 +183,7 @@ export class WebhookTestService {
 		private queueService: QueueService,
 		private readonly idService: IdService,
 		private readonly timeService: TimeService,
-	) {
-	}
+	) {}
 
 	/**
 	 * UserWebhookのテスト送信を行う.
@@ -188,20 +196,24 @@ export class WebhookTestService {
 	@bindThis
 	public async testUserWebhook<T extends WebhookEventTypes>(
 		params: {
-			webhookId: MiWebhook['id'],
-			type: T,
-			override?: Partial<Omit<MiWebhook, 'id'>>,
+			webhookId: MiWebhook["id"];
+			type: T;
+			override?: Partial<Omit<MiWebhook, "id">>;
 		},
 		sender: MiUser | null,
 	) {
-		const webhooks = await this.userWebhookService.fetchWebhooks({ ids: [params.webhookId] })
-			.then(it => it.filter(it => it.userId === sender?.id));
+		const webhooks = await this.userWebhookService
+			.fetchWebhooks({ ids: [params.webhookId] })
+			.then((it) => it.filter((it) => it.userId === sender?.id));
 		if (webhooks.length === 0) {
 			throw new WebhookTestService.NoSuchWebhookError();
 		}
 
 		const webhook = webhooks[0];
-		const send = <U extends WebhookEventTypes>(type: U, contents: UserWebhookPayload<U>) => {
+		const send = <U extends WebhookEventTypes>(
+			type: U,
+			contents: UserWebhookPayload<U>,
+		) => {
 			const merged = {
 				...webhook,
 				...params.override,
@@ -209,24 +221,28 @@ export class WebhookTestService {
 
 			// テスト目的なのでUserWebhookServiceの機能を経由せず直接キューに追加する（チェック処理などをスキップする意図）.
 			// また、Jobの試行回数も1回だけ.
-			this.queueService.userWebhookDeliver(merged, type, contents, { attempts: 1 });
+			this.queueService.userWebhookDeliver(merged, type, contents, {
+				attempts: 1,
+			});
 		};
 
-		const { dummyUser1, dummyUser2, dummyUser3 } = makeDummyUsers(this.timeService.now);
+		const { dummyUser1, dummyUser2, dummyUser3 } = makeDummyUsers(
+			this.timeService.now,
+		);
 
 		const dummyNote1 = generateDummyNote({
 			userId: dummyUser1.id,
 			user: dummyUser1,
 		});
 		const dummyReply1 = generateDummyNote({
-			id: 'dummy-reply-1',
+			id: "dummy-reply-1",
 			replyId: dummyNote1.id,
 			reply: dummyNote1,
 			userId: dummyUser1.id,
 			user: dummyUser1,
 		});
 		const dummyRenote1 = generateDummyNote({
-			id: 'dummy-renote-1',
+			id: "dummy-renote-1",
 			renoteId: dummyNote1.id,
 			renote: dummyNote1,
 			userId: dummyUser2.id,
@@ -234,7 +250,7 @@ export class WebhookTestService {
 			text: null,
 		});
 		const dummyMention1 = generateDummyNote({
-			id: 'dummy-mention-1',
+			id: "dummy-mention-1",
 			userId: dummyUser1.id,
 			user: dummyUser1,
 			text: `@${dummyUser2.username} This is a mention to you.`,
@@ -242,40 +258,44 @@ export class WebhookTestService {
 		});
 
 		switch (params.type) {
-			case 'note': {
-				send('note', { note: await this.toPackedNote(dummyNote1) });
+			case "note": {
+				send("note", { note: await this.toPackedNote(dummyNote1) });
 				break;
 			}
-			case 'reply': {
-				send('reply', { note: await this.toPackedNote(dummyReply1) });
+			case "reply": {
+				send("reply", { note: await this.toPackedNote(dummyReply1) });
 				break;
 			}
-			case 'renote': {
-				send('renote', { note: await this.toPackedNote(dummyRenote1) });
+			case "renote": {
+				send("renote", { note: await this.toPackedNote(dummyRenote1) });
 				break;
 			}
-			case 'mention': {
-				send('mention', { note: await this.toPackedNote(dummyMention1) });
+			case "mention": {
+				send("mention", { note: await this.toPackedNote(dummyMention1) });
 				break;
 			}
-			case 'edited': {
-				send('edited', { note: await this.toPackedNote(dummyNote1) });
+			case "edited": {
+				send("edited", { note: await this.toPackedNote(dummyNote1) });
 				break;
 			}
-			case 'follow': {
-				send('follow', { user: await this.toPackedUserDetailedNotMe(dummyUser1) });
+			case "follow": {
+				send("follow", {
+					user: await this.toPackedUserDetailedNotMe(dummyUser1),
+				});
 				break;
 			}
-			case 'followed': {
-				send('followed', { user: await this.toPackedUserLite(dummyUser2) });
+			case "followed": {
+				send("followed", { user: await this.toPackedUserLite(dummyUser2) });
 				break;
 			}
-			case 'unfollow': {
-				send('unfollow', { user: await this.toPackedUserDetailedNotMe(dummyUser3) });
+			case "unfollow": {
+				send("unfollow", {
+					user: await this.toPackedUserDetailedNotMe(dummyUser3),
+				});
 				break;
 			}
 			// まだ実装されていない (#9485)
-			case 'reaction':
+			case "reaction":
 				return;
 			default: {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -294,20 +314,23 @@ export class WebhookTestService {
 	 * - 送信対象イベント（on）に関する設定
 	 */
 	@bindThis
-	public async testSystemWebhook<T extends SystemWebhookEventType>(
-		params: {
-			webhookId: MiSystemWebhook['id'],
-			type: T,
-			override?: Partial<Omit<MiSystemWebhook, 'id'>>,
-		},
-	) {
-		const webhooks = await this.systemWebhookService.fetchSystemWebhooks({ ids: [params.webhookId] });
+	public async testSystemWebhook<T extends SystemWebhookEventType>(params: {
+		webhookId: MiSystemWebhook["id"];
+		type: T;
+		override?: Partial<Omit<MiSystemWebhook, "id">>;
+	}) {
+		const webhooks = await this.systemWebhookService.fetchSystemWebhooks({
+			ids: [params.webhookId],
+		});
 		if (webhooks.length === 0) {
 			throw new WebhookTestService.NoSuchWebhookError();
 		}
 
 		const webhook = webhooks[0];
-		const send = <U extends SystemWebhookEventType>(type: U, contents: SystemWebhookPayload<U>) => {
+		const send = <U extends SystemWebhookEventType>(
+			type: U,
+			contents: SystemWebhookPayload<U>,
+		) => {
 			const merged = {
 				...webhook,
 				...params.override,
@@ -315,51 +338,61 @@ export class WebhookTestService {
 
 			// テスト目的なのでSystemWebhookServiceの機能を経由せず直接キューに追加する（チェック処理などをスキップする意図）.
 			// また、Jobの試行回数も1回だけ.
-			this.queueService.systemWebhookDeliver(merged, type, contents, { attempts: 1 });
+			this.queueService.systemWebhookDeliver(merged, type, contents, {
+				attempts: 1,
+			});
 		};
 
-		const { dummyUser1, dummyUser2, dummyUser3 } = makeDummyUsers(this.timeService.now);
+		const { dummyUser1, dummyUser2, dummyUser3 } = makeDummyUsers(
+			this.timeService.now,
+		);
 
 		switch (params.type) {
-			case 'abuseReport': {
-				send('abuseReport', await this.generateAbuseReport({
-					targetUserId: dummyUser1.id,
-					targetUser: dummyUser1,
-					reporterId: dummyUser2.id,
-					reporter: dummyUser2,
-				}));
+			case "abuseReport": {
+				send(
+					"abuseReport",
+					await this.generateAbuseReport({
+						targetUserId: dummyUser1.id,
+						targetUser: dummyUser1,
+						reporterId: dummyUser2.id,
+						reporter: dummyUser2,
+					}),
+				);
 				break;
 			}
-			case 'abuseReportResolved': {
-				send('abuseReportResolved', await this.generateAbuseReport({
-					targetUserId: dummyUser1.id,
-					targetUser: dummyUser1,
-					reporterId: dummyUser2.id,
-					reporter: dummyUser2,
-					assigneeId: dummyUser3.id,
-					assignee: dummyUser3,
-					resolved: true,
-				}));
+			case "abuseReportResolved": {
+				send(
+					"abuseReportResolved",
+					await this.generateAbuseReport({
+						targetUserId: dummyUser1.id,
+						targetUser: dummyUser1,
+						reporterId: dummyUser2.id,
+						reporter: dummyUser2,
+						assigneeId: dummyUser3.id,
+						assignee: dummyUser3,
+						resolved: true,
+					}),
+				);
 				break;
 			}
-			case 'userCreated': {
-				send('userCreated', await this.toPackedUserLite(dummyUser1));
+			case "userCreated": {
+				send("userCreated", await this.toPackedUserLite(dummyUser1));
 				break;
 			}
-			case 'inactiveModeratorsWarning': {
+			case "inactiveModeratorsWarning": {
 				const dummyTime: ModeratorInactivityRemainingTime = {
 					time: 100000,
 					asDays: 1,
 					asHours: 24,
 				};
 
-				send('inactiveModeratorsWarning', {
+				send("inactiveModeratorsWarning", {
 					remainingTime: dummyTime,
 				});
 				break;
 			}
-			case 'inactiveModeratorsInvitationOnlyChanged': {
-				send('inactiveModeratorsInvitationOnlyChanged', {});
+			case "inactiveModeratorsInvitationOnlyChanged": {
+				send("inactiveModeratorsInvitationOnlyChanged", {});
 				break;
 			}
 			default: {
@@ -371,37 +404,49 @@ export class WebhookTestService {
 	}
 
 	@bindThis
-	private async generateAbuseReport(override?: Partial<MiAbuseUserReport>): Promise<AbuseReportPayload> {
+	private async generateAbuseReport(
+		override?: Partial<MiAbuseUserReport>,
+	): Promise<AbuseReportPayload> {
 		const result: MiAbuseUserReport = {
-			id: 'dummy-abuse-report1',
-			targetUserId: 'dummy-target-user',
+			id: "dummy-abuse-report1",
+			targetUserId: "dummy-target-user",
 			targetUser: null,
 			targetUserInstance: null,
-			reporterId: 'dummy-reporter-user',
+			reporterId: "dummy-reporter-user",
 			reporter: null,
 			reporterInstance: null,
 			assigneeId: null,
 			assignee: null,
 			resolved: false,
 			forwarded: false,
-			comment: 'This is a dummy report for testing purposes.',
+			comment: "This is a dummy report for testing purposes.",
 			targetUserHost: null,
 			reporterHost: null,
 			resolvedAs: null,
-			moderationNote: 'foo',
+			moderationNote: "foo",
 			...override,
 		};
 
 		return {
 			...result,
-			targetUser: result.targetUser ? await this.toPackedUserLite(result.targetUser) : null,
-			reporter: result.reporter ? await this.toPackedUserLite(result.reporter) : null,
-			assignee: result.assignee ? await this.toPackedUserLite(result.assignee) : null,
+			targetUser: result.targetUser
+				? await this.toPackedUserLite(result.targetUser)
+				: null,
+			reporter: result.reporter
+				? await this.toPackedUserLite(result.reporter)
+				: null,
+			assignee: result.assignee
+				? await this.toPackedUserLite(result.assignee)
+				: null,
 		};
 	}
 
 	@bindThis
-	private async toPackedNote(note: MiNote, detail = true, override?: Packed<'Note'>): Promise<Packed<'Note'>> {
+	private async toPackedNote(
+		note: MiNote,
+		detail = true,
+		override?: Packed<"Note">,
+	): Promise<Packed<"Note">> {
 		return {
 			id: note.id,
 			threadId: note.threadId ?? note.id,
@@ -411,7 +456,9 @@ export class WebhookTestService {
 			cw: note.cw,
 			userId: note.userId,
 			userHost: note.userHost ?? null,
-			user: await this.toPackedUserLite(note.user ?? generateDummyUser(this.timeService.now)),
+			user: await this.toPackedUserLite(
+				note.user ?? generateDummyUser(this.timeService.now),
+			),
 			replyId: note.replyId,
 			renoteId: note.renoteId,
 			isHidden: false,
@@ -427,7 +474,10 @@ export class WebhookTestService {
 			files: [],
 			tags: note.tags,
 			poll: null,
-			emojis: await this.customEmojiService.populateEmojis(note.emojis, note.userHost),
+			emojis: await this.customEmojiService.populateEmojis(
+				note.emojis,
+				note.userHost,
+			),
 			channelId: note.channelId,
 			channel: note.channel,
 			localOnly: note.localOnly,
@@ -440,18 +490,27 @@ export class WebhookTestService {
 			uri: note.uri ?? undefined,
 			url: note.url ?? undefined,
 			reactionAndUserPairCache: note.reactionAndUserPairCache,
-			...(detail ? {
-				clippedCount: note.clippedCount,
-				reply: note.reply ? await this.toPackedNote(note.reply, false) : null,
-				renote: note.renote ? await this.toPackedNote(note.renote, true) : null,
-				myReaction: null,
-			} : {}),
+			...(detail
+				? {
+						clippedCount: note.clippedCount,
+						reply: note.reply
+							? await this.toPackedNote(note.reply, false)
+							: null,
+						renote: note.renote
+							? await this.toPackedNote(note.renote, true)
+							: null,
+						myReaction: null,
+					}
+				: {}),
 			...override,
 		};
 	}
 
 	@bindThis
-	private async toPackedUserLite(user: MiUser, override?: Packed<'UserLite'>): Promise<Packed<'UserLite'>> {
+	private async toPackedUserLite(
+		user: MiUser,
+		override?: Packed<"UserLite">,
+	): Promise<Packed<"UserLite">> {
 		return {
 			...user,
 			createdAt: this.idService.parse(user.id).date.toISOString(),
@@ -461,24 +520,27 @@ export class WebhookTestService {
 			name: user.name,
 			username: user.username,
 			host: user.host,
-			description: 'dummy user',
+			description: "dummy user",
 			isSilenced: false,
 			bypassSilence: false,
 			avatarUrl: user.avatarId == null ? null : user.avatarUrl,
 			avatarBlurhash: user.avatarId == null ? null : user.avatarBlurhash,
-			avatarDecorations: user.avatarDecorations.map(it => ({
+			avatarDecorations: user.avatarDecorations.map((it) => ({
 				id: it.id,
 				angle: it.angle,
 				flipH: it.flipH,
 				flipV: it.flipV,
-				url: 'https://example.com/dummy-image001.png',
+				url: "https://example.com/dummy-image001.png",
 				offsetX: it.offsetX,
 				offsetY: it.offsetY,
 			})),
 			isBot: user.isBot,
 			isCat: user.isCat,
-			emojis: await this.customEmojiService.populateEmojis(user.emojis, user.host),
-			onlineStatus: 'active',
+			emojis: await this.customEmojiService.populateEmojis(
+				user.emojis,
+				user.host,
+			),
+			onlineStatus: "active",
 			badgeRoles: [],
 			isAdmin: false,
 			isModerator: false,
@@ -489,9 +551,12 @@ export class WebhookTestService {
 	}
 
 	@bindThis
-	private async toPackedUserDetailedNotMe(user: MiUser, override?: Packed<'UserDetailedNotMe'>): Promise<Packed<'UserDetailedNotMe'>> {
+	private async toPackedUserDetailedNotMe(
+		user: MiUser,
+		override?: Packed<"UserDetailedNotMe">,
+	): Promise<Packed<"UserDetailedNotMe">> {
 		return {
-			...await this.toPackedUserLite(user),
+			...(await this.toPackedUserLite(user)),
 			url: null,
 			uri: null,
 			movedTo: null,
@@ -502,7 +567,8 @@ export class WebhookTestService {
 			bannerUrl: user.bannerId == null ? null : user.bannerUrl,
 			bannerBlurhash: user.bannerId == null ? null : user.bannerBlurhash,
 			backgroundUrl: user.backgroundId == null ? null : user.backgroundUrl,
-			backgroundBlurhash: user.backgroundId == null ? null : user.backgroundBlurhash,
+			backgroundBlurhash:
+				user.backgroundId == null ? null : user.backgroundBlurhash,
 			listenbrainz: null,
 			isLocked: user.isLocked,
 			isSilenced: false,
@@ -521,9 +587,9 @@ export class WebhookTestService {
 			pinnedPageId: null,
 			pinnedPage: null,
 			publicReactions: true,
-			followersVisibility: 'public',
-			followingVisibility: 'public',
-			chatScope: 'mutual',
+			followersVisibility: "public",
+			followingVisibility: "public",
+			chatScope: "mutual",
 			canChat: true,
 			twoFactorEnabled: false,
 			usePasswordLessLogin: false,
@@ -539,7 +605,7 @@ export class WebhookTestService {
 			isBlocked: false,
 			isMuted: false,
 			isRenoteMuted: false,
-			notify: 'none',
+			notify: "none",
 			withReplies: true,
 			...override,
 		};

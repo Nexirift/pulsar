@@ -3,68 +3,71 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { CaptchaService, supportedCaptchaProviders } from '@/core/CaptchaService.js';
+import { Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import {
+	CaptchaService,
+	supportedCaptchaProviders,
+} from "@/core/CaptchaService.js";
 
 export const meta = {
-	tags: ['admin', 'captcha'],
+	tags: ["admin", "captcha"],
 
 	requireCredential: true,
 	requireAdmin: true,
 
 	// 実態はmetaの取得であるため
-	kind: 'read:admin:meta',
+	kind: "read:admin:meta",
 
 	res: {
-		type: 'object',
+		type: "object",
 		properties: {
 			provider: {
-				type: 'string',
+				type: "string",
 				enum: supportedCaptchaProviders,
 			},
 			hcaptcha: {
-				type: 'object',
+				type: "object",
 				properties: {
-					siteKey: { type: 'string', nullable: true },
-					secretKey: { type: 'string', nullable: true },
+					siteKey: { type: "string", nullable: true },
+					secretKey: { type: "string", nullable: true },
 				},
 			},
 			mcaptcha: {
-				type: 'object',
+				type: "object",
 				properties: {
-					siteKey: { type: 'string', nullable: true },
-					secretKey: { type: 'string', nullable: true },
-					instanceUrl: { type: 'string', nullable: true },
+					siteKey: { type: "string", nullable: true },
+					secretKey: { type: "string", nullable: true },
+					instanceUrl: { type: "string", nullable: true },
 				},
 			},
 			recaptcha: {
-				type: 'object',
+				type: "object",
 				properties: {
-					siteKey: { type: 'string', nullable: true },
-					secretKey: { type: 'string', nullable: true },
+					siteKey: { type: "string", nullable: true },
+					secretKey: { type: "string", nullable: true },
 				},
 			},
 			turnstile: {
-				type: 'object',
+				type: "object",
 				properties: {
-					siteKey: { type: 'string', nullable: true },
-					secretKey: { type: 'string', nullable: true },
+					siteKey: { type: "string", nullable: true },
+					secretKey: { type: "string", nullable: true },
 				},
 			},
 			altcha: {
-				type: 'object',
+				type: "object",
 				properties: {
-					siteKey: { type: 'string', nullable: true },
-					secretKey: { type: 'string', nullable: true },
-					instanceUrl: { type: 'string', nullable: true },
+					siteKey: { type: "string", nullable: true },
+					secretKey: { type: "string", nullable: true },
+					instanceUrl: { type: "string", nullable: true },
 				},
 			},
 			fc: {
-				type: 'object',
+				type: "object",
 				properties: {
-					siteKey: { type: 'string', nullable: true },
-					secretKey: { type: 'string', nullable: true },
+					siteKey: { type: "string", nullable: true },
+					secretKey: { type: "string", nullable: true },
 				},
 			},
 		},
@@ -72,16 +75,15 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {},
 	required: [],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
-	constructor(
-		private captchaService: CaptchaService,
-	) {
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
+	constructor(private captchaService: CaptchaService) {
 		super(meta, paramDef, async () => {
 			return await this.captchaService.get();
 		});

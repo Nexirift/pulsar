@@ -3,31 +3,37 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { jest } from '@jest/globals';
-import { Test, TestingModule } from '@nestjs/testing';
-import { addHours, addSeconds, subDays, subHours, subSeconds } from 'date-fns';
-import { GodOfTimeService } from '../../../misc/GodOfTimeService.js';
-import { MockConsole } from '../../../misc/MockConsole.js';
-import { CheckModeratorsActivityProcessorService } from '@/queue/processors/CheckModeratorsActivityProcessorService.js';
-import { MiSystemWebhook, MiUser, MiUserProfile, UserProfilesRepository, UsersRepository } from '@/models/_.js';
-import { IdService } from '@/core/IdService.js';
-import { RoleService } from '@/core/RoleService.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import { MetaService } from '@/core/MetaService.js';
-import { DI } from '@/di-symbols.js';
-import { QueueLoggerService } from '@/queue/QueueLoggerService.js';
-import { EmailService } from '@/core/EmailService.js';
-import { SystemWebhookService } from '@/core/SystemWebhookService.js';
-import { AnnouncementService } from '@/core/AnnouncementService.js';
-import { SystemWebhookEventType } from '@/models/SystemWebhook.js';
-import { CacheManagementService } from '@/global/CacheManagementService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { CoreModule } from '@/core/CoreModule.js';
-import { QueueProcessorModule } from '@/queue/QueueProcessorModule.js';
+import { jest } from "@jest/globals";
+import { Test, TestingModule } from "@nestjs/testing";
+import { addHours, addSeconds, subDays, subHours, subSeconds } from "date-fns";
+import { GodOfTimeService } from "../../../misc/GodOfTimeService.js";
+import { MockConsole } from "../../../misc/MockConsole.js";
+import { CheckModeratorsActivityProcessorService } from "@/queue/processors/CheckModeratorsActivityProcessorService.js";
+import {
+	MiSystemWebhook,
+	MiUser,
+	MiUserProfile,
+	UserProfilesRepository,
+	UsersRepository,
+} from "@/models/_.js";
+import { IdService } from "@/core/IdService.js";
+import { RoleService } from "@/core/RoleService.js";
+import { GlobalModule } from "@/GlobalModule.js";
+import { MetaService } from "@/core/MetaService.js";
+import { DI } from "@/di-symbols.js";
+import { QueueLoggerService } from "@/queue/QueueLoggerService.js";
+import { EmailService } from "@/core/EmailService.js";
+import { SystemWebhookService } from "@/core/SystemWebhookService.js";
+import { AnnouncementService } from "@/core/AnnouncementService.js";
+import { SystemWebhookEventType } from "@/models/SystemWebhook.js";
+import { CacheManagementService } from "@/global/CacheManagementService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { CoreModule } from "@/core/CoreModule.js";
+import { QueueProcessorModule } from "@/queue/QueueProcessorModule.js";
 
 const baseDate = new Date(Date.UTC(2000, 11, 15, 12, 0, 0));
 
-describe('CheckModeratorsActivityProcessorService', () => {
+describe("CheckModeratorsActivityProcessorService", () => {
 	let app: TestingModule;
 	let timeService: GodOfTimeService;
 	let service: CheckModeratorsActivityProcessorService;
@@ -49,7 +55,10 @@ describe('CheckModeratorsActivityProcessorService', () => {
 
 	// --------------------------------------------------------------------------------------
 
-	async function createUser(data: Partial<MiUser> = {}, profile: Partial<MiUserProfile> = {}): Promise<MiUser> {
+	async function createUser(
+		data: Partial<MiUser> = {},
+		profile: Partial<MiUserProfile> = {},
+	): Promise<MiUser> {
 		const id = idService.gen();
 		const user = await usersRepository
 			.insert({
@@ -58,7 +67,7 @@ describe('CheckModeratorsActivityProcessorService', () => {
 				usernameLower: `user_${id}`.toLowerCase(),
 				...data,
 			})
-			.then(x => usersRepository.findOneByOrFail(x.identifiers[0]));
+			.then((x) => usersRepository.findOneByOrFail(x.identifiers[0]));
 
 		await userProfilesRepository.insert({
 			userId: user.id,
@@ -68,16 +77,18 @@ describe('CheckModeratorsActivityProcessorService', () => {
 		return user;
 	}
 
-	function crateSystemWebhook(data: Partial<MiSystemWebhook> = {}): MiSystemWebhook {
+	function crateSystemWebhook(
+		data: Partial<MiSystemWebhook> = {},
+	): MiSystemWebhook {
 		return {
 			id: idService.gen(),
 			isActive: true,
 			updatedAt: new Date(),
 			latestSentAt: null,
 			latestStatus: null,
-			name: 'test',
-			url: 'https://example.com',
-			secret: 'test',
+			name: "test",
+			url: "https://example.com",
+			secret: "test",
 			on: [],
 			...data,
 		};
@@ -91,24 +102,26 @@ describe('CheckModeratorsActivityProcessorService', () => {
 	// --------------------------------------------------------------------------------------
 
 	beforeAll(async () => {
-		app = await Test
-			.createTestingModule({
-				imports: [
-					GlobalModule,
-					CoreModule,
-					QueueProcessorModule,
-				],
-			})
-			.overrideProvider(TimeService).useClass(GodOfTimeService)
-			.overrideProvider(RoleService).useValue({ getModerators: jest.fn() })
-			.overrideProvider(MetaService).useValue({ fetch: jest.fn() })
-			.overrideProvider(AnnouncementService).useValue({ create: jest.fn() })
-			.overrideProvider(EmailService).useValue({ sendEmail: jest.fn() })
-			.overrideProvider(SystemWebhookService).useValue({
+		app = await Test.createTestingModule({
+			imports: [GlobalModule, CoreModule, QueueProcessorModule],
+		})
+			.overrideProvider(TimeService)
+			.useClass(GodOfTimeService)
+			.overrideProvider(RoleService)
+			.useValue({ getModerators: jest.fn() })
+			.overrideProvider(MetaService)
+			.useValue({ fetch: jest.fn() })
+			.overrideProvider(AnnouncementService)
+			.useValue({ create: jest.fn() })
+			.overrideProvider(EmailService)
+			.useValue({ sendEmail: jest.fn() })
+			.overrideProvider(SystemWebhookService)
+			.useValue({
 				fetchActiveSystemWebhooks: jest.fn(),
 				enqueueSystemWebhook: jest.fn(),
 			})
-			.overrideProvider(DI.console).useClass(MockConsole)
+			.overrideProvider(DI.console)
+			.useClass(MockConsole)
 			.compile();
 
 		await app.init();
@@ -122,9 +135,13 @@ describe('CheckModeratorsActivityProcessorService', () => {
 		cacheManagementService = app.get(CacheManagementService);
 		timeService = app.get<GodOfTimeService>(TimeService);
 		roleService = app.get(RoleService) as jest.Mocked<RoleService>;
-		announcementService = app.get(AnnouncementService) as jest.Mocked<AnnouncementService>;
+		announcementService = app.get(
+			AnnouncementService,
+		) as jest.Mocked<AnnouncementService>;
 		emailService = app.get(EmailService) as jest.Mocked<EmailService>;
-		systemWebhookService = app.get(SystemWebhookService) as jest.Mocked<SystemWebhookService>;
+		systemWebhookService = app.get(
+			SystemWebhookService,
+		) as jest.Mocked<SystemWebhookService>;
 	});
 
 	afterAll(async () => {
@@ -134,14 +151,25 @@ describe('CheckModeratorsActivityProcessorService', () => {
 	beforeEach(async () => {
 		timeService.resetTo(baseDate.getTime());
 
-		systemWebhook1 = crateSystemWebhook({ on: ['inactiveModeratorsWarning'] });
-		systemWebhook2 = crateSystemWebhook({ on: ['inactiveModeratorsWarning', 'inactiveModeratorsInvitationOnlyChanged'] });
-		systemWebhook3 = crateSystemWebhook({ on: ['abuseReport'] });
+		systemWebhook1 = crateSystemWebhook({ on: ["inactiveModeratorsWarning"] });
+		systemWebhook2 = crateSystemWebhook({
+			on: [
+				"inactiveModeratorsWarning",
+				"inactiveModeratorsInvitationOnlyChanged",
+			],
+		});
+		systemWebhook3 = crateSystemWebhook({ on: ["abuseReport"] });
 
 		emailService.sendEmail.mockReturnValue(Promise.resolve());
 		announcementService.create.mockReturnValue(Promise.resolve({} as never));
-		systemWebhookService.fetchActiveSystemWebhooks.mockResolvedValue([systemWebhook1, systemWebhook2, systemWebhook3]);
-		systemWebhookService.enqueueSystemWebhook.mockReturnValue(Promise.resolve({} as never));
+		systemWebhookService.fetchActiveSystemWebhooks.mockResolvedValue([
+			systemWebhook1,
+			systemWebhook2,
+			systemWebhook3,
+		]);
+		systemWebhookService.enqueueSystemWebhook.mockReturnValue(
+			Promise.resolve({} as never),
+		);
 	});
 
 	afterEach(async () => {
@@ -156,7 +184,7 @@ describe('CheckModeratorsActivityProcessorService', () => {
 
 	// --------------------------------------------------------------------------------------
 
-	describe('evaluateModeratorsInactiveDays', () => {
+	describe("evaluateModeratorsInactiveDays", () => {
 		test('[isModeratorsInactive] inactiveなモデレーターがいても他のモデレーターがアクティブなら"運営が非アクティブ"としてみなされない', async () => {
 			const [user1, user2, user3, user4] = await Promise.all([
 				// 期限よりも1秒新しいタイミングでアクティブ化（セーフ）
@@ -191,7 +219,7 @@ describe('CheckModeratorsActivityProcessorService', () => {
 			expect(result.inactiveModerators).toEqual([user1]);
 		});
 
-		test('[remainingTime] 猶予まで24時間ある場合、猶予1日として計算される', async () => {
+		test("[remainingTime] 猶予まで24時間ある場合、猶予1日として計算される", async () => {
 			const [user1, user2] = await Promise.all([
 				createUser({ lastActiveDate: subDays(baseDate, 8) }),
 				// 猶予はこのユーザ基準で計算される想定。
@@ -208,7 +236,7 @@ describe('CheckModeratorsActivityProcessorService', () => {
 			expect(result.remainingTime.asHours).toBe(24);
 		});
 
-		test('[remainingTime] 猶予まで25時間ある場合、猶予1日として計算される', async () => {
+		test("[remainingTime] 猶予まで25時間ある場合、猶予1日として計算される", async () => {
 			const [user1, user2] = await Promise.all([
 				createUser({ lastActiveDate: subDays(baseDate, 8) }),
 				// 猶予はこのユーザ基準で計算される想定。
@@ -225,7 +253,7 @@ describe('CheckModeratorsActivityProcessorService', () => {
 			expect(result.remainingTime.asHours).toBe(25);
 		});
 
-		test('[remainingTime] 猶予まで23時間ある場合、猶予0日として計算される', async () => {
+		test("[remainingTime] 猶予まで23時間ある場合、猶予0日として計算される", async () => {
 			const [user1, user2] = await Promise.all([
 				createUser({ lastActiveDate: subDays(baseDate, 8) }),
 				// 猶予はこのユーザ基準で計算される想定。
@@ -242,7 +270,7 @@ describe('CheckModeratorsActivityProcessorService', () => {
 			expect(result.remainingTime.asHours).toBe(23);
 		});
 
-		test('[remainingTime] 期限ちょうどの場合、猶予0日として計算される', async () => {
+		test("[remainingTime] 期限ちょうどの場合、猶予0日として計算される", async () => {
 			const [user1, user2] = await Promise.all([
 				createUser({ lastActiveDate: subDays(baseDate, 8) }),
 				// 猶予はこのユーザ基準で計算される想定。
@@ -259,7 +287,7 @@ describe('CheckModeratorsActivityProcessorService', () => {
 			expect(result.remainingTime.asHours).toBe(0);
 		});
 
-		test('[remainingTime] 期限より1時間超過している場合、猶予-1日として計算される', async () => {
+		test("[remainingTime] 期限より1時間超過している場合、猶予-1日として計算される", async () => {
 			const [user1, user2] = await Promise.all([
 				createUser({ lastActiveDate: subDays(baseDate, 8) }),
 				// 猶予はこのユーザ基準で計算される想定。
@@ -276,7 +304,7 @@ describe('CheckModeratorsActivityProcessorService', () => {
 			expect(result.remainingTime.asHours).toBe(-1);
 		});
 
-		test('[remainingTime] 期限より25時間超過している場合、猶予-2日として計算される', async () => {
+		test("[remainingTime] 期限より25時間超過している場合、猶予-2日として計算される", async () => {
 			const [user1, user2] = await Promise.all([
 				createUser({ lastActiveDate: subDays(baseDate, 10) }),
 				// 猶予はこのユーザ基準で計算される想定。
@@ -294,47 +322,60 @@ describe('CheckModeratorsActivityProcessorService', () => {
 		});
 	});
 
-	describe('notifyInactiveModeratorsWarning', () => {
-		test('[notification + mail] 通知はモデレータ全員に発信され、メールはメールアドレスが存在＋認証済みの場合のみ', async () => {
+	describe("notifyInactiveModeratorsWarning", () => {
+		test("[notification + mail] 通知はモデレータ全員に発信され、メールはメールアドレスが存在＋認証済みの場合のみ", async () => {
 			const [user1, user2, user3, user4, root] = await Promise.all([
-				createUser({}, { email: 'user1@example.com', emailVerified: true }),
-				createUser({}, { email: 'user2@example.com', emailVerified: false }),
+				createUser({}, { email: "user1@example.com", emailVerified: true }),
+				createUser({}, { email: "user2@example.com", emailVerified: false }),
 				createUser({}, { email: null, emailVerified: false }),
-				createUser({}, { email: 'user4@example.com', emailVerified: true }),
-				createUser({}, { email: 'root@example.com', emailVerified: true }),
+				createUser({}, { email: "user4@example.com", emailVerified: true }),
+				createUser({}, { email: "root@example.com", emailVerified: true }),
 			]);
 
 			mockModeratorRole([user1, user2, user3, root]);
-			await service.notifyInactiveModeratorsWarning({ time: 1, asDays: 0, asHours: 0 });
+			await service.notifyInactiveModeratorsWarning({
+				time: 1,
+				asDays: 0,
+				asHours: 0,
+			});
 
 			expect(emailService.sendEmail).toHaveBeenCalledTimes(2);
-			expect(emailService.sendEmail.mock.calls[0][0]).toBe('user1@example.com');
-			expect(emailService.sendEmail.mock.calls[1][0]).toBe('root@example.com');
+			expect(emailService.sendEmail.mock.calls[0][0]).toBe("user1@example.com");
+			expect(emailService.sendEmail.mock.calls[1][0]).toBe("root@example.com");
 		});
 
 		test('[systemWebhook] "inactiveModeratorsWarning"が有効なSystemWebhookに対して送信される', async () => {
 			const [user1] = await Promise.all([
-				createUser({}, { email: 'user1@example.com', emailVerified: true }),
+				createUser({}, { email: "user1@example.com", emailVerified: true }),
 			]);
 
 			mockModeratorRole([user1]);
-			await service.notifyInactiveModeratorsWarning({ time: 1, asDays: 0, asHours: 0 });
+			await service.notifyInactiveModeratorsWarning({
+				time: 1,
+				asDays: 0,
+				asHours: 0,
+			});
 
 			// typeとactiveによる絞り込みが機能しているかはSystemWebhookServiceのテストで確認する.
 			// ここでは呼び出されているか、typeが正しいかのみを確認する
-			expect(systemWebhookService.enqueueSystemWebhook).toHaveBeenCalledTimes(1);
-			expect(systemWebhookService.enqueueSystemWebhook.mock.calls[0][0] as SystemWebhookEventType).toEqual('inactiveModeratorsWarning');
+			expect(systemWebhookService.enqueueSystemWebhook).toHaveBeenCalledTimes(
+				1,
+			);
+			expect(
+				systemWebhookService.enqueueSystemWebhook.mock
+					.calls[0][0] as SystemWebhookEventType,
+			).toEqual("inactiveModeratorsWarning");
 		});
 	});
 
-	describe('notifyChangeToInvitationOnly', () => {
-		test('[notification + mail] 通知はモデレータ全員に発信され、メールはメールアドレスが存在＋認証済みの場合のみ', async () => {
+	describe("notifyChangeToInvitationOnly", () => {
+		test("[notification + mail] 通知はモデレータ全員に発信され、メールはメールアドレスが存在＋認証済みの場合のみ", async () => {
 			const [user1, user2, user3, user4, root] = await Promise.all([
-				createUser({}, { email: 'user1@example.com', emailVerified: true }),
-				createUser({}, { email: 'user2@example.com', emailVerified: false }),
+				createUser({}, { email: "user1@example.com", emailVerified: true }),
+				createUser({}, { email: "user2@example.com", emailVerified: false }),
 				createUser({}, { email: null, emailVerified: false }),
-				createUser({}, { email: 'user4@example.com', emailVerified: true }),
-				createUser({}, { email: 'root@example.com', emailVerified: true }),
+				createUser({}, { email: "user4@example.com", emailVerified: true }),
+				createUser({}, { email: "root@example.com", emailVerified: true }),
 			]);
 
 			mockModeratorRole([user1, user2, user3, root]);
@@ -347,13 +388,13 @@ describe('CheckModeratorsActivityProcessorService', () => {
 			expect(announcementService.create.mock.calls[3][0].userId).toBe(root.id);
 
 			expect(emailService.sendEmail).toHaveBeenCalledTimes(2);
-			expect(emailService.sendEmail.mock.calls[0][0]).toBe('user1@example.com');
-			expect(emailService.sendEmail.mock.calls[1][0]).toBe('root@example.com');
+			expect(emailService.sendEmail.mock.calls[0][0]).toBe("user1@example.com");
+			expect(emailService.sendEmail.mock.calls[1][0]).toBe("root@example.com");
 		});
 
 		test('[systemWebhook] "inactiveModeratorsInvitationOnlyChanged"が有効なSystemWebhookに対して送信される', async () => {
 			const [user1] = await Promise.all([
-				createUser({}, { email: 'user1@example.com', emailVerified: true }),
+				createUser({}, { email: "user1@example.com", emailVerified: true }),
 			]);
 
 			mockModeratorRole([user1]);
@@ -361,8 +402,13 @@ describe('CheckModeratorsActivityProcessorService', () => {
 
 			// typeとactiveによる絞り込みが機能しているかはSystemWebhookServiceのテストで確認する.
 			// ここでは呼び出されているか、typeが正しいかのみを確認する
-			expect(systemWebhookService.enqueueSystemWebhook).toHaveBeenCalledTimes(1);
-			expect(systemWebhookService.enqueueSystemWebhook.mock.calls[0][0] as SystemWebhookEventType).toEqual('inactiveModeratorsInvitationOnlyChanged');
+			expect(systemWebhookService.enqueueSystemWebhook).toHaveBeenCalledTimes(
+				1,
+			);
+			expect(
+				systemWebhookService.enqueueSystemWebhook.mock
+					.calls[0][0] as SystemWebhookEventType,
+			).toEqual("inactiveModeratorsInvitationOnlyChanged");
 		});
 	});
 });

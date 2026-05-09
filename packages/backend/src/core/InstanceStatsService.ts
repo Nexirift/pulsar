@@ -3,15 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { IsNull, MoreThan } from 'typeorm';
-import { CacheManagementService, type ManagedMemorySingleCache } from '@/global/CacheManagementService.js';
-import NotesChart from '@/core/chart/charts/notes.js';
-import UsersChart from '@/core/chart/charts/users.js';
-import { DI } from '@/di-symbols.js';
-import type { UsersRepository } from '@/models/_.js';
-import { bindThis } from '@/decorators.js';
-import { TimeService } from '@/global/TimeService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { IsNull, MoreThan } from "typeorm";
+import {
+	CacheManagementService,
+	type ManagedMemorySingleCache,
+} from "@/global/CacheManagementService.js";
+import NotesChart from "@/core/chart/charts/notes.js";
+import UsersChart from "@/core/chart/charts/users.js";
+import { DI } from "@/di-symbols.js";
+import type { UsersRepository } from "@/models/_.js";
+import { bindThis } from "@/decorators.js";
+import { TimeService } from "@/global/TimeService.js";
 
 export interface InstanceStats {
 	/**
@@ -56,20 +59,37 @@ export class InstanceStatsService {
 
 		cacheManagementService: CacheManagementService,
 	) {
-		this.localPostsCache = cacheManagementService.createMemorySingleCache<number>('localPosts', 1000 * 60 * 60); // 1h
-		this.localUsersCache = cacheManagementService.createMemorySingleCache<number>('localUsers', 1000 * 60 * 60); // 1h
-		this.activeMonthCache = cacheManagementService.createMemorySingleCache<number>('activeMonth', 1000 * 60 * 60 * 24); // 1d
-		this.activeSixMonthsCache = cacheManagementService.createMemorySingleCache<number>('activeSixMonths', 1000 * 60 * 60 * 24 * 7); // 1w
+		this.localPostsCache =
+			cacheManagementService.createMemorySingleCache<number>(
+				"localPosts",
+				1000 * 60 * 60,
+			); // 1h
+		this.localUsersCache =
+			cacheManagementService.createMemorySingleCache<number>(
+				"localUsers",
+				1000 * 60 * 60,
+			); // 1h
+		this.activeMonthCache =
+			cacheManagementService.createMemorySingleCache<number>(
+				"activeMonth",
+				1000 * 60 * 60 * 24,
+			); // 1d
+		this.activeSixMonthsCache =
+			cacheManagementService.createMemorySingleCache<number>(
+				"activeSixMonths",
+				1000 * 60 * 60 * 24 * 7,
+			); // 1w
 	}
 
 	@bindThis
 	public async fetch(): Promise<InstanceStats> {
-		const [notesTotal, usersTotal, usersActiveMonth, usersActiveSixMonths] = await Promise.all([
-			this.fetchLocalPosts(),
-			this.fetchLocalUsers(),
-			this.fetchActiveMonth(),
-			this.fetchActiveSixMonths(),
-		]);
+		const [notesTotal, usersTotal, usersActiveMonth, usersActiveSixMonths] =
+			await Promise.all([
+				this.fetchLocalPosts(),
+				this.fetchLocalUsers(),
+				this.fetchActiveMonth(),
+				this.fetchActiveSixMonths(),
+			]);
 		return { notesTotal, usersTotal, usersActiveMonth, usersActiveSixMonths };
 	}
 
@@ -102,7 +122,7 @@ export class InstanceStatsService {
 	@bindThis
 	private async fetchLocalUsers(): Promise<number> {
 		return await this.localUsersCache.fetch(async () => {
-			const chart = await this.usersChart.getChart('hour', 1, null);
+			const chart = await this.usersChart.getChart("hour", 1, null);
 			return chart.local.total[0];
 		});
 	}
@@ -110,7 +130,7 @@ export class InstanceStatsService {
 	@bindThis
 	private async fetchLocalPosts(): Promise<number> {
 		return await this.localPostsCache.fetch(async () => {
-			const chart = await this.notesChart.getChart('hour', 1, null);
+			const chart = await this.notesChart.getChart("hour", 1, null);
 			return chart.local.total[0];
 		});
 	}

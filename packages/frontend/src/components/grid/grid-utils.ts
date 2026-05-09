@@ -3,29 +3,36 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { isRef } from 'vue';
-import type { Ref } from 'vue';
-import type { DataSource, SizeStyle } from '@/components/grid/grid.js';
-import { CELL_ADDRESS_NONE } from '@/components/grid/cell.js';
-import type { CellAddress, CellValue, GridCell } from '@/components/grid/cell.js';
-import type { GridRow } from '@/components/grid/row.js';
-import type { GridContext } from '@/components/grid/grid-event.js';
-import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
-import type { GridColumn, GridColumnSetting } from '@/components/grid/column.js';
+import { isRef } from "vue";
+import type { Ref } from "vue";
+import type { DataSource, SizeStyle } from "@/components/grid/grid.js";
+import { CELL_ADDRESS_NONE } from "@/components/grid/cell.js";
+import type {
+	CellAddress,
+	CellValue,
+	GridCell,
+} from "@/components/grid/cell.js";
+import type { GridRow } from "@/components/grid/row.js";
+import type { GridContext } from "@/components/grid/grid-event.js";
+import { copyToClipboard } from "@/utility/copy-to-clipboard.js";
+import type {
+	GridColumn,
+	GridColumnSetting,
+} from "@/components/grid/column.js";
 
 export function isCellElement(elem: HTMLElement): boolean {
-	return elem.hasAttribute('data-grid-cell');
+	return elem.hasAttribute("data-grid-cell");
 }
 
 export function isRowElement(elem: HTMLElement): boolean {
-	return elem.hasAttribute('data-grid-row');
+	return elem.hasAttribute("data-grid-row");
 }
 
 export function calcCellWidth(widthSetting: SizeStyle): string {
 	switch (widthSetting) {
 		case undefined:
-		case 'auto': {
-			return 'auto';
+		case "auto": {
+			return "auto";
 		}
 		default: {
 			return `${widthSetting}px`;
@@ -34,22 +41,25 @@ export function calcCellWidth(widthSetting: SizeStyle): string {
 }
 
 function getCellRowByAttribute(elem: HTMLElement): number {
-	const row = elem.getAttribute('data-grid-cell-row');
+	const row = elem.getAttribute("data-grid-cell-row");
 	if (row === null) {
-		throw new Error('data-grid-cell-row attribute not found');
+		throw new Error("data-grid-cell-row attribute not found");
 	}
 	return Number(row);
 }
 
 function getCellColByAttribute(elem: HTMLElement): number {
-	const col = elem.getAttribute('data-grid-cell-col');
+	const col = elem.getAttribute("data-grid-cell-col");
 	if (col === null) {
-		throw new Error('data-grid-cell-col attribute not found');
+		throw new Error("data-grid-cell-col attribute not found");
 	}
 	return Number(col);
 }
 
-export function getCellAddress(elem: HTMLElement, parentNodeCount = 10): CellAddress {
+export function getCellAddress(
+	elem: HTMLElement,
+	parentNodeCount = 10,
+): CellAddress {
 	let node = elem;
 	for (let i = 0; i < parentNodeCount; i++) {
 		if (!node.parentElement) {
@@ -69,7 +79,10 @@ export function getCellAddress(elem: HTMLElement, parentNodeCount = 10): CellAdd
 	return CELL_ADDRESS_NONE;
 }
 
-export function getCellElement(elem: HTMLElement, parentNodeCount = 10): HTMLElement | null {
+export function getCellElement(
+	elem: HTMLElement,
+	parentNodeCount = 10,
+): HTMLElement | null {
 	let node = elem;
 	for (let i = 0; i < parentNodeCount; i++) {
 		if (isCellElement(node)) {
@@ -108,15 +121,15 @@ export function copyGridDataToClipboard(
 			const value = items[row][bindTo];
 			const transformValue = events?.copy
 				? events.copy(value)
-				: typeof value === 'object' || Array.isArray(value)
+				: typeof value === "object" || Array.isArray(value)
 					? JSON.stringify(value)
-					: value?.toString() ?? '';
+					: (value?.toString() ?? "");
 			rowItems.push(transformValue);
 		}
-		lines.push(rowItems.join('\t'));
+		lines.push(rowItems.join("\t"));
 	}
 
-	const text = lines.join('\n');
+	const text = lines.join("\n");
 	copyToClipboard(text);
 
 	if (_DEV_) {
@@ -137,11 +150,11 @@ export async function pasteToGridFromClipboard(
 			return setting.events.paste(value);
 		} else {
 			switch (setting.type) {
-				case 'number': {
+				case "number": {
 					return Number(value);
 				}
-				case 'boolean': {
-					return value === 'true';
+				case "boolean": {
+					return value === "true";
 				}
 				default: {
 					return value;
@@ -156,16 +169,21 @@ export async function pasteToGridFromClipboard(
 	}
 
 	const bounds = context.randedBounds;
-	const lines = clipBoardText.replace(/\r/g, '')
-		.split('\n')
-		.map(it => it.split('\t'));
+	const lines = clipBoardText
+		.replace(/\r/g, "")
+		.split("\n")
+		.map((it) => it.split("\t"));
 
 	if (lines.length === 1 && lines[0].length === 1) {
 		// 単独文字列の場合は選択範囲全体に同じテキストを貼り付ける
 		const ranges = context.rangedCells;
 		for (const cell of ranges) {
 			if (cell.column.setting.editable) {
-				callback(cell.row, cell.column, parseValue(lines[0][0], cell.column.setting));
+				callback(
+					cell.row,
+					cell.column,
+					parseValue(lines[0][0], cell.column.setting),
+				);
 			}
 		}
 	} else {
@@ -189,7 +207,11 @@ export async function pasteToGridFromClipboard(
 				}
 
 				if (columns[col].setting.editable) {
-					callback(rows[row], columns[col], parseValue(items[colIdx], columns[col].setting));
+					callback(
+						rows[row],
+						columns[col],
+						parseValue(items[colIdx], columns[col].setting),
+					);
 				}
 			}
 		}

@@ -5,9 +5,9 @@
 
 // Crockford's Base32
 // https://github.com/ulid/spec#encoding
-import { parseBigInt32 } from '@/misc/bigint.js';
+import { parseBigInt32 } from "@/misc/bigint.js";
 
-const CHARS = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+const CHARS = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 
 export const ulidRegExp = /^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$/;
 
@@ -19,11 +19,14 @@ function parseBase32(timestamp: string) {
 	return time;
 }
 
-export function parseUlid(id: string): { date: Date; } {
+export function parseUlid(id: string): { date: Date } {
 	return { date: new Date(parseBase32(id.slice(0, 10))) };
 }
 
-export function parseUlidFull(id: string): { date: number; additional: bigint; } {
+export function parseUlidFull(id: string): {
+	date: number;
+	additional: bigint;
+} {
 	return {
 		date: parseBase32(id.slice(0, 10)),
 		additional: parseBigInt32(id.slice(10, 26)),

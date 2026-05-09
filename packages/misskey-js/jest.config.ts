@@ -1,13 +1,13 @@
 /*
-* For a detailed explanation regarding each configuration property and type check, visit:
-* https://jestjs.io/docs/en/configuration.html
-*/
+ * For a detailed explanation regarding each configuration property and type check, visit:
+ * https://jestjs.io/docs/en/configuration.html
+ */
 
 // https://kulshekhar.github.io/ts-jest/docs/getting-started/presets#createdefaultesmpresetoptions
-import { createDefaultEsmPreset, type JestConfigWithTsJest } from 'ts-jest';
+import { createDefaultEsmPreset, type JestConfigWithTsJest } from "ts-jest";
 
 const presetConfig = createDefaultEsmPreset({
-	tsconfig: '<rootDir>/test/tsconfig.json',
+	tsconfig: "<rootDir>/test/tsconfig.json",
 });
 
 export default {
@@ -29,10 +29,10 @@ export default {
 	// collectCoverage: false,
 
 	// An array of glob patterns indicating a set of files for which coverage information should be collected
-	collectCoverageFrom: ['src/**/*.ts'],
+	collectCoverageFrom: ["src/**/*.ts"],
 
 	// The directory where Jest should output its coverage files
-	coverageDirectory: 'coverage',
+	coverageDirectory: "coverage",
 
 	// An array of regexp pattern strings used to skip coverage collection
 	// coveragePathIgnorePatterns: [
@@ -40,7 +40,7 @@ export default {
 	// ],
 
 	// Indicates which provider should be used to instrument code for coverage
-	coverageProvider: 'v8',
+	coverageProvider: "v8",
 
 	// A list of reporter names that Jest uses when writing coverage reports
 	// coverageReporters: [
@@ -89,22 +89,19 @@ export default {
 	//   "tsx",
 	//   "node"
 	// ],
-	moduleFileExtensions: [
-		'ts',
-		'js',
-	],
+	moduleFileExtensions: ["ts", "js"],
 
 	// A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
 	moduleNameMapper: {
 		// Do not resolve .wasm.js to .wasm by the rule below
-		'^(.+)\\.wasm\\.js$': '$1.wasm.js',
+		"^(.+)\\.wasm\\.js$": "$1.wasm.js",
 		// SWC converts @/foo/bar.js to `../../src/foo/bar.js`, and then this rule
 		// converts it again to `../../src/foo/bar` which then can be resolved to
 		// `.ts` files.
 		// See https://github.com/swc-project/jest/issues/64#issuecomment-1029753225
 		// TODO: Use `--allowImportingTsExtensions` on TypeScript 5.0 so that we can
 		// directly import `.ts` files without this hack.
-		'^(\\.{1,2}[\\/\\\\].*)\\.js$': '$1',
+		"^(\\.{1,2}[\\/\\\\].*)\\.js$": "$1",
 	},
 
 	// An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
@@ -142,9 +139,7 @@ export default {
 	// rootDir: undefined,
 
 	// A list of paths to directories that Jest should use to search for files in
-	roots: [
-		'<rootDir>/test',
-	],
+	roots: ["<rootDir>/test"],
 
 	// Allows you to use a custom runner instead of Jest's default test runner
 	// runner: "jest-runner",
@@ -162,7 +157,7 @@ export default {
 	// snapshotSerializers: [],
 
 	// The test environment that will be used for testing
-	testEnvironment: 'node',
+	testEnvironment: "node",
 
 	// Options that will be passed to the testEnvironment
 	// testEnvironmentOptions: {},
@@ -171,9 +166,7 @@ export default {
 	// testLocationInResults: false,
 
 	// The glob patterns Jest uses to detect test files
-	testMatch: [
-		'<rootDir>/test/**/*.ts',
-	],
+	testMatch: ["<rootDir>/test/**/*.ts"],
 
 	// An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
 	// testPathIgnorePatterns: [

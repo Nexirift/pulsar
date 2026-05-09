@@ -3,35 +3,37 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import type { NotesRepository } from '@/models/_.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { QueryService } from '@/core/QueryService.js';
-import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import { DI } from '@/di-symbols.js';
-import { GetterService } from '@/server/api/GetterService.js';
-import { ApiError } from '../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import type { NotesRepository } from "@/models/_.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { QueryService } from "@/core/QueryService.js";
+import { NoteEntityService } from "@/core/entities/NoteEntityService.js";
+import { DI } from "@/di-symbols.js";
+import { GetterService } from "@/server/api/GetterService.js";
+import { ApiError } from "../../error.js";
 
 export const meta = {
-	tags: ['notes'],
+	tags: ["notes"],
 
 	requireCredential: false,
 
 	res: {
-		type: 'array',
-		optional: false, nullable: false,
+		type: "array",
+		optional: false,
+		nullable: false,
 		items: {
-			type: 'object',
-			optional: false, nullable: false,
-			ref: 'Note',
+			type: "object",
+			optional: false,
+			nullable: false,
+			ref: "Note",
 		},
 	},
 
 	errors: {
 		noSuchNote: {
-			message: 'No such note.',
-			code: 'NO_SUCH_NOTE',
-			id: '12908022-2e21-46cd-ba6a-3edaf6093f46',
+			message: "No such note.",
+			code: "NO_SUCH_NOTE",
+			id: "12908022-2e21-46cd-ba6a-3edaf6093f46",
 		},
 	},
 
@@ -44,20 +46,21 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		noteId: { type: 'string', format: 'misskey:id' },
-		userId: { type: 'string', format: 'misskey:id' },
-		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
-		sinceId: { type: 'string', format: 'misskey:id' },
-		untilId: { type: 'string', format: 'misskey:id' },
-		quote: { type: 'boolean', default: false },
+		noteId: { type: "string", format: "misskey:id" },
+		userId: { type: "string", format: "misskey:id" },
+		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+		sinceId: { type: "string", format: "misskey:id" },
+		untilId: { type: "string", format: "misskey:id" },
+		quote: { type: "boolean", default: false },
 	},
-	required: ['noteId'],
+	required: ["noteId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
@@ -67,27 +70,33 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private getterService: GetterService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const note = await this.getterService.getNote(ps.noteId).catch(err => {
-				if (err.id === '9725d0ce-ba28-4dde-95a7-2cbb2c15de24') throw new ApiError(meta.errors.noSuchNote);
+			const note = await this.getterService.getNote(ps.noteId).catch((err) => {
+				if (err.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
+					throw new ApiError(meta.errors.noSuchNote);
 				throw err;
 			});
 
-			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'), ps.sinceId, ps.untilId)
-				.andWhere('note.renoteId = :renoteId', { renoteId: note.id })
-				.innerJoinAndSelect('note.user', 'user')
-				.leftJoinAndSelect('note.reply', 'reply')
-				.leftJoinAndSelect('note.renote', 'renote')
-				.leftJoinAndSelect('reply.user', 'replyUser')
-				.leftJoinAndSelect('renote.user', 'renoteUser');
+			const query = this.queryService
+				.makePaginationQuery(
+					this.notesRepository.createQueryBuilder("note"),
+					ps.sinceId,
+					ps.untilId,
+				)
+				.andWhere("note.renoteId = :renoteId", { renoteId: note.id })
+				.innerJoinAndSelect("note.user", "user")
+				.leftJoinAndSelect("note.reply", "reply")
+				.leftJoinAndSelect("note.renote", "renote")
+				.leftJoinAndSelect("reply.user", "replyUser")
+				.leftJoinAndSelect("renote.user", "renoteUser");
 
 			if (ps.userId) {
-				query.andWhere('user.id = :userId', { userId: ps.userId });
+				query.andWhere("user.id = :userId", { userId: ps.userId });
 			}
 
 			if (ps.quote) {
-				this.queryService.andIsQuote(query, 'note');
+				this.queryService.andIsQuote(query, "note");
 			} else {
-				this.queryService.andIsRenote(query, 'note');
+				this.queryService.andIsRenote(query, "note");
 			}
 
 			this.queryService.generateVisibilityQuery(query, me);

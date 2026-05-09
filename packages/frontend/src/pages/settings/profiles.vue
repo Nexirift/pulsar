@@ -4,33 +4,45 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<SearchMarker path="/settings/profiles" :label="i18n.ts._preferencesProfile.manageProfiles" :keywords="['profile', 'settings', 'preferences', 'manage']" icon="ti ti-settings-cog">
-	<div class="_gaps">
-		<MkButton primary @click="createNew"><i class="ti ti-plus"></i> {{ i18n.ts._preferencesProfile.createNewProfile }}</MkButton>
-		<div v-if="backups.length === 0">
-			<MkInfo warn>{{ i18n.ts.noBackupsFound }}</MkInfo>
+	<SearchMarker
+		path="/settings/profiles"
+		:label="i18n.ts._preferencesProfile.manageProfiles"
+		:keywords="['profile', 'settings', 'preferences', 'manage']"
+		icon="ti ti-settings-cog"
+	>
+		<div class="_gaps">
+			<MkButton primary @click="createNew"
+				><i class="ti ti-plus"></i>
+				{{ i18n.ts._preferencesProfile.createNewProfile }}</MkButton
+			>
+			<div v-if="backups.length === 0">
+				<MkInfo warn>{{ i18n.ts.noBackupsFound }}</MkInfo>
+			</div>
+			<MkFolder v-for="backup in backups" v-else :key="backup.name">
+				<template #label>{{ backup.name }}</template>
+				<MkButton danger @click="del(backup)">{{ i18n.ts.delete }}</MkButton>
+			</MkFolder>
 		</div>
-		<MkFolder v-for="backup in backups" v-else :key="backup.name">
-			<template #label>{{ backup.name }}</template>
-			<MkButton danger @click="del(backup)">{{ i18n.ts.delete }}</MkButton>
-		</MkFolder>
-	</div>
-</SearchMarker>
+	</SearchMarker>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
-import type { MenuItem } from '@/types/menu.js';
-import MkButton from '@/components/MkButton.vue';
-import MkFolder from '@/components/MkFolder.vue';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { $i } from '@/i.js';
-import { i18n } from '@/i18n.js';
-import { definePage } from '@/page.js';
-import { prefer } from '@/preferences.js';
-import { deleteCloudBackup, listCloudBackups, createNewProfile } from '@/preferences/utility.js';
-import MkInfo from '@/components/MkInfo.vue';
+import { ref, computed } from "vue";
+import type { MenuItem } from "@/types/menu.js";
+import MkButton from "@/components/MkButton.vue";
+import MkFolder from "@/components/MkFolder.vue";
+import * as os from "@/os.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { $i } from "@/i.js";
+import { i18n } from "@/i18n.js";
+import { definePage } from "@/page.js";
+import { prefer } from "@/preferences.js";
+import {
+	deleteCloudBackup,
+	listCloudBackups,
+	createNewProfile,
+} from "@/preferences/utility.js";
+import MkInfo from "@/components/MkInfo.vue";
 
 const backups = await listCloudBackups();
 
@@ -48,9 +60,8 @@ const headerTabs = computed(() => []);
 
 definePage(() => ({
 	title: i18n.ts._preferencesProfile.manageProfiles,
-	icon: 'ti ti-settings-cog',
+	icon: "ti ti-settings-cog",
 }));
 </script>
 
-<style lang="scss" module>
-</style>
+<style lang="scss" module></style>

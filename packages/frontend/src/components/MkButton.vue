@@ -4,48 +4,92 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<button
-	v-if="!link"
-	ref="el" class="_button"
-	:class="[$style.root, { [$style.inline]: inline, [$style.primary]: primary, [$style.gradate]: gradate, [$style.accent]: accent, [$style.danger]: danger, [$style.rounded]: rounded, [$style.full]: full, [$style.small]: small, [$style.large]: large, [$style.transparent]: transparent, [$style.asLike]: asLike, [$style.iconOnly]: iconOnly, [$style.wait]: wait }]"
-	:type="type"
-	:name="name"
-	:value="value"
-	:disabled="disabled || wait"
-	@click="emit('click', $event)"
-	@mousedown="onMousedown"
->
-	<div ref="ripples" :class="$style.ripples" :data-children-class="$style.ripple"></div>
-	<div :class="$style.content">
-		<slot></slot>
-	</div>
-</button>
-<MkA
-	v-else class="_button"
-	:class="[$style.root, { [$style.inline]: inline, [$style.primary]: primary, [$style.gradate]: gradate, [$style.accent]: accent, [$style.danger]: danger, [$style.rounded]: rounded, [$style.full]: full, [$style.small]: small, [$style.large]: large, [$style.transparent]: transparent, [$style.asLike]: asLike, [$style.iconOnly]: iconOnly, [$style.wait]: wait }]"
-	:to="to ?? '#'"
-	:behavior="linkBehavior"
-	@mousedown="onMousedown"
->
-	<div ref="ripples" :class="$style.ripples" :data-children-class="$style.ripple"></div>
-	<div :class="$style.content">
-		<slot></slot>
-	</div>
-</MkA>
+	<button
+		v-if="!link"
+		ref="el"
+		class="_button"
+		:class="[
+			$style.root,
+			{
+				[$style.inline]: inline,
+				[$style.primary]: primary,
+				[$style.gradate]: gradate,
+				[$style.accent]: accent,
+				[$style.danger]: danger,
+				[$style.rounded]: rounded,
+				[$style.full]: full,
+				[$style.small]: small,
+				[$style.large]: large,
+				[$style.transparent]: transparent,
+				[$style.asLike]: asLike,
+				[$style.iconOnly]: iconOnly,
+				[$style.wait]: wait,
+			},
+		]"
+		:type="type"
+		:name="name"
+		:value="value"
+		:disabled="disabled || wait"
+		@click="emit('click', $event)"
+		@mousedown="onMousedown"
+	>
+		<div
+			ref="ripples"
+			:class="$style.ripples"
+			:data-children-class="$style.ripple"
+		></div>
+		<div :class="$style.content">
+			<slot></slot>
+		</div>
+	</button>
+	<MkA
+		v-else
+		class="_button"
+		:class="[
+			$style.root,
+			{
+				[$style.inline]: inline,
+				[$style.primary]: primary,
+				[$style.gradate]: gradate,
+				[$style.accent]: accent,
+				[$style.danger]: danger,
+				[$style.rounded]: rounded,
+				[$style.full]: full,
+				[$style.small]: small,
+				[$style.large]: large,
+				[$style.transparent]: transparent,
+				[$style.asLike]: asLike,
+				[$style.iconOnly]: iconOnly,
+				[$style.wait]: wait,
+			},
+		]"
+		:to="to ?? '#'"
+		:behavior="linkBehavior"
+		@mousedown="onMousedown"
+	>
+		<div
+			ref="ripples"
+			:class="$style.ripples"
+			:data-children-class="$style.ripple"
+		></div>
+		<div :class="$style.content">
+			<slot></slot>
+		</div>
+	</MkA>
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, useTemplateRef } from 'vue';
+import { nextTick, onMounted, useTemplateRef } from "vue";
 
 const props = defineProps<{
-	type?: 'button' | 'submit' | 'reset';
+	type?: "button" | "submit" | "reset";
 	primary?: boolean;
 	gradate?: boolean;
 	rounded?: boolean;
 	inline?: boolean;
 	link?: boolean;
 	to?: string;
-	linkBehavior?: null | 'window' | 'browser';
+	linkBehavior?: null | "window" | "browser";
 	autofocus?: boolean;
 	wait?: boolean;
 	accent?: boolean;
@@ -62,11 +106,11 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'click', payload: MouseEvent): void;
+	(ev: "click", payload: MouseEvent): void;
 }>();
 
-const el = useTemplateRef('el');
-const ripples = useTemplateRef('ripples');
+const el = useTemplateRef("el");
+const ripples = useTemplateRef("ripples");
 
 onMounted(() => {
 	if (props.autofocus) {
@@ -93,24 +137,29 @@ function onMousedown(evt: MouseEvent): void {
 	const target = evt.target! as HTMLElement;
 	const rect = target.getBoundingClientRect();
 
-	const ripple = window.document.createElement('div');
+	const ripple = window.document.createElement("div");
 	ripple.classList.add(ripples.value!.dataset.childrenClass!);
-	ripple.style.top = (evt.clientY - rect.top - 1).toString() + 'px';
-	ripple.style.left = (evt.clientX - rect.left - 1).toString() + 'px';
+	ripple.style.top = (evt.clientY - rect.top - 1).toString() + "px";
+	ripple.style.left = (evt.clientX - rect.left - 1).toString() + "px";
 
 	ripples.value!.appendChild(ripple);
 
 	const circleCenterX = evt.clientX - rect.left;
 	const circleCenterY = evt.clientY - rect.top;
 
-	const scale = calcCircleScale(target.clientWidth, target.clientHeight, circleCenterX, circleCenterY);
+	const scale = calcCircleScale(
+		target.clientWidth,
+		target.clientHeight,
+		circleCenterX,
+		circleCenterY,
+	);
 
 	window.setTimeout(() => {
-		ripple.style.transform = 'scale(' + (scale / 2) + ')';
+		ripple.style.transform = "scale(" + scale / 2 + ")";
 	}, 1);
 	window.setTimeout(() => {
-		ripple.style.transition = 'all 1s ease';
-		ripple.style.opacity = '0';
+		ripple.style.transition = "all 1s ease";
+		ripple.style.opacity = "0";
 	}, 1000);
 	window.setTimeout(() => {
 		if (ripples.value) ripples.value.removeChild(ripple);
@@ -224,14 +273,26 @@ function onMousedown(evt: MouseEvent): void {
 	&.gradate {
 		font-weight: bold;
 		color: var(--MI_THEME-fgOnAccent) !important;
-		background: linear-gradient(90deg, var(--MI_THEME-buttonGradateA), var(--MI_THEME-buttonGradateB));
+		background: linear-gradient(
+			90deg,
+			var(--MI_THEME-buttonGradateA),
+			var(--MI_THEME-buttonGradateB)
+		);
 
 		&:not(:disabled):hover {
-			background: linear-gradient(90deg, hsl(from var(--MI_THEME-buttonGradateA) h s calc(l + 5)), hsl(from var(--MI_THEME-buttonGradateB) h s calc(l + 5)));
+			background: linear-gradient(
+				90deg,
+				hsl(from var(--MI_THEME-buttonGradateA) h s calc(l + 5)),
+				hsl(from var(--MI_THEME-buttonGradateB) h s calc(l + 5))
+			);
 		}
 
 		&:not(:disabled):active {
-			background: linear-gradient(90deg, hsl(from var(--MI_THEME-buttonGradateA) h s calc(l + 5)), hsl(from var(--MI_THEME-buttonGradateB) h s calc(l + 5)));
+			background: linear-gradient(
+				90deg,
+				hsl(from var(--MI_THEME-buttonGradateA) h s calc(l + 5)),
+				hsl(from var(--MI_THEME-buttonGradateB) h s calc(l + 5))
+			);
 		}
 	}
 
@@ -314,7 +375,7 @@ function onMousedown(evt: MouseEvent): void {
 	background: rgba(0, 0, 0, 0.1);
 	opacity: 1;
 	transform: scale(1);
-	transition: all 0.5s cubic-bezier(0,.5,0,1);
+	transition: all 0.5s cubic-bezier(0, 0.5, 0, 1);
 }
 
 .content {

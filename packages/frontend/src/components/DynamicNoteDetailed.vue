@@ -6,31 +6,35 @@ Displays a note in the detailed view with either Misskey or Sharkey style, based
 -->
 
 <template>
-<XNoteDetailed
-	ref="rootEl"
-	:note="note"
-	:initialTab="initialTab"
-	:expandAllCws="expandAllCws"
-	@expandMute="n => onExpandNote(n)"
-/>
+	<XNoteDetailed
+		ref="rootEl"
+		:note="note"
+		:initialTab="initialTab"
+		:expandAllCws="expandAllCws"
+		@expandMute="(n) => onExpandNote(n)"
+	/>
 </template>
 
 <script setup lang="ts">
-import * as Misskey from 'misskey-js';
-import { defineAsyncComponent, useTemplateRef, watch } from 'vue';
-import type { ComponentExposed } from 'vue-component-type-helpers';
-import type MkNoteDetailed from '@/components/MkNoteDetailed.vue';
-import type SkNoteDetailed from '@/components/SkNoteDetailed.vue';
-import { prefer } from '@/preferences';
-import { useMuteOverrides } from '@/utility/check-word-mute';
-import { deepAssign } from '@/utility/merge';
+import * as Misskey from "misskey-js";
+import { defineAsyncComponent, useTemplateRef, watch } from "vue";
+import type { ComponentExposed } from "vue-component-type-helpers";
+import type MkNoteDetailed from "@/components/MkNoteDetailed.vue";
+import type SkNoteDetailed from "@/components/SkNoteDetailed.vue";
+import { prefer } from "@/preferences";
+import { useMuteOverrides } from "@/utility/check-word-mute";
+import { deepAssign } from "@/utility/merge";
 
 const XNoteDetailed = defineAsyncComponent(() =>
-	prefer.s.noteDesign === 'misskey'
-		? import('@/components/MkNoteDetailed.vue')
-		: import('@/components/SkNoteDetailed.vue'));
+	prefer.s.noteDesign === "misskey"
+		? import("@/components/MkNoteDetailed.vue")
+		: import("@/components/SkNoteDetailed.vue"),
+);
 
-const rootEl = useTemplateRef<ComponentExposed<typeof MkNoteDetailed | typeof SkNoteDetailed>>('rootEl');
+const rootEl =
+	useTemplateRef<
+		ComponentExposed<typeof MkNoteDetailed | typeof SkNoteDetailed>
+	>("rootEl");
 const muteOverrides = useMuteOverrides();
 
 defineExpose({ rootEl });
@@ -42,18 +46,21 @@ const props = defineProps<{
 }>();
 
 // Expand mandatory CWs when "expand all CWs" is clicked
-watch(() => props.expandAllCws, () => {
-	deepAssign(muteOverrides, {
-		all: {
-			noteMandatoryCW: null,
-			userMandatoryCW: null,
-			instanceMandatoryCW: null,
-		},
-	});
-});
+watch(
+	() => props.expandAllCws,
+	() => {
+		deepAssign(muteOverrides, {
+			all: {
+				noteMandatoryCW: null,
+				userMandatoryCW: null,
+				instanceMandatoryCW: null,
+			},
+		});
+	},
+);
 
 const emit = defineEmits<{
-	(ev: 'expandMute', note: Misskey.entities.Note): void;
+	(ev: "expandMute", note: Misskey.entities.Note): void;
 }>();
 
 function onExpandNote(note: Misskey.entities.Note) {
@@ -75,6 +82,6 @@ function onExpandNote(note: Misskey.entities.Note) {
 		});
 	}
 
-	emit('expandMute', note);
+	emit("expandMute", note);
 }
 </script>

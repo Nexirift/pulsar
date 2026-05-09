@@ -4,39 +4,48 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader :actions="headerActions" :tabs="headerTabs">
-	<div class="_spacer" style="--MI_SPACER-w: 900px;">
-		<div :class="$style.root" class="_gaps">
-			<div :class="$style.subMenus" class="_gaps">
-				<MkButton link to="/admin/abuse-report-notification-recipient" primary>{{ i18n.ts.notificationSetting }}</MkButton>
-			</div>
+	<PageWithHeader :actions="headerActions" :tabs="headerTabs">
+		<div class="_spacer" style="--MI_SPACER-w: 900px">
+			<div :class="$style.root" class="_gaps">
+				<div :class="$style.subMenus" class="_gaps">
+					<MkButton
+						link
+						to="/admin/abuse-report-notification-recipient"
+						primary
+						>{{ i18n.ts.notificationSetting }}</MkButton
+					>
+				</div>
 
-			<MkInfo v-if="!store.r.abusesTutorial.value" closable @close="closeTutorial()">
-				{{ i18n.ts._abuseUserReport.resolveTutorial }}
-			</MkInfo>
+				<MkInfo
+					v-if="!store.r.abusesTutorial.value"
+					closable
+					@close="closeTutorial()"
+				>
+					{{ i18n.ts._abuseUserReport.resolveTutorial }}
+				</MkInfo>
 
-			<div :class="$style.inputs" class="_gaps">
-				<MkSelect v-model="state" style="margin: 0; flex: 1;">
-					<template #label>{{ i18n.ts.state }}</template>
-					<option value="all">{{ i18n.ts.all }}</option>
-					<option value="unresolved">{{ i18n.ts.unresolved }}</option>
-					<option value="resolved">{{ i18n.ts.resolved }}</option>
-				</MkSelect>
-				<MkSelect v-model="targetUserOrigin" style="margin: 0; flex: 1;">
-					<template #label>{{ i18n.ts.reporteeOrigin }}</template>
-					<option value="combined">{{ i18n.ts.all }}</option>
-					<option value="local">{{ i18n.ts.local }}</option>
-					<option value="remote">{{ i18n.ts.remote }}</option>
-				</MkSelect>
-				<MkSelect v-model="reporterOrigin" style="margin: 0; flex: 1;">
-					<template #label>{{ i18n.ts.reporterOrigin }}</template>
-					<option value="combined">{{ i18n.ts.all }}</option>
-					<option value="local">{{ i18n.ts.local }}</option>
-					<option value="remote">{{ i18n.ts.remote }}</option>
-				</MkSelect>
-			</div>
+				<div :class="$style.inputs" class="_gaps">
+					<MkSelect v-model="state" style="margin: 0; flex: 1">
+						<template #label>{{ i18n.ts.state }}</template>
+						<option value="all">{{ i18n.ts.all }}</option>
+						<option value="unresolved">{{ i18n.ts.unresolved }}</option>
+						<option value="resolved">{{ i18n.ts.resolved }}</option>
+					</MkSelect>
+					<MkSelect v-model="targetUserOrigin" style="margin: 0; flex: 1">
+						<template #label>{{ i18n.ts.reporteeOrigin }}</template>
+						<option value="combined">{{ i18n.ts.all }}</option>
+						<option value="local">{{ i18n.ts.local }}</option>
+						<option value="remote">{{ i18n.ts.remote }}</option>
+					</MkSelect>
+					<MkSelect v-model="reporterOrigin" style="margin: 0; flex: 1">
+						<template #label>{{ i18n.ts.reporterOrigin }}</template>
+						<option value="combined">{{ i18n.ts.all }}</option>
+						<option value="local">{{ i18n.ts.local }}</option>
+						<option value="remote">{{ i18n.ts.remote }}</option>
+					</MkSelect>
+				</div>
 
-			<!-- TODO
+				<!-- TODO
 			<div class="inputs" style="display: flex; padding-top: 1.2em;">
 				<MkInput v-model="searchUsername" style="margin: 0; flex: 1;" type="text" :spellcheck="false">
 					<span>{{ i18n.ts.username }}</span>
@@ -47,49 +56,58 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 			-->
 
-			<MkPagination v-slot="{items}" ref="reports" :pagination="pagination" :displayLimit="50">
-				<SkDateSeparatedList v-slot="{ item: report }" :items="items">
-					<XAbuseReport :report="report" :metaHint="metaHint" @resolved="resolved"/>
-				</SkDateSeparatedList>
-			</MkPagination>
+				<MkPagination
+					v-slot="{ items }"
+					ref="reports"
+					:pagination="pagination"
+					:displayLimit="50"
+				>
+					<SkDateSeparatedList v-slot="{ item: report }" :items="items">
+						<XAbuseReport
+							:report="report"
+							:metaHint="metaHint"
+							@resolved="resolved"
+						/>
+					</SkDateSeparatedList>
+				</MkPagination>
+			</div>
 		</div>
-	</div>
-</PageWithHeader>
+	</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { computed, useTemplateRef, ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import MkSelect from '@/components/MkSelect.vue';
-import MkPagination from '@/components/MkPagination.vue';
-import XAbuseReport from '@/components/MkAbuseReport.vue';
-import { i18n } from '@/i18n.js';
-import { definePage } from '@/page.js';
-import MkButton from '@/components/MkButton.vue';
-import MkInfo from '@/components/MkInfo.vue';
-import { store } from '@/store.js';
-import SkDateSeparatedList from '@/components/SkDateSeparatedList.vue';
-import { iAmAdmin } from '@/i';
-import { misskeyApi } from '@/utility/misskey-api';
+import { computed, useTemplateRef, ref } from "vue";
+import * as Misskey from "misskey-js";
+import MkSelect from "@/components/MkSelect.vue";
+import MkPagination from "@/components/MkPagination.vue";
+import XAbuseReport from "@/components/MkAbuseReport.vue";
+import { i18n } from "@/i18n.js";
+import { definePage } from "@/page.js";
+import MkButton from "@/components/MkButton.vue";
+import MkInfo from "@/components/MkInfo.vue";
+import { store } from "@/store.js";
+import SkDateSeparatedList from "@/components/SkDateSeparatedList.vue";
+import { iAmAdmin } from "@/i";
+import { misskeyApi } from "@/utility/misskey-api";
 
-const reports = useTemplateRef('reports');
+const reports = useTemplateRef("reports");
 
-const state = ref('unresolved');
-const reporterOrigin = ref('combined');
-const targetUserOrigin = ref('combined');
-const searchUsername = ref('');
-const searchHost = ref('');
+const state = ref("unresolved");
+const reporterOrigin = ref("combined");
+const targetUserOrigin = ref("combined");
+const searchUsername = ref("");
+const searchHost = ref("");
 
 const metaHint = ref<Misskey.entities.AdminMetaResponse | undefined>(undefined);
 
 if (iAmAdmin) {
-	misskeyApi('admin/meta')
-		.then(meta => metaHint.value = meta)
-		.catch(err => console.error('[MkAbuseReport] Error fetching meta:', err));
+	misskeyApi("admin/meta")
+		.then((meta) => (metaHint.value = meta))
+		.catch((err) => console.error("[MkAbuseReport] Error fetching meta:", err));
 }
 
 const pagination = {
-	endpoint: 'admin/abuse-user-reports' as const,
+	endpoint: "admin/abuse-user-reports" as const,
 	limit: 10,
 	params: computed(() => ({
 		state: state.value,
@@ -103,7 +121,7 @@ function resolved(reportId) {
 }
 
 function closeTutorial() {
-	store.set('abusesTutorial', false);
+	store.set("abusesTutorial", false);
 }
 
 const headerActions = computed(() => []);
@@ -112,7 +130,7 @@ const headerTabs = computed(() => []);
 
 definePage(() => ({
 	title: i18n.ts.abuseReports,
-	icon: 'ti ti-exclamation-circle',
+	icon: "ti ti-exclamation-circle",
 }));
 </script>
 

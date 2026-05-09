@@ -3,12 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { DI } from '@/di-symbols.js';
-import type { AnnouncementsRepository, AnnouncementReadsRepository, MiAnnouncement, MiUser } from '@/models/_.js';
-import type { Packed } from '@/misc/json-schema.js';
-import { bindThis } from '@/decorators.js';
-import { IdService } from '@/core/IdService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { DI } from "@/di-symbols.js";
+import type {
+	AnnouncementsRepository,
+	AnnouncementReadsRepository,
+	MiAnnouncement,
+	MiUser,
+} from "@/models/_.js";
+import type { Packed } from "@/misc/json-schema.js";
+import { bindThis } from "@/decorators.js";
+import { IdService } from "@/core/IdService.js";
 
 @Injectable()
 export class AnnouncementEntityService {
@@ -20,19 +25,19 @@ export class AnnouncementEntityService {
 		private announcementReadsRepository: AnnouncementReadsRepository,
 
 		private idService: IdService,
-	) {
-	}
+	) {}
 
 	@bindThis
 	public async pack(
-		src: MiAnnouncement['id'] | MiAnnouncement & { isRead?: boolean | null },
-		me?: { id: MiUser['id'] } | null | undefined,
-	): Promise<Packed<'Announcement'>> {
-		const announcement = typeof src === 'object'
-			? src
-			: await this.announcementsRepository.findOneByOrFail({
-				id: src,
-			}) as MiAnnouncement & { isRead?: boolean | null };
+		src: MiAnnouncement["id"] | (MiAnnouncement & { isRead?: boolean | null }),
+		me?: { id: MiUser["id"] } | null | undefined,
+	): Promise<Packed<"Announcement">> {
+		const announcement =
+			typeof src === "object"
+				? src
+				: ((await this.announcementsRepository.findOneByOrFail({
+						id: src,
+					})) as MiAnnouncement & { isRead?: boolean | null });
 
 		if (me && announcement.isRead === undefined) {
 			announcement.isRead = await this.announcementReadsRepository
@@ -62,11 +67,20 @@ export class AnnouncementEntityService {
 
 	@bindThis
 	public async packMany(
-		announcements: (MiAnnouncement['id'] | MiAnnouncement & { isRead?: boolean | null } | MiAnnouncement)[],
-		me?: { id: MiUser['id'] } | null | undefined,
-	) : Promise<Packed<'Announcement'>[]> {
-		return (await Promise.allSettled(announcements.map(x => this.pack(x, me))))
-			.filter(result => result.status === 'fulfilled')
-			.map(result => (result as PromiseFulfilledResult<Packed<'Announcement'>>).value);
+		announcements: (
+			| MiAnnouncement["id"]
+			| (MiAnnouncement & { isRead?: boolean | null })
+			| MiAnnouncement
+		)[],
+		me?: { id: MiUser["id"] } | null | undefined,
+	): Promise<Packed<"Announcement">[]> {
+		return (
+			await Promise.allSettled(announcements.map((x) => this.pack(x, me)))
+		)
+			.filter((result) => result.status === "fulfilled")
+			.map(
+				(result) =>
+					(result as PromiseFulfilledResult<Packed<"Announcement">>).value,
+			);
 	}
 }

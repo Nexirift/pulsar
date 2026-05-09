@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { AbortedError } from '@/misc/errors/AbortedError.js';
+import { AbortedError } from "@/misc/errors/AbortedError.js";
 
 export function throwIfAborted(signal: AbortSignal): void {
 	if (signal.aborted) {

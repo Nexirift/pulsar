@@ -1,5 +1,5 @@
-import { FetchFailedError } from '@/misc/errors/FetchFailedError.js';
-import { isRetryableSymbol } from '@/misc/is-retryable-error.js';
+import { FetchFailedError } from "@/misc/errors/FetchFailedError.js";
+import { isRetryableSymbol } from "@/misc/is-retryable-error.js";
 
 /**
  * Thrown when a fetch failed because no value was found for the requested key(s).
@@ -21,7 +21,7 @@ export class KeyNotFoundError extends FetchFailedError {
 	) {
 		const actualMessage = message
 			? `Fetcher did not return a value: ${message}`
-			: 'Fetcher did not return a value.';
+			: "Fetcher did not return a value.";
 		super(cacheName, keyNames, actualMessage, options);
 	}
 }

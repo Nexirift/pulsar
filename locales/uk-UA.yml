@@ -116,7 +116,7 @@ sensitive: "NSFW"
 add: "Додати"
 reaction: "Реакції"
 reactions: "Реакції"
-reactionSettingDescription2: "Перемістити щоб змінити порядок, Клацнути мишою щоб видалити, Натиснути \"+\" щоб додати."
+reactionSettingDescription2: 'Перемістити щоб змінити порядок, Клацнути мишою щоб видалити, Натиснути "+" щоб додати.'
 rememberNoteVisibility: "Пам’ятати параметри видимісті"
 attachCancel: "Видалити вкладення"
 markAsSensitive: "Позначити як NSFW"
@@ -242,8 +242,8 @@ announcements: "Оголошення"
 imageUrl: "Посилання на зображення"
 remove: "Видалити"
 removed: "Видалено"
-removeAreYouSure: "Ви впевнені, що хочете видалити \"{x}\"?"
-deleteAreYouSure: "Ви впевнені, що хочете видалити \"{x}\"?"
+removeAreYouSure: 'Ви впевнені, що хочете видалити "{x}"?'
+deleteAreYouSure: 'Ви впевнені, що хочете видалити "{x}"?'
 resetAreYouSure: "Справді скинути?"
 saved: "Збережено"
 upload: "Завантажити"
@@ -340,7 +340,7 @@ bannerUrl: "URL банера"
 backgroundImageUrl: "URL-адреса фонового зображення"
 basicInfo: "Основна інформація"
 pinnedUsers: "Закріплені користувачі"
-pinnedUsersDescription: "Впишіть в список користувачів, яких хочете закріпити на сторінці \"Знайти\", ім'я в стовпчик."
+pinnedUsersDescription: 'Впишіть в список користувачів, яких хочете закріпити на сторінці "Знайти", ім''я в стовпчик.'
 pinnedPages: "Закріплені сторінки"
 pinnedPagesDescription: "Введіть шляхи сторінок, які ви бажаєте закріпити на головній сторінці цього інстанса, розділені новими рядками."
 pinnedClipId: "Ідентифікатор закріпленої замітки."
@@ -366,7 +366,7 @@ name: "Ім'я"
 antennaSource: "Джерело антени"
 antennaKeywords: "Ключові слова антени"
 antennaExcludeKeywords: "Винятки"
-antennaKeywordsDescription: "Розділення ключових слів пробілами для \"І\" або з нової лінійки для \"АБО\""
+antennaKeywordsDescription: 'Розділення ключових слів пробілами для "І" або з нової лінійки для "АБО"'
 notifyAntenna: "Сповіщати про нові нотатки"
 withFileAntenna: "Тільки нотатки з вкладеними файлами"
 enableServiceworker: "Увімкнути ServiceWorker"
@@ -641,7 +641,7 @@ createNew: "Створити новий"
 optional: "Необов'язково"
 createNewClip: "Створити нотатку"
 unclip: "Незакріплений"
-confirmToUnclipAlreadyClippedNote: "Ця нотатка вже включена до кліпу \"{name}\". Ви хочете виключити нотатку з цього кліпу?"
+confirmToUnclipAlreadyClippedNote: 'Ця нотатка вже включена до кліпу "{name}". Ви хочете виключити нотатку з цього кліпу?'
 public: "Публічний"
 private: "Приватне"
 i18nInfo: "Misskey перекладається на різні мови волонтерами. Ви можете допомогти: {link}"
@@ -664,7 +664,7 @@ driveFilesCount: "Кількість файлів на диску"
 driveUsage: "Використання місця на диску"
 noCrawle: "Заборонити індексацію"
 noCrawleDescription: "Просити пошукові системи не індексувати ваш профіль, нотатки, сторінки тощо."
-lockedAccountInfo: "Якщо видимість вашого запису не встановлена як \"Тільки підписники\", то кожен зможе побачити ваш запис, навіть якщо ви вимагаєте підтвердження підписок вручну."
+lockedAccountInfo: 'Якщо видимість вашого запису не встановлена як "Тільки підписники", то кожен зможе побачити ваш запис, навіть якщо ви вимагаєте підтвердження підписок вручну.'
 alwaysMarkSensitive: "Позначати NSFW за замовчуванням"
 loadRawImages: "Відображати вкладені зображення повністю замість ескізів"
 disableShowingAnimatedImages: "Не програвати анімовані зображення"
@@ -679,8 +679,8 @@ useSystemFont: "Використовувати стандартний шрифт
 clips: "Добірки"
 experimentalFeatures: "Експериментальні функції"
 developer: "Розробник"
-makeExplorable: "Зробіть обліковий запис видимим у розділі \"Огляд\""
-makeExplorableDescription: "Вимкніть, щоб обліковий запис не показувався у розділі \"Огляд\"."
+makeExplorable: 'Зробіть обліковий запис видимим у розділі "Огляд"'
+makeExplorableDescription: 'Вимкніть, щоб обліковий запис не показувався у розділі "Огляд".'
 showGapBetweenNotesInTimeline: "Показувати розрив між записами у стрічці новин"
 duplicate: "Дублікат"
 left: "Лівий"
@@ -735,7 +735,7 @@ unlikeConfirm: "Бажаєте відписатися від подібних?"
 fullView: "Повний перегляд"
 quitFullView: "Повний перегляд"
 addDescription: "Додатковий опис."
-userPagePinTip: "Ви можете зберегти відображені тут нотатки, вибравши \"Закріпити\" в меню окремих нотаток."
+userPagePinTip: 'Ви можете зберегти відображені тут нотатки, вибравши "Закріпити" в меню окремих нотаток.'
 notSpecifiedMentionWarning: "Згадки, не включені до пункту призначення"
 info: "Інформація"
 userInfo: "Інформація про користувача"
@@ -813,7 +813,7 @@ unmuteThread: "Скасувати глушіння"
 continueThread: "Показати продовження треду"
 deleteAccountConfirm: "Це незворотно видалить ваш акаунт. Продовжити?"
 incorrectPassword: "Неправильний пароль."
-voteConfirm: "Підтверджуєте свій голос за \"{choice}\"?"
+voteConfirm: 'Підтверджуєте свій голос за "{choice}"?'
 hide: "Сховати"
 welcomeBackWithName: "З поверненням, {name}!"
 clickToFinishEmailVerification: "Натисніть [{ok}], щоб завершити перевірку email."
@@ -973,7 +973,7 @@ _achievements:
     _login3:
       title: "Новачок I"
       description: "3 дні користування загально"
-      flavor: "Відсьогодні називайте мене \"Місскіст\""
+      flavor: 'Відсьогодні називайте мене "Місскіст"'
     _login7:
       title: "Новачок II"
       description: "7 днів користування загально"
@@ -1075,7 +1075,7 @@ _achievements:
       description: "Переглядати список досягнень принаймні 3 хвилини"
     _iLoveMisskey:
       title: "I Love Misskey"
-      description: "Відправлено \"I ❤ #Misskey\""
+      description: 'Відправлено "I ❤ #Misskey"'
       flavor: "Дякуємо вам, що користуєтесь Misskey!  – команда розробників"
     _foundTreasure:
       title: "Пошуки скарбів"
@@ -1103,7 +1103,7 @@ _achievements:
       title: "Аналітик"
     _outputHelloWorldOnScratchpad:
       title: "Hello, world!"
-      description: "Вивести \"hello world\" у Скретчпаді"
+      description: 'Вивести "hello world" у Скретчпаді'
     _reactWithoutRead:
       title: "Прочитали як слід?"
       description: "Реакція на нотатку, що містить понад 100 символів, протягом 3 секунд після її публікації"
@@ -1115,7 +1115,7 @@ _achievements:
       description: "Можна отримати з ймовірністю 0,01% кожні 10 секунд"
     _setNameToSyuilo:
       title: "Комплекс бога"
-      description: "Встановлено ім'я \"syuilo\""
+      description: 'Встановлено ім''я "syuilo"'
     _passedSinceAccountCreated1:
       title: "Перша річниця"
       description: "Минув рік з моменту створення акаунта"
@@ -1135,7 +1135,7 @@ _achievements:
       flavor: "Чекайте, це вірний сайт?"
     _brainDiver:
       title: "Brain Diver"
-      description: "Відправити посилання на \"Brain Diver\""
+      description: 'Відправити посилання на "Brain Diver"'
       flavor: "Misskey-Misskey La-Tu-Ma"
 _role:
   new: "Нова роль"
@@ -1241,8 +1241,8 @@ _menuDisplay:
   hide: "Сховати"
 _wordMute:
   muteWords: "Заглушені слова"
-  muteWordsDescription: "Розділення ключових слів пробілами для \"І\" або з нової лінійки для \"АБО\""
-  muteWordsDescription2: "Для використання RegEx, ключові слова потрібно вписати поміж слешів \"/\"."
+  muteWordsDescription: 'Розділення ключових слів пробілами для "І" або з нової лінійки для "АБО"'
+  muteWordsDescription2: 'Для використання RegEx, ключові слова потрібно вписати поміж слешів "/".'
 _instanceMute:
   instanceMuteDescription2: "Розділяйте новими рядками"
   title: "Приховує нотатки з перелічених інстансів."
@@ -1271,7 +1271,7 @@ _theme:
   lighten: "Яскравість"
   inputConstantName: "Введіть назву константи"
   importInfo: "Вставляючи сюди код теми, ви можете добавити її до редактору тем"
-  deleteConstantConfirm: "Ви дійсно бажаєте видалити константу \"{const}\"?"
+  deleteConstantConfirm: 'Ви дійсно бажаєте видалити константу "{const}"?'
   keys:
     accent: "Акцент"
     bg: "Фон"
@@ -1367,7 +1367,7 @@ _permissions:
   "read:gallery": "Перегляд галереї"
   "write:chat": "Створювати та видаляти повідомлення"
 _auth:
-  shareAccess: "Ви хочете надати \"{name}\" доступ до цього акаунту?"
+  shareAccess: 'Ви хочете надати "{name}" доступ до цього акаунту?'
   shareAccessAsk: "Ви впевнені, що хочете надати цій програмі доступ до вашого акаунту?"
   denied: "У доступі відмовлено"
 _antennaSources:

@@ -3,18 +3,25 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
-import { MiSystemWebhook } from '@/models/SystemWebhook.js';
-import { MiUserProfile } from '@/models/UserProfile.js';
-import { id } from './util/id.js';
-import { MiUser } from './User.js';
+import {
+	Column,
+	Entity,
+	Index,
+	JoinColumn,
+	ManyToOne,
+	PrimaryColumn,
+} from "typeorm";
+import { MiSystemWebhook } from "@/models/SystemWebhook.js";
+import { MiUserProfile } from "@/models/UserProfile.js";
+import { id } from "./util/id.js";
+import { MiUser } from "./User.js";
 
 /**
  * 通報受信時に通知を送信する方法.
  */
-export type RecipientMethod = 'email' | 'webhook';
+export type RecipientMethod = "email" | "webhook";
 
-@Entity('abuse_report_notification_recipient')
+@Entity("abuse_report_notification_recipient")
 export class MiAbuseReportNotificationRecipient {
 	@PrimaryColumn(id())
 	public id: string;
@@ -22,8 +29,8 @@ export class MiAbuseReportNotificationRecipient {
 	/**
 	 * 有効かどうか.
 	 */
-	@Index('IDX_abuse_report_notification_recipient_isActive')
-	@Column('boolean', {
+	@Index("IDX_abuse_report_notification_recipient_isActive")
+	@Column("boolean", {
 		default: true,
 	})
 	public isActive: boolean;
@@ -31,15 +38,15 @@ export class MiAbuseReportNotificationRecipient {
 	/**
 	 * 更新日時.
 	 */
-	@Column('timestamp with time zone', {
-		default: () => 'CURRENT_TIMESTAMP',
+	@Column("timestamp with time zone", {
+		default: () => "CURRENT_TIMESTAMP",
 	})
 	public updatedAt: Date;
 
 	/**
 	 * 通知設定名.
 	 */
-	@Column('varchar', {
+	@Column("varchar", {
 		length: 255,
 	})
 	public name: string;
@@ -47,8 +54,8 @@ export class MiAbuseReportNotificationRecipient {
 	/**
 	 * 通知方法.
 	 */
-	@Index('IDX_abuse_report_notification_recipient_method')
-	@Column('varchar', {
+	@Index("IDX_abuse_report_notification_recipient_method")
+	@Column("varchar", {
 		length: 64,
 	})
 	public method: RecipientMethod;
@@ -56,35 +63,43 @@ export class MiAbuseReportNotificationRecipient {
 	/**
 	 * 通知先のユーザID.
 	 */
-	@Index('IDX_abuse_report_notification_recipient_userId')
+	@Index("IDX_abuse_report_notification_recipient_userId")
 	@Column({
 		...id(),
 		nullable: true,
 	})
-	public userId: MiUser['id'] | null;
+	public userId: MiUser["id"] | null;
 
 	/**
 	 * 通知先のユーザ.
 	 */
-	@ManyToOne(type => MiUser, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiUser, {
+		onDelete: "CASCADE",
 	})
-	@JoinColumn({ name: 'userId', referencedColumnName: 'id', foreignKeyConstraintName: 'FK_abuse_report_notification_recipient_userId1' })
+	@JoinColumn({
+		name: "userId",
+		referencedColumnName: "id",
+		foreignKeyConstraintName: "FK_abuse_report_notification_recipient_userId1",
+	})
 	public user: MiUser | null;
 
 	/**
 	 * 通知先のユーザプロフィール.
 	 */
-	@ManyToOne(type => MiUserProfile, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiUserProfile, {
+		onDelete: "CASCADE",
 	})
-	@JoinColumn({ name: 'userId', referencedColumnName: 'userId', foreignKeyConstraintName: 'FK_abuse_report_notification_recipient_userId2' })
+	@JoinColumn({
+		name: "userId",
+		referencedColumnName: "userId",
+		foreignKeyConstraintName: "FK_abuse_report_notification_recipient_userId2",
+	})
 	public userProfile: MiUserProfile | null;
 
 	/**
 	 * 通知先のシステムWebhookId.
 	 */
-	@Index('IDX_abuse_report_notification_recipient_systemWebhookId')
+	@Index("IDX_abuse_report_notification_recipient_systemWebhookId")
 	@Column({
 		...id(),
 		nullable: true,
@@ -94,11 +109,12 @@ export class MiAbuseReportNotificationRecipient {
 	/**
 	 * 通知先のシステムWebhook.
 	 */
-	@ManyToOne(type => MiSystemWebhook, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiSystemWebhook, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn({
-		foreignKeyConstraintName: 'FK_abuse_report_notification_recipient_systemWebhookId',
+		foreignKeyConstraintName:
+			"FK_abuse_report_notification_recipient_systemWebhookId",
 	})
 	public systemWebhook: MiSystemWebhook | null;
 }

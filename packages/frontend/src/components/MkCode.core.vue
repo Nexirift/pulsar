@@ -5,15 +5,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <!-- eslint-disable vue/no-v-html -->
 <template>
-<div :class="[$style.codeBlockRoot, { [$style.codeEditor]: codeEditor }, (darkMode ? $style.dark : $style.light)]" v-html="html"></div>
+	<div
+		:class="[
+			$style.codeBlockRoot,
+			{ [$style.codeEditor]: codeEditor },
+			darkMode ? $style.dark : $style.light,
+		]"
+		v-html="html"
+	></div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue';
-import { bundledLanguagesInfo } from 'shiki/langs';
-import type { BundledLanguage } from 'shiki/langs';
-import { getHighlighter, getTheme } from '@/utility/code-highlighter.js';
-import { store } from '@/store.js';
+import { computed, ref, watch } from "vue";
+import { bundledLanguagesInfo } from "shiki/langs";
+import type { BundledLanguage } from "shiki/langs";
+import { getHighlighter, getTheme } from "@/utility/code-highlighter.js";
+import { store } from "@/store.js";
 
 const props = defineProps<{
 	code: string;
@@ -23,23 +30,25 @@ const props = defineProps<{
 
 const highlighter = await getHighlighter();
 const darkMode = store.r.darkMode;
-const codeLang = ref<BundledLanguage | 'aiscript'>('js');
+const codeLang = ref<BundledLanguage | "aiscript">("js");
 
 const [lightThemeName, darkThemeName] = await Promise.all([
-	getTheme('light', true),
-	getTheme('dark', true),
+	getTheme("light", true),
+	getTheme("dark", true),
 ]);
 
-const html = computed(() => highlighter.codeToHtml(props.code, {
-	lang: codeLang.value,
-	themes: {
-		fallback: 'dark-plus',
-		light: lightThemeName,
-		dark: darkThemeName,
-	},
-	defaultColor: false,
-	cssVariablePrefix: '--shiki-',
-}));
+const html = computed(() =>
+	highlighter.codeToHtml(props.code, {
+		lang: codeLang.value,
+		themes: {
+			fallback: "dark-plus",
+			light: lightThemeName,
+			dark: darkThemeName,
+		},
+		defaultColor: false,
+		cssVariablePrefix: "--shiki-",
+	}),
+);
 
 async function fetchLanguage(to: string): Promise<void> {
 	const language = to as BundledLanguage;
@@ -56,39 +65,43 @@ async function fetchLanguage(to: string): Promise<void> {
 			await highlighter.loadLanguage(bundles[0].import);
 			codeLang.value = language;
 		} else {
-			codeLang.value = 'js';
+			codeLang.value = "js";
 		}
 	} else {
 		codeLang.value = language;
 	}
 }
 
-watch(() => props.lang, (to) => {
-	if (codeLang.value === to || !to) return;
-	return new Promise((resolve) => {
-		fetchLanguage(to).then(() => resolve);
-	});
-}, { immediate: true });
+watch(
+	() => props.lang,
+	(to) => {
+		if (codeLang.value === to || !to) return;
+		return new Promise((resolve) => {
+			fetchLanguage(to).then(() => resolve);
+		});
+	},
+	{ immediate: true },
+);
 </script>
 
 <style module lang="scss">
 .codeBlockRoot {
-  text-align: left;
+	text-align: left;
 }
 
 .codeBlockRoot :global(.shiki) > code {
-  counter-reset: step;
-  counter-increment: step 0;
+	counter-reset: step;
+	counter-increment: step 0;
 }
 
 .codeBlockRoot :global(.shiki) > code > span::before {
-  content: counter(step);
-  counter-increment: step;
-  width: 1rem;
-  margin-right: 1.5rem;
-  display: inline-block;
-  text-align: right;
-  color: rgba(115,138,148,.4)
+	content: counter(step);
+	counter-increment: step;
+	width: 1rem;
+	margin-right: 1.5rem;
+	display: inline-block;
+	text-align: right;
+	color: rgba(115, 138, 148, 0.4);
 }
 
 .codeBlockRoot :global(.shiki) {
@@ -97,7 +110,12 @@ watch(() => props.lang, (to) => {
 	overflow: auto;
 	border-radius: var(--MI-radius-sm);
 	border: 1px solid var(--MI_THEME-divider);
-	font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
+	font-family:
+		Consolas,
+		Monaco,
+		Andale Mono,
+		Ubuntu Mono,
+		monospace;
 
 	color: var(--shiki-fallback);
 	background-color: var(--shiki-fallback-bg);
@@ -109,7 +127,12 @@ watch(() => props.lang, (to) => {
 
 	& pre,
 	& code {
-		font-family: Consolas, Monaco, Andale Mono, Ubuntu Mono, monospace;
+		font-family:
+			Consolas,
+			Monaco,
+			Andale Mono,
+			Ubuntu Mono,
+			monospace;
 	}
 }
 
@@ -151,8 +174,8 @@ watch(() => props.lang, (to) => {
 		font-size: 1em;
 		overflow: visible;
 		text-rendering: inherit;
-    text-transform: inherit;
-    white-space: pre;
+		text-transform: inherit;
+		white-space: pre;
 
 		& span {
 			display: inline-block;

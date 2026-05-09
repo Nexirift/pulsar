@@ -4,10 +4,10 @@
  */
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { expect, userEvent, waitFor, within } from '@storybook/test';
-import type { StoryObj } from '@storybook/vue3';
-import { galleryPost } from '../../.storybook/fakes.js';
-import MkGalleryPostPreview from './MkGalleryPostPreview.vue';
+import { expect, userEvent, waitFor, within } from "@storybook/test";
+import type { StoryObj } from "@storybook/vue3";
+import { galleryPost } from "../../.storybook/fakes.js";
+import MkGalleryPostPreview from "./MkGalleryPostPreview.vue";
 export const Default = {
 	render(args) {
 		return {
@@ -31,12 +31,19 @@ export const Default = {
 	},
 	async play({ canvasElement }) {
 		const canvas = within(canvasElement);
-		const links = canvas.getAllByRole('link');
+		const links = canvas.getAllByRole("link");
 		expect(links).toHaveLength(2);
-		expect(links[0]).toHaveAttribute('href', `/gallery/${galleryPost().id}`);
-		expect(links[1]).toHaveAttribute('href', `/@${galleryPost().user.username}@${galleryPost().user.host}`);
-		const images = canvas.getAllByRole<HTMLImageElement>('img');
-		await waitFor(() => expect(Promise.all(images.map((image) => image.decode()))).resolves.toBeDefined());
+		expect(links[0]).toHaveAttribute("href", `/gallery/${galleryPost().id}`);
+		expect(links[1]).toHaveAttribute(
+			"href",
+			`/@${galleryPost().user.username}@${galleryPost().user.host}`,
+		);
+		const images = canvas.getAllByRole<HTMLImageElement>("img");
+		await waitFor(() =>
+			expect(
+				Promise.all(images.map((image) => image.decode())),
+			).resolves.toBeDefined(),
+		);
 	},
 	args: {
 		post: galleryPost(),
@@ -47,7 +54,7 @@ export const Default = {
 		}),
 	],
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 		chromatic: {
 			// FIXME: flaky
 			disableSnapshot: true,
@@ -59,7 +66,7 @@ export const Hover = {
 	async play(context) {
 		await Default.play(context);
 		const canvas = within(context.canvasElement);
-		const links = canvas.getAllByRole('link');
+		const links = canvas.getAllByRole("link");
 		await waitFor(() => userEvent.hover(links[0]));
 	},
 } satisfies StoryObj<typeof MkGalleryPostPreview>;
@@ -68,7 +75,7 @@ export const HoverThenUnhover = {
 	async play(context) {
 		await Hover.play(context);
 		const canvas = within(context.canvasElement);
-		const links = canvas.getAllByRole('link');
+		const links = canvas.getAllByRole("link");
 		await waitFor(() => userEvent.unhover(links[0]));
 	},
 } satisfies StoryObj<typeof MkGalleryPostPreview>;

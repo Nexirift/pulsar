@@ -3,16 +3,23 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { PrimaryColumn, Entity, Index, JoinColumn, Column, ManyToOne } from 'typeorm';
-import { id } from './util/id.js';
-import { MiUser } from './User.js';
+import {
+	PrimaryColumn,
+	Entity,
+	Index,
+	JoinColumn,
+	Column,
+	ManyToOne,
+} from "typeorm";
+import { id } from "./util/id.js";
+import { MiUser } from "./User.js";
 
-@Entity('chat_room')
+@Entity("chat_room")
 export class MiChatRoom {
 	@PrimaryColumn(id())
 	public id: string;
 
-	@Column('varchar', {
+	@Column("varchar", {
 		length: 256,
 	})
 	public name: string;
@@ -21,20 +28,21 @@ export class MiChatRoom {
 	@Column({
 		...id(),
 	})
-	public ownerId: MiUser['id'];
+	public ownerId: MiUser["id"];
 
-	@ManyToOne(type => MiUser, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiUser, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public owner: MiUser | null;
 
-	@Column('varchar', {
-		length: 2048, default: '',
+	@Column("varchar", {
+		length: 2048,
+		default: "",
 	})
 	public description: string;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public isArchived: boolean;

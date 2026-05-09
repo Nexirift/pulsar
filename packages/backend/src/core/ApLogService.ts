@@ -3,20 +3,24 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { createHash } from 'crypto';
-import { Inject, Injectable } from '@nestjs/common';
-import { In, LessThan } from 'typeorm';
-import { DI } from '@/di-symbols.js';
-import { SkApFetchLog, SkApInboxLog, SkApContext } from '@/models/_.js';
-import type { ApContextsRepository, ApFetchLogsRepository, ApInboxLogsRepository } from '@/models/_.js';
-import type { Config } from '@/config.js';
-import { JsonValue } from '@/misc/json-value.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { IdService } from '@/core/IdService.js';
-import { IActivity, IObject } from '@/core/activitypub/type.js';
-import { bindThis } from '@/decorators.js';
-import { QueueService } from '@/core/QueueService.js';
+import { createHash } from "crypto";
+import { Inject, Injectable } from "@nestjs/common";
+import { In, LessThan } from "typeorm";
+import { DI } from "@/di-symbols.js";
+import { SkApFetchLog, SkApInboxLog, SkApContext } from "@/models/_.js";
+import type {
+	ApContextsRepository,
+	ApFetchLogsRepository,
+	ApInboxLogsRepository,
+} from "@/models/_.js";
+import type { Config } from "@/config.js";
+import { JsonValue } from "@/misc/json-value.js";
+import { UtilityService } from "@/core/UtilityService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { IdService } from "@/core/IdService.js";
+import { IActivity, IObject } from "@/core/activitypub/type.js";
+import { bindThis } from "@/decorators.js";
+import { QueueService } from "@/core/QueueService.js";
 
 @Injectable()
 export class ApLogService {
@@ -42,11 +46,17 @@ export class ApLogService {
 	/**
 	 * Creates an inbox log from an activity, and saves it if pre-save is enabled.
 	 */
-	public async createInboxLog(data: Partial<SkApInboxLog> & {
-		activity: IActivity,
-		keyId: string,
-	}): Promise<SkApInboxLog> {
-		const { object: activity, context, contextHash } = extractObjectContext(data.activity);
+	public async createInboxLog(
+		data: Partial<SkApInboxLog> & {
+			activity: IActivity;
+			keyId: string;
+		},
+	): Promise<SkApInboxLog> {
+		const {
+			object: activity,
+			context,
+			contextHash,
+		} = extractObjectContext(data.activity);
 		const host = this.utilityService.extractDbHost(data.keyId);
 
 		const log = new SkApInboxLog({
@@ -77,17 +87,19 @@ export class ApLogService {
 		}
 
 		// Will be UPDATE with preSave, and INSERT without.
-		await this.apInboxLogsRepository.upsert(log, ['id']);
+		await this.apInboxLogsRepository.upsert(log, ["id"]);
 		return log;
 	}
 
 	/**
 	 * Creates a fetch log from an activity, and saves it if pre-save is enabled.
 	 */
-	public async createFetchLog(data: Partial<SkApFetchLog> & {
-		requestUri: string
-		host: string,
-	}): Promise<SkApFetchLog> {
+	public async createFetchLog(
+		data: Partial<SkApFetchLog> & {
+			requestUri: string;
+			host: string;
+		},
+	): Promise<SkApFetchLog> {
 		const log = new SkApFetchLog({
 			id: this.idService.gen(),
 			at: this.timeService.date,
@@ -111,36 +123,42 @@ export class ApLogService {
 		}
 
 		// Will be UPDATE with preSave, and INSERT without.
-		await this.apFetchLogsRepository.upsert(log, ['id']);
+		await this.apFetchLogsRepository.upsert(log, ["id"]);
 		return log;
 	}
 
 	private async saveContext(context: SkApContext): Promise<void> {
 		// https://stackoverflow.com/a/47064558
 		await this.apContextsRepository
-			.createQueryBuilder('activity_context')
+			.createQueryBuilder("activity_context")
 			.insert()
 			.into(SkApContext)
 			.values(context)
-			.orIgnore('md5')
+			.orIgnore("md5")
 			.execute();
 	}
 
 	@bindThis
-	public async deleteObjectLogsDeferred(objectUris: string | string[]): Promise<void> {
-		await this.queueService.createDeleteApLogsJob('object', objectUris);
+	public async deleteObjectLogsDeferred(
+		objectUris: string | string[],
+	): Promise<void> {
+		await this.queueService.createDeleteApLogsJob("object", objectUris);
 	}
 
 	@bindThis
-	public async deleteInboxLogsDeferred(userIds: string | string[]): Promise<void> {
-		await this.queueService.createDeleteApLogsJob('inbox', userIds);
+	public async deleteInboxLogsDeferred(
+		userIds: string | string[],
+	): Promise<void> {
+		await this.queueService.createDeleteApLogsJob("inbox", userIds);
 	}
 
 	/**
 	 * Deletes all logged copies of an object or objects
 	 * @param objectUris URIs / AP IDs of the objects to delete
 	 */
-	public async deleteObjectLogs(objectUris: string | string[]): Promise<number> {
+	public async deleteObjectLogs(
+		objectUris: string | string[],
+	): Promise<number> {
 		if (Array.isArray(objectUris)) {
 			const logsDeleted = await this.apFetchLogsRepository.delete({
 				objectUri: In(objectUris),
@@ -178,7 +196,9 @@ export class ApLogService {
 	 */
 	public async deleteExpiredLogs(): Promise<number> {
 		// This is the date in UTC of the oldest log to KEEP
-		const oldestAllowed = new Date(this.timeService.now - this.config.activityLogging.maxAge);
+		const oldestAllowed = new Date(
+			this.timeService.now - this.config.activityLogging.maxAge,
+		);
 
 		// Delete all logs older than the threshold.
 		const inboxDeleted = await this.deleteExpiredInboxLogs(oldestAllowed);
@@ -205,13 +225,19 @@ export class ApLogService {
 }
 
 export function extractObjectContext<T extends IObject>(input: T) {
-	const object = Object.assign({}, input, { '@context': undefined }) as Omit<T, '@context'>;
-	const { context, contextHash } = parseContext(input['@context']);
+	const object = Object.assign({}, input, { "@context": undefined }) as Omit<
+		T,
+		"@context"
+	>;
+	const { context, contextHash } = parseContext(input["@context"]);
 
 	return { object, context, contextHash };
 }
 
-export function parseContext(input: JsonValue | undefined): { contextHash: string | null, context: SkApContext | null } {
+export function parseContext(input: JsonValue | undefined): {
+	contextHash: string | null;
+	context: SkApContext | null;
+} {
 	// Empty contexts are excluded for easier querying
 	if (input == null) {
 		return {
@@ -220,7 +246,9 @@ export function parseContext(input: JsonValue | undefined): { contextHash: strin
 		};
 	}
 
-	const contextHash = createHash('md5').update(JSON.stringify(input)).digest('base64');
+	const contextHash = createHash("md5")
+		.update(JSON.stringify(input))
+		.digest("base64");
 	const context = new SkApContext({
 		md5: contextHash,
 		json: input,

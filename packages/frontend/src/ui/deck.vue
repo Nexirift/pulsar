@@ -4,117 +4,256 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="[$style.root]">
-	<XTitlebar v-if="prefer.r.showTitlebar.value" style="flex-shrink: 0;"/>
+	<div :class="[$style.root]">
+		<XTitlebar v-if="prefer.r.showTitlebar.value" style="flex-shrink: 0" />
 
-	<div :class="$style.nonTitlebarArea">
-		<XSidebar v-if="!isMobile && prefer.r['deck.navbarPosition'].value === 'left'"/>
+		<div :class="$style.nonTitlebarArea">
+			<XSidebar
+				v-if="!isMobile && prefer.r['deck.navbarPosition'].value === 'left'"
+			/>
 
-		<div :class="[$style.main, { [$style.withWallpaper]: withWallpaper, [$style.withSidebarAndTitlebar]: !isMobile && prefer.r['deck.navbarPosition'].value === 'left' && prefer.r.showTitlebar.value }]" :style="{ backgroundImage: prefer.s['deck.wallpaper'] != null ? `url(${ prefer.s['deck.wallpaper'] })` : null }">
-			<XNavbarH v-if="!isMobile && prefer.r['deck.navbarPosition'].value === 'top'"/>
+			<div
+				:class="[
+					$style.main,
+					{
+						[$style.withWallpaper]: withWallpaper,
+						[$style.withSidebarAndTitlebar]:
+							!isMobile &&
+							prefer.r['deck.navbarPosition'].value === 'left' &&
+							prefer.r.showTitlebar.value,
+					},
+				]"
+				:style="{
+					backgroundImage:
+						prefer.s['deck.wallpaper'] != null
+							? `url(${prefer.s['deck.wallpaper']})`
+							: null,
+				}"
+			>
+				<XNavbarH
+					v-if="!isMobile && prefer.r['deck.navbarPosition'].value === 'top'"
+				/>
 
-			<XAnnouncements v-if="$i"/>
-			<XStatusBars/>
-			<div :class="$style.columnsWrapper">
-				<!-- passive: https://bugs.webkit.org/show_bug.cgi?id=281300 -->
-				<div ref="columnsEl" :class="[$style.columns, { [$style.center]: prefer.r['deck.columnAlign'].value === 'center', [$style.snapScroll]: snapScroll }]" @contextmenu.self.prevent="onContextmenu" @wheel.passive.self="onWheel">
-					<!-- sectionを利用しているのは、deck.vue側でcolumnに対してfirst-of-typeを効かせるため -->
-					<section
-						v-for="ids in layout"
-						:class="$style.section"
-						:style="columns.filter(c => ids.includes(c.id)).some(c => c.flexible) ? { flex: 1, minWidth: '350px' } : { width: Math.max(...columns.filter(c => ids.includes(c.id)).map(c => c.width)) + 'px' }"
+				<XAnnouncements v-if="$i" />
+				<XStatusBars />
+				<div :class="$style.columnsWrapper">
+					<!-- passive: https://bugs.webkit.org/show_bug.cgi?id=281300 -->
+					<div
+						ref="columnsEl"
+						:class="[
+							$style.columns,
+							{
+								[$style.center]:
+									prefer.r['deck.columnAlign'].value === 'center',
+								[$style.snapScroll]: snapScroll,
+							},
+						]"
+						@contextmenu.self.prevent="onContextmenu"
 						@wheel.passive.self="onWheel"
 					>
-						<Suspense>
-							<component
-								:is="columnComponents[columns.find(c => c.id === id)!.type] ?? XTlColumn"
-								v-for="id in ids"
-								:ref="id"
-								:key="id"
-								:class="[$style.column, { '_shadow': withWallpaper }]"
-								:column="columns.find(c => c.id === id)!"
-								:isStacked="ids.length > 1"
-								@headerWheel="onWheel"
-							/>
-							<template #fallback>
-								<MkLoading/>
-							</template>
-						</Suspense>
-					</section>
-					<div v-if="layout.length === 0" class="_panel" :class="$style.onboarding">
-						<div>{{ i18n.ts._deck.introduction }}</div>
-						<div>{{ i18n.ts._deck.introduction2 }}</div>
+						<!-- sectionを利用しているのは、deck.vue側でcolumnに対してfirst-of-typeを効かせるため -->
+						<section
+							v-for="ids in layout"
+							:class="$style.section"
+							:style="
+								columns
+									.filter((c) => ids.includes(c.id))
+									.some((c) => c.flexible)
+									? { flex: 1, minWidth: '350px' }
+									: {
+											width:
+												Math.max(
+													...columns
+														.filter((c) => ids.includes(c.id))
+														.map((c) => c.width),
+												) + 'px',
+										}
+							"
+							@wheel.passive.self="onWheel"
+						>
+							<Suspense>
+								<component
+									:is="
+										columnComponents[columns.find((c) => c.id === id)!.type] ??
+										XTlColumn
+									"
+									v-for="id in ids"
+									:ref="id"
+									:key="id"
+									:class="[$style.column, { _shadow: withWallpaper }]"
+									:column="columns.find((c) => c.id === id)!"
+									:isStacked="ids.length > 1"
+									@headerWheel="onWheel"
+								/>
+								<template #fallback>
+									<MkLoading />
+								</template>
+							</Suspense>
+						</section>
+						<div
+							v-if="layout.length === 0"
+							class="_panel"
+							:class="$style.onboarding"
+						>
+							<div>{{ i18n.ts._deck.introduction }}</div>
+							<div>{{ i18n.ts._deck.introduction2 }}</div>
+						</div>
+					</div>
+
+					<div
+						v-if="prefer.r['deck.menuPosition'].value === 'right'"
+						:class="$style.sideMenu"
+					>
+						<div :class="$style.sideMenuTop">
+							<button
+								v-tooltip.noDelay.left="
+									`${i18n.ts._deck.profile}: ${prefer.s['deck.profile']}`
+								"
+								:class="$style.sideMenuButton"
+								class="_button"
+								@click="switchProfileMenu"
+							>
+								<i class="ti ti-caret-down"></i>
+							</button>
+							<button
+								v-tooltip.noDelay.left="i18n.ts._deck.deleteProfile"
+								:class="$style.sideMenuButton"
+								class="_button"
+								@click="deleteProfile"
+							>
+								<i class="ti ti-trash"></i>
+							</button>
+						</div>
+						<div :class="$style.sideMenuMiddle">
+							<button
+								v-tooltip.noDelay.left="i18n.ts._deck.addColumn"
+								:class="$style.sideMenuButton"
+								class="_button"
+								@click="addColumn"
+							>
+								<i class="ti ti-plus"></i>
+							</button>
+						</div>
+						<div :class="$style.sideMenuBottom">
+							<button
+								v-tooltip.noDelay.left="i18n.ts.settings"
+								:class="$style.sideMenuButton"
+								class="_button"
+								@click="showSettings"
+							>
+								<i class="ti ti-settings-2"></i>
+							</button>
+						</div>
 					</div>
 				</div>
 
-				<div v-if="prefer.r['deck.menuPosition'].value === 'right'" :class="$style.sideMenu">
-					<div :class="$style.sideMenuTop">
-						<button v-tooltip.noDelay.left="`${i18n.ts._deck.profile}: ${prefer.s['deck.profile']}`" :class="$style.sideMenuButton" class="_button" @click="switchProfileMenu"><i class="ti ti-caret-down"></i></button>
-						<button v-tooltip.noDelay.left="i18n.ts._deck.deleteProfile" :class="$style.sideMenuButton" class="_button" @click="deleteProfile"><i class="ti ti-trash"></i></button>
+				<div
+					v-if="prefer.r['deck.menuPosition'].value === 'bottom'"
+					:class="$style.bottomMenu"
+				>
+					<div :class="$style.bottomMenuLeft">
+						<button
+							v-tooltip.noDelay.left="
+								`${i18n.ts._deck.profile}: ${prefer.s['deck.profile']}`
+							"
+							:class="$style.bottomMenuButton"
+							class="_button"
+							@click="switchProfileMenu"
+						>
+							<i class="ti ti-caret-down"></i>
+						</button>
+						<button
+							v-tooltip.noDelay.left="i18n.ts._deck.deleteProfile"
+							:class="$style.bottomMenuButton"
+							class="_button"
+							@click="deleteProfile"
+						>
+							<i class="ti ti-trash"></i>
+						</button>
 					</div>
-					<div :class="$style.sideMenuMiddle">
-						<button v-tooltip.noDelay.left="i18n.ts._deck.addColumn" :class="$style.sideMenuButton" class="_button" @click="addColumn"><i class="ti ti-plus"></i></button>
+					<div :class="$style.bottomMenuMiddle">
+						<button
+							v-tooltip.noDelay.left="i18n.ts._deck.addColumn"
+							:class="$style.bottomMenuButton"
+							class="_button"
+							@click="addColumn"
+						>
+							<i class="ti ti-plus"></i>
+						</button>
 					</div>
-					<div :class="$style.sideMenuBottom">
-						<button v-tooltip.noDelay.left="i18n.ts.settings" :class="$style.sideMenuButton" class="_button" @click="showSettings"><i class="ti ti-settings-2"></i></button>
+					<div :class="$style.bottomMenuRight">
+						<button
+							v-tooltip.noDelay.left="i18n.ts.settings"
+							:class="$style.bottomMenuButton"
+							class="_button"
+							@click="showSettings"
+						>
+							<i class="ti ti-settings-2"></i>
+						</button>
 					</div>
 				</div>
+
+				<XNavbarH
+					v-if="!isMobile && prefer.r['deck.navbarPosition'].value === 'bottom'"
+				/>
+
+				<XMobileFooterMenu
+					v-if="isMobile"
+					v-model:drawerMenuShowing="drawerMenuShowing"
+					v-model:widgetsShowing="widgetsShowing"
+				/>
 			</div>
-
-			<div v-if="prefer.r['deck.menuPosition'].value === 'bottom'" :class="$style.bottomMenu">
-				<div :class="$style.bottomMenuLeft">
-					<button v-tooltip.noDelay.left="`${i18n.ts._deck.profile}: ${prefer.s['deck.profile']}`" :class="$style.bottomMenuButton" class="_button" @click="switchProfileMenu"><i class="ti ti-caret-down"></i></button>
-					<button v-tooltip.noDelay.left="i18n.ts._deck.deleteProfile" :class="$style.bottomMenuButton" class="_button" @click="deleteProfile"><i class="ti ti-trash"></i></button>
-				</div>
-				<div :class="$style.bottomMenuMiddle">
-					<button v-tooltip.noDelay.left="i18n.ts._deck.addColumn" :class="$style.bottomMenuButton" class="_button" @click="addColumn"><i class="ti ti-plus"></i></button>
-				</div>
-				<div :class="$style.bottomMenuRight">
-					<button v-tooltip.noDelay.left="i18n.ts.settings" :class="$style.bottomMenuButton" class="_button" @click="showSettings"><i class="ti ti-settings-2"></i></button>
-				</div>
-			</div>
-
-			<XNavbarH v-if="!isMobile && prefer.r['deck.navbarPosition'].value === 'bottom'"/>
-
-			<XMobileFooterMenu v-if="isMobile" v-model:drawerMenuShowing="drawerMenuShowing" v-model:widgetsShowing="widgetsShowing"/>
 		</div>
-	</div>
 
-	<XCommon v-model:drawerMenuShowing="drawerMenuShowing" v-model:widgetsShowing="widgetsShowing"/>
-</div>
+		<XCommon
+			v-model:drawerMenuShowing="drawerMenuShowing"
+			v-model:widgetsShowing="widgetsShowing"
+		/>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, provide, ref, useTemplateRef } from 'vue';
-import { v4 as uuid } from 'uuid';
-import XCommon from './_common_/common.vue';
-import XSidebar from '@/ui/_common_/navbar.vue';
-import XNavbarH from '@/ui/_common_/navbar-h.vue';
-import XMobileFooterMenu from '@/ui/_common_/mobile-footer-menu.vue';
-import XTitlebar from '@/ui/_common_/titlebar.vue';
-import * as os from '@/os.js';
-import { $i } from '@/i.js';
-import { i18n } from '@/i18n.js';
-import { deviceKind } from '@/utility/device-kind.js';
-import { prefer } from '@/preferences.js';
-import XMainColumn from '@/ui/deck/main-column.vue';
-import XTlColumn from '@/ui/deck/tl-column.vue';
-import XAntennaColumn from '@/ui/deck/antenna-column.vue';
-import XListColumn from '@/ui/deck/list-column.vue';
-import XChannelColumn from '@/ui/deck/channel-column.vue';
-import XNotificationsColumn from '@/ui/deck/notifications-column.vue';
-import XWidgetsColumn from '@/ui/deck/widgets-column.vue';
-import XMentionsColumn from '@/ui/deck/mentions-column.vue';
-import XDirectColumn from '@/ui/deck/direct-column.vue';
-import XRoleTimelineColumn from '@/ui/deck/role-timeline-column.vue';
-import XChatColumn from '@/ui/deck/chat-column.vue';
-import XFollowingColumn from '@/ui/deck/following-column.vue';
-import { mainRouter } from '@/router.js';
-import { columns, layout, columnTypes, switchProfileMenu, addColumn as addColumnToStore, deleteProfile as deleteProfile_ } from '@/deck.js';
-import { DI } from '@/di.js';
+import { defineAsyncComponent, provide, ref, useTemplateRef } from "vue";
+import { v4 as uuid } from "uuid";
+import XCommon from "./_common_/common.vue";
+import XSidebar from "@/ui/_common_/navbar.vue";
+import XNavbarH from "@/ui/_common_/navbar-h.vue";
+import XMobileFooterMenu from "@/ui/_common_/mobile-footer-menu.vue";
+import XTitlebar from "@/ui/_common_/titlebar.vue";
+import * as os from "@/os.js";
+import { $i } from "@/i.js";
+import { i18n } from "@/i18n.js";
+import { deviceKind } from "@/utility/device-kind.js";
+import { prefer } from "@/preferences.js";
+import XMainColumn from "@/ui/deck/main-column.vue";
+import XTlColumn from "@/ui/deck/tl-column.vue";
+import XAntennaColumn from "@/ui/deck/antenna-column.vue";
+import XListColumn from "@/ui/deck/list-column.vue";
+import XChannelColumn from "@/ui/deck/channel-column.vue";
+import XNotificationsColumn from "@/ui/deck/notifications-column.vue";
+import XWidgetsColumn from "@/ui/deck/widgets-column.vue";
+import XMentionsColumn from "@/ui/deck/mentions-column.vue";
+import XDirectColumn from "@/ui/deck/direct-column.vue";
+import XRoleTimelineColumn from "@/ui/deck/role-timeline-column.vue";
+import XChatColumn from "@/ui/deck/chat-column.vue";
+import XFollowingColumn from "@/ui/deck/following-column.vue";
+import { mainRouter } from "@/router.js";
+import {
+	columns,
+	layout,
+	columnTypes,
+	switchProfileMenu,
+	addColumn as addColumnToStore,
+	deleteProfile as deleteProfile_,
+} from "@/deck.js";
+import { DI } from "@/di.js";
 
-const XStatusBars = defineAsyncComponent(() => import('@/ui/_common_/statusbars.vue'));
-const XAnnouncements = defineAsyncComponent(() => import('@/ui/_common_/announcements.vue'));
+const XStatusBars = defineAsyncComponent(
+	() => import("@/ui/_common_/statusbars.vue"),
+);
+const XAnnouncements = defineAsyncComponent(
+	() => import("@/ui/_common_/announcements.vue"),
+);
 
 const columnComponents = {
 	main: XMainColumn,
@@ -132,9 +271,9 @@ const columnComponents = {
 };
 
 mainRouter.navHook = (path, flag): boolean => {
-	if (flag === 'forcePage') return false;
-	const noMainColumn = !columns.value.some(x => x.type === 'main');
-	if (prefer.s['deck.navWindow'] || noMainColumn) {
+	if (flag === "forcePage") return false;
+	const noMainColumn = !columns.value.some((x) => x.type === "main");
+	if (prefer.s["deck.navWindow"] || noMainColumn) {
 		os.pageWindow(path);
 		return true;
 	}
@@ -142,16 +281,16 @@ mainRouter.navHook = (path, flag): boolean => {
 };
 
 const isMobile = ref(window.innerWidth <= 500);
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
 	isMobile.value = window.innerWidth <= 500;
 });
 
 // ポインターイベント非対応用に初期値はUAから出す
-const snapScroll = ref(deviceKind === 'smartphone' || deviceKind === 'tablet');
-const withWallpaper = prefer.s['deck.wallpaper'] != null;
+const snapScroll = ref(deviceKind === "smartphone" || deviceKind === "tablet");
+const withWallpaper = prefer.s["deck.wallpaper"] != null;
 const drawerMenuShowing = ref(false);
 const widgetsShowing = ref(false);
-const gap = prefer.r['deck.columnGap'];
+const gap = prefer.r["deck.columnGap"];
 
 provide(DI.drawerMenuShowing, drawerMenuShowing);
 
@@ -163,16 +302,17 @@ watch(route, () => {
 */
 
 function showSettings() {
-	os.pageWindow('/settings/deck');
+	os.pageWindow("/settings/deck");
 }
 
-const columnsEl = useTemplateRef('columnsEl');
+const columnsEl = useTemplateRef("columnsEl");
 
 const addColumn = async (ev) => {
 	const { canceled, result: column } = await os.select({
 		title: i18n.ts._deck.addColumn,
-		items: columnTypes.map(column => ({
-			value: column, text: i18n.ts._deck._columns[column],
+		items: columnTypes.map((column) => ({
+			value: column,
+			text: i18n.ts._deck._columns[column],
 		})),
 	});
 	if (canceled || column == null) return;
@@ -187,18 +327,25 @@ const addColumn = async (ev) => {
 };
 
 const onContextmenu = (ev) => {
-	os.contextMenu([{
-		text: i18n.ts._deck.addColumn,
-		action: addColumn,
-	}], ev);
+	os.contextMenu(
+		[
+			{
+				text: i18n.ts._deck.addColumn,
+				action: addColumn,
+			},
+		],
+		ev,
+	);
 };
 
 // タッチでスクロールしてるときはスナップスクロールを有効にする
 function pointerEvent(ev: PointerEvent) {
-	snapScroll.value = ev.pointerType === 'touch';
+	snapScroll.value = ev.pointerType === "touch";
 }
 
-window.document.addEventListener('pointerdown', pointerEvent, { passive: true });
+window.document.addEventListener("pointerdown", pointerEvent, {
+	passive: true,
+});
 
 function onWheel(ev: WheelEvent) {
 	// WheelEvent はマウスからしか発火しないのでスナップスクロールは無効化する
@@ -209,21 +356,21 @@ function onWheel(ev: WheelEvent) {
 }
 
 async function deleteProfile() {
-	if (prefer.s['deck.profile'] == null) return;
+	if (prefer.s["deck.profile"] == null) return;
 
 	const { canceled } = await os.confirm({
-		type: 'warning',
-		text: i18n.tsx.deleteAreYouSure({ x: prefer.s['deck.profile'] }),
+		type: "warning",
+		text: i18n.tsx.deleteAreYouSure({ x: prefer.s["deck.profile"] }),
 	});
 	if (canceled) return;
 
-	await deleteProfile_(prefer.s['deck.profile']);
+	await deleteProfile_(prefer.s["deck.profile"]);
 
 	os.success();
 }
 
-window.document.documentElement.style.overflowY = 'hidden';
-window.document.documentElement.style.scrollBehavior = 'auto';
+window.document.documentElement.style.overflowY = "hidden";
+window.document.documentElement.style.scrollBehavior = "auto";
 </script>
 
 <style lang="scss" module>

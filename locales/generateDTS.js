@@ -1,9 +1,9 @@
-import * as fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname } from 'node:path';
-import * as yaml from 'js-yaml';
-import ts from 'typescript';
-import { merge } from './index.js';
+import * as fs from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+import * as yaml from "js-yaml";
+import ts from "typescript";
+import { merge } from "./index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -13,7 +13,7 @@ const __dirname = dirname(__filename);
 const parameterRegExp = /(?<!\\)\{(\w+)\}/g;
 
 function createMemberType(item) {
-	if (typeof item !== 'string') {
+	if (typeof item !== "string") {
 		return ts.factory.createTypeLiteralNode(createMembers(item));
 	}
 	const parameters = Array.from(
@@ -22,7 +22,7 @@ function createMemberType(item) {
 	);
 	return parameters.length
 		? ts.factory.createTypeReferenceNode(
-				ts.factory.createIdentifier('ParameterizedString'),
+				ts.factory.createIdentifier("ParameterizedString"),
 				[
 					ts.factory.createUnionTypeNode(
 						parameters.map((parameter) =>
@@ -42,12 +42,12 @@ function createMembers(record) {
 			undefined,
 			createMemberType(v),
 		);
-		if (typeof v === 'string') {
+		if (typeof v === "string") {
 			ts.addSyntheticLeadingComment(
 				node,
 				ts.SyntaxKind.MultiLineCommentTrivia,
 				`*
- * ${v.replace(/\n/g, '\n * ')}
+ * ${v.replace(/\n/g, "\n * ")}
  `,
 				true,
 			);
@@ -57,11 +57,24 @@ function createMembers(record) {
 }
 
 export default function generateDTS() {
-	const sharkeyLocale = yaml.load(fs.readFileSync(`${__dirname}/../sharkey-locales/en-US.yml`, 'utf-8'));
-	const pulsarLocale = yaml.load(fs.readFileSync(`${__dirname}/../pulsar-locales/en-US.yml`, 'utf-8'));
-	const misskeyLocaleJP = yaml.load(fs.readFileSync(`${__dirname}/ja-JP.yml`, 'utf-8'));
-	const misskeyLocaleEN = yaml.load(fs.readFileSync(`${__dirname}/en-US.yml`, 'utf-8'));
-	const locale = merge(misskeyLocaleJP, misskeyLocaleEN, sharkeyLocale, pulsarLocale);
+	const sharkeyLocale = yaml.load(
+		fs.readFileSync(`${__dirname}/../sharkey-locales/en-US.yml`, "utf-8"),
+	);
+	const pulsarLocale = yaml.load(
+		fs.readFileSync(`${__dirname}/../pulsar-locales/en-US.yml`, "utf-8"),
+	);
+	const misskeyLocaleJP = yaml.load(
+		fs.readFileSync(`${__dirname}/ja-JP.yml`, "utf-8"),
+	);
+	const misskeyLocaleEN = yaml.load(
+		fs.readFileSync(`${__dirname}/en-US.yml`, "utf-8"),
+	);
+	const locale = merge(
+		misskeyLocaleJP,
+		misskeyLocaleEN,
+		sharkeyLocale,
+		pulsarLocale,
+	);
 
 	const members = createMembers(locale);
 	const elements = [
@@ -70,7 +83,7 @@ export default function generateDTS() {
 			ts.factory.createVariableDeclarationList(
 				[
 					ts.factory.createVariableDeclaration(
-						ts.factory.createIdentifier('kParameters'),
+						ts.factory.createIdentifier("kParameters"),
 						undefined,
 						ts.factory.createTypeOperatorNode(
 							ts.SyntaxKind.UniqueKeyword,
@@ -84,11 +97,11 @@ export default function generateDTS() {
 		),
 		ts.factory.createInterfaceDeclaration(
 			[ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
-			ts.factory.createIdentifier('ParameterizedString'),
+			ts.factory.createIdentifier("ParameterizedString"),
 			[
 				ts.factory.createTypeParameterDeclaration(
 					undefined,
-					ts.factory.createIdentifier('T'),
+					ts.factory.createIdentifier("T"),
 					ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
 					ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
 				),
@@ -98,11 +111,11 @@ export default function generateDTS() {
 				ts.factory.createPropertySignature(
 					undefined,
 					ts.factory.createComputedPropertyName(
-						ts.factory.createIdentifier('kParameters'),
+						ts.factory.createIdentifier("kParameters"),
 					),
 					undefined,
 					ts.factory.createTypeReferenceNode(
-						ts.factory.createIdentifier('T'),
+						ts.factory.createIdentifier("T"),
 						undefined,
 					),
 				),
@@ -110,7 +123,7 @@ export default function generateDTS() {
 		),
 		ts.factory.createInterfaceDeclaration(
 			[ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
-			ts.factory.createIdentifier('ILocale'),
+			ts.factory.createIdentifier("ILocale"),
 			undefined,
 			undefined,
 			[
@@ -120,7 +133,7 @@ export default function generateDTS() {
 						ts.factory.createParameterDeclaration(
 							undefined,
 							undefined,
-							ts.factory.createIdentifier('_'),
+							ts.factory.createIdentifier("_"),
 							undefined,
 							ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
 							undefined,
@@ -129,10 +142,10 @@ export default function generateDTS() {
 					ts.factory.createUnionTypeNode([
 						ts.factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
 						ts.factory.createTypeReferenceNode(
-							ts.factory.createIdentifier('ParameterizedString'),
+							ts.factory.createIdentifier("ParameterizedString"),
 						),
 						ts.factory.createTypeReferenceNode(
-							ts.factory.createIdentifier('ILocale'),
+							ts.factory.createIdentifier("ILocale"),
 							undefined,
 						),
 					]),
@@ -141,12 +154,12 @@ export default function generateDTS() {
 		),
 		ts.factory.createInterfaceDeclaration(
 			[ts.factory.createToken(ts.SyntaxKind.ExportKeyword)],
-			ts.factory.createIdentifier('Locale'),
+			ts.factory.createIdentifier("Locale"),
 			undefined,
 			[
 				ts.factory.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [
 					ts.factory.createExpressionWithTypeArguments(
-						ts.factory.createIdentifier('ILocale'),
+						ts.factory.createIdentifier("ILocale"),
 						undefined,
 					),
 				]),
@@ -158,7 +171,7 @@ export default function generateDTS() {
 			ts.factory.createVariableDeclarationList(
 				[
 					ts.factory.createVariableDeclaration(
-						ts.factory.createIdentifier('locales'),
+						ts.factory.createIdentifier("locales"),
 						undefined,
 						ts.factory.createTypeLiteralNode([
 							ts.factory.createIndexSignature(
@@ -167,7 +180,7 @@ export default function generateDTS() {
 									ts.factory.createParameterDeclaration(
 										undefined,
 										undefined,
-										ts.factory.createIdentifier('lang'),
+										ts.factory.createIdentifier("lang"),
 										undefined,
 										ts.factory.createKeywordTypeNode(
 											ts.SyntaxKind.StringKeyword,
@@ -176,7 +189,7 @@ export default function generateDTS() {
 									),
 								],
 								ts.factory.createTypeReferenceNode(
-									ts.factory.createIdentifier('Locale'),
+									ts.factory.createIdentifier("Locale"),
 									undefined,
 								),
 							),
@@ -190,33 +203,33 @@ export default function generateDTS() {
 		ts.factory.createFunctionDeclaration(
 			[ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
 			undefined,
-			ts.factory.createIdentifier('build'),
+			ts.factory.createIdentifier("build"),
 			undefined,
 			[],
 			ts.factory.createTypeReferenceNode(
-				ts.factory.createIdentifier('Locale'),
+				ts.factory.createIdentifier("Locale"),
 				undefined,
 			),
 			undefined,
 		),
-		ts.factory.createExportDefault(ts.factory.createIdentifier('locales')),
+		ts.factory.createExportDefault(ts.factory.createIdentifier("locales")),
 	];
 	ts.addSyntheticLeadingComment(
 		elements[0],
 		ts.SyntaxKind.MultiLineCommentTrivia,
-		' eslint-disable ',
+		" eslint-disable ",
 		true,
 	);
 	ts.addSyntheticLeadingComment(
 		elements[0],
 		ts.SyntaxKind.SingleLineCommentTrivia,
-		' This file is generated by locales/generateDTS.js',
+		" This file is generated by locales/generateDTS.js",
 		true,
 	);
 	ts.addSyntheticLeadingComment(
 		elements[0],
 		ts.SyntaxKind.SingleLineCommentTrivia,
-		' Do not edit this file directly.',
+		" Do not edit this file directly.",
 		true,
 	);
 	const printed = ts
@@ -227,13 +240,13 @@ export default function generateDTS() {
 			ts.ListFormat.MultiLine,
 			ts.factory.createNodeArray(elements),
 			ts.createSourceFile(
-				'index.d.ts',
-				'',
+				"index.d.ts",
+				"",
 				ts.ScriptTarget.ESNext,
 				true,
 				ts.ScriptKind.TS,
 			),
 		);
 
-	fs.writeFileSync(`${__dirname}/index.d.ts`, printed, 'utf-8');
+	fs.writeFileSync(`${__dirname}/index.d.ts`, printed, "utf-8");
 }

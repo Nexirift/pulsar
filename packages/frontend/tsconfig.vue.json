@@ -18,10 +18,7 @@
 			"./node_modules/@vue-macros",
 			"./node_modules"
 		],
-		"types": [
-			"vite/client",
-			"vitest/importMeta"
-		],
+		"types": ["vite/client", "vitest/importMeta"],
 		"jsx": "preserve"
 	},
 	"include": [
@@ -32,8 +29,5 @@
 		"./test/**/*.vue",
 		"./@types/**/*.ts"
 	],
-	"exclude": [
-		"node_modules",
-		".storybook/**/*"
-	]
+	"exclude": ["node_modules", ".storybook/**/*"]
 }

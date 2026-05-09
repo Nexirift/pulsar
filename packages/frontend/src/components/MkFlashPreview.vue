@@ -4,25 +4,34 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkA :to="`/play/${flash.id}`" class="vhpxefrk _panel" :class="[{ gray: flash.visibility === 'private' }]">
-	<article>
-		<header>
-			<h1 :title="flash.title">{{ flash.title }}</h1>
-		</header>
-		<p v-if="flash.summary" :title="flash.summary">
-			<Mfm class="summaryMfm" :text="flash.summary" :plain="true" :nowrap="true"/>
-		</p>
-		<footer>
-			<img class="icon" :src="flash.user.avatarUrl"/>
-			<MkUserName :key="flash.user.id" :user="flash.user"/>
-		</footer>
-	</article>
-</MkA>
+	<MkA
+		:to="`/play/${flash.id}`"
+		class="vhpxefrk _panel"
+		:class="[{ gray: flash.visibility === 'private' }]"
+	>
+		<article>
+			<header>
+				<h1 :title="flash.title">{{ flash.title }}</h1>
+			</header>
+			<p v-if="flash.summary" :title="flash.summary">
+				<Mfm
+					class="summaryMfm"
+					:text="flash.summary"
+					:plain="true"
+					:nowrap="true"
+				/>
+			</p>
+			<footer>
+				<img class="icon" :src="flash.user.avatarUrl" />
+				<MkUserName :key="flash.user.id" :user="flash.user" />
+			</footer>
+		</article>
+	</MkA>
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
-import * as Misskey from 'misskey-js';
+import {} from "vue";
+import * as Misskey from "misskey-js";
 
 const props = defineProps<{
 	flash: Misskey.entities.Flash;
@@ -91,7 +100,16 @@ const props = defineProps<{
 
 	&:global(.gray) {
 		--c: var(--MI_THEME-bg);
-		background-image: linear-gradient(45deg, var(--c) 16.67%, transparent 16.67%, transparent 50%, var(--c) 50%, var(--c) 66.67%, transparent 66.67%, transparent 100%);
+		background-image: linear-gradient(
+			45deg,
+			var(--c) 16.67%,
+			transparent 16.67%,
+			transparent 50%,
+			var(--c) 50%,
+			var(--c) 66.67%,
+			transparent 66.67%,
+			transparent 100%
+		);
 		background-size: 16px 16px;
 	}
 
@@ -127,5 +145,4 @@ const props = defineProps<{
 		}
 	}
 }
-
 </style>

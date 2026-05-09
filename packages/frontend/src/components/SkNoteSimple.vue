@@ -6,38 +6,67 @@ Simple view of a note in the Sharkey style. Used in quote renotes, link previews
 -->
 
 <template>
-<SkMutedNote :note="note" :skipMute="skipMute" :class="$style.root" @expandMute="n => emit('expandMute', n)">
-	<MkAvatar :class="$style.avatar" :user="note.user" link preview/>
-	<div :class="$style.main">
-		<MkNoteHeader :class="$style.header" :classic="true" :note="note" :mini="true"/>
-		<div>
-			<p v-if="props.note.cw != null" :class="$style.cw">
-				<Mfm v-if="props.note.cw != ''" style="margin-right: 8px;" :text="props.note.cw" :isBlock="true" :author="note.user" :nyaize="'respect'" :emojiUrls="note.emojis"/>
-				<MkCwButton v-model="showContent" :text="note.text" :files="note.files" :poll="note.poll" @click.stop/>
-			</p>
-			<div v-show="props.note.cw == null || showContent">
-				<MkSubNoteContent :hideFiles="hideFiles" :class="$style.text" :note="note" :expandAllCws="props.expandAllCws"/>
+	<SkMutedNote
+		:note="note"
+		:skipMute="skipMute"
+		:class="$style.root"
+		@expandMute="(n) => emit('expandMute', n)"
+	>
+		<MkAvatar :class="$style.avatar" :user="note.user" link preview />
+		<div :class="$style.main">
+			<MkNoteHeader
+				:class="$style.header"
+				:classic="true"
+				:note="note"
+				:mini="true"
+			/>
+			<div>
+				<p v-if="props.note.cw != null" :class="$style.cw">
+					<Mfm
+						v-if="props.note.cw != ''"
+						style="margin-right: 8px"
+						:text="props.note.cw"
+						:isBlock="true"
+						:author="note.user"
+						:nyaize="'respect'"
+						:emojiUrls="note.emojis"
+					/>
+					<MkCwButton
+						v-model="showContent"
+						:text="note.text"
+						:files="note.files"
+						:poll="note.poll"
+						@click.stop
+					/>
+				</p>
+				<div v-show="props.note.cw == null || showContent">
+					<MkSubNoteContent
+						:hideFiles="hideFiles"
+						:class="$style.text"
+						:note="note"
+						:expandAllCws="props.expandAllCws"
+					/>
+				</div>
 			</div>
 		</div>
-	</div>
-</SkMutedNote>
+	</SkMutedNote>
 </template>
 
 <script lang="ts" setup>
-import { watch, ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import MkNoteHeader from '@/components/MkNoteHeader.vue';
-import MkSubNoteContent from '@/components/MkSubNoteContent.vue';
-import MkCwButton from '@/components/MkCwButton.vue';
-import { prefer } from '@/preferences.js';
-import { setupNoteViewInterruptors } from '@/plugin.js';
-import { deepClone } from '@/utility/clone.js';
-import SkMutedNote from '@/components/SkMutedNote.vue';
+import { watch, ref } from "vue";
+import * as Misskey from "misskey-js";
+import MkNoteHeader from "@/components/MkNoteHeader.vue";
+import MkSubNoteContent from "@/components/MkSubNoteContent.vue";
+import MkCwButton from "@/components/MkCwButton.vue";
+import { prefer } from "@/preferences.js";
+import { setupNoteViewInterruptors } from "@/plugin.js";
+import { deepClone } from "@/utility/clone.js";
+import SkMutedNote from "@/components/SkMutedNote.vue";
 
 const props = defineProps<{
 	note: Misskey.entities.Note & {
-		isSchedule?: boolean,
-		scheduledNoteId?: string
+		isSchedule?: boolean;
+		scheduledNoteId?: string;
 	};
 	expandAllCws?: boolean;
 	skipMute?: boolean;
@@ -45,8 +74,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'editScheduleNote'): void;
-	(ev: 'expandMute', note: Misskey.entities.Note): void;
+	(ev: "editScheduleNote"): void;
+	(ev: "expandMute", note: Misskey.entities.Note): void;
 }>();
 
 let showContent = ref(prefer.s.uncollapseCW);
@@ -55,9 +84,12 @@ const note = ref(deepClone(props.note));
 
 setupNoteViewInterruptors(note, null);
 
-watch(() => props.expandAllCws, (expandAllCws) => {
-	if (expandAllCws !== showContent.value) showContent.value = expandAllCws;
-});
+watch(
+	() => props.expandAllCws,
+	(expandAllCws) => {
+		if (expandAllCws !== showContent.value) showContent.value = expandAllCws;
+	},
+);
 </script>
 
 <style lang="scss" module>
@@ -67,9 +99,10 @@ watch(() => props.expandAllCws, (expandAllCws) => {
 	padding: 0;
 	font-size: 0.95em;
 
-	&:hover, &:focus-within {
+	&:hover,
+	&:focus-within {
 		background: var(--MI_THEME-panelHighlight);
-		transition: background .2s;
+		transition: background 0.2s;
 	}
 }
 

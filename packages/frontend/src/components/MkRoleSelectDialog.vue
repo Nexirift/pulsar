@@ -4,73 +4,98 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkModalWindow
-	ref="windowEl"
-	:withOkButton="false"
-	:okButtonDisabled="false"
-	:width="400"
-	:height="500"
-	@close="onCloseModalWindow"
-	@closed="emit('closed')"
->
-	<template #header>{{ title }}</template>
-	<div class="_spacer" style="--MI_SPACER-min: 20px; --MI_SPACER-max: 28px;">
-		<MkLoading v-if="fetching"/>
-		<div v-else class="_gaps" :class="$style.root">
-			<div :class="$style.header">
-				<MkButton rounded @click="addRole"><i class="ti ti-plus"></i> {{ i18n.ts.add }}</MkButton>
-			</div>
+	<MkModalWindow
+		ref="windowEl"
+		:withOkButton="false"
+		:okButtonDisabled="false"
+		:width="400"
+		:height="500"
+		@close="onCloseModalWindow"
+		@closed="emit('closed')"
+	>
+		<template #header>{{ title }}</template>
+		<div class="_spacer" style="--MI_SPACER-min: 20px; --MI_SPACER-max: 28px">
+			<MkLoading v-if="fetching" />
+			<div v-else class="_gaps" :class="$style.root">
+				<div :class="$style.header">
+					<MkButton rounded @click="addRole"
+						><i class="ti ti-plus"></i> {{ i18n.ts.add }}</MkButton
+					>
+				</div>
 
-			<div v-if="selectedRoles.length > 0" class="_gaps" :class="$style.roleItemArea">
-				<div v-for="role in selectedRoles" :key="role.id" :class="$style.roleItem">
-					<MkRolePreview :class="$style.role" :role="role" :forModeration="true" :detailed="false" style="pointer-events: none;"/>
-					<button class="_button" :class="$style.roleUnAssign" @click="removeRole(role.id)"><i class="ti ti-x"></i></button>
+				<div
+					v-if="selectedRoles.length > 0"
+					class="_gaps"
+					:class="$style.roleItemArea"
+				>
+					<div
+						v-for="role in selectedRoles"
+						:key="role.id"
+						:class="$style.roleItem"
+					>
+						<MkRolePreview
+							:class="$style.role"
+							:role="role"
+							:forModeration="true"
+							:detailed="false"
+							style="pointer-events: none"
+						/>
+						<button
+							class="_button"
+							:class="$style.roleUnAssign"
+							@click="removeRole(role.id)"
+						>
+							<i class="ti ti-x"></i>
+						</button>
+					</div>
+				</div>
+				<div v-else :class="$style.roleItemArea" style="text-align: center">
+					{{ i18n.ts._roleSelectDialog.notSelected }}
+				</div>
+
+				<MkInfo v-if="infoMessage">{{ infoMessage }}</MkInfo>
+
+				<div :class="$style.buttons">
+					<MkButton primary @click="onOkClicked">{{ i18n.ts.ok }}</MkButton>
+					<MkButton @click="onCancelClicked">{{ i18n.ts.cancel }}</MkButton>
 				</div>
 			</div>
-			<div v-else :class="$style.roleItemArea" style="text-align: center">
-				{{ i18n.ts._roleSelectDialog.notSelected }}
-			</div>
-
-			<MkInfo v-if="infoMessage">{{ infoMessage }}</MkInfo>
-
-			<div :class="$style.buttons">
-				<MkButton primary @click="onOkClicked">{{ i18n.ts.ok }}</MkButton>
-				<MkButton @click="onCancelClicked">{{ i18n.ts.cancel }}</MkButton>
-			</div>
 		</div>
-	</div>
-</MkModalWindow>
+	</MkModalWindow>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, toRefs } from 'vue';
-import * as Misskey from 'misskey-js';
-import { i18n } from '@/i18n.js';
-import MkButton from '@/components/MkButton.vue';
-import MkInfo from '@/components/MkInfo.vue';
-import MkRolePreview from '@/components/MkRolePreview.vue';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import * as os from '@/os.js';
-import MkModalWindow from '@/components/MkModalWindow.vue';
-import MkLoading from '@/components/global/MkLoading.vue';
+import { computed, ref, toRefs } from "vue";
+import * as Misskey from "misskey-js";
+import { i18n } from "@/i18n.js";
+import MkButton from "@/components/MkButton.vue";
+import MkInfo from "@/components/MkInfo.vue";
+import MkRolePreview from "@/components/MkRolePreview.vue";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import * as os from "@/os.js";
+import MkModalWindow from "@/components/MkModalWindow.vue";
+import MkLoading from "@/components/global/MkLoading.vue";
 
 const emit = defineEmits<{
-	(ev: 'done', value: Misskey.entities.Role[]),
-	(ev: 'close'),
-	(ev: 'closed'),
+	(ev: "done", value: Misskey.entities.Role[]);
+	(ev: "close");
+	(ev: "closed");
 }>();
 
-const props = withDefaults(defineProps<{
-	initialRoleIds?: string[],
-	infoMessage?: string,
-	title?: string,
-	publicOnly: boolean,
-}>(), {
-	initialRoleIds: undefined,
-	infoMessage: undefined,
-	title: undefined,
-	publicOnly: true,
-});
+const props = withDefaults(
+	defineProps<{
+		initialRoleIds?: string[];
+		infoMessage?: string;
+		title?: string;
+		publicOnly: boolean;
+	}>(),
+	{
+		initialRoleIds: undefined,
+		infoMessage: undefined,
+		title: undefined,
+		publicOnly: true,
+	},
+);
 
 const { initialRoleIds, infoMessage, title, publicOnly } = toRefs(props);
 
@@ -80,7 +105,9 @@ const selectedRoleIds = ref<string[]>(initialRoleIds.value ?? []);
 const fetching = ref(false);
 
 const selectedRoles = computed(() => {
-	const r = roles.value.filter(role => selectedRoleIds.value.includes(role.id));
+	const r = roles.value.filter((role) =>
+		selectedRoleIds.value.includes(role.id),
+	);
 	r.sort((a, b) => {
 		if (a.displayOrder !== b.displayOrder) {
 			return b.displayOrder - a.displayOrder;
@@ -93,16 +120,16 @@ const selectedRoles = computed(() => {
 
 async function fetchRoles() {
 	fetching.value = true;
-	const result = await misskeyApi('admin/roles/list', {});
-	roles.value = result.filter(it => publicOnly.value ? it.isPublic : true);
+	const result = await misskeyApi("admin/roles/list", {});
+	roles.value = result.filter((it) => (publicOnly.value ? it.isPublic : true));
 	fetching.value = false;
 }
 
 async function addRole() {
 	const items = roles.value
-		.filter(r => publicOnly.value ? r.isPublic : true)
-		.filter(r => !selectedRoleIds.value.includes(r.id))
-		.map(r => ({ text: r.name, value: r }));
+		.filter((r) => (publicOnly.value ? r.isPublic : true))
+		.filter((r) => !selectedRoleIds.value.includes(r.id))
+		.map((r) => ({ text: r.name, value: r }));
 
 	const { canceled, result: role } = await os.select({ items });
 	if (canceled) {
@@ -113,21 +140,21 @@ async function addRole() {
 }
 
 async function removeRole(roleId: string) {
-	selectedRoleIds.value = selectedRoleIds.value.filter(x => x !== roleId);
+	selectedRoleIds.value = selectedRoleIds.value.filter((x) => x !== roleId);
 }
 
 function onOkClicked() {
-	emit('done', selectedRoles.value);
+	emit("done", selectedRoles.value);
 	windowEl.value?.close();
 }
 
 function onCancelClicked() {
-	emit('close');
+	emit("close");
 	windowEl.value?.close();
 }
 
 function onCloseModalWindow() {
-	emit('close');
+	emit("close");
 	windowEl.value?.close();
 }
 
@@ -195,5 +222,4 @@ fetchRoles();
 .divider {
 	border-top: solid 0.5px var(--MI_THEME-divider);
 }
-
 </style>

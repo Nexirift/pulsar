@@ -5,10 +5,6 @@
 		"outDir": "../temp/built/test-d/",
 		"rootDir": "."
 	},
-	"references": [
-		{ "path": "../src/tsconfig.json" }
-	],
-	"include": [
-		"**/*"
-	]
+	"references": [{ "path": "../src/tsconfig.json" }],
+	"include": ["**/*"]
 }

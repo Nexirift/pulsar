@@ -6,7 +6,7 @@ We aim to provide a community-oriented experience for our social media platform,
 
 ## Notice
 
-GitHub is NOT the official place to contribute correctly. Please visit our own instance at [code.nexirift.com/Nexirift/pulsar](https://code.nexirift.com/Nexirift/pulsar). Issues and pull requests are still accepted on GitHub but we highly advise you to not do that as this may change in the future.
+GitHub is NOT the official place to contribute correctly. Please visit our own instance at [git.codeguilds.org/Nexirift/pulsar](https://git.codeguilds.org/Nexirift/pulsar). Issues and pull requests are still accepted on GitHub but we highly advise you to not do that as this may change in the future.
 
 ---
 

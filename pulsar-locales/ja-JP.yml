@@ -12,7 +12,7 @@ misskeyUpdated: "Pulsarが更新されました！"
 didYouLikeMisskey: "Pulsarを気に入っていただけましたか？"
 pleaseDonate: "Pulsarは{host}が使用している無料のソフトウェアです。これからも開発を続けられるように、ぜひ寄付をお願いします！"
 goToMisskey: "Pulsarへ"
-repositoryUrlDescription: "ソースコードが公開されているリポジトリがある場合、そのURLを記入します。Pulsarを現状のまま（ソースコードにいかなる変更も加えずに）使用している場合は https://code.nexirift.com/Nexirift/pulsar と記入します。"
+repositoryUrlDescription: "ソースコードが公開されているリポジトリがある場合、そのURLを記入します。Pulsarを現状のまま（ソースコードにいかなる変更も加えずに）使用している場合は https://git.codeguilds.org/Nexirift/pulsar と記入します。"
 _initialAccountSetting:
   youCanContinueTutorial: "このまま{name}(Pulsar)の使い方についてのチュートリアルに進むこともできますが、ここで中断してすぐに使い始めることもできます。"
 _initialTutorial:
@@ -36,7 +36,7 @@ _achievements:
       flavor: "Pulsarを使ってくれてありがとう！"
     _iLoveMisskey:
       title: "I Love Pulsar"
-      description: "\"I ❤ #Pulsar\"を投稿した"
+      description: '"I ❤ #Pulsar"を投稿した'
       flavor: "Pulsarを使ってくださりありがとうございます！ by 開発チーム"
     _client60min:
       title: "Pulsarの見すぎ"

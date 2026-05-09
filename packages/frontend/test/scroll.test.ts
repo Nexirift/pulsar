@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { describe, test, assert, afterEach } from 'vitest';
-import { Window } from 'happy-dom';
-import { onScrollBottom, onScrollTop } from '@@/js/scroll.js';
+import { describe, test, assert, afterEach } from "vitest";
+import { Window } from "happy-dom";
+import { onScrollBottom, onScrollTop } from "@@/js/scroll.js";
 
-describe('Scroll', () => {
-	describe('onScrollTop', () => {
+describe("Scroll", () => {
+	describe("onScrollTop", () => {
 		/* 動作しない(happy-domのバグ？)
 		test('Initial onScrollTop callback for connected elements', () => {
 			const { document } = new Window();
@@ -24,19 +24,19 @@ describe('Scroll', () => {
 		});
 		*/
 
-		test('No onScrollTop callback for disconnected elements', () => {
+		test("No onScrollTop callback for disconnected elements", () => {
 			const { document } = new Window();
-			const div = window.document.createElement('div');
+			const div = window.document.createElement("div");
 			assert.strictEqual(div.scrollTop, 0);
 
 			let called = false;
-			onScrollTop(div as any as HTMLElement, () => called = true);
+			onScrollTop(div as any as HTMLElement, () => (called = true));
 
 			assert.ok(!called);
 		});
 	});
 
-	describe('onScrollBottom', () => {
+	describe("onScrollBottom", () => {
 		/* 動作しない(happy-domのバグ？)
 		test('Initial onScrollBottom callback for connected elements', () => {
 			const { document } = new Window();
@@ -52,13 +52,13 @@ describe('Scroll', () => {
 		});
 		*/
 
-		test('No onScrollBottom callback for disconnected elements', () => {
+		test("No onScrollBottom callback for disconnected elements", () => {
 			const { document } = new Window();
-			const div = window.document.createElement('div');
+			const div = window.document.createElement("div");
 			assert.strictEqual(div.scrollTop, 0);
 
 			let called = false;
-			onScrollBottom(div as any as HTMLElement, () => called = true);
+			onScrollBottom(div as any as HTMLElement, () => (called = true));
 
 			assert.ok(!called);
 		});

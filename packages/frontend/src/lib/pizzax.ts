@@ -5,31 +5,36 @@
 
 // PIZZAX --- A lightweight store
 
-import { onUnmounted, ref, watch } from 'vue';
-import { BroadcastChannel } from 'broadcast-channel';
-import type { Ref } from 'vue';
-import { $i } from '@/i.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { get, set } from '@/utility/idb-proxy.js';
-import { store } from '@/store.js';
-import { useStream } from '@/stream.js';
-import { deepClone } from '@/utility/clone.js';
-import { deepMerge } from '@/utility/merge.js';
+import { onUnmounted, ref, watch } from "vue";
+import { BroadcastChannel } from "broadcast-channel";
+import type { Ref } from "vue";
+import { $i } from "@/i.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { get, set } from "@/utility/idb-proxy.js";
+import { store } from "@/store.js";
+import { useStream } from "@/stream.js";
+import { deepClone } from "@/utility/clone.js";
+import { deepMerge } from "@/utility/merge.js";
 
-type StateDef = Record<string, {
-	where: 'account' | 'device' | 'deviceAccount';
-	default: any;
-}>;
+type StateDef = Record<
+	string,
+	{
+		where: "account" | "device" | "deviceAccount";
+		default: any;
+	}
+>;
 
-type State<T extends StateDef> = { [K in keyof T]: T[K]['default']; };
-type ReactiveState<T extends StateDef> = { [K in keyof T]: Ref<T[K]['default']>; };
+type State<T extends StateDef> = { [K in keyof T]: T[K]["default"] };
+type ReactiveState<T extends StateDef> = {
+	[K in keyof T]: Ref<T[K]["default"]>;
+};
 
 type ArrayElement<A> = A extends readonly (infer T)[] ? T : never;
 
 type PizzaxChannelMessage<T extends StateDef> = {
-	where: 'device' | 'deviceAccount';
+	where: "device" | "deviceAccount";
 	key: keyof T;
-	value: T[keyof T]['default'];
+	value: T[keyof T]["default"];
 	userId?: string;
 };
 
@@ -38,9 +43,13 @@ export class Pizzax<T extends StateDef> {
 	public readonly loaded: Promise<void>;
 
 	public readonly key: string;
-	public readonly deviceStateKeyName: `pizzax::${this['key']}`;
-	public readonly deviceAccountStateKeyName: `pizzax::${this['key']}::${string}` | '';
-	public readonly registryCacheKeyName: `pizzax::${this['key']}::cache::${string}` | '';
+	public readonly deviceStateKeyName: `pizzax::${this["key"]}`;
+	public readonly deviceAccountStateKeyName:
+		| `pizzax::${this["key"]}::${string}`
+		| "";
+	public readonly registryCacheKeyName:
+		| `pizzax::${this["key"]}::cache::${string}`
+		| "";
 
 	public readonly def: T;
 
@@ -60,8 +69,8 @@ export class Pizzax<T extends StateDef> {
 	// 簡易的にキューイングして占有ロックとする
 	private currentIdbJob: Promise<any> = Promise.resolve();
 	private addIdbSetJob<T>(job: () => Promise<T>) {
-		const promise = this.currentIdbJob.then(job, err => {
-			console.error('Pizzax failed to save data to idb!', err);
+		const promise = this.currentIdbJob.then(job, (err) => {
+			console.error("Pizzax failed to save data to idb!", err);
 			return job();
 		});
 		this.currentIdbJob = promise;
@@ -71,8 +80,8 @@ export class Pizzax<T extends StateDef> {
 	constructor(key: string, def: T) {
 		this.key = key;
 		this.deviceStateKeyName = `pizzax::${key}`;
-		this.deviceAccountStateKeyName = $i ? `pizzax::${key}::${$i.id}` : '';
-		this.registryCacheKeyName = $i ? `pizzax::${key}::cache::${$i.id}` : '';
+		this.deviceAccountStateKeyName = $i ? `pizzax::${key}::${$i.id}` : "";
+		this.registryCacheKeyName = $i ? `pizzax::${key}::cache::${$i.id}` : "";
 		this.def = def;
 
 		this.pizzaxChannel = new BroadcastChannel(`pizzax::${key}`);
@@ -80,7 +89,10 @@ export class Pizzax<T extends StateDef> {
 		this.s = {} as State<T>;
 		this.r = {} as ReactiveState<T>;
 
-		for (const [k, v] of Object.entries(def) as [keyof T, T[keyof T]['default']][]) {
+		for (const [k, v] of Object.entries(def) as [
+			keyof T,
+			T[keyof T]["default"],
+		][]) {
 			this.s[k] = v.default;
 			this.r[k] = ref(v.default);
 		}
@@ -89,15 +101,25 @@ export class Pizzax<T extends StateDef> {
 		this.loaded = this.ready.then(() => this.load());
 	}
 
-	private isPureObject(value: unknown): value is Record<string | number | symbol, unknown> {
-		return typeof value === 'object' && value !== null && !Array.isArray(value);
+	private isPureObject(
+		value: unknown,
+	): value is Record<string | number | symbol, unknown> {
+		return typeof value === "object" && value !== null && !Array.isArray(value);
 	}
 
 	private mergeState<X>(value: X, def: X): X {
 		if (this.isPureObject(value) && this.isPureObject(def)) {
 			const merged = deepMerge(value, def);
 
-			if (_DEV_) console.debug('Merging state. Incoming: ', value, ' Default: ', def, ' Result: ', merged);
+			if (_DEV_)
+				console.debug(
+					"Merging state. Incoming: ",
+					value,
+					" Default: ",
+					def,
+					" Result: ",
+					merged,
+				);
 
 			return merged as X;
 		}
@@ -108,46 +130,93 @@ export class Pizzax<T extends StateDef> {
 	public async init(): Promise<void> {
 		await this.migrate();
 
-		const deviceState: State<T> = await get(this.deviceStateKeyName) || {};
-		const deviceAccountState = $i ? await get(this.deviceAccountStateKeyName) || {} : {};
-		const registryCache = $i ? await get(this.registryCacheKeyName) || {} : {};
+		const deviceState: State<T> = (await get(this.deviceStateKeyName)) || {};
+		const deviceAccountState = $i
+			? (await get(this.deviceAccountStateKeyName)) || {}
+			: {};
+		const registryCache = $i
+			? (await get(this.registryCacheKeyName)) || {}
+			: {};
 
-		for (const [k, v] of Object.entries(this.def) as [keyof T, T[keyof T]['default']][]) {
-			if (v.where === 'device' && Object.prototype.hasOwnProperty.call(deviceState, k)) {
-				this.r[k].value = this.s[k] = this.mergeState<T[keyof T]['default']>(deviceState[k], v.default);
-			} else if (v.where === 'account' && $i && Object.prototype.hasOwnProperty.call(registryCache, k)) {
-				this.r[k].value = this.s[k] = this.mergeState<T[keyof T]['default']>(registryCache[k], v.default);
-			} else if (v.where === 'deviceAccount' && Object.prototype.hasOwnProperty.call(deviceAccountState, k)) {
-				this.r[k].value = this.s[k] = this.mergeState<T[keyof T]['default']>(deviceAccountState[k], v.default);
+		for (const [k, v] of Object.entries(this.def) as [
+			keyof T,
+			T[keyof T]["default"],
+		][]) {
+			if (
+				v.where === "device" &&
+				Object.prototype.hasOwnProperty.call(deviceState, k)
+			) {
+				this.r[k].value = this.s[k] = this.mergeState<T[keyof T]["default"]>(
+					deviceState[k],
+					v.default,
+				);
+			} else if (
+				v.where === "account" &&
+				$i &&
+				Object.prototype.hasOwnProperty.call(registryCache, k)
+			) {
+				this.r[k].value = this.s[k] = this.mergeState<T[keyof T]["default"]>(
+					registryCache[k],
+					v.default,
+				);
+			} else if (
+				v.where === "deviceAccount" &&
+				Object.prototype.hasOwnProperty.call(deviceAccountState, k)
+			) {
+				this.r[k].value = this.s[k] = this.mergeState<T[keyof T]["default"]>(
+					deviceAccountState[k],
+					v.default,
+				);
 			} else {
 				this.r[k].value = this.s[k] = v.default;
 			}
 		}
 
-		this.pizzaxChannel.addEventListener('message', ({ where, key, value, userId }) => {
-			// アカウント変更すればunisonReloadが効くため、このreturnが発火することは
-			// まずないと思うけど一応弾いておく
-			if (where === 'deviceAccount' && !($i && userId !== $i.id)) return;
-			this.r[key].value = this.s[key] = value;
-		});
+		this.pizzaxChannel.addEventListener(
+			"message",
+			({ where, key, value, userId }) => {
+				// アカウント変更すればunisonReloadが効くため、このreturnが発火することは
+				// まずないと思うけど一応弾いておく
+				if (where === "deviceAccount" && !($i && userId !== $i.id)) return;
+				this.r[key].value = this.s[key] = value;
+			},
+		);
 
 		if ($i) {
-			const connection = useStream().useChannel('main');
+			const connection = useStream().useChannel("main");
 
 			// streamingのuser storage updateイベントを監視して更新
-			connection.on('registryUpdated', ({ scope, key, value }: { scope?: string[], key: keyof T, value: T[typeof key]['default'] }) => {
-				if (!scope || scope.length !== 2 || scope[0] !== 'client' || scope[1] !== this.key || this.s[key] === value) return;
+			connection.on(
+				"registryUpdated",
+				({
+					scope,
+					key,
+					value,
+				}: {
+					scope?: string[];
+					key: keyof T;
+					value: T[typeof key]["default"];
+				}) => {
+					if (
+						!scope ||
+						scope.length !== 2 ||
+						scope[0] !== "client" ||
+						scope[1] !== this.key ||
+						this.s[key] === value
+					)
+						return;
 
-				this.r[key].value = this.s[key] = value;
+					this.r[key].value = this.s[key] = value;
 
-				this.addIdbSetJob(async () => {
-					const cache = await get(this.registryCacheKeyName);
-					if (cache[key] !== value) {
-						cache[key] = value;
-						await set(this.registryCacheKeyName, cache);
-					}
-				});
-			});
+					this.addIdbSetJob(async () => {
+						const cache = await get(this.registryCacheKeyName);
+						if (cache[key] !== value) {
+							cache[key] = value;
+							await set(this.registryCacheKeyName, cache);
+						}
+					});
+				},
+			);
 		}
 	}
 
@@ -158,11 +227,14 @@ export class Pizzax<T extends StateDef> {
 				window.setTimeout(async () => {
 					await store.ready;
 
-					misskeyApi('i/registry/get-all', { scope: ['client', this.key] })
-						.then(kvs => {
+					misskeyApi("i/registry/get-all", { scope: ["client", this.key] })
+						.then((kvs) => {
 							const cache: Partial<T> = {};
-							for (const [k, v] of Object.entries(this.def) as [keyof T, T[keyof T]['default']][]) {
-								if (v.where === 'account') {
+							for (const [k, v] of Object.entries(this.def) as [
+								keyof T,
+								T[keyof T]["default"],
+							][]) {
+								if (v.where === "account") {
 									if (Object.prototype.hasOwnProperty.call(kvs, k)) {
 										this.r[k].value = this.s[k] = (kvs as Partial<T>)[k];
 										cache[k] = (kvs as Partial<T>)[k];
@@ -175,10 +247,10 @@ export class Pizzax<T extends StateDef> {
 							return set(this.registryCacheKeyName, cache);
 						})
 						.then(() => resolve())
-						.catch(err => {
+						.catch((err) => {
 							// On error, just use defaults and resolve anyway
 							// The global error handler will show the auth dialog if needed
-							console.error('Failed to load registry:', err);
+							console.error("Failed to load registry:", err);
 							resolve();
 						});
 				}, 1);
@@ -188,7 +260,7 @@ export class Pizzax<T extends StateDef> {
 		});
 	}
 
-	public set<K extends keyof T>(key: K, value: T[K]['default']): Promise<void> {
+	public set<K extends keyof T>(key: K, value: T[K]["default"]): Promise<void> {
 		// IndexedDBやBroadcastChannelで扱うために単純なオブジェクトにする
 		// (JSON.parse(JSON.stringify(value))の代わり)
 		const rawValue = deepClone(value);
@@ -197,37 +269,38 @@ export class Pizzax<T extends StateDef> {
 
 		return this.addIdbSetJob(async () => {
 			switch (this.def[key].where) {
-				case 'device': {
+				case "device": {
 					this.pizzaxChannel.postMessage({
-						where: 'device',
+						where: "device",
 						key,
 						value: rawValue,
 					});
-					const deviceState = await get(this.deviceStateKeyName) || {};
+					const deviceState = (await get(this.deviceStateKeyName)) || {};
 					deviceState[key] = rawValue;
 					await set(this.deviceStateKeyName, deviceState);
 					break;
 				}
-				case 'deviceAccount': {
+				case "deviceAccount": {
 					if ($i == null) break;
 					this.pizzaxChannel.postMessage({
-						where: 'deviceAccount',
+						where: "deviceAccount",
 						key,
 						value: rawValue,
 						userId: $i.id,
 					});
-					const deviceAccountState = await get(this.deviceAccountStateKeyName) || {};
+					const deviceAccountState =
+						(await get(this.deviceAccountStateKeyName)) || {};
 					deviceAccountState[key] = rawValue;
 					await set(this.deviceAccountStateKeyName, deviceAccountState);
 					break;
 				}
-				case 'account': {
+				case "account": {
 					if ($i == null) break;
-					const cache = await get(this.registryCacheKeyName) || {};
+					const cache = (await get(this.registryCacheKeyName)) || {};
 					cache[key] = rawValue;
 					await set(this.registryCacheKeyName, cache);
-					await misskeyApi('i/registry/set', {
-						scope: ['client', this.key],
+					await misskeyApi("i/registry/set", {
+						scope: ["client", this.key],
 						key: key.toString(),
 						value: rawValue,
 					});
@@ -237,7 +310,10 @@ export class Pizzax<T extends StateDef> {
 		});
 	}
 
-	public push<K extends keyof T>(key: K, value: ArrayElement<T[K]['default']>): void {
+	public push<K extends keyof T>(
+		key: K,
+		value: ArrayElement<T[K]["default"]>,
+	): void {
 		const currentState = this.s[key];
 		this.set(key, [...currentState, value]);
 	}
@@ -252,17 +328,17 @@ export class Pizzax<T extends StateDef> {
 	 * 主にvue上で設定コントロールのmodelとして使う用
 	 */
 	// TODO: 廃止
-	public makeGetterSetter<K extends keyof T, R = T[K]['default']>(
+	public makeGetterSetter<K extends keyof T, R = T[K]["default"]>(
 		key: K,
-		getter?: (v: T[K]['default']) => R,
-		setter?: (v: R) => T[K]['default'],
+		getter?: (v: T[K]["default"]) => R,
+		setter?: (v: R) => T[K]["default"],
 	): {
-			get: () => R;
-			set: (value: R) => void;
-		} {
+		get: () => R;
+		set: (value: R) => void;
+	} {
 		const valueRef = ref(this.s[key]);
 
-		const stop = watch(this.r[key], val => {
+		const stop = watch(this.r[key], (val) => {
 			valueRef.value = val;
 		});
 
@@ -296,7 +372,8 @@ export class Pizzax<T extends StateDef> {
 			localStorage.removeItem(this.deviceStateKeyName);
 		}
 
-		const deviceAccountState = $i && localStorage.getItem(this.deviceAccountStateKeyName);
+		const deviceAccountState =
+			$i && localStorage.getItem(this.deviceAccountStateKeyName);
 		if ($i && deviceAccountState) {
 			await set(this.deviceAccountStateKeyName, JSON.parse(deviceAccountState));
 			localStorage.removeItem(this.deviceAccountStateKeyName);

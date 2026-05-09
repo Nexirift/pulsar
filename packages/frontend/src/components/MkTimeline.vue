@@ -4,95 +4,153 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<component :is="prefer.s.enablePullToRefresh ? MkPullToRefresh : 'div'" :refresher="() => reloadTimeline()">
-	<MkPagination v-if="paginationQuery" ref="pagingComponent" :pagination="paginationQuery" @queue="emit('queue', $event)">
-		<template #empty><MkResult type="empty" :text="i18n.ts.noNotes"/></template>
+	<component
+		:is="prefer.s.enablePullToRefresh ? MkPullToRefresh : 'div'"
+		:refresher="() => reloadTimeline()"
+	>
+		<MkPagination
+			v-if="paginationQuery"
+			ref="pagingComponent"
+			:pagination="paginationQuery"
+			@queue="emit('queue', $event)"
+		>
+			<template #empty
+				><MkResult type="empty" :text="i18n.ts.noNotes"
+			/></template>
 
-		   <template #default="slotProps">
-			   <SkTransitionGroup
-				   :class="[$style.root, { [$style.noGap]: noGap, '_gaps': !noGap, [$style.reverse]: paginationQuery.reversed }]"
-				   :enterActiveClass="$style.transition_x_enterActive"
-				   :leaveActiveClass="$style.transition_x_leaveActive"
-				   :enterFromClass="$style.transition_x_enterFrom"
-				   :leaveToClass="$style.transition_x_leaveTo"
-				   :moveClass="$style.transition_x_move"
-				   tag="div"
-			   >
-				   <!-- Update lastNotes from slot -->
-				   <template v-if="onNotesSlot(slotProps) || true"></template>
-				   <div v-for="(note, i) in filteredNotes" :key="note.id" :class="{ '_gaps': !noGap }">
-					   <DynamicNote :class="$style.note" :note="note as Misskey.entities.Note" :withHardMute="true" :data-scroll-anchor="note.id"/>
-					   <MkAd v-if="note._shouldInsertAd_" :preferForms="['horizontal', 'horizontal-big']" :class="$style.ad"/>
-				   </div>
-			   </SkTransitionGroup>
-		   </template>
-	</MkPagination>
-</component>
+			<template #default="slotProps">
+				<SkTransitionGroup
+					:class="[
+						$style.root,
+						{
+							[$style.noGap]: noGap,
+							_gaps: !noGap,
+							[$style.reverse]: paginationQuery.reversed,
+						},
+					]"
+					:enterActiveClass="$style.transition_x_enterActive"
+					:leaveActiveClass="$style.transition_x_leaveActive"
+					:enterFromClass="$style.transition_x_enterFrom"
+					:leaveToClass="$style.transition_x_leaveTo"
+					:moveClass="$style.transition_x_move"
+					tag="div"
+				>
+					<!-- Update lastNotes from slot -->
+					<template v-if="onNotesSlot(slotProps) || true"></template>
+					<div
+						v-for="(note, i) in filteredNotes"
+						:key="note.id"
+						:class="{ _gaps: !noGap }"
+					>
+						<DynamicNote
+							:class="$style.note"
+							:note="note as Misskey.entities.Note"
+							:withHardMute="true"
+							:data-scroll-anchor="note.id"
+						/>
+						<MkAd
+							v-if="note._shouldInsertAd_"
+							:preferForms="['horizontal', 'horizontal-big']"
+							:class="$style.ad"
+						/>
+					</div>
+				</SkTransitionGroup>
+			</template>
+		</MkPagination>
+	</component>
 </template>
 
 <script lang="ts" setup>
-import { computed, watch, onUnmounted, provide, useTemplateRef, TransitionGroup, inject, ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import type { BasicTimelineType } from '@/timelines.js';
-import type { Paging } from '@/components/MkPagination.vue';
-import MkPullToRefresh from '@/components/MkPullToRefresh.vue';
-import { useStream } from '@/stream.js';
-import * as sound from '@/utility/sound.js';
-import { $i } from '@/i.js';
-import { instance } from '@/instance.js';
-import { prefer } from '@/preferences.js';
-import DynamicNote from '@/components/DynamicNote.vue';
-import MkPagination from '@/components/MkPagination.vue';
-import { i18n } from '@/i18n.js';
-import SkTransitionGroup from '@/components/SkTransitionGroup.vue';
-import { checkMute } from '@/utility/check-word-mute.js';
-import { consoleLoggingIntegration } from '@sentry/vue';
+import {
+	computed,
+	watch,
+	onUnmounted,
+	provide,
+	useTemplateRef,
+	TransitionGroup,
+	inject,
+	ref,
+} from "vue";
+import * as Misskey from "misskey-js";
+import type { BasicTimelineType } from "@/timelines.js";
+import type { Paging } from "@/components/MkPagination.vue";
+import MkPullToRefresh from "@/components/MkPullToRefresh.vue";
+import { useStream } from "@/stream.js";
+import * as sound from "@/utility/sound.js";
+import { $i } from "@/i.js";
+import { instance } from "@/instance.js";
+import { prefer } from "@/preferences.js";
+import DynamicNote from "@/components/DynamicNote.vue";
+import MkPagination from "@/components/MkPagination.vue";
+import { i18n } from "@/i18n.js";
+import SkTransitionGroup from "@/components/SkTransitionGroup.vue";
+import { checkMute } from "@/utility/check-word-mute.js";
+import { consoleLoggingIntegration } from "@sentry/vue";
 
-const props = withDefaults(defineProps<{
-	src: BasicTimelineType | 'mentions' | 'directs' | 'list' | 'antenna' | 'channel' | 'role';
-	list?: string;
-	antenna?: string;
-	channel?: string;
-	role?: string;
-	sound?: boolean;
-	withRenotes?: boolean;
-	withReplies?: boolean;
-	withBots?: boolean;
-	withSensitive?: boolean;
-	withAdultsOnly?: boolean;
-	onlyFiles?: boolean;
-}>(), {
-	withRenotes: true,
-	withReplies: false,
-	withSensitive: true,
-	withAdultsOnly: false,
-	onlyFiles: false,
-	withBots: true,
-});
+const props = withDefaults(
+	defineProps<{
+		src:
+			| BasicTimelineType
+			| "mentions"
+			| "directs"
+			| "list"
+			| "antenna"
+			| "channel"
+			| "role";
+		list?: string;
+		antenna?: string;
+		channel?: string;
+		role?: string;
+		sound?: boolean;
+		withRenotes?: boolean;
+		withReplies?: boolean;
+		withBots?: boolean;
+		withSensitive?: boolean;
+		withAdultsOnly?: boolean;
+		onlyFiles?: boolean;
+	}>(),
+	{
+		withRenotes: true,
+		withReplies: false,
+		withSensitive: true,
+		withAdultsOnly: false,
+		onlyFiles: false,
+		withBots: true,
+	},
+);
 
 const emit = defineEmits<{
-	(ev: 'note'): void;
-	(ev: 'queue', count: number): void;
+	(ev: "note"): void;
+	(ev: "queue", count: number): void;
 }>();
 
-provide('inTimeline', true);
-provide('tl_withSensitive', computed(() => props.withSensitive));
-provide('tl_withAdultsOnly', computed(() => props.withAdultsOnly));
-provide('inChannel', computed(() => props.src === 'channel'));
+provide("inTimeline", true);
+provide(
+	"tl_withSensitive",
+	computed(() => props.withSensitive),
+);
+provide(
+	"tl_withAdultsOnly",
+	computed(() => props.withAdultsOnly),
+);
+provide(
+	"inChannel",
+	computed(() => props.src === "channel"),
+);
 
 type TimelineQueryType = {
-	antennaId?: string,
-	withRenotes?: boolean,
-	withReplies?: boolean,
-	withFiles?: boolean,
-	withBots?: boolean,
-	visibility?: string,
-	listId?: string,
-	channelId?: string,
-	roleId?: string
+	antennaId?: string;
+	withRenotes?: boolean;
+	withReplies?: boolean;
+	withFiles?: boolean;
+	withBots?: boolean;
+	visibility?: string;
+	listId?: string;
+	channelId?: string;
+	roleId?: string;
 };
 
-const pagingComponent = useTemplateRef('pagingComponent');
+const pagingComponent = useTemplateRef("pagingComponent");
 
 let tlNotesCount = 0;
 
@@ -101,16 +159,19 @@ function prepend(note: Misskey.entities.Note) {
 
 	tlNotesCount++;
 
-	if (instance.notesPerOneAd > 0 && tlNotesCount % instance.notesPerOneAd === 0) {
+	if (
+		instance.notesPerOneAd > 0 &&
+		tlNotesCount % instance.notesPerOneAd === 0
+	) {
 		note._shouldInsertAd_ = true;
 	}
 
 	pagingComponent.value.prepend(note);
 
-	emit('note');
+	emit("note");
 
 	if (props.sound) {
-		sound.playMisskeySfx($i && (note.userId === $i.id) ? 'noteMy' : 'note');
+		sound.playMisskeySfx($i && note.userId === $i.id ? "noteMy" : "note");
 	}
 }
 
@@ -122,75 +183,76 @@ const noGap = !prefer.s.showGapBetweenNotesInTimeline;
 const stream = useStream();
 
 function connectChannel() {
-	if (props.src === 'antenna') {
+	if (props.src === "antenna") {
 		if (props.antenna == null) return;
-		connection = stream.useChannel('antenna', {
+		connection = stream.useChannel("antenna", {
 			antennaId: props.antenna,
 		});
-	} else if (props.src === 'home') {
-		connection = stream.useChannel('homeTimeline', {
+	} else if (props.src === "home") {
+		connection = stream.useChannel("homeTimeline", {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
 		});
-		connection2 = stream.useChannel('main');
-	} else if (props.src === 'local') {
-		connection = stream.useChannel('localTimeline', {
-			withRenotes: props.withRenotes,
-			withReplies: props.withReplies,
-			withFiles: props.onlyFiles ? true : undefined,
-			withBots: props.withBots,
-		});
-	} else if (props.src === 'social') {
-		connection = stream.useChannel('hybridTimeline', {
+		connection2 = stream.useChannel("main");
+	} else if (props.src === "local") {
+		connection = stream.useChannel("localTimeline", {
 			withRenotes: props.withRenotes,
 			withReplies: props.withReplies,
 			withFiles: props.onlyFiles ? true : undefined,
 			withBots: props.withBots,
 		});
-	} else if (props.src === 'bubble') {
-		connection = stream.useChannel('bubbleTimeline', {
+	} else if (props.src === "social") {
+		connection = stream.useChannel("hybridTimeline", {
+			withRenotes: props.withRenotes,
+			withReplies: props.withReplies,
+			withFiles: props.onlyFiles ? true : undefined,
+			withBots: props.withBots,
+		});
+	} else if (props.src === "bubble") {
+		connection = stream.useChannel("bubbleTimeline", {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
 			withBots: props.withBots,
 		});
-	} else if (props.src === 'global') {
-		connection = stream.useChannel('globalTimeline', {
+	} else if (props.src === "global") {
+		connection = stream.useChannel("globalTimeline", {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
 			withBots: props.withBots,
 		});
-	} else if (props.src === 'mentions') {
-		connection = stream.useChannel('main');
-		connection.on('mention', prepend);
-	} else if (props.src === 'directs') {
-		const onNote = note => {
-			if (note.visibility === 'specified') {
+	} else if (props.src === "mentions") {
+		connection = stream.useChannel("main");
+		connection.on("mention", prepend);
+	} else if (props.src === "directs") {
+		const onNote = (note) => {
+			if (note.visibility === "specified") {
 				prepend(note);
 			}
 		};
-		connection = stream.useChannel('main');
-		connection.on('mention', onNote);
-	} else if (props.src === 'list') {
+		connection = stream.useChannel("main");
+		connection.on("mention", onNote);
+	} else if (props.src === "list") {
 		if (props.list == null) return;
-		connection = stream.useChannel('userList', {
+		connection = stream.useChannel("userList", {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
 			listId: props.list,
 		});
-	} else if (props.src === 'channel') {
+	} else if (props.src === "channel") {
 		if (props.channel == null) return;
-		connection = stream.useChannel('channel', {
+		connection = stream.useChannel("channel", {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
 			channelId: props.channel,
 		});
-	} else if (props.src === 'role') {
+	} else if (props.src === "role") {
 		if (props.role == null) return;
-		connection = stream.useChannel('roleTimeline', {
+		connection = stream.useChannel("roleTimeline", {
 			roleId: props.role,
 		});
 	}
-	if (props.src !== 'directs' && props.src !== 'mentions') connection?.on('note', prepend);
+	if (props.src !== "directs" && props.src !== "mentions")
+		connection?.on("note", prepend);
 }
 
 function disconnectChannel() {
@@ -202,72 +264,72 @@ function updatePaginationQuery() {
 	let endpoint: keyof Misskey.Endpoints | null;
 	let query: TimelineQueryType | null;
 
-	if (props.src === 'antenna') {
-		endpoint = 'antennas/notes';
+	if (props.src === "antenna") {
+		endpoint = "antennas/notes";
 		query = {
 			antennaId: props.antenna,
 		};
-	} else if (props.src === 'home') {
-		endpoint = 'notes/timeline';
+	} else if (props.src === "home") {
+		endpoint = "notes/timeline";
 		query = {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
 			withBots: props.withBots,
 		};
-	} else if (props.src === 'local') {
-		endpoint = 'notes/local-timeline';
-		query = {
-			withRenotes: props.withRenotes,
-			withReplies: props.withReplies,
-			withFiles: props.onlyFiles ? true : undefined,
-			withBots: props.withBots,
-		};
-	} else if (props.src === 'social') {
-		endpoint = 'notes/hybrid-timeline';
+	} else if (props.src === "local") {
+		endpoint = "notes/local-timeline";
 		query = {
 			withRenotes: props.withRenotes,
 			withReplies: props.withReplies,
 			withFiles: props.onlyFiles ? true : undefined,
 			withBots: props.withBots,
 		};
-	} else if (props.src === 'bubble') {
-		endpoint = 'notes/bubble-timeline';
+	} else if (props.src === "social") {
+		endpoint = "notes/hybrid-timeline";
+		query = {
+			withRenotes: props.withRenotes,
+			withReplies: props.withReplies,
+			withFiles: props.onlyFiles ? true : undefined,
+			withBots: props.withBots,
+		};
+	} else if (props.src === "bubble") {
+		endpoint = "notes/bubble-timeline";
 		query = {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
 			withBots: props.withBots,
 		};
-	} else if (props.src === 'global') {
-		endpoint = 'notes/global-timeline';
+	} else if (props.src === "global") {
+		endpoint = "notes/global-timeline";
 		query = {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
 			withBots: props.withBots,
 		};
-	} else if (props.src === 'mentions') {
-		endpoint = 'notes/mentions';
+	} else if (props.src === "mentions") {
+		endpoint = "notes/mentions";
 		query = null;
-	} else if (props.src === 'directs') {
-		endpoint = 'notes/mentions';
+	} else if (props.src === "directs") {
+		endpoint = "notes/mentions";
 		query = {
-			visibility: 'specified',
+			visibility: "specified",
 		};
-	} else if (props.src === 'list') {
-		endpoint = 'notes/user-list-timeline';
+	} else if (props.src === "list") {
+		endpoint = "notes/user-list-timeline";
 		query = {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
 			listId: props.list,
 		};
-	} else if (props.src === 'channel') {
-		endpoint = 'channels/timeline';
+	} else if (props.src === "channel") {
+		endpoint = "channels/timeline";
 		query = {
 			withRenotes: props.withRenotes,
 			withFiles: props.onlyFiles ? true : undefined,
 			channelId: props.channel,
 		};
-	} else if (props.src === 'role') {
-		endpoint = 'roles/notes';
+	} else if (props.src === "role") {
+		endpoint = "roles/notes";
 		query = {
 			roleId: props.role,
 		};
@@ -297,7 +359,16 @@ function refreshEndpointAndChannel() {
 
 // デッキのリストカラムでwithRenotesを変更した場合に自動的に更新されるようにさせる
 // IDが切り替わったら切り替え先のTLを表示させたい
-watch(() => [props.list, props.antenna, props.channel, props.role, props.withRenotes], refreshEndpointAndChannel);
+watch(
+	() => [
+		props.list,
+		props.antenna,
+		props.channel,
+		props.role,
+		props.withRenotes,
+	],
+	refreshEndpointAndChannel,
+);
 
 // withSensitiveはクライアントで完結する処理のため、単にリロードするだけでOK
 watch(() => props.withSensitive, reloadTimeline);
@@ -332,14 +403,13 @@ const lastNotes = ref<Misskey.entities.Note[]>([]);
 
 // Watch for notes from MkPagination slot and update lastNotes
 function onNotesSlot({ items }: { items: Misskey.entities.Note[] }) {
-  lastNotes.value = items;
+	lastNotes.value = items;
 }
 
 const filteredNotes = computed(() => {
-  if (props.withAdultsOnly) return lastNotes.value;
-  return lastNotes.value.filter(n => !n.user?.isAdultsOnly);
+	if (props.withAdultsOnly) return lastNotes.value;
+	return lastNotes.value.filter((n) => !n.user?.isAdultsOnly);
 });
-
 </script>
 
 <style lang="scss" module>
@@ -348,7 +418,9 @@ const filteredNotes = computed(() => {
 }
 
 .transition_x_enterActive {
-	transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+	transition:
+		transform 0.7s cubic-bezier(0.23, 1, 0.32, 1),
+		opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
 
 	&.note,
 	.note {
@@ -358,7 +430,9 @@ const filteredNotes = computed(() => {
 }
 
 .transition_x_leaveActive {
-	transition: height 0.2s cubic-bezier(0,.5,.5,1), opacity 0.2s cubic-bezier(0,.5,.5,1);
+	transition:
+		height 0.2s cubic-bezier(0, 0.5, 0.5, 1),
+		opacity 0.2s cubic-bezier(0, 0.5, 0.5, 1);
 }
 
 .transition_x_enterFrom {
@@ -395,7 +469,13 @@ const filteredNotes = computed(() => {
 		.ad {
 			padding: 8px;
 			background-size: auto auto;
-			background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, var(--MI_THEME-bg) 8px, var(--MI_THEME-bg) 14px);
+			background-image: repeating-linear-gradient(
+				45deg,
+				transparent,
+				transparent 8px,
+				var(--MI_THEME-bg) 8px,
+				var(--MI_THEME-bg) 14px
+			);
 			border-bottom: solid 0.5px var(--MI_THEME-divider);
 		}
 	}

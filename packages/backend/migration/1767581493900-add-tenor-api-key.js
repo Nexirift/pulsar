@@ -4,11 +4,15 @@
  */
 
 export class AddTenorApiKey1767581493900 {
-	name = 'AddTenorApiKey1767581493900'
+	name = "AddTenorApiKey1767581493900";
 
 	async up(queryRunner) {
-		await queryRunner.query(`ALTER TABLE "meta" ADD "enableTenor" boolean NOT NULL DEFAULT false`);
-		await queryRunner.query(`ALTER TABLE "meta" ADD "tenorApiKey" character varying(1024)`);
+		await queryRunner.query(
+			`ALTER TABLE "meta" ADD "enableTenor" boolean NOT NULL DEFAULT false`,
+		);
+		await queryRunner.query(
+			`ALTER TABLE "meta" ADD "tenorApiKey" character varying(1024)`,
+		);
 	}
 
 	async down(queryRunner) {

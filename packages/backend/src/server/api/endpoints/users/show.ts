@@ -3,40 +3,41 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { In, IsNull } from 'typeorm';
-import { Inject, Injectable } from '@nestjs/common';
-import type { UsersRepository } from '@/models/_.js';
-import type { MiUser } from '@/models/User.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
-import { DI } from '@/di-symbols.js';
-import PerUserPvChart from '@/core/chart/charts/per-user-pv.js';
-import { RoleService } from '@/core/RoleService.js';
-import { CacheService } from '@/core/CacheService.js';
-import { ApiError } from '../../error.js';
-import { ApiLoggerService } from '../../ApiLoggerService.js';
-import type { FindOptionsWhere } from 'typeorm';
+import { In, IsNull } from "typeorm";
+import { Inject, Injectable } from "@nestjs/common";
+import type { UsersRepository } from "@/models/_.js";
+import type { MiUser } from "@/models/User.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { UserEntityService } from "@/core/entities/UserEntityService.js";
+import { RemoteUserResolveService } from "@/core/RemoteUserResolveService.js";
+import { DI } from "@/di-symbols.js";
+import PerUserPvChart from "@/core/chart/charts/per-user-pv.js";
+import { RoleService } from "@/core/RoleService.js";
+import { CacheService } from "@/core/CacheService.js";
+import { ApiError } from "../../error.js";
+import { ApiLoggerService } from "../../ApiLoggerService.js";
+import type { FindOptionsWhere } from "typeorm";
 
 export const meta = {
-	tags: ['users'],
+	tags: ["users"],
 
 	requireCredential: false,
 
-	description: 'Show the properties of a user.',
+	description: "Show the properties of a user.",
 
 	res: {
-		optional: false, nullable: false,
+		optional: false,
+		nullable: false,
 		oneOf: [
 			{
-				type: 'object',
-				ref: 'User',
+				type: "object",
+				ref: "User",
 			},
 			{
-				type: 'array',
+				type: "array",
 				items: {
-					type: 'object',
-					ref: 'User',
+					type: "object",
+					ref: "User",
 				},
 			},
 		],
@@ -44,56 +45,62 @@ export const meta = {
 
 	errors: {
 		failedToResolveRemoteUser: {
-			message: 'Failed to resolve remote user.',
-			code: 'FAILED_TO_RESOLVE_REMOTE_USER',
-			id: 'ef7b9be4-9cba-4e6f-ab41-90ed171c7d3c',
-			kind: 'server',
+			message: "Failed to resolve remote user.",
+			code: "FAILED_TO_RESOLVE_REMOTE_USER",
+			id: "ef7b9be4-9cba-4e6f-ab41-90ed171c7d3c",
+			kind: "server",
 		},
 
 		noSuchUser: {
-			message: 'No such user.',
-			code: 'NO_SUCH_USER',
-			id: '4362f8dc-731f-4ad8-a694-be5a88922a24',
+			message: "No such user.",
+			code: "NO_SUCH_USER",
+			id: "4362f8dc-731f-4ad8-a694-be5a88922a24",
 			httpStatusCode: 404,
 		},
 	},
 
 	// up to 50 calls @ 4 per second
 	limit: {
-		type: 'bucket',
+		type: "bucket",
 		size: 50,
 		dripRate: 250,
 	},
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		userId: { type: 'string', format: 'misskey:id' },
-		userIds: { type: 'array', uniqueItems: true, items: {
-			type: 'string', format: 'misskey:id',
-		} },
-		username: { type: 'string' },
+		userId: { type: "string", format: "misskey:id" },
+		userIds: {
+			type: "array",
+			uniqueItems: true,
+			items: {
+				type: "string",
+				format: "misskey:id",
+			},
+		},
+		username: { type: "string" },
 		host: {
-			type: 'string',
+			type: "string",
 			nullable: true,
-			description: 'The local host is represented with `null`.',
+			description: "The local host is represented with `null`.",
 		},
 		detail: {
-			type: 'boolean',
+			type: "boolean",
 			nullable: false,
 			default: true,
 		},
 	},
 	anyOf: [
-		{ required: ['userId'] },
-		{ required: ['userIds'] },
-		{ required: ['username'] },
+		{ required: ["userId"] },
+		{ required: ["userIds"] },
+		{ required: ["username"] },
 	],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
@@ -130,13 +137,18 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					}
 				}
 
-				const _userMap = await this.userEntityService.packMany(_users, me, { schema: ps.detail ? 'UserDetailed' : 'UserLite' })
-					.then(users => new Map(users.map(u => [u.id, u])));
-				return _users.map(u => _userMap.get(u.id)!);
+				const _userMap = await this.userEntityService
+					.packMany(_users, me, {
+						schema: ps.detail ? "UserDetailed" : "UserLite",
+					})
+					.then((users) => new Map(users.map((u) => [u.id, u])));
+				return _users.map((u) => _userMap.get(u.id)!);
 			} else {
 				// Lookup user
 				if (ps.username) {
-					user = await this.remoteUserResolveService.resolveUser(ps.username, ps.host ?? null).catch(() => null);
+					user = await this.remoteUserResolveService
+						.resolveUser(ps.username, ps.host ?? null)
+						.catch(() => null);
 				} else if (ps.userId != null) {
 					user = await this.cacheService.findOptionalUserById(ps.userId);
 				}
@@ -158,7 +170,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}
 
 				return await this.userEntityService.pack(user, me, {
-					schema: ps.detail ? 'UserDetailed' : 'UserLite',
+					schema: ps.detail ? "UserDetailed" : "UserLite",
 				});
 			}
 		});

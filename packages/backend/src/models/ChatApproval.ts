@@ -3,12 +3,19 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { PrimaryColumn, Entity, Index, JoinColumn, Column, ManyToOne } from 'typeorm';
-import { id } from './util/id.js';
-import { MiUser } from './User.js';
+import {
+	PrimaryColumn,
+	Entity,
+	Index,
+	JoinColumn,
+	Column,
+	ManyToOne,
+} from "typeorm";
+import { id } from "./util/id.js";
+import { MiUser } from "./User.js";
 
-@Entity('chat_approval')
-@Index(['userId', 'otherId'], { unique: true })
+@Entity("chat_approval")
+@Index(["userId", "otherId"], { unique: true })
 export class MiChatApproval {
 	@PrimaryColumn(id())
 	public id: string;
@@ -17,10 +24,10 @@ export class MiChatApproval {
 	@Column({
 		...id(),
 	})
-	public userId: MiUser['id'];
+	public userId: MiUser["id"];
 
-	@ManyToOne(type => MiUser, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiUser, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public user: MiUser | null;
@@ -29,10 +36,10 @@ export class MiChatApproval {
 	@Column({
 		...id(),
 	})
-	public otherId: MiUser['id'];
+	public otherId: MiUser["id"];
 
-	@ManyToOne(type => MiUser, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiUser, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public other: MiUser | null;

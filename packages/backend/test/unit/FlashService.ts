@@ -4,16 +4,22 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
-import { FlashService } from '@/core/FlashService.js';
-import { IdService } from '@/core/IdService.js';
-import { FlashsRepository, MiFlash, MiUser, UserProfilesRepository, UsersRepository } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
-import { CacheManagementService } from '@/global/CacheManagementService.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import { CoreModule } from '@/core/CoreModule.js';
+import { Test, TestingModule } from "@nestjs/testing";
+import { FlashService } from "@/core/FlashService.js";
+import { IdService } from "@/core/IdService.js";
+import {
+	FlashsRepository,
+	MiFlash,
+	MiUser,
+	UserProfilesRepository,
+	UsersRepository,
+} from "@/models/_.js";
+import { DI } from "@/di-symbols.js";
+import { CacheManagementService } from "@/global/CacheManagementService.js";
+import { GlobalModule } from "@/GlobalModule.js";
+import { CoreModule } from "@/core/CoreModule.js";
 
-describe('FlashService', () => {
+describe("FlashService", () => {
 	let app: TestingModule;
 	let service: FlashService;
 
@@ -34,17 +40,19 @@ describe('FlashService', () => {
 	// --------------------------------------------------------------------------------------
 
 	async function createFlash(data: Partial<MiFlash>) {
-		return flashsRepository.insert({
-			id: idService.gen(),
-			updatedAt: new Date(),
-			userId: root.id,
-			title: 'title',
-			summary: 'summary',
-			script: 'script',
-			permissions: [],
-			likedCount: 0,
-			...data,
-		}).then(x => flashsRepository.findOneByOrFail(x.identifiers[0]));
+		return flashsRepository
+			.insert({
+				id: idService.gen(),
+				updatedAt: new Date(),
+				userId: root.id,
+				title: "title",
+				summary: "summary",
+				script: "script",
+				permissions: [],
+				likedCount: 0,
+				...data,
+			})
+			.then((x) => flashsRepository.findOneByOrFail(x.identifiers[0]));
 	}
 
 	async function createUser(data: Partial<MiUser> = {}) {
@@ -53,7 +61,7 @@ describe('FlashService', () => {
 				id: idService.gen(),
 				...data,
 			})
-			.then(x => usersRepository.findOneByOrFail(x.identifiers[0]));
+			.then((x) => usersRepository.findOneByOrFail(x.identifiers[0]));
 
 		await userProfilesRepository.insert({
 			userId: user.id,
@@ -66,10 +74,7 @@ describe('FlashService', () => {
 
 	beforeAll(async () => {
 		app = await Test.createTestingModule({
-			imports: [
-				GlobalModule,
-				CoreModule,
-			],
+			imports: [GlobalModule, CoreModule],
 		}).compile();
 
 		await app.init();
@@ -89,9 +94,9 @@ describe('FlashService', () => {
 	});
 
 	beforeEach(async () => {
-		root = await createUser({ username: 'root', usernameLower: 'root' });
-		alice = await createUser({ username: 'alice', usernameLower: 'alice' });
-		bob = await createUser({ username: 'bob', usernameLower: 'bob' });
+		root = await createUser({ username: "root", usernameLower: "root" });
+		alice = await createUser({ username: "alice", usernameLower: "alice" });
+		bob = await createUser({ username: "bob", usernameLower: "bob" });
 	});
 
 	afterEach(async () => {
@@ -103,8 +108,8 @@ describe('FlashService', () => {
 
 	// --------------------------------------------------------------------------------------
 
-	describe('featured', () => {
-		test('should return featured flashes', async () => {
+	describe("featured", () => {
+		test("should return featured flashes", async () => {
 			const flash1 = await createFlash({ likedCount: 1 });
 			const flash2 = await createFlash({ likedCount: 2 });
 			const flash3 = await createFlash({ likedCount: 3 });
@@ -117,10 +122,13 @@ describe('FlashService', () => {
 			expect(result).toEqual([flash3, flash2, flash1]);
 		});
 
-		test('should return featured flashes public visibility only', async () => {
-			const flash1 = await createFlash({ likedCount: 1, visibility: 'public' });
-			const flash2 = await createFlash({ likedCount: 2, visibility: 'public' });
-			const flash3 = await createFlash({ likedCount: 3, visibility: 'private' });
+		test("should return featured flashes public visibility only", async () => {
+			const flash1 = await createFlash({ likedCount: 1, visibility: "public" });
+			const flash2 = await createFlash({ likedCount: 2, visibility: "public" });
+			const flash3 = await createFlash({
+				likedCount: 3,
+				visibility: "private",
+			});
 
 			const result = await service.featured({
 				offset: 0,
@@ -130,7 +138,7 @@ describe('FlashService', () => {
 			expect(result).toEqual([flash2, flash1]);
 		});
 
-		test('should return featured flashes with offset', async () => {
+		test("should return featured flashes with offset", async () => {
 			const flash1 = await createFlash({ likedCount: 1 });
 			const flash2 = await createFlash({ likedCount: 2 });
 			const flash3 = await createFlash({ likedCount: 3 });
@@ -143,7 +151,7 @@ describe('FlashService', () => {
 			expect(result).toEqual([flash2, flash1]);
 		});
 
-		test('should return featured flashes with limit', async () => {
+		test("should return featured flashes with limit", async () => {
 			const flash1 = await createFlash({ likedCount: 1 });
 			const flash2 = await createFlash({ likedCount: 2 });
 			const flash3 = await createFlash({ likedCount: 3 });

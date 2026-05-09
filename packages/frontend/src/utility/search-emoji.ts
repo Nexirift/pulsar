@@ -3,27 +3,33 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-export type EmojiDef = {
-	emoji: string;
-	name: string;
-	url: string;
-	aliasOf?: string;
-} | {
-	emoji: string;
-	name: string;
-	aliasOf?: string;
-	isCustomEmoji?: true;
-};
-type EmojiScore = { emoji: EmojiDef, score: number };
+export type EmojiDef =
+	| {
+			emoji: string;
+			name: string;
+			url: string;
+			aliasOf?: string;
+	  }
+	| {
+			emoji: string;
+			name: string;
+			aliasOf?: string;
+			isCustomEmoji?: true;
+	  };
+type EmojiScore = { emoji: EmojiDef; score: number };
 
-export function searchEmoji(query: string | null, emojiDb: EmojiDef[], max = 30): EmojiDef[] {
+export function searchEmoji(
+	query: string | null,
+	emojiDb: EmojiDef[],
+	max = 30,
+): EmojiDef[] {
 	if (!query) {
 		return [];
 	}
 
 	const matched = new Map<string, EmojiScore>();
 	// 完全一致（エイリアスなし）
-	emojiDb.some(x => {
+	emojiDb.some((x) => {
 		if (x.name.toLowerCase() === query && !x.aliasOf) {
 			matched.set(x.name, { emoji: x, score: query.length + 3 });
 		}
@@ -32,7 +38,7 @@ export function searchEmoji(query: string | null, emojiDb: EmojiDef[], max = 30)
 
 	// 完全一致（エイリアス込み）
 	if (matched.size < max) {
-		emojiDb.some(x => {
+		emojiDb.some((x) => {
 			if (x.name.toLowerCase() === query && !matched.has(x.aliasOf ?? x.name)) {
 				matched.set(x.aliasOf ?? x.name, { emoji: x, score: query.length + 2 });
 			}
@@ -42,8 +48,12 @@ export function searchEmoji(query: string | null, emojiDb: EmojiDef[], max = 30)
 
 	// 前方一致（エイリアスなし）
 	if (matched.size < max) {
-		emojiDb.some(x => {
-			if (x.name.toLowerCase().startsWith(query) && !x.aliasOf && !matched.has(x.name)) {
+		emojiDb.some((x) => {
+			if (
+				x.name.toLowerCase().startsWith(query) &&
+				!x.aliasOf &&
+				!matched.has(x.name)
+			) {
 				matched.set(x.name, { emoji: x, score: query.length + 1 });
 			}
 			return matched.size === max;
@@ -52,8 +62,11 @@ export function searchEmoji(query: string | null, emojiDb: EmojiDef[], max = 30)
 
 	// 前方一致（エイリアス込み）
 	if (matched.size < max) {
-		emojiDb.some(x => {
-			if (x.name.toLowerCase().startsWith(query) && !matched.has(x.aliasOf ?? x.name)) {
+		emojiDb.some((x) => {
+			if (
+				x.name.toLowerCase().startsWith(query) &&
+				!matched.has(x.aliasOf ?? x.name)
+			) {
 				matched.set(x.aliasOf ?? x.name, { emoji: x, score: query.length });
 			}
 			return matched.size === max;
@@ -62,8 +75,11 @@ export function searchEmoji(query: string | null, emojiDb: EmojiDef[], max = 30)
 
 	// 部分一致（エイリアス込み）
 	if (matched.size < max) {
-		emojiDb.some(x => {
-			if (x.name.toLowerCase().includes(query) && !matched.has(x.aliasOf ?? x.name)) {
+		emojiDb.some((x) => {
+			if (
+				x.name.toLowerCase().includes(query) &&
+				!matched.has(x.aliasOf ?? x.name)
+			) {
 				matched.set(x.aliasOf ?? x.name, { emoji: x, score: query.length - 1 });
 			}
 			return matched.size === max;
@@ -87,7 +103,10 @@ export function searchEmoji(query: string | null, emojiDb: EmojiDef[], max = 30)
 			}
 
 			// 半分以上の文字が含まれていればヒットとする
-			if (hit > Math.ceil(queryChars.length / 2) && hit - 2 > (matched.get(x.aliasOf ?? x.name)?.score ?? 0)) {
+			if (
+				hit > Math.ceil(queryChars.length / 2) &&
+				hit - 2 > (matched.get(x.aliasOf ?? x.name)?.score ?? 0)
+			) {
 				hitEmojis.set(x.aliasOf ?? x.name, { emoji: x, score: hit - 2 });
 			}
 		}
@@ -96,23 +115,27 @@ export function searchEmoji(query: string | null, emojiDb: EmojiDef[], max = 30)
 		[...hitEmojis.values()]
 			.sort((x, y) => y.score - x.score)
 			.slice(0, 6)
-			.forEach(it => matched.set(it.emoji.name, it));
+			.forEach((it) => matched.set(it.emoji.name, it));
 	}
 
 	return [...matched.values()]
 		.sort((x, y) => y.score - x.score)
 		.slice(0, max)
-		.map(it => it.emoji);
+		.map((it) => it.emoji);
 }
 
-export function searchEmojiExact(query: string | null, emojiDb: EmojiDef[], max = 30): EmojiDef[] {
+export function searchEmojiExact(
+	query: string | null,
+	emojiDb: EmojiDef[],
+	max = 30,
+): EmojiDef[] {
 	if (!query) {
 		return [];
 	}
 
 	const matched = new Map<string, EmojiScore>();
 	// 完全一致（エイリアスなし）
-	emojiDb.some(x => {
+	emojiDb.some((x) => {
 		if (x.name === query && !x.aliasOf) {
 			matched.set(x.name, { emoji: x, score: query.length + 3 });
 		}
@@ -121,7 +144,7 @@ export function searchEmojiExact(query: string | null, emojiDb: EmojiDef[], max 
 
 	// 完全一致（エイリアス込み）
 	if (matched.size < max) {
-		emojiDb.some(x => {
+		emojiDb.some((x) => {
 			if (x.name === query && !matched.has(x.aliasOf ?? x.name)) {
 				matched.set(x.aliasOf ?? x.name, { emoji: x, score: query.length + 2 });
 			}
@@ -132,5 +155,5 @@ export function searchEmojiExact(query: string | null, emojiDb: EmojiDef[], max 
 	return [...matched.values()]
 		.sort((x, y) => y.score - x.score)
 		.slice(0, max)
-		.map(it => it.emoji);
+		.map((it) => it.emoji);
 }

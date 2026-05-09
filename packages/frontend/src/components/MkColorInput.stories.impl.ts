@@ -5,9 +5,9 @@
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable import/no-default-export */
-import type { StoryObj } from '@storybook/vue3';
-import { action } from '@storybook/addon-actions';
-import MkColorInput from './MkColorInput.vue';
+import type { StoryObj } from "@storybook/vue3";
+import { action } from "@storybook/addon-actions";
+import MkColorInput from "./MkColorInput.vue";
 export const Default = {
 	render(args) {
 		return {
@@ -16,7 +16,7 @@ export const Default = {
 			},
 			data() {
 				return {
-					color: '#cccccc',
+					color: "#cccccc",
 				};
 			},
 			setup() {
@@ -32,7 +32,7 @@ export const Default = {
 				},
 				events() {
 					return {
-						'update:modelValue': action('update:modelValue'),
+						"update:modelValue": action("update:modelValue"),
 					};
 				},
 			},
@@ -40,11 +40,12 @@ export const Default = {
 		};
 	},
 	parameters: {
-		layout: 'fullscreen',
+		layout: "fullscreen",
 	},
 	decorators: [
 		() => ({
-			template: '<div style="display: flex; align-items: center; justify-content: center; height: 100vh"><div style="max-width: 800px; width: 100%; margin: 3rem"><story/></div></div>',
+			template:
+				'<div style="display: flex; align-items: center; justify-content: center; height: 100vh"><div style="max-width: 800px; width: 100%; margin: 3rem"><story/></div></div>',
 		}),
 	],
 } satisfies StoryObj<typeof MkColorInput>;

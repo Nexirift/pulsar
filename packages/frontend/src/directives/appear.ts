@@ -3,15 +3,15 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { Directive } from 'vue';
+import type { Directive } from "vue";
 
 export default {
 	mounted(src, binding, vn) {
 		const fn = binding.value;
 		if (fn == null) return;
 
-		const observer = new IntersectionObserver(entries => {
-			if (entries.some(entry => entry.isIntersecting)) {
+		const observer = new IntersectionObserver((entries) => {
+			if (entries.some((entry) => entry.isIntersecting)) {
 				fn();
 			}
 		});

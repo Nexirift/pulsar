@@ -3,238 +3,268 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import type { MiMeta } from '@/models/Meta.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { MetaService } from '@/core/MetaService.js';
-import { instanceUnsignedFetchOptions } from '@/const.js';
+import { Injectable } from "@nestjs/common";
+import type { MiMeta } from "@/models/Meta.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { MetaService } from "@/core/MetaService.js";
+import { instanceUnsignedFetchOptions } from "@/const.js";
 
 export const meta = {
-	tags: ['admin'],
+	tags: ["admin"],
 
 	requireCredential: true,
 	requireAdmin: true,
-	kind: 'write:admin:meta',
+	kind: "write:admin:meta",
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		disableRegistration: { type: 'boolean', nullable: true },
-		disableInactivity: { type: 'boolean', nullable: true },
+		disableRegistration: { type: "boolean", nullable: true },
+		disableInactivity: { type: "boolean", nullable: true },
 		pinnedUsers: {
-			type: 'array', nullable: true, items: {
-				type: 'string',
+			type: "array",
+			nullable: true,
+			items: {
+				type: "string",
 			},
 		},
 		hiddenTags: {
-			type: 'array', nullable: true, items: {
-				type: 'string',
+			type: "array",
+			nullable: true,
+			items: {
+				type: "string",
 			},
 		},
 		blockedHosts: {
-			type: 'array', nullable: true, items: {
-				type: 'string',
+			type: "array",
+			nullable: true,
+			items: {
+				type: "string",
 			},
 		},
 		sensitiveWords: {
-			type: 'array', nullable: true, items: {
-				type: 'string',
+			type: "array",
+			nullable: true,
+			items: {
+				type: "string",
 			},
 		},
 		prohibitedWords: {
-			type: 'array', nullable: true, items: {
-				type: 'string',
+			type: "array",
+			nullable: true,
+			items: {
+				type: "string",
 			},
 		},
 		prohibitedWordsForNameOfUser: {
-			type: 'array', nullable: true, items: {
-				type: 'string',
-			},
-		},
-		themeColor: { type: 'string', nullable: true, pattern: '^#[0-9a-fA-F]{6}$' },
-		mascotImageUrl: { type: 'string', nullable: true },
-		bannerUrl: { type: 'string', nullable: true },
-		serverErrorImageUrl: { type: 'string', nullable: true },
-		infoImageUrl: { type: 'string', nullable: true },
-		notFoundImageUrl: { type: 'string', nullable: true },
-		iconUrl: { type: 'string', nullable: true },
-		app192IconUrl: { type: 'string', nullable: true },
-		app300IconUrl: { type: 'string', nullable: true },
-		app512IconUrl: { type: 'string', nullable: true },
-		sidebarLogoUrl: { type: 'string', nullable: true },
-		backgroundImageUrl: { type: 'string', nullable: true },
-		logoImageUrl: { type: 'string', nullable: true },
-		name: { type: 'string', nullable: true },
-		shortName: { type: 'string', nullable: true },
-		description: { type: 'string', nullable: true },
-		about: { type: 'string', nullable: true },
-		defaultLightTheme: { type: 'string', nullable: true },
-		defaultDarkTheme: { type: 'string', nullable: true },
-		defaultLike: { type: 'string' },
-		cacheRemoteFiles: { type: 'boolean' },
-		cacheRemoteSensitiveFiles: { type: 'boolean' },
-		emailRequiredForSignup: { type: 'boolean' },
-		approvalRequiredForSignup: { type: 'boolean' },
-		enableHcaptcha: { type: 'boolean' },
-		hcaptchaSiteKey: { type: 'string', nullable: true },
-		hcaptchaSecretKey: { type: 'string', nullable: true },
-		enableMcaptcha: { type: 'boolean' },
-		mcaptchaSiteKey: { type: 'string', nullable: true },
-		mcaptchaInstanceUrl: { type: 'string', nullable: true },
-		mcaptchaSecretKey: { type: 'string', nullable: true },
-		enableRecaptcha: { type: 'boolean' },
-		recaptchaSiteKey: { type: 'string', nullable: true },
-		recaptchaSecretKey: { type: 'string', nullable: true },
-		enableTurnstile: { type: 'boolean' },
-		turnstileSiteKey: { type: 'string', nullable: true },
-		turnstileSecretKey: { type: 'string', nullable: true },
-		enableAltcha: { type: 'boolean' },
-		altchaSiteKey: { type: 'string', nullable: true },
-		altchaSecretKey: { type: 'string', nullable: true },
-		altchaInstanceUrl: { type: 'string', nullable: true },
-		enableTenor: { type: 'boolean' },
-		tenorApiKey: { type: 'string', nullable: true },
-		enableFC: { type: 'boolean' },
-		fcSiteKey: { type: 'string', nullable: true },
-		fcSecretKey: { type: 'string', nullable: true },
-		enableTestcaptcha: { type: 'boolean' },
-		sensitiveMediaDetection: { type: 'string', enum: ['none', 'all', 'local', 'remote'] },
-		sensitiveMediaDetectionSensitivity: { type: 'string', enum: ['medium', 'low', 'high', 'veryLow', 'veryHigh'] },
-		setSensitiveFlagAutomatically: { type: 'boolean' },
-		enableSensitiveMediaDetectionForVideos: { type: 'boolean' },
-		enableBotTrending: { type: 'boolean' },
-		maintainerName: { type: 'string', nullable: true },
-		maintainerEmail: { type: 'string', nullable: true },
-		langs: {
-			type: 'array', items: {
-				type: 'string',
-			},
-		},
-		translationTimeout: { type: 'number' },
-		deeplAuthKey: { type: 'string', nullable: true },
-		deeplIsPro: { type: 'boolean' },
-		deeplFreeMode: { type: 'boolean' },
-		deeplFreeInstance: { type: 'string', nullable: true },
-		libreTranslateURL: { type: 'string', nullable: true },
-		libreTranslateKey: { type: 'string', nullable: true },
-		enableEmail: { type: 'boolean' },
-		email: { type: 'string', nullable: true },
-		smtpSecure: { type: 'boolean' },
-		smtpHost: { type: 'string', nullable: true },
-		smtpPort: { type: 'integer', nullable: true },
-		smtpUser: { type: 'string', nullable: true },
-		smtpPass: { type: 'string', nullable: true },
-		enableServiceWorker: { type: 'boolean' },
-		swPublicKey: { type: 'string', nullable: true },
-		swPrivateKey: { type: 'string', nullable: true },
-		tosUrl: { type: 'string', nullable: true },
-		repositoryUrl: { type: 'string', nullable: true },
-		feedbackUrl: { type: 'string', nullable: true },
-		impressumUrl: { type: 'string', nullable: true },
-		donationUrl: { type: 'string', nullable: true },
-		privacyPolicyUrl: { type: 'string', nullable: true },
-		inquiryUrl: { type: 'string', nullable: true },
-		useObjectStorage: { type: 'boolean' },
-		objectStorageBaseUrl: { type: 'string', nullable: true },
-		objectStorageBucket: { type: 'string', nullable: true },
-		objectStoragePrefix: { type: 'string', pattern: /^[a-zA-Z0-9-._\/]*$/.source, nullable: true },
-		objectStorageEndpoint: { type: 'string', nullable: true },
-		objectStorageRegion: { type: 'string', nullable: true },
-		objectStoragePort: { type: 'integer', nullable: true },
-		objectStorageAccessKey: { type: 'string', nullable: true },
-		objectStorageSecretKey: { type: 'string', nullable: true },
-		objectStorageUseSSL: { type: 'boolean' },
-		objectStorageUseProxy: { type: 'boolean' },
-		objectStorageSetPublicRead: { type: 'boolean' },
-		objectStorageS3ForcePathStyle: { type: 'boolean' },
-		enableIpLogging: { type: 'boolean' },
-		enableActiveEmailValidation: { type: 'boolean' },
-		enableVerifymailApi: { type: 'boolean' },
-		verifymailAuthKey: { type: 'string', nullable: true },
-		enableTruemailApi: { type: 'boolean' },
-		truemailInstance: { type: 'string', nullable: true },
-		truemailAuthKey: { type: 'string', nullable: true },
-		enableChartsForRemoteUser: { type: 'boolean' },
-		enableChartsForFederatedInstances: { type: 'boolean' },
-		enableStatsForFederatedInstances: { type: 'boolean' },
-		enableServerMachineStats: { type: 'boolean' },
-		enableAchievements: { type: 'boolean' },
-		robotsTxt: { type: 'string', nullable: true },
-		enableIdenticonGeneration: { type: 'boolean' },
-		serverRules: { type: 'array', items: { type: 'string' } },
-		bannedEmailDomains: { type: 'array', items: { type: 'string' } },
-		preservedUsernames: { type: 'array', items: { type: 'string' } },
-		bubbleInstances: { type: 'array', items: { type: 'string' } },
-		manifestJsonOverride: { type: 'string' },
-		appleAppSiteAssociation: { type: 'string' },
-		androidAssetLinks: { type: 'string' },
-		enableFanoutTimeline: { type: 'boolean' },
-		enableFanoutTimelineDbFallback: { type: 'boolean' },
-		perLocalUserUserTimelineCacheMax: { type: 'integer' },
-		perRemoteUserUserTimelineCacheMax: { type: 'integer' },
-		perUserHomeTimelineCacheMax: { type: 'integer' },
-		perUserListTimelineCacheMax: { type: 'integer' },
-		enableReactionsBuffering: { type: 'boolean' },
-		notesPerOneAd: { type: 'integer' },
-		silencedHosts: {
-			type: 'array',
+			type: "array",
 			nullable: true,
 			items: {
-				type: 'string',
+				type: "string",
+			},
+		},
+		themeColor: {
+			type: "string",
+			nullable: true,
+			pattern: "^#[0-9a-fA-F]{6}$",
+		},
+		mascotImageUrl: { type: "string", nullable: true },
+		bannerUrl: { type: "string", nullable: true },
+		serverErrorImageUrl: { type: "string", nullable: true },
+		infoImageUrl: { type: "string", nullable: true },
+		notFoundImageUrl: { type: "string", nullable: true },
+		iconUrl: { type: "string", nullable: true },
+		app192IconUrl: { type: "string", nullable: true },
+		app300IconUrl: { type: "string", nullable: true },
+		app512IconUrl: { type: "string", nullable: true },
+		sidebarLogoUrl: { type: "string", nullable: true },
+		backgroundImageUrl: { type: "string", nullable: true },
+		logoImageUrl: { type: "string", nullable: true },
+		name: { type: "string", nullable: true },
+		shortName: { type: "string", nullable: true },
+		description: { type: "string", nullable: true },
+		about: { type: "string", nullable: true },
+		defaultLightTheme: { type: "string", nullable: true },
+		defaultDarkTheme: { type: "string", nullable: true },
+		defaultLike: { type: "string" },
+		cacheRemoteFiles: { type: "boolean" },
+		cacheRemoteSensitiveFiles: { type: "boolean" },
+		emailRequiredForSignup: { type: "boolean" },
+		approvalRequiredForSignup: { type: "boolean" },
+		enableHcaptcha: { type: "boolean" },
+		hcaptchaSiteKey: { type: "string", nullable: true },
+		hcaptchaSecretKey: { type: "string", nullable: true },
+		enableMcaptcha: { type: "boolean" },
+		mcaptchaSiteKey: { type: "string", nullable: true },
+		mcaptchaInstanceUrl: { type: "string", nullable: true },
+		mcaptchaSecretKey: { type: "string", nullable: true },
+		enableRecaptcha: { type: "boolean" },
+		recaptchaSiteKey: { type: "string", nullable: true },
+		recaptchaSecretKey: { type: "string", nullable: true },
+		enableTurnstile: { type: "boolean" },
+		turnstileSiteKey: { type: "string", nullable: true },
+		turnstileSecretKey: { type: "string", nullable: true },
+		enableAltcha: { type: "boolean" },
+		altchaSiteKey: { type: "string", nullable: true },
+		altchaSecretKey: { type: "string", nullable: true },
+		altchaInstanceUrl: { type: "string", nullable: true },
+		enableTenor: { type: "boolean" },
+		tenorApiKey: { type: "string", nullable: true },
+		enableFC: { type: "boolean" },
+		fcSiteKey: { type: "string", nullable: true },
+		fcSecretKey: { type: "string", nullable: true },
+		enableTestcaptcha: { type: "boolean" },
+		sensitiveMediaDetection: {
+			type: "string",
+			enum: ["none", "all", "local", "remote"],
+		},
+		sensitiveMediaDetectionSensitivity: {
+			type: "string",
+			enum: ["medium", "low", "high", "veryLow", "veryHigh"],
+		},
+		setSensitiveFlagAutomatically: { type: "boolean" },
+		enableSensitiveMediaDetectionForVideos: { type: "boolean" },
+		enableBotTrending: { type: "boolean" },
+		maintainerName: { type: "string", nullable: true },
+		maintainerEmail: { type: "string", nullable: true },
+		langs: {
+			type: "array",
+			items: {
+				type: "string",
+			},
+		},
+		translationTimeout: { type: "number" },
+		deeplAuthKey: { type: "string", nullable: true },
+		deeplIsPro: { type: "boolean" },
+		deeplFreeMode: { type: "boolean" },
+		deeplFreeInstance: { type: "string", nullable: true },
+		libreTranslateURL: { type: "string", nullable: true },
+		libreTranslateKey: { type: "string", nullable: true },
+		enableEmail: { type: "boolean" },
+		email: { type: "string", nullable: true },
+		smtpSecure: { type: "boolean" },
+		smtpHost: { type: "string", nullable: true },
+		smtpPort: { type: "integer", nullable: true },
+		smtpUser: { type: "string", nullable: true },
+		smtpPass: { type: "string", nullable: true },
+		enableServiceWorker: { type: "boolean" },
+		swPublicKey: { type: "string", nullable: true },
+		swPrivateKey: { type: "string", nullable: true },
+		tosUrl: { type: "string", nullable: true },
+		repositoryUrl: { type: "string", nullable: true },
+		feedbackUrl: { type: "string", nullable: true },
+		impressumUrl: { type: "string", nullable: true },
+		donationUrl: { type: "string", nullable: true },
+		privacyPolicyUrl: { type: "string", nullable: true },
+		inquiryUrl: { type: "string", nullable: true },
+		useObjectStorage: { type: "boolean" },
+		objectStorageBaseUrl: { type: "string", nullable: true },
+		objectStorageBucket: { type: "string", nullable: true },
+		objectStoragePrefix: {
+			type: "string",
+			pattern: /^[a-zA-Z0-9-._\/]*$/.source,
+			nullable: true,
+		},
+		objectStorageEndpoint: { type: "string", nullable: true },
+		objectStorageRegion: { type: "string", nullable: true },
+		objectStoragePort: { type: "integer", nullable: true },
+		objectStorageAccessKey: { type: "string", nullable: true },
+		objectStorageSecretKey: { type: "string", nullable: true },
+		objectStorageUseSSL: { type: "boolean" },
+		objectStorageUseProxy: { type: "boolean" },
+		objectStorageSetPublicRead: { type: "boolean" },
+		objectStorageS3ForcePathStyle: { type: "boolean" },
+		enableIpLogging: { type: "boolean" },
+		enableActiveEmailValidation: { type: "boolean" },
+		enableVerifymailApi: { type: "boolean" },
+		verifymailAuthKey: { type: "string", nullable: true },
+		enableTruemailApi: { type: "boolean" },
+		truemailInstance: { type: "string", nullable: true },
+		truemailAuthKey: { type: "string", nullable: true },
+		enableChartsForRemoteUser: { type: "boolean" },
+		enableChartsForFederatedInstances: { type: "boolean" },
+		enableStatsForFederatedInstances: { type: "boolean" },
+		enableServerMachineStats: { type: "boolean" },
+		enableAchievements: { type: "boolean" },
+		robotsTxt: { type: "string", nullable: true },
+		enableIdenticonGeneration: { type: "boolean" },
+		serverRules: { type: "array", items: { type: "string" } },
+		bannedEmailDomains: { type: "array", items: { type: "string" } },
+		preservedUsernames: { type: "array", items: { type: "string" } },
+		bubbleInstances: { type: "array", items: { type: "string" } },
+		manifestJsonOverride: { type: "string" },
+		appleAppSiteAssociation: { type: "string" },
+		androidAssetLinks: { type: "string" },
+		enableFanoutTimeline: { type: "boolean" },
+		enableFanoutTimelineDbFallback: { type: "boolean" },
+		perLocalUserUserTimelineCacheMax: { type: "integer" },
+		perRemoteUserUserTimelineCacheMax: { type: "integer" },
+		perUserHomeTimelineCacheMax: { type: "integer" },
+		perUserListTimelineCacheMax: { type: "integer" },
+		enableReactionsBuffering: { type: "boolean" },
+		notesPerOneAd: { type: "integer" },
+		silencedHosts: {
+			type: "array",
+			nullable: true,
+			items: {
+				type: "string",
 			},
 		},
 		mediaSilencedHosts: {
-			type: 'array',
+			type: "array",
 			nullable: true,
 			items: {
-				type: 'string',
+				type: "string",
 			},
 		},
 		summalyProxy: {
-			type: 'string', nullable: true,
+			type: "string",
+			nullable: true,
 			description: '[Deprecated] Use "urlPreviewSummaryProxyUrl" instead.',
 		},
-		urlPreviewEnabled: { type: 'boolean' },
-		urlPreviewTimeout: { type: 'integer' },
-		urlPreviewMaximumContentLength: { type: 'integer' },
-		urlPreviewRequireContentLength: { type: 'boolean' },
-		urlPreviewUserAgent: { type: 'string', nullable: true },
-		urlPreviewSummaryProxyUrl: { type: 'string', nullable: true },
+		urlPreviewEnabled: { type: "boolean" },
+		urlPreviewTimeout: { type: "integer" },
+		urlPreviewMaximumContentLength: { type: "integer" },
+		urlPreviewRequireContentLength: { type: "boolean" },
+		urlPreviewUserAgent: { type: "string", nullable: true },
+		urlPreviewSummaryProxyUrl: { type: "string", nullable: true },
 		trustedLinkUrlPatterns: {
-			type: 'array', nullable: true, items: {
-				type: 'string',
+			type: "array",
+			nullable: true,
+			items: {
+				type: "string",
 			},
 		},
 		federation: {
-			type: 'string',
-			enum: ['all', 'none', 'specified'],
+			type: "string",
+			enum: ["all", "none", "specified"],
 		},
 		federationHosts: {
-			type: 'array',
+			type: "array",
 			items: {
-				type: 'string',
+				type: "string",
 			},
 		},
 		allowUnsignedFetch: {
-			type: 'string',
+			type: "string",
 			enum: instanceUnsignedFetchOptions,
 			nullable: false,
 		},
 		enableProxyAccount: {
-			type: 'boolean',
+			type: "boolean",
 			nullable: false,
 		},
 		deliverSuspendedSoftware: {
-			type: 'array',
+			type: "array",
 			items: {
-				type: 'object',
+				type: "object",
 				properties: {
-					software: { type: 'string' },
-					versionRange: { type: 'string' },
+					software: { type: "string" },
+					versionRange: { type: "string" },
 				},
-				required: ['software', 'versionRange'],
+				required: ["software", "versionRange"],
 			},
 		},
 	},
@@ -242,7 +272,8 @@ export const paramDef = {
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		private metaService: MetaService,
 		private moderationLogService: ModerationLogService,
@@ -250,11 +281,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		super(meta, paramDef, async (ps, me) => {
 			const set = {} as Partial<MiMeta>;
 
-			if (typeof ps.disableRegistration === 'boolean') {
+			if (typeof ps.disableRegistration === "boolean") {
 				set.disableRegistration = ps.disableRegistration;
 			}
 
-			if (typeof ps.disableInactivity === 'boolean') {
+			if (typeof ps.disableInactivity === "boolean") {
 				set.disableInactivity = ps.disableInactivity;
 			}
 
@@ -267,7 +298,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (Array.isArray(ps.blockedHosts)) {
-				set.blockedHosts = ps.blockedHosts.filter(Boolean).map(x => x.toLowerCase());
+				set.blockedHosts = ps.blockedHosts
+					.filter(Boolean)
+					.map((x) => x.toLowerCase());
 			}
 
 			if (Array.isArray(ps.sensitiveWords)) {
@@ -277,22 +310,23 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				set.prohibitedWords = ps.prohibitedWords.filter(Boolean);
 			}
 			if (Array.isArray(ps.prohibitedWordsForNameOfUser)) {
-				set.prohibitedWordsForNameOfUser = ps.prohibitedWordsForNameOfUser.filter(Boolean);
+				set.prohibitedWordsForNameOfUser =
+					ps.prohibitedWordsForNameOfUser.filter(Boolean);
 			}
 			if (Array.isArray(ps.silencedHosts)) {
-				let lastValue = '';
+				let lastValue = "";
 				set.silencedHosts = ps.silencedHosts.sort().filter((h) => {
 					const lv = lastValue;
 					lastValue = h;
-					return h !== '' && h !== lv && !set.blockedHosts?.includes(h);
+					return h !== "" && h !== lv && !set.blockedHosts?.includes(h);
 				});
 			}
 			if (Array.isArray(ps.mediaSilencedHosts)) {
-				let lastValue = '';
+				let lastValue = "";
 				set.mediaSilencedHosts = ps.mediaSilencedHosts.sort().filter((h) => {
 					const lv = lastValue;
 					lastValue = h;
-					return h !== '' && h !== lv && !set.blockedHosts?.includes(h);
+					return h !== "" && h !== lv && !set.blockedHosts?.includes(h);
 				});
 			}
 			if (ps.themeColor !== undefined) {
@@ -544,7 +578,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.repositoryUrl !== undefined) {
-				set.repositoryUrl = URL.canParse(ps.repositoryUrl!) ? ps.repositoryUrl : null;
+				set.repositoryUrl = URL.canParse(ps.repositoryUrl!)
+					? ps.repositoryUrl
+					: null;
 			}
 
 			if (ps.feedbackUrl !== undefined) {
@@ -624,7 +660,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.deeplAuthKey !== undefined) {
-				if (ps.deeplAuthKey === '') {
+				if (ps.deeplAuthKey === "") {
 					set.deeplAuthKey = null;
 				} else {
 					set.deeplAuthKey = ps.deeplAuthKey;
@@ -640,7 +676,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.deeplFreeInstance !== undefined) {
-				if (ps.deeplFreeInstance === '') {
+				if (ps.deeplFreeInstance === "") {
 					set.deeplFreeInstance = null;
 				} else {
 					set.deeplFreeInstance = ps.deeplFreeInstance;
@@ -648,7 +684,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.libreTranslateURL !== undefined) {
-				if (ps.libreTranslateURL === '') {
+				if (ps.libreTranslateURL === "") {
 					set.libreTranslateURL = null;
 				} else {
 					set.libreTranslateURL = ps.libreTranslateURL;
@@ -656,7 +692,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.libreTranslateKey !== undefined) {
-				if (ps.libreTranslateKey === '') {
+				if (ps.libreTranslateKey === "") {
 					set.libreTranslateKey = null;
 				} else {
 					set.libreTranslateKey = ps.libreTranslateKey;
@@ -676,7 +712,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.verifymailAuthKey !== undefined) {
-				if (ps.verifymailAuthKey === '') {
+				if (ps.verifymailAuthKey === "") {
 					set.verifymailAuthKey = null;
 				} else {
 					set.verifymailAuthKey = ps.verifymailAuthKey;
@@ -688,7 +724,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.truemailInstance !== undefined) {
-				if (ps.truemailInstance === '') {
+				if (ps.truemailInstance === "") {
 					set.truemailInstance = null;
 				} else {
 					set.truemailInstance = ps.truemailInstance;
@@ -696,7 +732,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.truemailAuthKey !== undefined) {
-				if (ps.truemailAuthKey === '') {
+				if (ps.truemailAuthKey === "") {
 					set.truemailAuthKey = null;
 				} else {
 					set.truemailAuthKey = ps.truemailAuthKey;
@@ -708,11 +744,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.enableChartsForFederatedInstances !== undefined) {
-				set.enableChartsForFederatedInstances = ps.enableChartsForFederatedInstances;
+				set.enableChartsForFederatedInstances =
+					ps.enableChartsForFederatedInstances;
 			}
 
 			if (ps.enableStatsForFederatedInstances !== undefined) {
-				set.enableStatsForFederatedInstances = ps.enableStatsForFederatedInstances;
+				set.enableStatsForFederatedInstances =
+					ps.enableStatsForFederatedInstances;
 			}
 
 			if (ps.enableServerMachineStats !== undefined) {
@@ -764,11 +802,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.perLocalUserUserTimelineCacheMax !== undefined) {
-				set.perLocalUserUserTimelineCacheMax = ps.perLocalUserUserTimelineCacheMax;
+				set.perLocalUserUserTimelineCacheMax =
+					ps.perLocalUserUserTimelineCacheMax;
 			}
 
 			if (ps.perRemoteUserUserTimelineCacheMax !== undefined) {
-				set.perRemoteUserUserTimelineCacheMax = ps.perRemoteUserUserTimelineCacheMax;
+				set.perRemoteUserUserTimelineCacheMax =
+					ps.perRemoteUserUserTimelineCacheMax;
 			}
 
 			if (ps.perUserHomeTimelineCacheMax !== undefined) {
@@ -808,13 +848,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (ps.urlPreviewUserAgent !== undefined) {
-				const value = (ps.urlPreviewUserAgent ?? '').trim();
-				set.urlPreviewUserAgent = value === '' ? null : ps.urlPreviewUserAgent;
+				const value = (ps.urlPreviewUserAgent ?? "").trim();
+				set.urlPreviewUserAgent = value === "" ? null : ps.urlPreviewUserAgent;
 			}
 
-			if (ps.summalyProxy !== undefined || ps.urlPreviewSummaryProxyUrl !== undefined) {
-				const value = ((ps.urlPreviewSummaryProxyUrl ?? ps.summalyProxy) ?? '').trim();
-				set.urlPreviewSummaryProxyUrl = value === '' ? null : value;
+			if (
+				ps.summalyProxy !== undefined ||
+				ps.urlPreviewSummaryProxyUrl !== undefined
+			) {
+				const value = (
+					ps.urlPreviewSummaryProxyUrl ??
+					ps.summalyProxy ??
+					""
+				).trim();
+				set.urlPreviewSummaryProxyUrl = value === "" ? null : value;
 			}
 
 			if (Array.isArray(ps.trustedLinkUrlPatterns)) {
@@ -830,7 +877,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			if (Array.isArray(ps.federationHosts)) {
-				set.federationHosts = ps.federationHosts.filter(Boolean).map(x => x.toLowerCase());
+				set.federationHosts = ps.federationHosts
+					.filter(Boolean)
+					.map((x) => x.toLowerCase());
 			}
 
 			if (ps.allowUnsignedFetch !== undefined) {
@@ -847,7 +896,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const after = await this.metaService.fetch(true);
 
-			this.moderationLogService.log(me, 'updateServerSettings', {
+			this.moderationLogService.log(me, "updateServerSettings", {
 				before: sanitize(before),
 				after: sanitize(after),
 			});
@@ -858,21 +907,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 function sanitize(meta: Partial<MiMeta>): Partial<MiMeta> {
 	return {
 		...meta,
-		hcaptchaSecretKey: '<redacted>',
-		mcaptchaSecretKey: '<redacted>',
-		recaptchaSecretKey: '<redacted>',
-		turnstileSecretKey: '<redacted>',
-		altchaSecretKey: '<redacted>',
-		tenorApiKey: '<redacted>',
-		fcSecretKey: '<redacted>',
-		smtpPass: '<redacted>',
-		swPrivateKey: '<redacted>',
-		objectStorageAccessKey: '<redacted>',
-		objectStorageSecretKey: '<redacted>',
-		deeplAuthKey: '<redacted>',
-		libreTranslateKey: '<redacted>',
-		verifymailAuthKey: '<redacted>',
-		truemailAuthKey: '<redacted>',
+		hcaptchaSecretKey: "<redacted>",
+		mcaptchaSecretKey: "<redacted>",
+		recaptchaSecretKey: "<redacted>",
+		turnstileSecretKey: "<redacted>",
+		altchaSecretKey: "<redacted>",
+		tenorApiKey: "<redacted>",
+		fcSecretKey: "<redacted>",
+		smtpPass: "<redacted>",
+		swPrivateKey: "<redacted>",
+		objectStorageAccessKey: "<redacted>",
+		objectStorageSecretKey: "<redacted>",
+		deeplAuthKey: "<redacted>",
+		libreTranslateKey: "<redacted>",
+		verifymailAuthKey: "<redacted>",
+		truemailAuthKey: "<redacted>",
 	};
 }
-

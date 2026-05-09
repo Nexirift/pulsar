@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-describe('Before setup instance', () => {
+describe("Before setup instance", () => {
 	beforeEach(() => {
 		cy.resetState();
 	});
@@ -14,32 +14,34 @@ describe('Before setup instance', () => {
 		cy.wait(1000);
 	});
 
-  it('successfully loads', () => {
-    cy.visitHome();
-  });
+	it("successfully loads", () => {
+		cy.visitHome();
+	});
 
-	it('setup instance', () => {
-    cy.visitHome();
+	it("setup instance", () => {
+		cy.visitHome();
 
-		cy.intercept('POST', '/api/admin/accounts/create').as('signup');
+		cy.intercept("POST", "/api/admin/accounts/create").as("signup");
 
-		cy.get('[data-cy-admin-initial-password] input').type('example_password_please_change_this_or_you_will_get_hacked');
-		cy.get('[data-cy-admin-username] input').type('admin');
-		cy.get('[data-cy-admin-password] input').type('admin1234');
-		cy.get('[data-cy-admin-ok]').click();
+		cy.get("[data-cy-admin-initial-password] input").type(
+			"example_password_please_change_this_or_you_will_get_hacked",
+		);
+		cy.get("[data-cy-admin-username] input").type("admin");
+		cy.get("[data-cy-admin-password] input").type("admin1234");
+		cy.get("[data-cy-admin-ok]").click();
 
 		// なぜか動かない
 		//cy.wait('@signup').should('have.property', 'response.statusCode');
-		cy.wait('@signup');
-  });
+		cy.wait("@signup");
+	});
 });
 
-describe('After setup instance', () => {
+describe("After setup instance", () => {
 	beforeEach(() => {
 		cy.resetState();
 
 		// インスタンス初期セットアップ
-		cy.registerUser('admin', 'pass', true);
+		cy.registerUser("admin", "pass", true);
 	});
 
 	afterEach(() => {
@@ -48,63 +50,67 @@ describe('After setup instance', () => {
 		cy.wait(1000);
 	});
 
-  it('successfully loads', () => {
-    cy.visitHome();
-  });
+	it("successfully loads", () => {
+		cy.visitHome();
+	});
 
-	it('signup', () => {
+	it("signup", () => {
 		cy.visitHome();
 
-		cy.intercept('POST', '/api/signup').as('signup');
+		cy.intercept("POST", "/api/signup").as("signup");
 
-		cy.get('[data-cy-signup]').click();
-		cy.get('[data-cy-signup-rules-continue]').should('be.disabled');
-		cy.get('[data-cy-signup-rules-notes-agree] [data-cy-switch-toggle]').click();
-		cy.get('[data-cy-modal-dialog-ok]').click();
-		cy.get('[data-cy-signup-rules-continue]').should('not.be.disabled');
-		cy.get('[data-cy-signup-rules-continue]').click();
+		cy.get("[data-cy-signup]").click();
+		cy.get("[data-cy-signup-rules-continue]").should("be.disabled");
+		cy.get(
+			"[data-cy-signup-rules-notes-agree] [data-cy-switch-toggle]",
+		).click();
+		cy.get("[data-cy-modal-dialog-ok]").click();
+		cy.get("[data-cy-signup-rules-continue]").should("not.be.disabled");
+		cy.get("[data-cy-signup-rules-continue]").click();
 
-		cy.get('[data-cy-signup-submit]').should('be.disabled');
-		cy.get('[data-cy-signup-username] input').type('alice');
-		cy.get('[data-cy-signup-submit]').should('be.disabled');
-		cy.get('[data-cy-signup-password] input').type('alice1234');
-		cy.get('[data-cy-signup-submit]').should('be.disabled');
-		cy.get('[data-cy-signup-password-retype] input').type('alice1234');
-		cy.get('[data-cy-signup-submit]').should('not.be.disabled');
-		cy.get('[data-cy-signup-submit]').click();
+		cy.get("[data-cy-signup-submit]").should("be.disabled");
+		cy.get("[data-cy-signup-username] input").type("alice");
+		cy.get("[data-cy-signup-submit]").should("be.disabled");
+		cy.get("[data-cy-signup-password] input").type("alice1234");
+		cy.get("[data-cy-signup-submit]").should("be.disabled");
+		cy.get("[data-cy-signup-password-retype] input").type("alice1234");
+		cy.get("[data-cy-signup-submit]").should("not.be.disabled");
+		cy.get("[data-cy-signup-submit]").click();
 
-		cy.wait('@signup');
-  });
+		cy.wait("@signup");
+	});
 
-  it('signup with duplicated username', () => {
-		cy.registerUser('alice', 'alice1234');
+	it("signup with duplicated username", () => {
+		cy.registerUser("alice", "alice1234");
 
 		cy.visitHome();
 
 		// ユーザー名が重複している場合の挙動確認
-		cy.get('[data-cy-signup]').click();
-		cy.get('[data-cy-signup-rules-continue]').should('be.disabled');
-		cy.get('[data-cy-signup-rules-notes-agree] [data-cy-switch-toggle]').click();
-		cy.get('[data-cy-modal-dialog-ok]').click();
-		cy.get('[data-cy-signup-rules-continue]').should('not.be.disabled');
-		cy.get('[data-cy-signup-rules-continue]').click();
+		cy.get("[data-cy-signup]").click();
+		cy.get("[data-cy-signup-rules-continue]").should("be.disabled");
+		cy.get(
+			"[data-cy-signup-rules-notes-agree] [data-cy-switch-toggle]",
+		).click();
+		cy.get("[data-cy-modal-dialog-ok]").click();
+		cy.get("[data-cy-signup-rules-continue]").should("not.be.disabled");
+		cy.get("[data-cy-signup-rules-continue]").click();
 
-		cy.get('[data-cy-signup-username] input').type('alice');
-		cy.get('[data-cy-signup-password] input').type('alice1234');
-		cy.get('[data-cy-signup-password-retype] input').type('alice1234');
-		cy.get('[data-cy-signup-submit]').should('be.disabled');
-  });
+		cy.get("[data-cy-signup-username] input").type("alice");
+		cy.get("[data-cy-signup-password] input").type("alice1234");
+		cy.get("[data-cy-signup-password-retype] input").type("alice1234");
+		cy.get("[data-cy-signup-submit]").should("be.disabled");
+	});
 });
 
-describe('After user signup', () => {
+describe("After user signup", () => {
 	beforeEach(() => {
 		cy.resetState();
 
 		// インスタンス初期セットアップ
-		cy.registerUser('admin', 'pass', true);
+		cy.registerUser("admin", "pass", true);
 
 		// ユーザー作成
-		cy.registerUser('alice', 'alice1234');
+		cy.registerUser("alice", "alice1234");
 	});
 
 	afterEach(() => {
@@ -113,57 +119,65 @@ describe('After user signup', () => {
 		cy.wait(1000);
 	});
 
-  it('successfully loads', () => {
-    cy.visitHome();
-  });
+	it("successfully loads", () => {
+		cy.visitHome();
+	});
 
-	it('signin', () => {
+	it("signin", () => {
 		cy.visitHome();
 
-		cy.intercept('POST', '/api/signin-flow').as('signin');
+		cy.intercept("POST", "/api/signin-flow").as("signin");
 
-		cy.get('[data-cy-signin]').click();
+		cy.get("[data-cy-signin]").click();
 
-		cy.get('[data-cy-signin-page-input]').should('be.visible', { timeout: 1000 });
+		cy.get("[data-cy-signin-page-input]").should("be.visible", {
+			timeout: 1000,
+		});
 		// Enterキーで続行できるかの確認も兼ねる
-		cy.get('[data-cy-signin-username] input').type('alice{enter}');
+		cy.get("[data-cy-signin-username] input").type("alice{enter}");
 
-		cy.get('[data-cy-signin-page-password]').should('be.visible', { timeout: 10000 });
+		cy.get("[data-cy-signin-page-password]").should("be.visible", {
+			timeout: 10000,
+		});
 		// Enterキーで続行できるかの確認も兼ねる
-		cy.get('[data-cy-signin-password] input').type('alice1234{enter}');
+		cy.get("[data-cy-signin-password] input").type("alice1234{enter}");
 
-		cy.wait('@signin');
-  });
+		cy.wait("@signin");
+	});
 
-	it('suspend', function() {
-		cy.request('POST', '/api/admin/suspend-user', {
+	it("suspend", function () {
+		cy.request("POST", "/api/admin/suspend-user", {
 			i: this.admin.token,
 			userId: this.alice.id,
 		});
 
 		cy.visitHome();
 
-		cy.get('[data-cy-signin]').click();
+		cy.get("[data-cy-signin]").click();
 
-		cy.get('[data-cy-signin-page-input]').should('be.visible', { timeout: 1000 });
-		cy.get('[data-cy-signin-username] input').type('alice{enter}');
+		cy.get("[data-cy-signin-page-input]").should("be.visible", {
+			timeout: 1000,
+		});
+		cy.get("[data-cy-signin-username] input").type("alice{enter}");
 
 		// TODO: cypressにブラウザの言語指定できる機能が実装され次第英語のみテストするようにする
-		cy.contains(/アカウントが凍結されています|This account has been suspended due to/gi);
+		cy.contains(
+			/アカウントが凍結されています|This account has been suspended due to/gi,
+		);
 	});
 });
 
-describe('After user signed in', () => {
+describe("After user signed in", () => {
 	beforeEach(() => {
 		cy.resetState();
 
 		// インスタンス初期セットアップ
-		cy.registerUser('admin', 'pass', true);
+		cy.registerUser("admin", "pass", true);
 
 		// ユーザー作成
-		cy.registerUser('alice', 'alice1234');
+		cy.registerUser("alice", "alice1234");
 
-		cy.login('alice', 'alice1234');
+		cy.login("alice", "alice1234");
 	});
 
 	afterEach(() => {
@@ -172,53 +186,57 @@ describe('After user signed in', () => {
 		cy.wait(1000);
 	});
 
-  it('successfully loads', () => {
+	it("successfully loads", () => {
 		// 表示に時間がかかるのでデフォルト秒数だとタイムアウトする
-		cy.get('[data-cy-user-setup-continue]', { timeout: 30000 }).should('be.visible');
-  });
+		cy.get("[data-cy-user-setup-continue]", { timeout: 30000 }).should(
+			"be.visible",
+		);
+	});
 
-	it('account setup wizard', () => {
+	it("account setup wizard", () => {
 		// 表示に時間がかかるのでデフォルト秒数だとタイムアウトする
-		cy.get('[data-cy-user-setup-continue]', { timeout: 30000 }).click();
+		cy.get("[data-cy-user-setup-continue]", { timeout: 30000 }).click();
 
-		cy.get('[data-cy-user-setup-user-name] input').type('ありす');
-		cy.get('[data-cy-user-setup-user-description] textarea').type('ほげ');
+		cy.get("[data-cy-user-setup-user-name] input").type("ありす");
+		cy.get("[data-cy-user-setup-user-description] textarea").type("ほげ");
 		// TODO: アイコン設定テスト
 
-		cy.get('[data-cy-user-setup-continue]').click();
+		cy.get("[data-cy-user-setup-continue]").click();
 
 		// プライバシー設定
 
-		cy.get('[data-cy-user-setup-continue]').click();
+		cy.get("[data-cy-user-setup-continue]").click();
 
 		// フォローはスキップ
 
-		cy.get('[data-cy-user-setup-continue]').click();
+		cy.get("[data-cy-user-setup-continue]").click();
 
 		// プッシュ通知設定はスキップ
 
-		cy.get('[data-cy-user-setup-continue]').click();
+		cy.get("[data-cy-user-setup-continue]").click();
 
-		cy.get('[data-cy-user-setup-continue]').click();
-  });
+		cy.get("[data-cy-user-setup-continue]").click();
+	});
 });
 
-describe('After user setup', () => {
+describe("After user setup", () => {
 	beforeEach(() => {
 		cy.resetState();
 
 		// インスタンス初期セットアップ
-		cy.registerUser('admin', 'pass', true);
+		cy.registerUser("admin", "pass", true);
 
 		// ユーザー作成
-		cy.registerUser('alice', 'alice1234');
+		cy.registerUser("alice", "alice1234");
 
-		cy.login('alice', 'alice1234');
+		cy.login("alice", "alice1234");
 
 		// アカウント初期設定ウィザード
 		// 表示に時間がかかるのでデフォルト秒数だとタイムアウトする
-		cy.get('[data-cy-user-setup] [data-cy-modal-window-close]', { timeout: 30000 }).click();
-		cy.get('[data-cy-modal-dialog-ok]').click();
+		cy.get("[data-cy-user-setup] [data-cy-modal-window-close]", {
+			timeout: 30000,
+		}).click();
+		cy.get("[data-cy-modal-dialog-ok]").click();
 	});
 
 	afterEach(() => {
@@ -227,27 +245,35 @@ describe('After user setup', () => {
 		cy.wait(1000);
 	});
 
-	it('note', () => {
-		cy.get('[data-cy-open-post-form]').should('be.visible');
-		cy.get('[data-cy-open-post-form]').click();
-		cy.get('[data-cy-post-form-text]').type('Hello, Misskey!');
-		cy.get('[data-cy-open-post-form-submit]').click();
+	it("note", () => {
+		cy.get("[data-cy-open-post-form]").should("be.visible");
+		cy.get("[data-cy-open-post-form]").click();
+		cy.get("[data-cy-post-form-text]").type("Hello, Misskey!");
+		cy.get("[data-cy-open-post-form-submit]").click();
 
-		cy.contains('Hello, Misskey!', { timeout: 15000 });
-  });
+		cy.contains("Hello, Misskey!", { timeout: 15000 });
+	});
 
-	it('open note form with hotkey', () => {
+	it("open note form with hotkey", () => {
 		// Wait until the page loads
-		cy.get('[data-cy-open-post-form]').should('be.visible');
+		cy.get("[data-cy-open-post-form]").should("be.visible");
 		// Use trigger() to give different `code` to test if hotkeys also work on non-QWERTY keyboards.
-		cy.document().trigger("keydown", { eventConstructor: 'KeyboardEvent', key: "n", code: "KeyL" });
+		cy.document().trigger("keydown", {
+			eventConstructor: "KeyboardEvent",
+			key: "n",
+			code: "KeyL",
+		});
 		// See if the form is opened
-		cy.get('[data-cy-post-form-text]').should('be.visible');
+		cy.get("[data-cy-post-form-text]").should("be.visible");
 		// Close it
-		cy.focused().trigger("keydown", { eventConstructor: 'KeyboardEvent', key: "Escape", code: "Escape" });
+		cy.focused().trigger("keydown", {
+			eventConstructor: "KeyboardEvent",
+			key: "Escape",
+			code: "Escape",
+		});
 		// See if the form is closed
-		cy.get('[data-cy-post-form-text]').should('not.be.visible');
-  });
+		cy.get("[data-cy-post-form-text]").should("not.be.visible");
+	});
 });
 
 // TODO: 投稿フォームの公開範囲指定のテスト

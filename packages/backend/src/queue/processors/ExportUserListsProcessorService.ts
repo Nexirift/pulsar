@@ -3,22 +3,26 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as fs from 'node:fs';
-import { Inject, Injectable } from '@nestjs/common';
-import { In } from 'typeorm';
-import { format as dateFormat } from 'date-fns';
-import { DI } from '@/di-symbols.js';
-import type { UserListMembershipsRepository, UserListsRepository, UsersRepository } from '@/models/_.js';
-import type Logger from '@/logger.js';
-import { DriveService } from '@/core/DriveService.js';
-import { createTemp } from '@/misc/create-temp.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import { NotificationService } from '@/core/NotificationService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { bindThis } from '@/decorators.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type * as Bull from 'bullmq';
-import type { DbJobDataWithUser } from '../types.js';
+import * as fs from "node:fs";
+import { Inject, Injectable } from "@nestjs/common";
+import { In } from "typeorm";
+import { format as dateFormat } from "date-fns";
+import { DI } from "@/di-symbols.js";
+import type {
+	UserListMembershipsRepository,
+	UserListsRepository,
+	UsersRepository,
+} from "@/models/_.js";
+import type Logger from "@/logger.js";
+import { DriveService } from "@/core/DriveService.js";
+import { createTemp } from "@/misc/create-temp.js";
+import { UtilityService } from "@/core/UtilityService.js";
+import { NotificationService } from "@/core/NotificationService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { bindThis } from "@/decorators.js";
+import { QueueLoggerService } from "../QueueLoggerService.js";
+import type * as Bull from "bullmq";
+import type { DbJobDataWithUser } from "../types.js";
 
 @Injectable()
 export class ExportUserListsProcessorService {
@@ -40,7 +44,8 @@ export class ExportUserListsProcessorService {
 		private notificationService: NotificationService,
 		private readonly timeService: TimeService,
 	) {
-		this.logger = this.queueLoggerService.logger.createSubLogger('export-user-lists');
+		this.logger =
+			this.queueLoggerService.logger.createSubLogger("export-user-lists");
 	}
 
 	@bindThis
@@ -63,21 +68,23 @@ export class ExportUserListsProcessorService {
 		this.logger.debug(`Temp file is ${path}`);
 
 		try {
-			const stream = fs.createWriteStream(path, { flags: 'a' });
+			const stream = fs.createWriteStream(path, { flags: "a" });
 
 			for (const list of lists) {
-				const memberships = await this.userListMembershipsRepository.findBy({ userListId: list.id });
+				const memberships = await this.userListMembershipsRepository.findBy({
+					userListId: list.id,
+				});
 				const users = await this.usersRepository.findBy({
-					id: In(memberships.map(j => j.userId)),
+					id: In(memberships.map((j) => j.userId)),
 				});
 
 				for (const u of users) {
 					const acct = this.utilityService.getFullApAccount(u.username, u.host);
 					const content = `${list.name},${acct}`;
 					await new Promise<void>((res, rej) => {
-						stream.write(content + '\n', err => {
+						stream.write(content + "\n", (err) => {
 							if (err) {
-								this.logger.error('Error exporting lists:', err);
+								this.logger.error("Error exporting lists:", err);
 								rej(err);
 							} else {
 								res();
@@ -90,13 +97,22 @@ export class ExportUserListsProcessorService {
 			stream.end();
 			this.logger.debug(`Exported to: ${path}`);
 
-			const fileName = 'user-lists-' + dateFormat(this.timeService.date, 'yyyy-MM-dd-HH-mm-ss') + '.csv';
-			const driveFile = await this.driveService.addFile({ user, path, name: fileName, force: true, ext: 'csv' });
+			const fileName =
+				"user-lists-" +
+				dateFormat(this.timeService.date, "yyyy-MM-dd-HH-mm-ss") +
+				".csv";
+			const driveFile = await this.driveService.addFile({
+				user,
+				path,
+				name: fileName,
+				force: true,
+				ext: "csv",
+			});
 
 			this.logger.debug(`Exported to: ${driveFile.id}`);
 
-			this.notificationService.createNotification(user.id, 'exportCompleted', {
-				exportedEntity: 'userList',
+			this.notificationService.createNotification(user.id, "exportCompleted", {
+				exportedEntity: "userList",
 				fileId: driveFile.id,
 			});
 		} finally {

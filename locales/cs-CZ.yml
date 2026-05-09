@@ -2,7 +2,7 @@
 _lang_: "Čeština"
 headlineMisskey: "Síť propojená poznámkami"
 introMisskey: "Vítejte! Misskey je otevřený a decentralizovaný microblogový servis.\n\"Poznámkami\" můžete sdílet co se zrovna děje se všemi ve Vašem okolí. 📡\nPomocí \"reakcí\" můžete sdílet své názory a pocity na ostatní poznámky. 👍\nPojďte objevovat nový svět! 🚀"
-poweredByMisskeyDescription: "{name} je jeden ze serverů využívající open source platformu <b>Misskey<b> (nazývaná \"Misskey instance\")."
+poweredByMisskeyDescription: '{name} je jeden ze serverů využívající open source platformu <b>Misskey<b> (nazývaná "Misskey instance").'
 monthAndDay: "{day}. {month}."
 search: "Vyhledávání"
 reset: "Obnovit"
@@ -80,7 +80,7 @@ import: "Importovat"
 export: "Exportovat"
 files: "Soubor(ů)"
 download: "Stáhnout"
-driveFileDeleteConfirm: "Opravdu chcete smazat soubor \"{name}\"? Poznámky, ke kterým je tento soubor připojen, budou také smazány."
+driveFileDeleteConfirm: 'Opravdu chcete smazat soubor "{name}"? Poznámky, ke kterým je tento soubor připojen, budou také smazány.'
 unfollowConfirm: "Jste si jisti že už nechcete sledovat {name}?"
 exportRequested: "Požádali jste o export. To může chvíli trvat. Přidáme ho na váš Disk až bude dokončen."
 importRequested: "Požádali jste o export. To může chvilku trvat."
@@ -126,7 +126,7 @@ sensitive: "NSFW"
 add: "Přidat"
 reaction: "Reakce"
 reactions: "Reakce"
-reactionSettingDescription2: "Přetažením změníte pořadí, kliknutím smažete, zmáčkněte \"+\" k přidání"
+reactionSettingDescription2: 'Přetažením změníte pořadí, kliknutím smažete, zmáčkněte "+" k přidání'
 rememberNoteVisibility: "Zapamatovat nastavení zobrazení poznámky"
 attachCancel: "Odstranit přílohu"
 markAsSensitive: "Označit jako NSFW"
@@ -262,8 +262,8 @@ announcements: "Oznámení"
 imageUrl: "URL obrázku"
 remove: "Smazat"
 removed: "Smazáno"
-removeAreYouSure: "Jste si jistí že chcete smazat \"{x}\"?"
-deleteAreYouSure: "Jste si jistí že chcete smazat \"{x}\"?"
+removeAreYouSure: 'Jste si jistí že chcete smazat "{x}"?'
+deleteAreYouSure: 'Jste si jistí že chcete smazat "{x}"?'
 resetAreYouSure: "Opravdu resetovat?"
 saved: "Uloženo"
 upload: "Nahrát soubory"
@@ -364,7 +364,7 @@ bannerUrl: "Baner URL"
 backgroundImageUrl: "Adresa URL obrázku pozadí"
 basicInfo: "Základní informace"
 pinnedUsers: "Připnutí uživatelé"
-pinnedUsersDescription: "Seznam uživatelských přezdívek oddělených řádkami bude připnutý v záložce \"Objevit\"."
+pinnedUsersDescription: 'Seznam uživatelských přezdívek oddělených řádkami bude připnutý v záložce "Objevit".'
 pinnedPages: "Připnutý stránky"
 pinnedPagesDescription: "Zadejte cesty stránek oddělené řádkami, které si přejete mít přípnutý na vrcholu téhle instance."
 pinnedClipId: "ID připnutého klipu"
@@ -433,7 +433,7 @@ unregister: "Odstranit"
 passwordLessLogin: "Přihlášení bez hesla"
 passwordLessLoginDescription: "Umožní bez-heslové přihlášení pomocí bezpečnostního klíče či tokenu"
 resetPassword: "Resetovat heslo"
-newPasswordIs: "Nové heslo je \"{password}\""
+newPasswordIs: 'Nové heslo je "{password}"'
 reduceUiAnimation: "Snížit UI animace"
 share: "Sdílet"
 notFound: "Nenalezeno"
@@ -521,14 +521,14 @@ objectStorageBucketDesc: "Prosím upřesněte název bucketu používaný poskyt
 objectStoragePrefix: "Předpona"
 objectStoragePrefixDesc: "Soubory budou ukládány pod složkama s tímhle prefixem."
 objectStorageEndpoint: "Endpoint"
-objectStorageEndpointDesc: "Ponechte tohle prázdné pokud používáte AWS S3, jinak upřesněte endpoint jako \"<host>\" nebo \"<host>:<port>\", podle toho jakou službu používáte."
+objectStorageEndpointDesc: 'Ponechte tohle prázdné pokud používáte AWS S3, jinak upřesněte endpoint jako "<host>" nebo "<host>:<port>", podle toho jakou službu používáte.'
 objectStorageRegion: "Región"
-objectStorageRegionDesc: "Upřesněte region jako například \"xx-east-1\". Pokud vlastní služba nerozlišuje mezi regiony, zadejte \"us-east-1\". Zanechte prázdné pokud používáte AWS konfiguraci či proměnné veličiny."
+objectStorageRegionDesc: 'Upřesněte region jako například "xx-east-1". Pokud vlastní služba nerozlišuje mezi regiony, zadejte "us-east-1". Zanechte prázdné pokud používáte AWS konfiguraci či proměnné veličiny.'
 objectStorageUseSSL: "Použít SSL"
 objectStorageUseSSLDesc: "Vypněte to pokud nebudete používat HTTPS pro API připojení"
 objectStorageUseProxy: "Připojení skrze Proxy"
 objectStorageUseProxyDesc: "Vypněte to pokud nebudete používat Proxy pro API připojení."
-objectStorageSetPublicRead: "Při nahrátí nastavit na \"public-read\""
+objectStorageSetPublicRead: 'Při nahrátí nastavit na "public-read"'
 s3ForcePathStyleDesc: "Pokud je povolena funkce s3ForcePathStyle, musí být název Bucketu zahrnut do cesty k adrese URL, nikoli do názvu hostitele adresy URL. Toto nastavení může být nutné povolit při používání služeb, jako je například samostatně hostovaná instance Minio."
 serverLogs: "Logy serveru"
 deleteAll: "Smazat vše"
@@ -684,7 +684,7 @@ createNew: "Vytvořit nový"
 optional: "Volitelné"
 createNewClip: "Vytvořit nový klip"
 unclip: "Odepnout"
-confirmToUnclipAlreadyClippedNote: "Tahle poznámku je už součásti \"{name}\" klipu. Chcete ji místo toho odepnout z tohodle klipu?"
+confirmToUnclipAlreadyClippedNote: 'Tahle poznámku je už součásti "{name}" klipu. Chcete ji místo toho odepnout z tohodle klipu?'
 public: "Veřejný"
 private: "Soukromý"
 i18nInfo: "Misskey je překládán do jiných jazyků dobrovolníkama. Můžete pomoci na {link}."
@@ -707,7 +707,7 @@ driveFilesCount: "Počet souborů na disku"
 driveUsage: "Využití disku"
 noCrawle: "Odmítat indexování crawleru"
 noCrawleDescription: "Požádat vyhledávače aby neindexovali váš profil, poznámky, stránky, atd."
-lockedAccountInfo: "Pokud nenastavíte viditelnost poznámek na \"Pouze pro sledující\", budou poznámky viditelné všem i přesto že vyžadujete manuální potvrzení pro sledování."
+lockedAccountInfo: 'Pokud nenastavíte viditelnost poznámek na "Pouze pro sledující", budou poznámky viditelné všem i přesto že vyžadujete manuální potvrzení pro sledování.'
 alwaysMarkSensitive: "Výchozně označovat jako citlivý"
 loadRawImages: "Načítat originální obrázky místo náhledů"
 disableShowingAnimatedImages: "Nepřehrávat animované obrázky"
@@ -716,7 +716,7 @@ notSet: "Není nastaveno"
 emailVerified: "Váš e-mail byl ověřen"
 noteFavoritesCount: "Počet oblíbených poznámek"
 pageLikesCount: "Počet oblíbených stránek"
-pageLikedCount: "Počet přijatých \"Libí se mi\""
+pageLikedCount: 'Počet přijatých "Libí se mi"'
 contact: "Kontakt"
 useSystemFont: "Použít výchozí font systému"
 clips: "Oříznout"
@@ -724,8 +724,8 @@ experimentalFeatures: "Experimentální funkce"
 experimental: "Experimentální"
 thisIsExperimentalFeature: "Tohle je experimentální funkce. Její funkce se může změnit a nemusí fungovat tak, jak bylo zamýšleno."
 developer: "Vývojář"
-makeExplorable: "Udělat účet viditelný v \"Objevit\""
-makeExplorableDescription: "Pokud tohle vypnete, tak se účet přestane zobrazovat v sekci \"Objevit\"."
+makeExplorable: 'Udělat účet viditelný v "Objevit"'
+makeExplorableDescription: 'Pokud tohle vypnete, tak se účet přestane zobrazovat v sekci "Objevit".'
 showGapBetweenNotesInTimeline: "Zobrazit mezeru mezi příspěvkama na časové ose"
 duplicate: "Duplikovat"
 left: "Vlevo"
@@ -780,7 +780,7 @@ unlikeConfirm: "Opravdu chcete odstranit like?"
 fullView: "Plné zobrazení"
 quitFullView: "Odejít z plného zobrazení"
 addDescription: "Přidat popis"
-userPagePinTip: "Zde můžete zobrazovat poznámky vybráním \"Připnout na profil\" z menu jednotlivých poznámek."
+userPagePinTip: 'Zde můžete zobrazovat poznámky vybráním "Připnout na profil" z menu jednotlivých poznámek.'
 notSpecifiedMentionWarning: "Tahle poznámka zmiňuje uživatele, které nejsou mezi adresáty"
 info: "Informace"
 userInfo: "Informace o uživateli"
@@ -866,7 +866,7 @@ unmuteThread: "Zrušit ztlumení vlákna"
 continueThread: "Zobrazit pokračování vlákna"
 deleteAccountConfirm: "Tohle nenávratně smaže váš účet, chcete pokračovat?"
 incorrectPassword: "Nesprávné heslo."
-voteConfirm: "Potvrdit hlas pro \"{choice}\"?"
+voteConfirm: 'Potvrdit hlas pro "{choice}"?'
 hide: "Skrýt"
 useDrawerReactionPickerForMobile: "Zobrazit výběr reakcí jako šuplík na mobilním zařízení"
 welcomeBackWithName: "Vítejte zpět, {name}"
@@ -957,7 +957,7 @@ cannotLoad: "Načtení se nezdařilo"
 numberOfProfileView: "Počet zobrazení profilu"
 like: "To se mi líbí"
 unlike: "Už se mi to nelíbí"
-numberOfLikes: "Počet \"To se mi líbí\""
+numberOfLikes: 'Počet "To se mi líbí"'
 show: "Zobrazit"
 neverShow: "Znovu nezobrazovat"
 remindMeLater: "Možná později"
@@ -1003,14 +1003,14 @@ emailNotSupported: "Tahle instance nepodporuje zasílání emailů"
 postToTheChannel: "Vložit do kanálu"
 cannotBeChangedLater: "Tohle nemůže být změněno později."
 reactionAcceptance: "Přijímání reakcí"
-likeOnly: "Jenom \"oblíbené\""
-likeOnlyForRemote: "Všechny (Pouze \"oblíbené\" pro vzdálenou instanci)"
+likeOnly: 'Jenom "oblíbené"'
+likeOnlyForRemote: 'Všechny (Pouze "oblíbené" pro vzdálenou instanci)'
 nonSensitiveOnly: "Pouze bez citlivých medií"
-nonSensitiveOnlyForLocalLikeOnlyForRemote: "Pouze bez citlivých medií (Pouze vzdálený \"oblíbený\")"
+nonSensitiveOnlyForLocalLikeOnlyForRemote: 'Pouze bez citlivých medií (Pouze vzdálený "oblíbený")'
 rolesAssignedToMe: "Přiřazené role ke mně"
 resetPasswordConfirm: "Opravdu chcete resetovat heslo?"
 sensitiveWords: "Citlivá slova"
-sensitiveWordsDescription: "Viditelnost všech poznámek obsahujících některé z nakonfigurovaných slov bude automaticky nastavena na \"Domů\". Můžete jich uvést více tak, že je oddělíte pomocí řádků."
+sensitiveWordsDescription: 'Viditelnost všech poznámek obsahujících některé z nakonfigurovaných slov bude automaticky nastavena na "Domů". Můžete jich uvést více tak, že je oddělíte pomocí řádků.'
 sensitiveWordsDescription2: "Použití mezer vytvoří výrazy AND a obklopení klíčových slov lomítky je změní na regulární výraz."
 prohibitedWordsDescription2: "Použití mezer vytvoří výrazy AND a obklopení klíčových slov lomítky je změní na regulární výraz."
 notesSearchNotAvailable: "Vyhledávání poznámek je nedostupné."
@@ -1023,7 +1023,7 @@ retryAllQueuesConfirmTitle: "Opravdu chcete obnovit všechno?"
 retryAllQueuesConfirmText: "Tohle dočasně zvýší zatěž na server."
 enableChartsForRemoteUser: "Vygenerovat grafy dat vzdálených uživatelů"
 enableChartsForFederatedInstances: "Vygenerovat grafy dat vzdálených instancí"
-showClipButtonInNoteFooter: "Přidat \"Připnout\" do akčního menu poznámky"
+showClipButtonInNoteFooter: 'Přidat "Připnout" do akčního menu poznámky'
 noteIdOrUrl: "ID nebo URL poznámky"
 video: "Video"
 videos: "Videa"
@@ -1061,7 +1061,7 @@ displayOfNote: "Zobrazit poznámku"
 initialAccountSetting: "Nastavení profilu"
 youFollowing: "Sleduji"
 preventAiLearning: "Odmítnout použití v strojovém učení (Generative AI)"
-preventAiLearningDescription: "Požaduje, aby prohlížeče nepoužívaly zveřejněný textový nebo obrazový materiál atd. v datových sadách pro strojové učení (prediktivní / generativní umělá inteligence). Toho se dosáhne přidáním příznaku \"noai\" HTML-Response k příslušnému obsahu. Úplné prevence však tímto příznakem nelze dosáhnout, protože může být jednoduše ignorován."
+preventAiLearningDescription: 'Požaduje, aby prohlížeče nepoužívaly zveřejněný textový nebo obrazový materiál atd. v datových sadách pro strojové učení (prediktivní / generativní umělá inteligence). Toho se dosáhne přidáním příznaku "noai" HTML-Response k příslušnému obsahu. Úplné prevence však tímto příznakem nelze dosáhnout, protože může být jednoduše ignorován.'
 options: "Možnosti"
 specifyUser: "Upřesnit uživatele"
 failedToPreviewUrl: "Náhled se nezdařil"
@@ -1098,7 +1098,7 @@ used: "Používaná"
 expired: "Prošlá"
 doYouAgree: "Souhlasíte?"
 beSureToReadThisAsItIsImportant: "Přečtěte si prosím tyto důležité informace."
-iHaveReadXCarefullyAndAgree: "Přečetl jsem si text \"{x}\" a souhlasím s ním."
+iHaveReadXCarefullyAndAgree: 'Přečetl jsem si text "{x}" a souhlasím s ním.'
 icon: "Avatar"
 replies: "Odpovědět"
 renotes: "Přeposlat"
@@ -1125,7 +1125,7 @@ _initialAccountSetting:
   profileSetting: "Nastavení profilu"
   privacySetting: "Nastavení soukromí"
   theseSettingsCanEditLater: "Tato nastavení můžete vždy později změnit."
-  youCanEditMoreSettingsInSettingsPageLater: "Na stránce \"Nastavení\" můžete nakonfigurovat mnoho dalších nastavení. Nezapomeňte ji navštívit později."
+  youCanEditMoreSettingsInSettingsPageLater: 'Na stránce "Nastavení" můžete nakonfigurovat mnoho dalších nastavení. Nezapomeňte ji navštívit později.'
   followUsers: "Zkuste sledovat některé uživatele, kteří vás zajímají pro vystavění časový osy."
   pushNotificationDescription: "Povolení push oznámení vám umožní přijímat oznámení od {name} přímo ve vašem zařízení."
   initialAccountSettingCompleted: "Nastavení profilu dokončeno!"
@@ -1268,7 +1268,7 @@ _achievements:
       description: "Nastavte si profil"
     _markedAsCat:
       title: "Já jsem kočka"
-      description: "Označte váš účet \"jako kočka\""
+      description: 'Označte váš účet "jako kočka"'
       flavor: "Jméno ti dám později."
     _following1:
       title: "Sledujte prvního uživatele"
@@ -1314,7 +1314,7 @@ _achievements:
       description: "Koukejte na váš seznam úspěchů alespoň po dobu 3 minut"
     _iLoveMisskey:
       title: "Miluju Misskey"
-      description: "Zveřejněte \" I ❤ #Misskey\""
+      description: 'Zveřejněte " I ❤ #Misskey"'
       flavor: "Vývojový tým Misskey si velmi váží vaší podpory!"
     _foundTreasure:
       title: "Hon za pokladem"
@@ -1323,7 +1323,7 @@ _achievements:
       title: "Krátká pauza"
       description: "Mějte otevřený Misskey alespoň po dobu 30 minut"
     _client60min:
-      title: "Žádný \"Miss\" v Misskey"
+      title: 'Žádný "Miss" v Misskey'
       description: "Mějte otevřený Misskey alespoň po dobu 60 minut"
     _noteDeletedWithin1min:
       title: "Ups, nevadí"
@@ -1347,7 +1347,7 @@ _achievements:
       description: "Zobrazte graf instance"
     _outputHelloWorldOnScratchpad:
       title: "Hello, world!"
-      description: "Dostaňte výpis \"hello world\" do Scratchpadu"
+      description: 'Dostaňte výpis "hello world" do Scratchpadu'
     _open3windows:
       title: "Splitscreen"
       description: "Mějte otevřená alespoň 3 okna zároveň"
@@ -1365,7 +1365,7 @@ _achievements:
       description: "Mějte šanci na získání s pravděpodobností 0,005 % každých 10 sekund."
     _setNameToSyuilo:
       title: "Boží komplex"
-      description: "Nastavte si jméno na \"syuilo\""
+      description: 'Nastavte si jméno na "syuilo"'
     _passedSinceAccountCreated1:
       title: "Roční výročí"
       description: "Od vytvoření vašeho účtu uplynul jeden rok"
@@ -1522,12 +1522,12 @@ _preferencesBackups:
   save: "Uložit změny"
   inputName: "Zadejte prosím název pro tuto zálohu"
   cannotSave: "Uložení selhalo"
-  nameAlreadyExists: "Záloha s názvem \"{name}\" již existuje. Zadejte prosím jiný název."
-  applyConfirm: "Opravdu chcete na toto zařízení použít zálohu \"{name}\"? Stávající nastavení tohoto zařízení bude přepsáno."
+  nameAlreadyExists: 'Záloha s názvem "{name}" již existuje. Zadejte prosím jiný název.'
+  applyConfirm: 'Opravdu chcete na toto zařízení použít zálohu "{name}"? Stávající nastavení tohoto zařízení bude přepsáno.'
   saveConfirm: "Uložit zálohu jako {name}?"
   deleteConfirm: "Odstranit zálohu {name}?"
-  renameConfirm: "Přejmenovat tuto zálohu z \"{old}\" na \"{new}\"?"
-  noBackups: "Neexistují žádné zálohy. Nastavení klienta na tomto serveru můžete zálohovat pomocí \"Vytvořit novou zálohu\"."
+  renameConfirm: 'Přejmenovat tuto zálohu z "{old}" na "{new}"?'
+  noBackups: 'Neexistují žádné zálohy. Nastavení klienta na tomto serveru můžete zálohovat pomocí "Vytvořit novou zálohu".'
   createdAt: "Vytvořeno v: {date} {time}"
   updatedAt: "Aktualizováno: {date} {time}"
   cannotLoad: "Načítání selhalo"
@@ -1728,7 +1728,7 @@ _permissions:
   "write:chat": "Sestavit nebo mazat zprávy chatu"
 _auth:
   shareAccessTitle: "Udělovat oprávnění k aplikacím"
-  shareAccess: "Chcete autorizovat \"{name}\" pro přístup k tomuto účtu?"
+  shareAccess: 'Chcete autorizovat "{name}" pro přístup k tomuto účtu?'
   shareAccessAsk: "Opravdu chcete této aplikaci povolit přístup k vašemu účtu?"
   permission: "{name} požaduje tato oprávnění"
   permissionAsk: "Tato aplikace požaduje následující oprávnění"
@@ -1993,7 +1993,7 @@ _deck:
   deleteProfile: "Smazat profil"
   introduction: "Vytvořte si dokonalé rozhraní volným uspořádáním sloupců!"
   introduction2: "Kliknutím na tlačítko + v pravé části obrazovky můžete kdykoli přidat nové sloupce."
-  widgetsIntroduction: "V nabídce sloupce vyberte možnost \"Upravit widgety\" a přidejte widget."
+  widgetsIntroduction: 'V nabídce sloupce vyberte možnost "Upravit widgety" a přidejte widget.'
   useSimpleUiForNonRootPages: "Použít zjednodušené uživatelské rozhraní pro navigaci na stránkách"
   _columns:
     main: "Hlavní"

@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { EventEmitter } from 'eventemitter3';
-import type { CellValue, GridCellSetting } from '@/components/grid/cell.js';
-import type { GridColumnSetting } from '@/components/grid/column.js';
-import type { GridRowSetting } from '@/components/grid/row.js';
+import { EventEmitter } from "eventemitter3";
+import type { CellValue, GridCellSetting } from "@/components/grid/cell.js";
+import type { GridColumnSetting } from "@/components/grid/column.js";
+import type { GridRowSetting } from "@/components/grid/row.js";
 
 export type GridSetting = {
 	root?: {
@@ -21,22 +21,21 @@ export type GridSetting = {
 
 export type DataSource = Record<string, CellValue>;
 
-export type GridState = (
-	'normal' |
-	'cellSelecting' |
-	'cellEditing' |
-	'colResizing' |
-	'colSelecting' |
-	'rowSelecting' |
-	'hidden'
-);
+export type GridState =
+	| "normal"
+	| "cellSelecting"
+	| "cellEditing"
+	| "colResizing"
+	| "colSelecting"
+	| "rowSelecting"
+	| "hidden";
 
 export type Size = {
 	width: number;
 	height: number;
 };
 
-export type SizeStyle = number | 'auto' | undefined;
+export type SizeStyle = number | "auto" | undefined;
 
 export type AdditionalStyle = {
 	className?: string;
@@ -44,6 +43,5 @@ export type AdditionalStyle = {
 };
 
 export class GridEventEmitter extends EventEmitter<{
-	'forceRefreshContentSize': void;
-}> {
-}
+	forceRefreshContentSize: void;
+}> {}

@@ -4,36 +4,47 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div ref="rootEl">
-	<div ref="headerEl" :class="{ [$style.header]: sticky }">
-		<slot name="header"></slot>
+	<div ref="rootEl">
+		<div ref="headerEl" :class="{ [$style.header]: sticky }">
+			<slot name="header"></slot>
+		</div>
+		<div
+			:class="{ [$style.body]: sticky }"
+			:data-sticky-container-header-height="headerHeight"
+			:data-sticky-container-footer-height="footerHeight"
+		>
+			<slot></slot>
+		</div>
+		<div ref="footerEl" :class="{ [$style.footer]: sticky }">
+			<slot name="footer"></slot>
+		</div>
 	</div>
-	<div
-		:class="{ [$style.body]: sticky }"
-		:data-sticky-container-header-height="headerHeight"
-		:data-sticky-container-footer-height="footerHeight"
-	>
-		<slot></slot>
-	</div>
-	<div ref="footerEl" :class="{ [$style.footer]: sticky }">
-		<slot name="footer"></slot>
-	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, provide, inject, ref, watch, useTemplateRef } from 'vue';
-import { DI } from '@/di.js';
+import {
+	onMounted,
+	onUnmounted,
+	provide,
+	inject,
+	ref,
+	watch,
+	useTemplateRef,
+} from "vue";
+import { DI } from "@/di.js";
 
-withDefaults(defineProps<{
-	sticky?: boolean,
-}>(), {
-	sticky: true,
-});
+withDefaults(
+	defineProps<{
+		sticky?: boolean;
+	}>(),
+	{
+		sticky: true,
+	},
+);
 
-const rootEl = useTemplateRef('rootEl');
-const headerEl = useTemplateRef('headerEl');
-const footerEl = useTemplateRef('footerEl');
+const rootEl = useTemplateRef("rootEl");
+const headerEl = useTemplateRef("headerEl");
+const footerEl = useTemplateRef("footerEl");
 
 const headerHeight = ref<string | undefined>();
 const childStickyTop = ref(0);
@@ -54,7 +65,8 @@ const calc = () => {
 
 	// コンポーネントが表示されてないけどKeepAliveで残ってる場合などは null になる
 	if (footerEl.value != null) {
-		childStickyBottom.value = parentStickyBottom.value + footerEl.value.offsetHeight;
+		childStickyBottom.value =
+			parentStickyBottom.value + footerEl.value.offsetHeight;
 		footerHeight.value = footerEl.value.offsetHeight.toString();
 	}
 };
@@ -88,7 +100,7 @@ defineExpose({
 });
 </script>
 
-<style lang='scss' module>
+<style lang="scss" module>
 .body {
 	position: relative;
 	z-index: 0;

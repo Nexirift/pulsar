@@ -4,15 +4,20 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div
-	class="default" :style="[
-		marginTopBottom ? { marginTop: marginTopBottom, marginBottom: marginTopBottom } : {},
-		marginLeftRight ? { marginLeft: marginLeftRight, marginRight: marginLeftRight } : {},
-		borderStyle ? { borderStyle: borderStyle } : {},
-		borderWidth ? { borderWidth: borderWidth } : {},
-		borderColor ? { borderColor: borderColor } : {},
-	]"
-/>
+	<div
+		class="default"
+		:style="[
+			marginTopBottom
+				? { marginTop: marginTopBottom, marginBottom: marginTopBottom }
+				: {},
+			marginLeftRight
+				? { marginLeft: marginLeftRight, marginRight: marginLeftRight }
+				: {},
+			borderStyle ? { borderStyle: borderStyle } : {},
+			borderWidth ? { borderWidth: borderWidth } : {},
+			borderColor ? { borderColor: borderColor } : {},
+		]"
+	/>
 </template>
 
 <script setup lang="ts">

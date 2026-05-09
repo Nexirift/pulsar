@@ -3,29 +3,31 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { UsersRepository } from '@/models/_.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { UsersRepository } from "@/models/_.js";
 import { safeForSql } from "@/misc/safe-for-sql.js";
-import { normalizeForSearch } from '@/misc/normalize-for-search.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { DI } from '@/di-symbols.js';
-import { RoleService } from '@/core/RoleService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { promiseMap } from '@/misc/promise-map.js';
+import { normalizeForSearch } from "@/misc/normalize-for-search.js";
+import { UserEntityService } from "@/core/entities/UserEntityService.js";
+import { DI } from "@/di-symbols.js";
+import { RoleService } from "@/core/RoleService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { promiseMap } from "@/misc/promise-map.js";
 
 export const meta = {
 	requireCredential: false,
 
-	tags: ['hashtags', 'users'],
+	tags: ["hashtags", "users"],
 
 	res: {
-		type: 'array',
-		optional: false, nullable: false,
+		type: "array",
+		optional: false,
+		nullable: false,
 		items: {
-			type: 'object',
-			optional: false, nullable: false,
-			ref: 'User',
+			type: "object",
+			optional: false,
+			nullable: false,
+			ref: "User",
 		},
 	},
 
@@ -37,25 +39,40 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		tag: { type: 'string' },
-		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
-		sort: { type: 'string', enum: ['+follower', '-follower', '+createdAt', '-createdAt', '+updatedAt', '-updatedAt'] },
-		state: { type: 'string', enum: ['all', 'alive'], default: 'all' },
-		origin: { type: 'string', enum: ['combined', 'local', 'remote'], default: 'local' },
-		trending: { type: 'boolean', default: false },
+		tag: { type: "string" },
+		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+		sort: {
+			type: "string",
+			enum: [
+				"+follower",
+				"-follower",
+				"+createdAt",
+				"-createdAt",
+				"+updatedAt",
+				"-updatedAt",
+			],
+		},
+		state: { type: "string", enum: ["all", "alive"], default: "all" },
+		origin: {
+			type: "string",
+			enum: ["combined", "local", "remote"],
+			default: "local",
+		},
+		trending: { type: "boolean", default: false },
 		detail: {
-			type: 'boolean',
+			type: "boolean",
 			nullable: false,
 			default: true,
 		},
 	},
-	required: ['tag', 'sort'],
+	required: ["tag", "sort"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
@@ -65,30 +82,43 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			if (!safeForSql(normalizeForSearch(ps.tag))) throw new Error('Injection');
-			const query = this.usersRepository.createQueryBuilder('user')
-				.where(':tag <@ user.tags', { tag: [normalizeForSearch(ps.tag)] })
-				.andWhere('user.isSuspended = FALSE');
+			if (!safeForSql(normalizeForSearch(ps.tag))) throw new Error("Injection");
+			const query = this.usersRepository
+				.createQueryBuilder("user")
+				.where(":tag <@ user.tags", { tag: [normalizeForSearch(ps.tag)] })
+				.andWhere("user.isSuspended = FALSE");
 
-			const recent = new Date(this.timeService.now - (1000 * 60 * 60 * 24 * 5));
+			const recent = new Date(this.timeService.now - 1000 * 60 * 60 * 24 * 5);
 
-			if (ps.state === 'alive') {
-				query.andWhere('user.updatedAt > :date', { date: recent });
+			if (ps.state === "alive") {
+				query.andWhere("user.updatedAt > :date", { date: recent });
 			}
 
-			if (ps.origin === 'local') {
-				query.andWhere('user.host IS NULL');
-			} else if (ps.origin === 'remote') {
-				query.andWhere('user.host IS NOT NULL');
+			if (ps.origin === "local") {
+				query.andWhere("user.host IS NULL");
+			} else if (ps.origin === "remote") {
+				query.andWhere("user.host IS NOT NULL");
 			}
 
 			switch (ps.sort) {
-				case '+follower': query.orderBy('user.followersCount', 'DESC'); break;
-				case '-follower': query.orderBy('user.followersCount', 'ASC'); break;
-				case '+createdAt': query.orderBy('user.id', 'DESC'); break;
-				case '-createdAt': query.orderBy('user.id', 'ASC'); break;
-				case '+updatedAt': query.orderBy('user.updatedAt', 'DESC'); break;
-				case '-updatedAt': query.orderBy('user.updatedAt', 'ASC'); break;
+				case "+follower":
+					query.orderBy("user.followersCount", "DESC");
+					break;
+				case "-follower":
+					query.orderBy("user.followersCount", "ASC");
+					break;
+				case "+createdAt":
+					query.orderBy("user.id", "DESC");
+					break;
+				case "-createdAt":
+					query.orderBy("user.id", "ASC");
+					break;
+				case "+updatedAt":
+					query.orderBy("user.updatedAt", "DESC");
+					break;
+				case "-updatedAt":
+					query.orderBy("user.updatedAt", "ASC");
+					break;
 			}
 
 			let users = await query.limit(ps.limit).getMany();
@@ -98,13 +128,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			// 2. A span of more than "limit" consecutive non-trendable users may cause the pagination to stop early.
 			// Unfortunately, there's no better solution unless we refactor role policies to be persisted to the DB.
 			if (ps.trending) {
-				const usersWithRoles = await promiseMap(users, async u => [u, await this.roleService.getUserPolicies(u)] as const, { limit: 4 });
-				users = usersWithRoles
-					.filter(([,p]) => p.canTrend)
-					.map(([u]) => u);
+				const usersWithRoles = await promiseMap(
+					users,
+					async (u) => [u, await this.roleService.getUserPolicies(u)] as const,
+					{ limit: 4 },
+				);
+				users = usersWithRoles.filter(([, p]) => p.canTrend).map(([u]) => u);
 			}
 
-			return await this.userEntityService.packMany(users, me, { schema: ps.detail ? 'UserDetailed' : 'UserLite' });
+			return await this.userEntityService.packMany(users, me, {
+				schema: ps.detail ? "UserDetailed" : "UserLite",
+			});
 		});
 	}
 }

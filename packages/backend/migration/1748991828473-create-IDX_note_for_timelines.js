@@ -4,7 +4,7 @@
  */
 
 export class CreateIDXNoteForTimelines1748991828473 {
-	name = 'CreateIDXNoteForTimelines1748991828473';
+	name = "CreateIDXNoteForTimelines1748991828473";
 
 	async up(queryRunner) {
 		await queryRunner.query(`
@@ -12,7 +12,9 @@ export class CreateIDXNoteForTimelines1748991828473 {
 			on "note" ("id" desc, "channelId", "visibility", "userHost")
 			include ("userId", "userHost", "replyId", "replyUserId", "replyUserHost", "renoteId", "renoteUserId", "renoteUserHost")
 			NULLS NOT DISTINCT`);
-		await queryRunner.query(`comment on index "IDX_note_for_timelines" is 'Covering index for timeline queries'`);
+		await queryRunner.query(
+			`comment on index "IDX_note_for_timelines" is 'Covering index for timeline queries'`,
+		);
 	}
 
 	async down(queryRunner) {

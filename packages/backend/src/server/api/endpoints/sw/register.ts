@@ -3,45 +3,51 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { IdService } from '@/core/IdService.js';
-import type { MiMeta, SwSubscriptionsRepository } from '@/models/_.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { DI } from '@/di-symbols.js';
-import { PushNotificationService } from '@/core/PushNotificationService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { IdService } from "@/core/IdService.js";
+import type { MiMeta, SwSubscriptionsRepository } from "@/models/_.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { DI } from "@/di-symbols.js";
+import { PushNotificationService } from "@/core/PushNotificationService.js";
 
 export const meta = {
-	tags: ['account'],
+	tags: ["account"],
 
 	requireCredential: true,
 	secure: true,
 
-	description: 'Register to receive push notifications.',
+	description: "Register to receive push notifications.",
 
 	res: {
-		type: 'object',
-		optional: false, nullable: false,
+		type: "object",
+		optional: false,
+		nullable: false,
 		properties: {
 			state: {
-				type: 'string',
-				optional: true, nullable: false,
-				enum: ['already-subscribed', 'subscribed'],
+				type: "string",
+				optional: true,
+				nullable: false,
+				enum: ["already-subscribed", "subscribed"],
 			},
 			key: {
-				type: 'string',
-				optional: false, nullable: true,
+				type: "string",
+				optional: false,
+				nullable: true,
 			},
 			userId: {
-				type: 'string',
-				optional: false, nullable: false,
+				type: "string",
+				optional: false,
+				nullable: false,
 			},
 			endpoint: {
-				type: 'string',
-				optional: false, nullable: false,
+				type: "string",
+				optional: false,
+				nullable: false,
 			},
 			sendReadMessage: {
-				type: 'boolean',
-				optional: false, nullable: false,
+				type: "boolean",
+				optional: false,
+				nullable: false,
 			},
 		},
 	},
@@ -54,18 +60,19 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		endpoint: { type: 'string' },
-		auth: { type: 'string' },
-		publickey: { type: 'string' },
-		sendReadMessage: { type: 'boolean', default: false },
+		endpoint: { type: "string" },
+		auth: { type: "string" },
+		publickey: { type: "string" },
+		sendReadMessage: { type: "boolean", default: false },
 	},
-	required: ['endpoint', 'auth', 'publickey'],
+	required: ["endpoint", "auth", "publickey"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.meta)
 		private serverSettings: MiMeta,
@@ -87,7 +94,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (exist != null) {
 				return {
-					state: 'already-subscribed' as const,
+					state: "already-subscribed" as const,
 					key: this.serverSettings.swPublicKey,
 					userId: me.id,
 					endpoint: exist.endpoint,
@@ -107,7 +114,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			await this.pushNotificationService.refreshCache(me.id);
 
 			return {
-				state: 'subscribed' as const,
+				state: "subscribed" as const,
 				key: this.serverSettings.swPublicKey,
 				userId: me.id,
 				endpoint: ps.endpoint,

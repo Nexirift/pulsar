@@ -6,7 +6,7 @@ declare global {
 			registerUser(
 				username: string,
 				password: string,
-				isAdmin?: boolean
+				isAdmin?: boolean,
 			): Chainable<void>;
 
 			resetState(): Chainable<void>;
@@ -16,4 +16,4 @@ declare global {
 	}
 }
 
-export {}
+export {};

@@ -3,20 +3,23 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { EntityNotFoundError } from 'typeorm';
-import promiseLimit from 'promise-limit';
-import { bindThis } from '@/decorators.js';
-import type { InternalEventService, EventTypes } from '@/global/InternalEventService.js';
-import { MemoryKVCache, type MemoryCacheServices } from '@/misc/cache.js';
-import { makeKVPArray, type KVPArray } from '@/misc/kvp-array.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
-import { FetchFailedError } from '@/misc/errors/FetchFailedError.js';
-import { KeyNotFoundError } from '@/misc/errors/KeyNotFoundError.js';
-import { QuantumCacheError } from '@/misc/errors/QuantumCacheError.js';
-import { DisposedError, DisposingError } from '@/misc/errors/DisposeError.js';
-import { trackPromise } from '@/misc/promise-tracker.js';
-import { withCleanup, withSignal } from '@/misc/promiseUtils.js';
-import { promiseTry } from '@/misc/promise-try.js';
+import { EntityNotFoundError } from "typeorm";
+import promiseLimit from "promise-limit";
+import { bindThis } from "@/decorators.js";
+import type {
+	InternalEventService,
+	EventTypes,
+} from "@/global/InternalEventService.js";
+import { MemoryKVCache, type MemoryCacheServices } from "@/misc/cache.js";
+import { makeKVPArray, type KVPArray } from "@/misc/kvp-array.js";
+import { renderInlineError } from "@/misc/render-inline-error.js";
+import { FetchFailedError } from "@/misc/errors/FetchFailedError.js";
+import { KeyNotFoundError } from "@/misc/errors/KeyNotFoundError.js";
+import { QuantumCacheError } from "@/misc/errors/QuantumCacheError.js";
+import { DisposedError, DisposingError } from "@/misc/errors/DisposeError.js";
+import { trackPromise } from "@/misc/promise-tracker.js";
+import { withCleanup, withSignal } from "@/misc/promiseUtils.js";
+import { promiseTry } from "@/misc/promise-try.js";
 
 export interface QuantumKVOpts<TIn, T extends Value<TIn> = Value<TIn>> {
 	/**
@@ -104,7 +107,10 @@ export interface CallbackMeta<T> {
  * Missing keys may also produce an EntityNotFound or KeyNotFoundException exception, which will be wrapped to gracefully abort the operation.
  * May be synchronous or async.
  */
-export type Fetcher<T> = (key: string, meta: CallbackMeta<T>) => MaybePromise<Value<T> | null | undefined>;
+export type Fetcher<T> = (
+	key: string,
+	meta: CallbackMeta<T>,
+) => MaybePromise<Value<T> | null | undefined>;
 
 /**
  * Optional callback to fetch the value for a key that wasn't found in the cache, and isn't required to continue.
@@ -113,7 +119,10 @@ export type Fetcher<T> = (key: string, meta: CallbackMeta<T>) => MaybePromise<Va
  * May be synchronous or async.
  * If not provided, then the implementation will fall back on fetcher().
  */
-export type OptionalFetcher<T> = (key: string, meta: CallbackMeta<T>) => MaybePromise<Value<T> | null | undefined>;
+export type OptionalFetcher<T> = (
+	key: string,
+	meta: CallbackMeta<T>,
+) => MaybePromise<Value<T> | null | undefined>;
 
 /**
  * Optional callback to fetch the value for multiple keys that weren't found in the cache.
@@ -122,14 +131,20 @@ export type OptionalFetcher<T> = (key: string, meta: CallbackMeta<T>) => MaybePr
  * May be synchronous or async.
  * If not provided, then the implementation will fall back on repeated calls to optionalFetcher() or fetcher().
  */
-export type BulkFetcher<T> = (keys: string[], meta: CallbackMeta<T>) => MaybePromise<Iterable<[key: string, value: Value<T> | null | undefined]>>;
+export type BulkFetcher<T> = (
+	keys: string[],
+	meta: CallbackMeta<T>,
+) => MaybePromise<Iterable<[key: string, value: Value<T> | null | undefined]>>;
 
 /**
  * Optional callback when one or more values are changed (created, updated, or deleted) in the cache, either locally or elsewhere in the cluster.
  * This is called *after* the cache state is updated.
  * May be synchronous or async.
  */
-export type OnChanged<T> = (keys: string[], meta: CallbackMeta<T>) => MaybePromise<void>;
+export type OnChanged<T> = (
+	keys: string[],
+	meta: CallbackMeta<T>,
+) => MaybePromise<void>;
 
 /**
  * Optional callback when all values are removed from the cache, either locally or elsewhere in the cluster.
@@ -163,13 +178,19 @@ export interface QuantumCacheServices extends MemoryCacheServices {
  * All nodes in the cluster are guaranteed to have a *subset* view of the current accurate state, though individual processes may have different items in their local cache.
  * This ensures that a call to get() will never return stale data.
  */
-export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements Iterable<readonly [key: string, value: T]> {
+export class QuantumKVCache<
+	TIn,
+	T extends Value<TIn> = Value<TIn>,
+> implements Iterable<readonly [key: string, value: T]> {
 	private readonly internalEventService: InternalEventService;
 
 	private readonly memoryCache: MemoryKVCache<T>;
 
 	private readonly activeFetchers = new Map<string, ActiveFetcher<T>>();
-	private readonly activeOptionalFetchers = new Map<string, ActiveOptionalFetcher<T>>();
+	private readonly activeOptionalFetchers = new Map<
+		string,
+		ActiveOptionalFetcher<T>
+	>();
 	private readonly activeBulkFetchers = new Map<string, ActiveBulkFetcher<T>>();
 
 	private readonly globalLimiter: Limiter;
@@ -199,7 +220,9 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 	) {
 		// OK: we forward all management calls to the inner cache.
 		// eslint-disable-next-line no-restricted-syntax
-		this.memoryCache = new MemoryKVCache(name + ':mem', services, { lifetime: opts.lifetime });
+		this.memoryCache = new MemoryKVCache(name + ":mem", services, {
+			lifetime: opts.lifetime,
+		});
 
 		// Set up rate limiters
 		const fetcherConcurrency = opts.fetcherConcurrency
@@ -219,7 +242,11 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 		const globalConcurrency = opts.maxConcurrency
 			? Math.max(opts.maxConcurrency, 1)
-			: Math.max(fetcherConcurrency, optionalFetcherConcurrency, bulkFetcherConcurrency);
+			: Math.max(
+					fetcherConcurrency,
+					optionalFetcherConcurrency,
+					bulkFetcherConcurrency,
+				);
 		this.globalLimiter = promiseLimit(globalConcurrency);
 
 		this.fetcher = opts.fetcher;
@@ -229,14 +256,22 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 		this.onReset = opts.onReset;
 
 		this.internalEventService = services.internalEventService;
-		this.internalEventService.on('quantumCacheUpdated', this.onQuantumCacheUpdated, {
-			// Ignore our own events, otherwise we'll immediately erase any set value.
-			ignoreLocal: true,
-		});
-		this.internalEventService.on('quantumCacheReset', this.onQuantumCacheReset, {
-			// Ignore our own events, otherwise we'll immediately erase any set value.
-			ignoreLocal: true,
-		});
+		this.internalEventService.on(
+			"quantumCacheUpdated",
+			this.onQuantumCacheUpdated,
+			{
+				// Ignore our own events, otherwise we'll immediately erase any set value.
+				ignoreLocal: true,
+			},
+		);
+		this.internalEventService.on(
+			"quantumCacheReset",
+			this.onQuantumCacheReset,
+			{
+				// Ignore our own events, otherwise we'll immediately erase any set value.
+				ignoreLocal: true,
+			},
+		);
 	}
 
 	private get callbackMeta(): CallbackMeta<T> {
@@ -314,7 +349,10 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 		this.memoryCache.set(key, value);
 
-		await this.internalEventService.emit('quantumCacheUpdated', { name: this.name, keys: [key] });
+		await this.internalEventService.emit("quantumCacheUpdated", {
+			name: this.name,
+			keys: [key],
+		});
 
 		if (this.onChanged) {
 			await this.onChanged([key], this.callbackMeta);
@@ -327,7 +365,9 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 	 * Skips if all values are unchanged.
 	 */
 	@bindThis
-	public async setMany(items: Iterable<readonly [key: string, value: T]>): Promise<void> {
+	public async setMany(
+		items: Iterable<readonly [key: string, value: T]>,
+	): Promise<void> {
 		this.throwIfDisposed();
 
 		const changedKeys: string[] = [];
@@ -340,7 +380,10 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 		}
 
 		if (changedKeys.length > 0) {
-			await this.internalEventService.emit('quantumCacheUpdated', { name: this.name, keys: changedKeys });
+			await this.internalEventService.emit("quantumCacheUpdated", {
+				name: this.name,
+				keys: changedKeys,
+			});
 
 			if (this.onChanged) {
 				await this.onChanged(changedKeys, this.callbackMeta);
@@ -518,7 +561,10 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 		this.memoryCache.delete(key);
 
-		await this.internalEventService.emit('quantumCacheUpdated', { name: this.name, keys: [key] });
+		await this.internalEventService.emit("quantumCacheUpdated", {
+			name: this.name,
+			keys: [key],
+		});
 
 		if (this.onChanged) {
 			await this.onChanged([key], this.callbackMeta);
@@ -544,7 +590,10 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 			return;
 		}
 
-		await this.internalEventService.emit('quantumCacheUpdated', { name: this.name, keys: deleted });
+		await this.internalEventService.emit("quantumCacheUpdated", {
+			name: this.name,
+			keys: deleted,
+		});
 
 		if (this.onChanged) {
 			await this.onChanged(deleted, this.callbackMeta);
@@ -619,7 +668,9 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 		this.clear();
 
-		await this.internalEventService.emit('quantumCacheReset', { name: this.name });
+		await this.internalEventService.emit("quantumCacheReset", {
+			name: this.name,
+		});
 
 		if (this.onReset) {
 			await this.onReset(this.callbackMeta);
@@ -648,8 +699,14 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 		try {
 			// Stop handling events *first*
-			this.internalEventService.off('quantumCacheUpdated', this.onQuantumCacheUpdated);
-			this.internalEventService.off('quantumCacheReset', this.onQuantumCacheReset);
+			this.internalEventService.off(
+				"quantumCacheUpdated",
+				this.onQuantumCacheUpdated,
+			);
+			this.internalEventService.off(
+				"quantumCacheReset",
+				this.onQuantumCacheReset,
+			);
 
 			// Kill active fetchers
 			const error = new DisposingError({ source: this.nameForError });
@@ -657,9 +714,9 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 
 			// Wait for cleanup
 			await Promise.allSettled([
-				...this.activeFetchers.values().map(p => trackPromise(p)),
-				...this.activeOptionalFetchers.values().map(p => trackPromise(p)),
-				...this.activeBulkFetchers.values().map(p => trackPromise(p)),
+				...this.activeFetchers.values().map((p) => trackPromise(p)),
+				...this.activeOptionalFetchers.values().map((p) => trackPromise(p)),
+				...this.activeBulkFetchers.values().map((p) => trackPromise(p)),
 			]);
 
 			// Purge memory for faster GC
@@ -674,7 +731,9 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 	}
 
 	@bindThis
-	private async onQuantumCacheUpdated(data: EventTypes['quantumCacheUpdated']): Promise<void> {
+	private async onQuantumCacheUpdated(
+		data: EventTypes["quantumCacheUpdated"],
+	): Promise<void> {
 		this.throwIfDisposed();
 
 		if (data.name === this.name) {
@@ -689,7 +748,9 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 	}
 
 	@bindThis
-	private async onQuantumCacheReset(data: EventTypes['quantumCacheReset']): Promise<void> {
+	private async onQuantumCacheReset(
+		data: EventTypes["quantumCacheReset"],
+	): Promise<void> {
 		this.throwIfDisposed();
 
 		if (data.name === this.name) {
@@ -713,14 +774,24 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 		if (!promise) {
 			// Start new call
 			const fetchPromise = promiseTry(this.callFetcher, key)
-				.catch(async err => {
+				.catch(async (err) => {
 					if (err instanceof EntityNotFoundError) {
-						throw new KeyNotFoundError(this.nameForError, key, renderInlineError(err), { cause: err });
+						throw new KeyNotFoundError(
+							this.nameForError,
+							key,
+							renderInlineError(err),
+							{ cause: err },
+						);
 					}
 
-					throw new FetchFailedError(this.nameForError, key, renderInlineError(err), { cause: err });
+					throw new FetchFailedError(
+						this.nameForError,
+						key,
+						renderInlineError(err),
+						{ cause: err },
+					);
 				})
-				.then(async result => {
+				.then(async (result) => {
 					if (result == null) {
 						throw new KeyNotFoundError(this.nameForError, key);
 					}
@@ -732,7 +803,10 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 				if (this.activeFetchers.get(key) === promise) {
 					this.activeFetchers.delete(key);
 				} else {
-					throw new QuantumCacheError(this.nameForError, `Internal error: fetcher race detected for key "${key}"`);
+					throw new QuantumCacheError(
+						this.nameForError,
+						`Internal error: fetcher race detected for key "${key}"`,
+					);
 				}
 			};
 			promise = withCleanup(fetchPromise, cleanupCallback);
@@ -758,17 +832,25 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 			if (this.optionalFetcher != null) {
 				// Start new call
 				const fetchPromise = promiseTry(this.callOptionalFetcher, key)
-					.catch(async err => {
-						throw new FetchFailedError(this.nameForError, key, renderInlineError(err), { cause: err });
+					.catch(async (err) => {
+						throw new FetchFailedError(
+							this.nameForError,
+							key,
+							renderInlineError(err),
+							{ cause: err },
+						);
 					})
-					.then(result => result ?? undefined);
+					.then((result) => result ?? undefined);
 
 				// Untrack when it finalizes
 				const cleanupCallback = async () => {
 					if (this.activeOptionalFetchers.get(key) === promise) {
 						this.activeOptionalFetchers.delete(key);
 					} else {
-						throw new QuantumCacheError(this.nameForError, `Internal error: optionalFetcher race detected for key "${key}"`);
+						throw new QuantumCacheError(
+							this.nameForError,
+							`Internal error: optionalFetcher race detected for key "${key}"`,
+						);
 					}
 				};
 				promise = withCleanup(fetchPromise, cleanupCallback);
@@ -777,14 +859,13 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 				this.activeOptionalFetchers.set(key, promise);
 			} else {
 				// Fall back on fetcher() if optionalFetcher() is unavailable
-				promise = promiseTry(this.doFetch, key)
-					.catch(async err => {
-						if (err instanceof KeyNotFoundError) {
-							return undefined;
-						}
+				promise = promiseTry(this.doFetch, key).catch(async (err) => {
+					if (err instanceof KeyNotFoundError) {
+						return undefined;
+					}
 
-						throw err;
-					});
+					throw err;
+				});
 			}
 		}
 
@@ -798,7 +879,9 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 	 * Concurrent calls for the same key are de-duplicated.
 	 */
 	@bindThis
-	private doFetchMany(keys: string[]): Promise<[key: string, value: Value<T>][]> {
+	private doFetchMany(
+		keys: string[],
+	): Promise<[key: string, value: Value<T>][]> {
 		const uniqueKeys = new Set(keys);
 		const fetcherPromises = new Map<string, ActiveFetcher<T>>();
 		const optionalFetcherPromises = new Map<string, ActiveOptionalFetcher<T>>();
@@ -847,57 +930,69 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 			}
 		}
 
-		return Promise
-			// Wrap all promises into a common shape
-			.allSettled<KeyValue<T>[]>([
-				...fetcherPromises
-					.entries()
-					.map(([key, promise]) => promise
-						.catch(async err => {
-							if (err instanceof KeyNotFoundError) {
-								return undefined;
-							}
-							throw err;
-						})
-						.then(value => {
+		return (
+			Promise
+				// Wrap all promises into a common shape
+				.allSettled<KeyValue<T>[]>([
+					...fetcherPromises.entries().map(([key, promise]) =>
+						promise
+							.catch(async (err) => {
+								if (err instanceof KeyNotFoundError) {
+									return undefined;
+								}
+								throw err;
+							})
+							.then((value) => {
+								if (value === undefined) {
+									return [];
+								}
+								return [[key, value]] as KeyValue<T>[];
+							}),
+					),
+					...optionalFetcherPromises.entries().map(([key, promise]) =>
+						promise.then((value) => {
 							if (value === undefined) {
 								return [];
 							}
 							return [[key, value]] as KeyValue<T>[];
-						})),
-				...optionalFetcherPromises
-					.entries()
-					.map(([key, promise]) => promise.then(value => {
-						if (value === undefined) {
-							return [];
+						}),
+					),
+					...bulkFetcherPromises,
+				])
+				// Unpack results and handle errors
+				.then(async (promiseResults) => {
+					const results: KeyValue<T>[][] = [];
+					const errors: unknown[] = [];
+
+					for (const pr of promiseResults) {
+						if (pr.status === "fulfilled") {
+							results.push(pr.value);
+						} else {
+							errors.push(pr.reason);
 						}
-						return [[key, value]] as KeyValue<T>[];
-					})),
-				...bulkFetcherPromises,
-			])
-			// Unpack results and handle errors
-			.then(async promiseResults => {
-				const results: KeyValue<T>[][] = [];
-				const errors: unknown[] = [];
-
-				for (const pr of promiseResults) {
-					if (pr.status === 'fulfilled') {
-						results.push(pr.value);
-					} else {
-						errors.push(pr.reason);
 					}
-				}
 
-				if (errors.length === 1) {
-					const innerException = errors[0];
-					throw new FetchFailedError(this.nameForError, keys, renderInlineError(innerException), { cause: innerException });
-				} else if (errors.length > 1) {
-					const innerException = new AggregateError(errors);
-					throw new FetchFailedError(this.nameForError, keys, 'Multiple exceptions thrown; see inner exception (cause) for details', { cause: innerException });
-				}
+					if (errors.length === 1) {
+						const innerException = errors[0];
+						throw new FetchFailedError(
+							this.nameForError,
+							keys,
+							renderInlineError(innerException),
+							{ cause: innerException },
+						);
+					} else if (errors.length > 1) {
+						const innerException = new AggregateError(errors);
+						throw new FetchFailedError(
+							this.nameForError,
+							keys,
+							"Multiple exceptions thrown; see inner exception (cause) for details",
+							{ cause: innerException },
+						);
+					}
 
-				return results.flat();
-			});
+					return results.flat();
+				})
+		);
 	}
 
 	/**
@@ -909,7 +1004,10 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 		// Safety check, in case this gets called directly by mistake
 		this.throwIfDisposed();
 		if (this.activeFetchers.has(key)) {
-			throw new QuantumCacheError(this.nameForError, `Internal error: attempted to call fetcher multiple times for key "${key}"`);
+			throw new QuantumCacheError(
+				this.nameForError,
+				`Internal error: attempted to call fetcher multiple times for key "${key}"`,
+			);
 		}
 
 		// Start limiter cascade
@@ -940,10 +1038,16 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 		this.throwIfDisposed();
 		const optionalFetcher = this.optionalFetcher;
 		if (optionalFetcher == null) {
-			throw new QuantumCacheError(this.nameForError, 'Internal error: attempted to call optionalFetcher for a cache that doesn\'t support it');
+			throw new QuantumCacheError(
+				this.nameForError,
+				"Internal error: attempted to call optionalFetcher for a cache that doesn't support it",
+			);
 		}
 		if (this.activeOptionalFetchers.has(key)) {
-			throw new QuantumCacheError(this.nameForError, `Internal error: attempted to call optionalFetcher multiple times for key "${key}"`);
+			throw new QuantumCacheError(
+				this.nameForError,
+				`Internal error: attempted to call optionalFetcher multiple times for key "${key}"`,
+			);
 		}
 
 		// Start limiter cascade
@@ -969,12 +1073,16 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 	 * Do not call this directly - use doBulkFetch() instead!
 	 */
 	@bindThis
-	private callBulkFetcherWithTracking(keys: AtLeastOne<string>): ActiveBulkFetcher<T> {
+	private callBulkFetcherWithTracking(
+		keys: AtLeastOne<string>,
+	): ActiveBulkFetcher<T> {
 		// Start new call
-		const fetchPromise = promiseTry(this.callBulkFetcher, keys)
-			.then(results => Array.from(results).filter((result): result is KeyValue<T> => {
-				return result[1] != null;
-			}));
+		const fetchPromise = promiseTry(this.callBulkFetcher, keys).then(
+			(results) =>
+				Array.from(results).filter((result): result is KeyValue<T> => {
+					return result[1] != null;
+				}),
+		);
 
 		// Untrack when it finalizes
 		const cleanupCallback = async () => {
@@ -989,8 +1097,11 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 			}
 
 			if (racedKeys.length > 0) {
-				const allKeys = racedKeys.map(k => `"${k}"`).join(', ');
-				throw new QuantumCacheError(this.nameForError, `Internal error: bulkFetcher race detected for key(s) ${allKeys}`);
+				const allKeys = racedKeys.map((k) => `"${k}"`).join(", ");
+				throw new QuantumCacheError(
+					this.nameForError,
+					`Internal error: bulkFetcher race detected for key(s) ${allKeys}`,
+				);
 			}
 		};
 		const promise = withCleanup(fetchPromise, cleanupCallback);
@@ -1008,17 +1119,27 @@ export class QuantumKVCache<TIn, T extends Value<TIn> = Value<TIn>> implements I
 	 * Do not call this directly - use bulkFetch() instead!
 	 */
 	@bindThis
-	private callBulkFetcher(keys: AtLeastOne<string>): Promise<Iterable<KeyValue<T | null | undefined>>> {
+	private callBulkFetcher(
+		keys: AtLeastOne<string>,
+	): Promise<Iterable<KeyValue<T | null | undefined>>> {
 		// Safety checks, in case this gets called directly by mistake
 		const bulkFetcher = this.bulkFetcher;
 		this.throwIfDisposed();
 		if (bulkFetcher == null) {
-			throw new QuantumCacheError(this.nameForError, 'Internal error: attempted to call bulkFetcher for a cache that doesn\'t support it');
+			throw new QuantumCacheError(
+				this.nameForError,
+				"Internal error: attempted to call bulkFetcher for a cache that doesn't support it",
+			);
 		}
-		const duplicateKeys = keys.filter(key => this.activeBulkFetchers.has(key));
+		const duplicateKeys = keys.filter((key) =>
+			this.activeBulkFetchers.has(key),
+		);
 		if (duplicateKeys.length > 0) {
-			const allKeys = duplicateKeys.map(k => `"${k}"`).join(', ');
-			throw new QuantumCacheError(this.nameForError, `Internal error: attempted to call bulkFetcher multiple times for key(s) ${allKeys}`);
+			const allKeys = duplicateKeys.map((k) => `"${k}"`).join(", ");
+			throw new QuantumCacheError(
+				this.nameForError,
+				`Internal error: attempted to call bulkFetcher multiple times for key(s) ${allKeys}`,
+			);
 		}
 
 		// Start limiter cascade

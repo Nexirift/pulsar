@@ -2,7 +2,7 @@
 _lang_: "Türkçe"
 headlineMisskey: "Notlarla birbirine bağlı bir ağ"
 introMisskey: "Hoş geldiniz! Misskey, açık kaynaklı ve merkeziyetsiz bir mikroblog hizmetidir.\n\"Notlar\" oluşturarak düşüncelerinizi çevrenizdekilerle paylaşabilirsiniz. 📡\n\"Tepkiler\" ile başkalarının notlarına duygularınızı hızlıca ifade edebilirsiniz. 👍\nHaydi, yeni bir dünyayı keşfedelim! 🚀"
-poweredByMisskeyDescription: "{name}, açık kaynaklı platform <b>Misskey</b> tarafından desteklenen hizmetlerden biridir (\"Misskey sunucusu\" olarak adlandırılır)."
+poweredByMisskeyDescription: '{name}, açık kaynaklı platform <b>Misskey</b> tarafından desteklenen hizmetlerden biridir ("Misskey sunucusu" olarak adlandırılır).'
 monthAndDay: "{month}/{day}"
 search: "Ara"
 reset: "Sıfırla"
@@ -81,12 +81,12 @@ import: "İçe aktar"
 export: "Dışa aktar"
 files: "Dosyalar"
 download: "İndir"
-driveFileDeleteConfirm: "\"{name}\" dosyasını silmek istediğinize emin misiniz? Bu dosyanın ekli olduğu tüm notlar da silinecektir."
+driveFileDeleteConfirm: '"{name}" dosyasını silmek istediğinize emin misiniz? Bu dosyanın ekli olduğu tüm notlar da silinecektir.'
 unfollowConfirm: "{name} kişisini takipten çıkarmak istediğinize emin misiniz?"
 exportRequested: "Dışa aktarma talebinde bulundunuz. Bu işlem biraz zaman alabilir. Tamamlandığında Sürücünüze eklenecektir."
 importRequested: "İçe aktarma talebinde bulundunuz. Bu işlem biraz zaman alabilir."
 lists: "Listeler"
-noLists: "Hiç listeniz yok"  
+noLists: "Hiç listeniz yok"
 note: "Not"
 notes: "Notlar"
 following: "Takip edilen"
@@ -136,7 +136,7 @@ pinnedEmojisSettingDescription: "Emoji seçicide gösterilecek sabit emojileri a
 emojiPickerDisplay: "Emoji seçici görünümü"
 overwriteFromPinnedEmojisForReaction: "Tepki ayarlarından geçersiz kıl"
 overwriteFromPinnedEmojis: "Genel ayarlardan geçersiz kıl"
-reactionSettingDescription2: "Sürükleyerek yeniden sıralayın, silmek için tıklayın, eklemek için \"+\" tuşuna basın."
+reactionSettingDescription2: 'Sürükleyerek yeniden sıralayın, silmek için tıklayın, eklemek için "+" tuşuna basın.'
 rememberNoteVisibility: "Not görünürlük ayarlarını hatırla"
 attachCancel: "Ek dosyayı kaldır"
 deleteFile: "Dosyayı sil"
@@ -284,8 +284,8 @@ announcements: "Duyurular"
 imageUrl: "Görsel URL’si"
 remove: "Sil"
 removed: "Başarıyla silindi"
-removeAreYouSure: "\"{x}\" öğesini kaldırmak istediğinize emin misiniz?"
-deleteAreYouSure: "\"{x}\" öğesini silmek istediğinize emin misiniz?"
+removeAreYouSure: '"{x}" öğesini kaldırmak istediğinize emin misiniz?'
+deleteAreYouSure: '"{x}" öğesini silmek istediğinize emin misiniz?'
 resetAreYouSure: "Gerçekten sıfırlansın mı?"
 areYouSure: "Emin misiniz?"
 saved: "Kaydedildi"
@@ -327,7 +327,7 @@ dark: "Koyu"
 lightThemes: "Açık temalar"
 darkThemes: "Koyu temalar"
 syncDeviceDarkMode: "Cihaz ayarlarına göre koyu modu senkronize et"
-switchDarkModeManuallyWhenSyncEnabledConfirm: "\"{x}\" açık. Senkronizasyonu kapatıp modu manuel değiştirmek ister misiniz?"
+switchDarkModeManuallyWhenSyncEnabledConfirm: '"{x}" açık. Senkronizasyonu kapatıp modu manuel değiştirmek ister misiniz?'
 drive: "Sürücü"
 fileName: "Dosya adı"
 selectFile: "Dosya seç"
@@ -393,7 +393,7 @@ bannerUrl: "Banner görsel URL’si"
 backgroundImageUrl: "Arka plan görsel URL’si"
 basicInfo: "Temel bilgiler"
 pinnedUsers: "Sabitlenmiş kullanıcılar"
-pinnedUsersDescription: "\"Keşfet\" sekmesinde sabitlenecek kullanıcı adlarını satır satır listeleyin."
+pinnedUsersDescription: '"Keşfet" sekmesinde sabitlenecek kullanıcı adlarını satır satır listeleyin.'
 pinnedPages: "Sabitlenmiş sayfalar"
 pinnedPagesDescription: "Ana sayfanın en üstüne sabitlemek istediğiniz sayfaların yollarını satır satır girin."
 pinnedClipId: "Sabitlenecek klibin ID’si"
@@ -469,7 +469,7 @@ unregister: "Kaydı sil"
 passwordLessLogin: "Şifresiz giriş"
 passwordLessLoginDescription: "Sadece güvenlik anahtarı ile şifresiz giriş yapılmasına izin verir"
 resetPassword: "Şifreyi sıfırla"
-newPasswordIs: "Yeni şifre: \"{password}\""
+newPasswordIs: 'Yeni şifre: "{password}"'
 reduceUiAnimation: "Arayüz animasyonlarını azalt"
 share: "Paylaş"
 notFound: "Bulunamadı"
@@ -569,7 +569,7 @@ objectStorageUseSSL: "SSL kullan"
 objectStorageUseSSLDesc: "API bağlantıları için HTTPS kullanmayacaksanız kapatın"
 objectStorageUseProxy: "Proxy üzerinden bağlan"
 objectStorageUseProxyDesc: "API bağlantıları için Proxy kullanmayacaksanız kapatın"
-objectStorageSetPublicRead: "Yüklemede \"public-read\" ayarı yap"
+objectStorageSetPublicRead: 'Yüklemede "public-read" ayarı yap'
 s3ForcePathStyleDesc: "s3ForcePathStyle etkinse, bucket adı URL'nin alan adı yerine yol kısmında yer almalıdır. Minio gibi hizmetlerde bunu etkinleştirmeniz gerekebilir."
 serverLogs: "Sunucu kayıtları"
 deleteAll: "Tümünü sil"
@@ -696,7 +696,7 @@ regexpError: "Düzenli ifade hatası"
 regexpErrorDescription: "{tab} kelime sessize almada {line}. satırda düzenli ifade hatası oluştu:"
 instanceMute: "Sunucu sessize alma"
 userSaysSomething: "{name} bir şey söyledi"
-userSaysSomethingAbout: "{name}, \"{word}\" hakkında bir şey söyledi"
+userSaysSomethingAbout: '{name}, "{word}" hakkında bir şey söyledi'
 makeActive: "Etkinleştir"
 display: "Görünüm"
 copy: "Kopyala"
@@ -745,7 +745,7 @@ createNew: "Yeni oluştur"
 optional: "İsteğe bağlı"
 createNewClip: "Yeni klip oluştur"
 unclip: "Klipsiz bırak"
-confirmToUnclipAlreadyClippedNote: "Bu not zaten \"{name}\" klibinde. Bunun yerine bu klipten kaldırmak ister misiniz?"
+confirmToUnclipAlreadyClippedNote: 'Bu not zaten "{name}" klibinde. Bunun yerine bu klipten kaldırmak ister misiniz?'
 public: "Herkese açık"
 private: "Özel"
 i18nInfo: "Misskey, gönüllüler tarafından çeşitli dillere çevrilmektedir. {link} adresinden katkıda bulunabilirsiniz."
@@ -768,7 +768,7 @@ driveFilesCount: "Sürücüdeki dosya sayısı"
 driveUsage: "Sürücü alan kullanımı"
 noCrawle: "Arama motoru indekslemesini reddet"
 noCrawleDescription: "Arama motorlarından profil sayfanızı, notlarınızı, sayfalarınızı vb. indekslememesini isteyin."
-lockedAccountInfo: "Not görünürlüğünüzü \"Yalnızca takipçiler\" olarak ayarlamazsanız, takip onayı gerektirse bile herkes notlarınızı görebilir."
+lockedAccountInfo: 'Not görünürlüğünüzü "Yalnızca takipçiler" olarak ayarlamazsanız, takip onayı gerektirse bile herkes notlarınızı görebilir.'
 alwaysMarkSensitive: "Varsayılan olarak hassas işaretle"
 loadRawImages: "Küçük resimler yerine orijinal görselleri yükle"
 disableShowingAnimatedImages: "Animasyonlu görselleri oynatma"
@@ -786,8 +786,8 @@ experimentalFeatures: "Deneysel özellikler"
 experimental: "Deneysel"
 thisIsExperimentalFeature: "Bu deneysel bir özelliktir. İşlevi değişebilir ve beklendiği gibi çalışmayabilir."
 developer: "Geliştirici"
-makeExplorable: "\"Keşfet\" bölümünde görünür yap"
-makeExplorableDescription: "Kapalıysa, hesabınız \"Keşfet\" bölümünde görünmez."
+makeExplorable: '"Keşfet" bölümünde görünür yap'
+makeExplorableDescription: 'Kapalıysa, hesabınız "Keşfet" bölümünde görünmez.'
 duplicate: "Kopyala"
 left: "Sol"
 center: "Orta"
@@ -842,7 +842,7 @@ unlikeConfirm: "Beğeniyi gerçekten kaldırmak istiyor musunuz?"
 fullView: "Tam ekran"
 quitFullView: "Tam ekrandan çık"
 addDescription: "Açıklama ekle"
-userPagePinTip: "Bireysel notların menüsünden \"Profille sabitle\" seçeneğini seçerek burada gösterebilirsiniz."
+userPagePinTip: 'Bireysel notların menüsünden "Profille sabitle" seçeneğini seçerek burada gösterebilirsiniz.'
 notSpecifiedMentionWarning: "Bu not, alıcı olarak eklenmemiş kullanıcıların bahsini içeriyor"
 info: "Hakkında"
 userInfo: "Kullanıcı bilgisi"
@@ -932,7 +932,7 @@ continueThread: "Konunun devamını gör"
 deleteAccountConfirm: "Bu işlem hesabınızı geri döndürülemez şekilde silecektir. Devam edilsin mi?"
 incorrectPassword: "Yanlış şifre."
 incorrectTotp: "Tek seferlik şifre yanlış veya süresi dolmuş."
-voteConfirm: "\"{choice}\" için oyunuzu onaylıyor musunuz?"
+voteConfirm: '"{choice}" için oyunuzu onaylıyor musunuz?'
 hide: "Gizle"
 useDrawerReactionPickerForMobile: "Mobilde tepki seçiciyi çekmece olarak göster"
 welcomeBackWithName: "Tekrar hoş geldiniz, {name}"
@@ -1084,7 +1084,7 @@ nonSensitiveOnlyForLocalLikeOnlyForRemote: "Sadece hassas olmayan (Uzak için ya
 rolesAssignedToMe: "Bana atanmış roller"
 resetPasswordConfirm: "Şifrenizi gerçekten sıfırlamak istiyor musunuz?"
 sensitiveWords: "Hassas kelimeler"
-sensitiveWordsDescription: "Belirlenen kelimeleri içeren tüm notların görünürlüğü otomatik olarak \"Ana sayfa\" olarak ayarlanır. Satır başı ile birden fazla kelime ekleyebilirsiniz."
+sensitiveWordsDescription: 'Belirlenen kelimeleri içeren tüm notların görünürlüğü otomatik olarak "Ana sayfa" olarak ayarlanır. Satır başı ile birden fazla kelime ekleyebilirsiniz.'
 sensitiveWordsDescription2: "Boşluk kullanmak VE (AND) ifadesi oluşturur, kelimeleri eğik çizgiler arasına almak düzenli ifade haline getirir."
 prohibitedWords: "Yasaklı kelimeler"
 prohibitedWordsDescription: "Belirlenen kelimeleri içeren bir not gönderilmeye çalışıldığında hata verir. Satır başı ile birden fazla kelime ekleyebilirsiniz."
@@ -1102,7 +1102,7 @@ retryAllQueuesConfirmText: "Bu, geçici olarak sunucu yükünü artıracaktır."
 enableChartsForRemoteUser: "Uzak kullanıcı verileri için grafik oluştur"
 enableChartsForFederatedInstances: "Uzak sunucu verileri için grafik oluştur"
 enableStatsForFederatedInstances: "Uzak sunucu istatistiklerini al"
-showClipButtonInNoteFooter: "Not menüsüne \"Klip\" ekle"
+showClipButtonInNoteFooter: 'Not menüsüne "Klip" ekle'
 reactionsDisplaySize: "Tepki görüntüleme boyutu"
 limitWidthOfReaction: "Tepkilerin maksimum genişliğini sınırla ve küçültülmüş boyutta göster."
 noteIdOrUrl: "Not ID’si veya URL"
@@ -1146,7 +1146,7 @@ displayOfNote: "Not görünümü"
 initialAccountSetting: "Profil ayarları"
 youFollowing: "Takip ediliyor"
 preventAiLearning: "Yapay Zeka eğitiminde kullanımını reddet"
-preventAiLearningDescription: "Paylaşılan metin veya görsellerin Yapay Zeka veri setlerinde kullanılmaması için \"noai\" HTML etiketi eklenir. Ancak bu etiket tamamen önlem sağlamaz, görmezden gelinebilir."
+preventAiLearningDescription: 'Paylaşılan metin veya görsellerin Yapay Zeka veri setlerinde kullanılmaması için "noai" HTML etiketi eklenir. Ancak bu etiket tamamen önlem sağlamaz, görmezden gelinebilir.'
 options: "Seçenekler"
 specifyUser: "Belirli kullanıcı"
 lookupConfirm: "Sorgulamak istiyor musunuz?"
@@ -1186,7 +1186,7 @@ used: "Kullanılmış"
 expired: "Süresi dolmuş"
 doYouAgree: "Kabul ediyor musunuz?"
 beSureToReadThisAsItIsImportant: "Lütfen bu önemli bilgiyi okuyun."
-iHaveReadXCarefullyAndAgree: "\"{x}\" metnini okudum ve kabul ediyorum."
+iHaveReadXCarefullyAndAgree: '"{x}" metnini okudum ve kabul ediyorum.'
 dialog: "Diyalog"
 icon: "Simge"
 forYou: "Sizin için"
@@ -1244,7 +1244,7 @@ refreshing: "Yenileniyor..."
 pullDownToRefresh: "Yenilemek için aşağı çek"
 useGroupedNotifications: "Gruplandırılmış bildirimleri göster"
 signupPendingError: "E-posta adresi doğrulanırken bir sorun oluştu. Bağlantının süresi dolmuş olabilir."
-cwNotationRequired: "\"İçeriği gizle\" etkinse, bir açıklama girilmelidir."
+cwNotationRequired: '"İçeriği gizle" etkinse, bir açıklama girilmelidir.'
 doReaction: "Tepki ekle"
 code: "Kod"
 reloadRequiredToApplySettings: "Ayarların uygulanabilmesi için sayfanın yenilenmesi gerekir."
@@ -1315,7 +1315,7 @@ federationSpecified: "Bu sunucu, beyaz liste federasyonunda çalışıyor. Yöne
 federationDisabled: "Bu sunucuda federasyon devre dışı. Diğer sunuculardaki kullanıcılarla etkileşim kuramazsınız."
 draft: "Taslaklar"
 confirmOnReact: "Tepki verirken onay iste"
-reactAreYouSure: "\"{emoji}\" tepkisi eklemek istiyor musunuz?"
+reactAreYouSure: '"{emoji}" tepkisi eklemek istiyor musunuz?'
 markAsSensitiveConfirm: "Bu medyayı hassas olarak işaretlemek istiyor musunuz?"
 unmarkAsSensitiveConfirm: "Bu medyanın hassas işaretini kaldırmak istiyor musunuz?"
 preferences: "Tercihler"
@@ -1364,8 +1364,8 @@ muteX: "{x} öğesini sessize al"
 unmuteX: "{x} öğesinin sessizliğini kaldır"
 abort: "İptal et"
 tip: "İpuçları"
-redisplayAllTips: "Tüm \"İpuçları\"nı yeniden göster"
-hideAllTips: "Tüm \"İpuçları\"nı gizle"
+redisplayAllTips: 'Tüm "İpuçları"nı yeniden göster'
+hideAllTips: 'Tüm "İpuçları"nı gizle'
 defaultImageCompressionLevel: "Varsayılan resim sıkıştırma seviyesi"
 defaultImageCompressionLevel_description: "Düşük seviye görsel kalitesini korur ancak dosya boyutunu artırır.<br>Yüksek seviye dosya boyutunu azaltır ancak görsel kalitesini düşürür."
 inMinutes: "Dakika"
@@ -1471,7 +1471,7 @@ _settings:
 _preferencesProfile:
   profileName: "Profil adı"
   profileNameDescription: "Bu cihazı tanımlayan bir ad belirleyin."
-  profileNameDescription2: "Örnek: \"Ana PC\", \"Akıllı Telefon\""
+  profileNameDescription2: 'Örnek: "Ana PC", "Akıllı Telefon"'
   manageProfiles: "Profilleri yönet"
 _preferencesBackup:
   autoBackup: "Otomatik yedekleme"
@@ -1531,11 +1531,11 @@ _announcement:
   forExistingUsers: "Sadece mevcut kullanıcılar"
   forExistingUsersDescription: "Bu duyuru, etkinleştirildiğinde yalnızca yayınlandığı sırada mevcut olan kullanıcılara gösterilecektir. Devre dışı bırakılırsa, daha sonra kayıt olan kullanıcılar da görebilir."
   needConfirmationToRead: "Okuma onayı iste"
-  needConfirmationToReadDescription: "Etkinleştirildiğinde, bu duyurunun okundu olarak işaretlenmesi için ayrı bir onay penceresi gösterilir. Bu duyuru, \"Tümünü okundu işaretle\" işlevinden hariç tutulur."
+  needConfirmationToReadDescription: 'Etkinleştirildiğinde, bu duyurunun okundu olarak işaretlenmesi için ayrı bir onay penceresi gösterilir. Bu duyuru, "Tümünü okundu işaretle" işlevinden hariç tutulur.'
   end: "Duyuruyu arşivle"
   tooManyActiveAnnouncementDescription: "Çok fazla aktif duyuru olması kullanıcı deneyimini olumsuz etkileyebilir. Güncelliğini yitirmiş duyuruları arşivlemeyi düşünün."
   readConfirmTitle: "Okundu olarak işaretlensin mi?"
-  readConfirmText: "\"{title}\" içeriği okundu olarak işaretlenecektir."
+  readConfirmText: '"{title}" içeriği okundu olarak işaretlenecektir.'
   shouldNotBeUsedToPresentPermanentInfo: "Duyurular, uzun süre geçerliliğini koruyacak bilgiler için değil, güncel ve zaman sınırlı bilgiler için kullanılmalıdır."
   dialogAnnouncementUxWarn: "Aynı anda iki veya daha fazla pencere tarzı duyuru göstermek, kullanıcı deneyimini önemli ölçüde etkileyebilir, bu yüzden dikkatli kullanın."
   silence: "Bildirim yok"
@@ -1547,7 +1547,7 @@ _initialAccountSetting:
   profileSetting: "Profil ayarları"
   privacySetting: "Gizlilik ayarları"
   theseSettingsCanEditLater: "Bu ayarları daha sonra değiştirebilirsiniz."
-  youCanEditMoreSettingsInSettingsPageLater: "\"Ayarlar\" sayfasından daha birçok ayarı yapabilirsiniz. Daha sonra mutlaka göz atın."
+  youCanEditMoreSettingsInSettingsPageLater: '"Ayarlar" sayfasından daha birçok ayarı yapabilirsiniz. Daha sonra mutlaka göz atın.'
   followUsers: "Zaman tünelinizi oluşturmak için ilginizi çeken bazı kullanıcıları takip etmeyi deneyin."
   pushNotificationDescription: "Anlık bildirimleri etkinleştirdiğinizde, {name} size doğrudan cihazınız üzerinden bildirim gönderebilir."
   initialAccountSettingCompleted: "Profil ayarları tamamlandı!"
@@ -1844,7 +1844,7 @@ _achievements:
       description: "Başarımlar listene en az 3 dakika bak"
     _iLoveMisskey:
       title: "Misskey'i Seviyorum"
-      description: "\"I ❤ #Misskey\" notu paylaş"
+      description: '"I ❤ #Misskey" notu paylaş'
       flavor: "Misskey geliştirme ekibi desteğinizi çok takdir ediyor!"
     _foundTreasure:
       title: "Hazine Avı"
@@ -1877,7 +1877,7 @@ _achievements:
       description: "Sunucu istatistiklerini görüntüle"
     _outputHelloWorldOnScratchpad:
       title: "Merhaba, dünya!"
-      description: "Not defterine \"hello world\" yazdır"
+      description: 'Not defterine "hello world" yazdır'
     _open3windows:
       title: "Çoklu Pencere"
       description: "Aynı anda en az 3 pencere aç"
@@ -1895,7 +1895,7 @@ _achievements:
       description: "Her 10 saniyede %0,005 ihtimalle kazanılabilir"
     _setNameToSyuilo:
       title: "Tanrı Kompleksi"
-      description: "Adını \"syuilo\" olarak ayarla"
+      description: 'Adını "syuilo" olarak ayarla'
     _passedSinceAccountCreated1:
       title: "Birinci Yıl Dönümü"
       description: "Hesabının oluşturulmasının üzerinden 1 yıl geçti"
@@ -2019,7 +2019,7 @@ _role:
     isBot: "Bot kullanıcılar"
     isSuspended: "Askıya alınmış kullanıcı"
     isLocked: "Gizli hesaplar"
-    isExplorable: "\"Hesabı keşfedilebilir yap\" etkin kullanıcılar"
+    isExplorable: '"Hesabı keşfedilebilir yap" etkin kullanıcılar'
     createdLessThan: "Hesap oluşturulmasından bu yana X zamandan az geçmiş"
     createdMoreThan: "Hesap oluşturulmasından bu yana X zamandan fazla geçmiş"
     followersLessThanOrEq: "Takipçi sayısı X veya daha az"
@@ -2098,12 +2098,12 @@ _preferencesBackups:
   save: "Değişiklikleri kaydet"
   inputName: "Lütfen bu yedek için bir ad girin"
   cannotSave: "Kaydedilemedi"
-  nameAlreadyExists: "\"{name}\" adında bir yedek zaten mevcut. Lütfen farklı bir ad girin."
-  applyConfirm: "\"{name}\" yedeğini bu cihaza uygulamak istediğinize emin misiniz? Mevcut cihaz ayarları üzerine yazılacaktır."
+  nameAlreadyExists: '"{name}" adında bir yedek zaten mevcut. Lütfen farklı bir ad girin.'
+  applyConfirm: '"{name}" yedeğini bu cihaza uygulamak istediğinize emin misiniz? Mevcut cihaz ayarları üzerine yazılacaktır.'
   saveConfirm: "Yedeği {name} olarak kaydetmek istiyor musunuz?"
   deleteConfirm: "{name} yedeğini silmek istiyor musunuz?"
-  renameConfirm: "Bu yedeğin adını \"{old}\" değerinden \"{new}\" değerine değiştirmek istiyor musunuz?"
-  noBackups: "Henüz bir yedek yok. \"Yeni yedek oluştur\" seçeneği ile istemci ayarlarınızı sunucuda yedekleyebilirsiniz."
+  renameConfirm: 'Bu yedeğin adını "{old}" değerinden "{new}" değerine değiştirmek istiyor musunuz?'
+  noBackups: 'Henüz bir yedek yok. "Yeni yedek oluştur" seçeneği ile istemci ayarlarınızı sunucuda yedekleyebilirsiniz.'
   createdAt: "Oluşturulma tarihi: {date} {time}"
   updatedAt: "Güncellenme tarihi: {date} {time}"
   cannotLoad: "Yüklenemedi"
@@ -2388,7 +2388,7 @@ _permissions:
   "read:chat": "Sohbeti görüntüleme"
 _auth:
   shareAccessTitle: "Uygulama izinlerini verme"
-  shareAccess: "\"{name}\" uygulamasının bu hesaba erişmesine izin vermek istiyor musunuz?"
+  shareAccess: '"{name}" uygulamasının bu hesaba erişmesine izin vermek istiyor musunuz?'
   shareAccessAsk: "Bu uygulamanın hesabınıza erişmesine izin vermek istediğinize emin misiniz?"
   permission: "{name} aşağıdaki izinleri talep ediyor"
   permissionAsk: "Bu uygulama aşağıdaki izinleri talep ediyor"
@@ -2652,7 +2652,7 @@ _notification:
   exportOfXCompleted: "{x} dışa aktarımı tamamlandı"
   login: "Birisi giriş yaptı"
   createToken: "Bir erişim anahtarı oluşturuldu"
-  createTokenDescription: "Eğer bunun ne olduğunu bilmiyorsan, \"{text}\" üzerinden erişim anahtarını sil."
+  createTokenDescription: 'Eğer bunun ne olduğunu bilmiyorsan, "{text}" üzerinden erişim anahtarını sil.'
   _types:
     all: "Tümü"
     note: "Yeni notlar"
@@ -2697,9 +2697,9 @@ _deck:
   deleteProfile: "Profili sil"
   introduction: "Sütunları özgürce düzenleyerek kendinize uygun arayüzü oluşturun!"
   introduction2: "Ekranın sağındaki + butonuna tıklayarak istediğiniz zaman yeni sütun ekleyebilirsiniz."
-  widgetsIntroduction: "Lütfen sütun menüsünden \"Widget’ları düzenle\" seçeneğini kullanın ve bir widget ekleyin."
+  widgetsIntroduction: 'Lütfen sütun menüsünden "Widget’ları düzenle" seçeneğini kullanın ve bir widget ekleyin.'
   useSimpleUiForNonRootPages: "Alt sayfalarda basit arayüz kullan"
-  usedAsMinWidthWhenFlexible: "\"Otomatik genişlik ayarı\" etkin olduğunda minimum genişlik olarak kullanılır"
+  usedAsMinWidthWhenFlexible: '"Otomatik genişlik ayarı" etkin olduğunda minimum genişlik olarak kullanılır'
   flexible: "Otomatik genişlik ayarı"
   enableSyncBetweenDevicesForProfiles: "Profiller arasında cihazlar arası senkronizasyonu etkinleştir"
   _columns:
@@ -3003,8 +3003,8 @@ _customEmojisManager:
     _register:
       uploadSettingTitle: "Yükleme ayarları"
       uploadSettingDescription: "Bu ekranda emoji yükleme davranışını ayarlayabilirsiniz."
-      directoryToCategoryLabel: "\"Kategori\" alanına dizin adını gir"
-      directoryToCategoryCaption: "Bir dizin sürükleyip bıraktığınızda dizin adını \"kategori\" alanına girin."
+      directoryToCategoryLabel: '"Kategori" alanına dizin adını gir'
+      directoryToCategoryCaption: 'Bir dizin sürükleyip bıraktığınızda dizin adını "kategori" alanına girin.'
       confirmRegisterEmojisDescription: "Listedeki emojileri yeni özel emoji olarak kaydet. Devam etmek istiyor musunuz? (Tek işlemde en fazla {count} emoji kaydedilebilir)"
       confirmClearEmojisDescription: "Düzenlemeleri iptal edip listeyi temizle. Devam etmek istiyor musunuz?"
       confirmUploadEmojisDescription: "Sürükleyip bıraktığınız {count} dosyayı sürücüye yükle. Devam etmek istiyor musunuz?"
@@ -3024,7 +3024,7 @@ _embedCodeGen:
   codeGeneratedDescription: "Oluşturulan kodu web sitenize yapıştırarak içeriği yerleştirin."
 _selfXssPrevention:
   warning: "UYARI"
-  title: "\"Bu ekrana bir şey yapıştır\" ifadesi tamamen dolandırıcılıktır."
+  title: '"Bu ekrana bir şey yapıştır" ifadesi tamamen dolandırıcılıktır.'
   description1: "Buraya bir şey yapıştırırsanız, kötü niyetli kişiler hesabınızı ele geçirebilir veya kişisel bilgilerinizi çalabilir."
   description2: "Yapıştırmaya çalıştığınız şeyi tam olarak anlamıyorsanız, %cşimdi hemen durun ve bu pencereyi kapatın."
   description3: "Daha fazla bilgi için buraya bakın: {link}"
@@ -3107,7 +3107,7 @@ _serverSetupWizard:
   largeScaleServerAdvice: "Büyük sunucular, yük dengeleme ve veritabanı replikasyonu gibi ileri düzey altyapı bilgisi gerektirebilir."
   doYouConnectToFediverse: "Fediverse’e bağlanmak istiyor musunuz?"
   doYouConnectToFediverse_description1: "Dağıtık sunucu ağına (Fediverse) bağlandığınızda, diğer sunucularla içerik alışverişi yapabilirsiniz."
-  doYouConnectToFediverse_description2: "Fediverse ile bağlantı kurmaya \"federasyon\" denir."
+  doYouConnectToFediverse_description2: 'Fediverse ile bağlantı kurmaya "federasyon" denir.'
   youCanConfigureMoreFederationSettingsLater: "Hangi sunucularla federasyon yapılacağını belirleme gibi gelişmiş ayarları daha sonra yapabilirsiniz."
   remoteContentsCleaning: "Alınan içeriklerin otomatik temizlenmesi"
   remoteContentsCleaning_description: "Federasyon sürekli içerik akışına neden olabilir. Otomatik temizlik, depolama alanını korumak için eski ve kullanılmayan içerikleri siler."
@@ -3119,7 +3119,7 @@ _serverSetupWizard:
   skipSettings: "Ayarları atla"
   settingsCompleted: "Kurulum tamamlandı!"
   settingsCompleted_description: "Zaman ayırdığınız için teşekkürler. Artık her şey hazır, sunucuyu hemen kullanmaya başlayabilirsiniz."
-  settingsCompleted_description2: "Sunucu ayarlarını \"Kontrol Paneli\"nden değiştirebilirsiniz."
+  settingsCompleted_description2: 'Sunucu ayarlarını "Kontrol Paneli"nden değiştirebilirsiniz.'
   donationRequest: "Bağış Talebi"
   _donationRequest:
     text1: "Misskey, gönüllüler tarafından geliştirilen ücretsiz bir yazılımdır."

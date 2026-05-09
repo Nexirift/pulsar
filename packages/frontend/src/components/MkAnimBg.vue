@@ -4,22 +4,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<canvas ref="canvasEl" style="display: block; width: 100%; height: 100%; pointer-events: none;"></canvas>
+	<canvas
+		ref="canvasEl"
+		style="display: block; width: 100%; height: 100%; pointer-events: none"
+	></canvas>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, useTemplateRef } from 'vue';
-import isChromatic from 'chromatic/isChromatic';
+import { onMounted, onUnmounted, useTemplateRef } from "vue";
+import isChromatic from "chromatic/isChromatic";
 
-const canvasEl = useTemplateRef('canvasEl');
+const canvasEl = useTemplateRef("canvasEl");
 
-const props = withDefaults(defineProps<{
-	scale?: number;
-	focus?: number;
-}>(), {
-	scale: 1.0,
-	focus: 1.0,
-});
+const props = withDefaults(
+	defineProps<{
+		scale?: number;
+		focus?: number;
+	}>(),
+	{
+		scale: 1.0,
+		focus: 1.0,
+	},
+);
 
 function loadShader(gl: WebGLRenderingContext, type: number, source: string) {
 	const shader = gl.createShader(type);
@@ -29,9 +35,7 @@ function loadShader(gl: WebGLRenderingContext, type: number, source: string) {
 	gl.compileShader(shader);
 
 	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		alert(
-			`falied to compile shader: ${gl.getShaderInfoLog(shader)}`,
-		);
+		alert(`falied to compile shader: ${gl.getShaderInfoLog(shader)}`);
 		gl.deleteShader(shader);
 		return null;
 	}
@@ -39,30 +43,31 @@ function loadShader(gl: WebGLRenderingContext, type: number, source: string) {
 	return shader;
 }
 
-function initShaderProgram(gl: WebGLRenderingContext, vsSource: string, fsSource: string) {
+function initShaderProgram(
+	gl: WebGLRenderingContext,
+	vsSource: string,
+	fsSource: string,
+) {
 	const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
 	const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
 
 	const shaderProgram = gl.createProgram();
-	if (shaderProgram == null || vertexShader == null || fragmentShader == null) return null;
+	if (shaderProgram == null || vertexShader == null || fragmentShader == null)
+		return null;
 
 	gl.attachShader(shaderProgram, vertexShader);
 	gl.attachShader(shaderProgram, fragmentShader);
 	gl.linkProgram(shaderProgram);
 
 	if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-		alert(
-			`failed to init shader: ${gl.getProgramInfoLog(
-				shaderProgram,
-			)}`,
-		);
+		alert(`failed to init shader: ${gl.getProgramInfoLog(shaderProgram)}`);
 		return null;
 	}
 
 	return shaderProgram;
 }
 
-let handle: ReturnType<typeof window['requestAnimationFrame']> | null = null;
+let handle: ReturnType<(typeof window)["requestAnimationFrame"]> | null = null;
 
 onMounted(() => {
 	const canvas = canvasEl.value!;
@@ -71,7 +76,7 @@ onMounted(() => {
 	canvas.width = width;
 	canvas.height = height;
 
-	const gl = canvas.getContext('webgl', { premultipliedAlpha: true });
+	const gl = canvas.getContext("webgl", { premultipliedAlpha: true });
 	if (gl == null) return;
 
 	gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -80,7 +85,9 @@ onMounted(() => {
 	const positionBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-	const shaderProgram = initShaderProgram(gl, `
+	const shaderProgram = initShaderProgram(
+		gl,
+		`
 		attribute vec2 vertex;
 
 		uniform vec2 u_scale;
@@ -91,7 +98,8 @@ onMounted(() => {
 			gl_Position = vec4(vertex, 0.0, 1.0);
 			v_pos = vertex / u_scale;
 		}
-	`, `
+	`,
+		`
 		precision mediump float;
 
 		vec3 mod289(vec3 x) {
@@ -201,18 +209,19 @@ onMounted(() => {
 			vec3 inverted = vec3( 1.0 ) - color;
 			gl_FragColor = vec4( color, max(max(color.x, color.y), color.z) );
 		}
-	`);
+	`,
+	);
 	if (shaderProgram == null) return;
 
 	gl.useProgram(shaderProgram);
-	const u_resolution = gl.getUniformLocation(shaderProgram, 'u_resolution');
-	const u_time = gl.getUniformLocation(shaderProgram, 'u_time');
-	const u_spread = gl.getUniformLocation(shaderProgram, 'u_spread');
-	const u_speed = gl.getUniformLocation(shaderProgram, 'u_speed');
-	const u_warp = gl.getUniformLocation(shaderProgram, 'u_warp');
-	const u_focus = gl.getUniformLocation(shaderProgram, 'u_focus');
-	const u_itensity = gl.getUniformLocation(shaderProgram, 'u_itensity');
-	const u_scale = gl.getUniformLocation(shaderProgram, 'u_scale');
+	const u_resolution = gl.getUniformLocation(shaderProgram, "u_resolution");
+	const u_time = gl.getUniformLocation(shaderProgram, "u_time");
+	const u_spread = gl.getUniformLocation(shaderProgram, "u_spread");
+	const u_speed = gl.getUniformLocation(shaderProgram, "u_speed");
+	const u_warp = gl.getUniformLocation(shaderProgram, "u_warp");
+	const u_focus = gl.getUniformLocation(shaderProgram, "u_focus");
+	const u_itensity = gl.getUniformLocation(shaderProgram, "u_itensity");
+	const u_scale = gl.getUniformLocation(shaderProgram, "u_scale");
 	gl.uniform2fv(u_resolution, [canvas.width, canvas.height]);
 	gl.uniform1f(u_spread, 1.0);
 	gl.uniform1f(u_speed, 1.0);
@@ -221,7 +230,7 @@ onMounted(() => {
 	gl.uniform1f(u_itensity, 0.5);
 	gl.uniform2fv(u_scale, [props.scale, props.scale]);
 
-	const vertex = gl.getAttribLocation(shaderProgram, 'vertex');
+	const vertex = gl.getAttribLocation(shaderProgram, "vertex");
 	gl.enableVertexAttribArray(vertex);
 	gl.vertexAttribPointer(vertex, 2, gl.FLOAT, false, 0, 0);
 
@@ -266,5 +275,4 @@ onUnmounted(() => {
 });
 </script>
 
-<style lang="scss" module>
-</style>
+<style lang="scss" module></style>

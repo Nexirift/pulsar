@@ -3,21 +3,21 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { ref, watch } from 'vue';
-import { PreferencesManager, type PreferencesProfile } from './manager.js';
-import type { MenuItem } from '@/types/menu.js';
-import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
-import { i18n } from '@/i18n.js';
-import { miLocalStorage } from '@/local-storage.js';
-import { prefer } from '@/preferences.js';
-import * as os from '@/os.js';
-import { store } from '@/store.js';
-import { $i } from '@/i.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { unisonReload } from '@/utility/unison-reload.js';
+import { ref, watch } from "vue";
+import { PreferencesManager, type PreferencesProfile } from "./manager.js";
+import type { MenuItem } from "@/types/menu.js";
+import { copyToClipboard } from "@/utility/copy-to-clipboard.js";
+import { i18n } from "@/i18n.js";
+import { miLocalStorage } from "@/local-storage.js";
+import { prefer } from "@/preferences.js";
+import * as os from "@/os.js";
+import { store } from "@/store.js";
+import { $i } from "@/i.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { unisonReload } from "@/utility/unison-reload.js";
 
 function canAutoBackup() {
-	return prefer.profile.name != null && prefer.profile.name.trim() !== '';
+	return prefer.profile.name != null && prefer.profile.name.trim() !== "";
 }
 
 export function getPreferencesProfileMenu(): MenuItem[] {
@@ -28,73 +28,86 @@ export function getPreferencesProfileMenu(): MenuItem[] {
 			if (!canAutoBackup()) {
 				autoBackupEnabled.value = false;
 				os.alert({
-					type: 'warning',
-					title: i18n.ts._preferencesBackup.youNeedToNameYourProfileToEnableAutoBackup,
+					type: "warning",
+					title:
+						i18n.ts._preferencesBackup
+							.youNeedToNameYourProfileToEnableAutoBackup,
 				});
 				return;
 			}
 
-			store.set('enablePreferencesAutoCloudBackup', true);
+			store.set("enablePreferencesAutoCloudBackup", true);
 		} else {
-			store.set('enablePreferencesAutoCloudBackup', false);
+			store.set("enablePreferencesAutoCloudBackup", false);
 		}
 	});
 
-	const menu: MenuItem[] = [{
-		type: 'label',
-		text: prefer.profile.name || `(${i18n.ts.noName})`,
-	}, {
-		text: i18n.ts.rename,
-		icon: 'ti ti-pencil',
-		action: () => {
-			renameProfile();
+	const menu: MenuItem[] = [
+		{
+			type: "label",
+			text: prefer.profile.name || `(${i18n.ts.noName})`,
 		},
-	}, {
-		type: 'switch',
-		icon: 'ti ti-cloud-up',
-		text: i18n.ts._preferencesBackup.autoBackup,
-		ref: autoBackupEnabled,
-	}, {
-		text: i18n.ts.export,
-		icon: 'ti ti-download',
-		action: () => {
-			exportCurrentProfile();
+		{
+			text: i18n.ts.rename,
+			icon: "ti ti-pencil",
+			action: () => {
+				renameProfile();
+			},
 		},
-	}, {
-		type: 'divider',
-	}, {
-		text: i18n.ts._preferencesBackup.restoreFromBackup,
-		icon: 'ti ti-cloud-down',
-		action: () => {
-			restoreFromCloudBackup();
+		{
+			type: "switch",
+			icon: "ti ti-cloud-up",
+			text: i18n.ts._preferencesBackup.autoBackup,
+			ref: autoBackupEnabled,
 		},
-	}, {
-		text: i18n.ts.import,
-		icon: 'ti ti-upload',
-		action: () => {
-			importProfile();
+		{
+			text: i18n.ts.export,
+			icon: "ti ti-download",
+			action: () => {
+				exportCurrentProfile();
+			},
 		},
-	}, {
-		type: 'divider',
-	}, { 
-		text: i18n.ts._preferencesProfile.createNewProfile,
-		icon: 'ti ti-plus',
-		action: () => {
-			createNewProfile();
+		{
+			type: "divider",
 		},
-	},{
-		type: 'link',
-		text: i18n.ts._preferencesProfile.manageProfiles,
-		icon: 'ti ti-settings-cog',
-		to: '/settings/profiles',
-	}];
+		{
+			text: i18n.ts._preferencesBackup.restoreFromBackup,
+			icon: "ti ti-cloud-down",
+			action: () => {
+				restoreFromCloudBackup();
+			},
+		},
+		{
+			text: i18n.ts.import,
+			icon: "ti ti-upload",
+			action: () => {
+				importProfile();
+			},
+		},
+		{
+			type: "divider",
+		},
+		{
+			text: i18n.ts._preferencesProfile.createNewProfile,
+			icon: "ti ti-plus",
+			action: () => {
+				createNewProfile();
+			},
+		},
+		{
+			type: "link",
+			text: i18n.ts._preferencesProfile.manageProfiles,
+			icon: "ti ti-settings-cog",
+			to: "/settings/profiles",
+		},
+	];
 
 	if (prefer.s.devMode) {
 		menu.push({
-			text: 'Copy profile as text',
-			icon: 'ti ti-clipboard',
+			text: "Copy profile as text",
+			icon: "ti ti-clipboard",
 			action: () => {
-				copyToClipboard(JSON.stringify(prefer.profile, null, '\t'));
+				copyToClipboard(JSON.stringify(prefer.profile, null, "\t"));
 			},
 		});
 	}
@@ -105,11 +118,14 @@ export function getPreferencesProfileMenu(): MenuItem[] {
 async function renameProfile() {
 	const { canceled, result: name } = await os.inputText({
 		title: i18n.ts._preferencesProfile.profileName,
-		text: i18n.ts._preferencesProfile.profileNameDescription + '\n' + i18n.ts._preferencesProfile.profileNameDescription2,
+		text:
+			i18n.ts._preferencesProfile.profileNameDescription +
+			"\n" +
+			i18n.ts._preferencesProfile.profileNameDescription2,
 		placeholder: prefer.profile.name || null,
 		default: prefer.profile.name || null,
 	});
-	if (canceled || name == null || name.trim() === '') return;
+	if (canceled || name == null || name.trim() === "") return;
 
 	prefer.renameProfile(name);
 }
@@ -123,28 +139,28 @@ export async function createNewProfile() {
 	if (canceled) return;
 
 	const newProfile = PreferencesManager.newProfile();
-	if (name != null && name.trim() !== '') {
+	if (name != null && name.trim() !== "") {
 		newProfile.name = name;
 	}
-	miLocalStorage.setItem('preferences', JSON.stringify(newProfile));
-	miLocalStorage.setItem('hidePreferencesRestoreSuggestion', 'true');
+	miLocalStorage.setItem("preferences", JSON.stringify(newProfile));
+	miLocalStorage.setItem("hidePreferencesRestoreSuggestion", "true");
 	shouldSuggestRestoreBackup.value = false;
 	unisonReload();
 }
 
 function exportCurrentProfile() {
 	const p = prefer.profile;
-	const txtBlob = new Blob([JSON.stringify(p)], { type: 'text/plain' });
-	const dummya = window.document.createElement('a');
+	const txtBlob = new Blob([JSON.stringify(p)], { type: "text/plain" });
+	const dummya = window.document.createElement("a");
 	dummya.href = URL.createObjectURL(txtBlob);
 	dummya.download = `${p.name || p.id}.misskeypreferences`;
 	dummya.click();
 }
 
 function importProfile() {
-	const input = window.document.createElement('input');
-	input.type = 'file';
-	input.accept = '.misskeypreferences';
+	const input = window.document.createElement("input");
+	input.type = "file";
+	input.accept = ".misskeypreferences";
 	input.onchange = async () => {
 		if (input.files == null || input.files.length === 0) return;
 
@@ -152,8 +168,8 @@ function importProfile() {
 		const txt = await file.text();
 		const profile = JSON.parse(txt) as PreferencesProfile;
 
-		miLocalStorage.setItem('preferences', JSON.stringify(profile));
-		miLocalStorage.setItem('hidePreferencesRestoreSuggestion', 'true');
+		miLocalStorage.setItem("preferences", JSON.stringify(profile));
+		miLocalStorage.setItem("hidePreferencesRestoreSuggestion", "true");
 		shouldSuggestRestoreBackup.value = false;
 		unisonReload();
 	};
@@ -164,29 +180,29 @@ function importProfile() {
 export async function cloudBackup() {
 	if ($i == null) return;
 	if (!canAutoBackup()) {
-		throw new Error('Profile name is not set');
+		throw new Error("Profile name is not set");
 	}
 
-	await misskeyApi('i/registry/set', {
-		scope: ['client', 'preferences', 'backups'],
+	await misskeyApi("i/registry/set", {
+		scope: ["client", "preferences", "backups"],
 		key: prefer.profile.name,
 		value: prefer.profile,
 	});
 }
 
 export async function listCloudBackups() {
-	const keys = await misskeyApi('i/registry/keys', {
-		scope: ['client', 'preferences', 'backups'],
+	const keys = await misskeyApi("i/registry/keys", {
+		scope: ["client", "preferences", "backups"],
 	});
 
-	return keys.map(k => ({
+	return keys.map((k) => ({
 		name: k,
 	}));
 }
 
 export async function deleteCloudBackup(key: string) {
-	await os.apiWithDialog('i/registry/remove', {
-		scope: ['client', 'preferences', 'backups'],
+	await os.apiWithDialog("i/registry/remove", {
+		scope: ["client", "preferences", "backups"],
 		key,
 	});
 }
@@ -199,7 +215,7 @@ export async function restoreFromCloudBackup() {
 
 	if (backups.length === 0) {
 		os.alert({
-			type: 'warning',
+			type: "warning",
 			title: i18n.ts._preferencesBackup.noBackupsFoundTitle,
 			text: i18n.ts._preferencesBackup.noBackupsFoundDescription,
 		});
@@ -208,7 +224,7 @@ export async function restoreFromCloudBackup() {
 
 	const select = await os.select({
 		title: i18n.ts._preferencesBackup.selectBackupToRestore,
-		items: backups.map(backup => ({
+		items: backups.map((backup) => ({
 			text: backup.name,
 			value: backup.name,
 		})),
@@ -216,16 +232,16 @@ export async function restoreFromCloudBackup() {
 	if (select.canceled) return;
 	if (select.result == null) return;
 
-	const profile = await misskeyApi('i/registry/get', {
-		scope: ['client', 'preferences', 'backups'],
+	const profile = await misskeyApi("i/registry/get", {
+		scope: ["client", "preferences", "backups"],
 		key: select.result,
 	});
 
 	if (_DEV_) console.debug(profile);
 
-	miLocalStorage.setItem('preferences', JSON.stringify(profile));
-	miLocalStorage.setItem('hidePreferencesRestoreSuggestion', 'true');
-	store.set('enablePreferencesAutoCloudBackup', true);
+	miLocalStorage.setItem("preferences", JSON.stringify(profile));
+	miLocalStorage.setItem("hidePreferencesRestoreSuggestion", "true");
+	store.set("enablePreferencesAutoCloudBackup", true);
 	shouldSuggestRestoreBackup.value = false;
 	unisonReload();
 }
@@ -239,21 +255,22 @@ export async function enableAutoBackup() {
 		return;
 	}
 
-	store.set('enablePreferencesAutoCloudBackup', true);
+	store.set("enablePreferencesAutoCloudBackup", true);
 }
 
 export const shouldSuggestRestoreBackup = ref(false);
 
 if ($i != null) {
-	if (new Date($i.createdAt).getTime() > (Date.now() - 1000 * 60 * 30)) { // アカウント作成直後は意味ないので除外
-		miLocalStorage.setItem('hidePreferencesRestoreSuggestion', 'true');
+	if (new Date($i.createdAt).getTime() > Date.now() - 1000 * 60 * 30) {
+		// アカウント作成直後は意味ないので除外
+		miLocalStorage.setItem("hidePreferencesRestoreSuggestion", "true");
 	} else {
-		if (miLocalStorage.getItem('hidePreferencesRestoreSuggestion') !== 'true') {
-			misskeyApi('i/registry/keys', {
-				scope: ['client', 'preferences', 'backups'],
-			}).then(keys => {
+		if (miLocalStorage.getItem("hidePreferencesRestoreSuggestion") !== "true") {
+			misskeyApi("i/registry/keys", {
+				scope: ["client", "preferences", "backups"],
+			}).then((keys) => {
 				if (keys.length === 0) {
-					miLocalStorage.setItem('hidePreferencesRestoreSuggestion', 'true');
+					miLocalStorage.setItem("hidePreferencesRestoreSuggestion", "true");
 				} else {
 					shouldSuggestRestoreBackup.value = true;
 				}
@@ -263,6 +280,6 @@ if ($i != null) {
 }
 
 export function hideRestoreBackupSuggestion() {
-	miLocalStorage.setItem('hidePreferencesRestoreSuggestion', 'true');
+	miLocalStorage.setItem("hidePreferencesRestoreSuggestion", "true");
 	shouldSuggestRestoreBackup.value = false;
 }

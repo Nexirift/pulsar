@@ -3,56 +3,56 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { IdService } from '@/core/IdService.js';
-import type { WebhooksRepository } from '@/models/_.js';
-import { webhookEventTypes } from '@/models/Webhook.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { DI } from '@/di-symbols.js';
-import { RoleService } from '@/core/RoleService.js';
-import { ApiError } from '@/server/api/error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { IdService } from "@/core/IdService.js";
+import type { WebhooksRepository } from "@/models/_.js";
+import { webhookEventTypes } from "@/models/Webhook.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { DI } from "@/di-symbols.js";
+import { RoleService } from "@/core/RoleService.js";
+import { ApiError } from "@/server/api/error.js";
 
 // TODO: UserWebhook schemaの適用
 export const meta = {
-	tags: ['webhooks'],
+	tags: ["webhooks"],
 
 	requireCredential: true,
 
-	kind: 'write:account',
+	kind: "write:account",
 
 	errors: {
 		tooManyWebhooks: {
-			message: 'You cannot create webhook any more.',
-			code: 'TOO_MANY_WEBHOOKS',
-			id: '87a9bb19-111e-4e37-81d3-a3e7426453b0',
+			message: "You cannot create webhook any more.",
+			code: "TOO_MANY_WEBHOOKS",
+			id: "87a9bb19-111e-4e37-81d3-a3e7426453b0",
 		},
 	},
 
 	res: {
-		type: 'object',
+		type: "object",
 		properties: {
 			id: {
-				type: 'string',
-				format: 'misskey:id',
+				type: "string",
+				format: "misskey:id",
 			},
 			userId: {
-				type: 'string',
-				format: 'misskey:id',
+				type: "string",
+				format: "misskey:id",
 			},
-			name: { type: 'string' },
+			name: { type: "string" },
 			on: {
-				type: 'array',
+				type: "array",
 				items: {
-					type: 'string',
+					type: "string",
 					enum: webhookEventTypes,
 				},
 			},
-			url: { type: 'string' },
-			secret: { type: 'string' },
-			active: { type: 'boolean' },
-			latestSentAt: { type: 'string', format: 'date-time', nullable: true },
-			latestStatus: { type: 'integer', nullable: true },
+			url: { type: "string" },
+			secret: { type: "string" },
+			active: { type: "boolean" },
+			latestSentAt: { type: "string", format: "date-time", nullable: true },
+			latestStatus: { type: "integer", nullable: true },
 		},
 	},
 
@@ -64,22 +64,27 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		name: { type: 'string', minLength: 1, maxLength: 100 },
-		url: { type: 'string', minLength: 1, maxLength: 1024 },
-		secret: { type: 'string', maxLength: 1024, default: '' },
-		on: { type: 'array', items: {
-			type: 'string', enum: webhookEventTypes,
-		} },
+		name: { type: "string", minLength: 1, maxLength: 100 },
+		url: { type: "string", minLength: 1, maxLength: 1024 },
+		secret: { type: "string", maxLength: 1024, default: "" },
+		on: {
+			type: "array",
+			items: {
+				type: "string",
+				enum: webhookEventTypes,
+			},
+		},
 	},
-	required: ['name', 'url', 'on'],
+	required: ["name", "url", "on"],
 } as const;
 
 // TODO: ロジックをサービスに切り出す
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.webhooksRepository)
 		private webhooksRepository: WebhooksRepository,
@@ -92,7 +97,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			const currentWebhooksCount = await this.webhooksRepository.countBy({
 				userId: me.id,
 			});
-			if (currentWebhooksCount >= (await this.roleService.getUserPolicies(me.id)).webhookLimit) {
+			if (
+				currentWebhooksCount >=
+				(await this.roleService.getUserPolicies(me.id)).webhookLimit
+			) {
 				throw new ApiError(meta.errors.tooManyWebhooks);
 			}
 
@@ -105,7 +113,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				on: ps.on,
 			});
 
-			this.globalEventService.publishInternalEvent('webhookCreated', webhook);
+			this.globalEventService.publishInternalEvent("webhookCreated", webhook);
 
 			return {
 				id: webhook.id,
@@ -115,7 +123,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				url: webhook.url,
 				secret: webhook.secret,
 				active: webhook.active,
-				latestSentAt: webhook.latestSentAt ? webhook.latestSentAt.toISOString() : null,
+				latestSentAt: webhook.latestSentAt
+					? webhook.latestSentAt.toISOString()
+					: null,
 				latestStatus: webhook.latestStatus,
 			};
 		});

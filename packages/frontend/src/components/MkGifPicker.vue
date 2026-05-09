@@ -4,54 +4,59 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="[$style.root, { [$style.drawer]: asDrawer }]">
-	<div :class="$style.search">
-		<input
-			ref="searchEl"
-			v-model="q"
-			:class="$style.searchInput"
-			:placeholder="i18n.ts.search"
-			type="search"
-			autocapitalize="off"
-			@keydown.stop="onSearchKeydown"
+	<div :class="[$style.root, { [$style.drawer]: asDrawer }]">
+		<div :class="$style.search">
+			<input
+				ref="searchEl"
+				v-model="q"
+				:class="$style.searchInput"
+				:placeholder="i18n.ts.search"
+				type="search"
+				autocapitalize="off"
+				@keydown.stop="onSearchKeydown"
+			/>
+		</div>
+		<div
+			ref="gifsEl"
+			:class="$style.gifs"
+			:style="{ height: maxHeight ? `${maxHeight}px` : 'auto' }"
+			@scroll="onScroll"
 		>
-	</div>
-	<div ref="gifsEl" :class="$style.gifs" :style="{ height: maxHeight ? `${maxHeight}px` : 'auto' }" @scroll="onScroll">
-		<div v-if="q && searchResults.length > 0" :class="$style.grid">
-			<button
-				v-for="gif in searchResults"
-				:key="gif.id"
-				:class="$style.gifButton"
-				@click="chosen(gif.url)"
-			>
-				<img :src="gif.preview" :alt="gif.title" :class="$style.gifImg"/>
-			</button>
+			<div v-if="q && searchResults.length > 0" :class="$style.grid">
+				<button
+					v-for="gif in searchResults"
+					:key="gif.id"
+					:class="$style.gifButton"
+					@click="chosen(gif.url)"
+				>
+					<img :src="gif.preview" :alt="gif.title" :class="$style.gifImg" />
+				</button>
+			</div>
+			<div v-else-if="q && searchResults.length === 0" :class="$style.empty">
+				<div :class="$style.emptyIcon"><i class="ti ti-search"></i></div>
+				<div>{{ i18n.ts.notFound }}</div>
+			</div>
+			<div v-else :class="$style.grid">
+				<button
+					v-for="gif in trendingGifs"
+					:key="gif.id"
+					:class="$style.gifButton"
+					@click="chosen(gif.url)"
+				>
+					<img :src="gif.preview" :alt="gif.title" :class="$style.gifImg" />
+				</button>
+			</div>
 		</div>
-		<div v-else-if="q && searchResults.length === 0" :class="$style.empty">
-			<div :class="$style.emptyIcon"><i class="ti ti-search"></i></div>
-			<div>{{ i18n.ts.notFound }}</div>
-		</div>
-		<div v-else :class="$style.grid">
-			<button
-				v-for="gif in trendingGifs"
-				:key="gif.id"
-				:class="$style.gifButton"
-				@click="chosen(gif.url)"
-			>
-				<img :src="gif.preview" :alt="gif.title" :class="$style.gifImg"/>
-			</button>
+		<div :class="$style.footer">
+			<span :class="$style.powered">Powered by Tenor</span>
 		</div>
 	</div>
-	<div :class="$style.footer">
-		<span :class="$style.powered">Powered by Tenor</span>
-	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, onMounted, useTemplateRef } from 'vue';
-import { i18n } from '@/i18n.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
+import { ref, watch, onMounted, useTemplateRef } from "vue";
+import { i18n } from "@/i18n.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
 
 type GifItem = {
 	id: string;
@@ -60,22 +65,25 @@ type GifItem = {
 	title: string;
 };
 
-const props = withDefaults(defineProps<{
-	asDrawer?: boolean;
-	maxHeight?: number;
-}>(), {
-	asDrawer: false,
-	maxHeight: undefined,
-});
+const props = withDefaults(
+	defineProps<{
+		asDrawer?: boolean;
+		maxHeight?: number;
+	}>(),
+	{
+		asDrawer: false,
+		maxHeight: undefined,
+	},
+);
 
 const emit = defineEmits<{
-	(ev: 'chosen', v: string): void;
-	(ev: 'esc'): void;
+	(ev: "chosen", v: string): void;
+	(ev: "esc"): void;
 }>();
 
-const searchEl = useTemplateRef('searchEl');
-const gifsEl = useTemplateRef('gifsEl');
-const q = ref('');
+const searchEl = useTemplateRef("searchEl");
+const gifsEl = useTemplateRef("gifsEl");
+const q = ref("");
 const searchResults = ref<GifItem[]>([]);
 const trendingGifs = ref<GifItem[]>([]);
 const searchTimeout = ref<number | null>(null);
@@ -94,12 +102,12 @@ async function searchGifs(query: string, append = false) {
 	loading.value = true;
 
 	try {
-		const data = await misskeyApi('tenor/search', {
+		const data = await misskeyApi("tenor/search", {
 			q: query,
 			limit: 30,
 			pos: append ? searchNextPos.value : null,
 		});
-		
+
 		if (append) {
 			searchResults.value = [...searchResults.value, ...(data.results || [])];
 		} else {
@@ -107,7 +115,7 @@ async function searchGifs(query: string, append = false) {
 		}
 		searchNextPos.value = data.next || null;
 	} catch (error) {
-		console.error('Failed to search GIFs:', error);
+		console.error("Failed to search GIFs:", error);
 		if (!append) searchResults.value = [];
 	} finally {
 		loading.value = false;
@@ -119,11 +127,11 @@ async function loadTrending(append = false) {
 	loading.value = true;
 
 	try {
-		const data = await misskeyApi('tenor/featured', {
+		const data = await misskeyApi("tenor/featured", {
 			limit: 30,
 			pos: append ? trendingNextPos.value : null,
 		});
-		
+
 		if (append) {
 			trendingGifs.value = [...trendingGifs.value, ...(data.results || [])];
 		} else {
@@ -131,7 +139,7 @@ async function loadTrending(append = false) {
 		}
 		trendingNextPos.value = data.next || null;
 	} catch (error) {
-		console.error('Failed to load trending GIFs:', error);
+		console.error("Failed to load trending GIFs:", error);
 		if (!append) trendingGifs.value = [];
 	} finally {
 		loading.value = false;
@@ -140,10 +148,10 @@ async function loadTrending(append = false) {
 
 function onScroll() {
 	if (!gifsEl.value || loading.value) return;
-	
+
 	const el = gifsEl.value;
 	const scrollBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-	
+
 	// Load more when 100px from bottom
 	if (scrollBottom < 100) {
 		if (q.value && searchNextPos.value) {
@@ -158,7 +166,7 @@ watch(q, (newQ) => {
 	if (searchTimeout.value) {
 		clearTimeout(searchTimeout.value);
 	}
-	
+
 	searchNextPos.value = null;
 	searchTimeout.value = window.setTimeout(() => {
 		searchGifs(newQ);
@@ -166,14 +174,14 @@ watch(q, (newQ) => {
 });
 
 function chosen(gifUrl: string) {
-	emit('chosen', gifUrl);
+	emit("chosen", gifUrl);
 }
 
 function onSearchKeydown(ev: KeyboardEvent) {
-	if (ev.key === 'Escape') {
+	if (ev.key === "Escape") {
 		ev.preventDefault();
 		ev.stopPropagation();
-		emit('esc');
+		emit("esc");
 	}
 }
 
@@ -182,7 +190,7 @@ function focus() {
 }
 
 function reset() {
-	q.value = '';
+	q.value = "";
 }
 
 onMounted(() => {
@@ -256,7 +264,8 @@ defineExpose({
 	padding: 12px;
 	@media (max-width: 768px) {
 		grid-template-columns: repeat(3, 1fr);
-	}}
+	}
+}
 
 .gifButton {
 	all: unset;

@@ -7,6 +7,6 @@
 		"allowImportingTsExtensions": true,
 
 		// Output
-		"noEmit": true
-	}
+		"noEmit": true,
+	},
 }

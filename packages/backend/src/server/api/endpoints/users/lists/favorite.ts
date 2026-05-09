@@ -3,29 +3,32 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { UserListFavoritesRepository, UserListsRepository } from '@/models/_.js';
-import { IdService } from '@/core/IdService.js';
-import { ApiError } from '@/server/api/error.js';
-import { DI } from '@/di-symbols.js';
-import { CacheService } from '@/core/CacheService.js';
-import { UserListService } from '@/core/UserListService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type {
+	UserListFavoritesRepository,
+	UserListsRepository,
+} from "@/models/_.js";
+import { IdService } from "@/core/IdService.js";
+import { ApiError } from "@/server/api/error.js";
+import { DI } from "@/di-symbols.js";
+import { CacheService } from "@/core/CacheService.js";
+import { UserListService } from "@/core/UserListService.js";
 
 export const meta = {
 	requireCredential: true,
-	kind: 'write:account',
+	kind: "write:account",
 	errors: {
 		noSuchList: {
-			message: 'No such user list.',
-			code: 'NO_SUCH_USER_LIST',
-			id: '7dbaf3cf-7b42-4b8f-b431-b3919e580dbe',
+			message: "No such user list.",
+			code: "NO_SUCH_USER_LIST",
+			id: "7dbaf3cf-7b42-4b8f-b431-b3919e580dbe",
 		},
 
 		alreadyFavorited: {
-			message: 'The list has already been favorited.',
-			code: 'ALREADY_FAVORITED',
-			id: '6425bba0-985b-461e-af1b-518070e72081',
+			message: "The list has already been favorited.",
+			code: "ALREADY_FAVORITED",
+			id: "6425bba0-985b-461e-af1b-518070e72081",
 		},
 	},
 
@@ -37,16 +40,16 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		listId: { type: 'string', format: 'misskey:id' },
+		listId: { type: "string", format: "misskey:id" },
 	},
-	required: ['listId'],
+	required: ["listId"],
 } as const;
 
 @Injectable() // eslint-disable-next-line import/no-default-export
 export default class extends Endpoint<typeof meta, typeof paramDef> {
-	constructor (
+	constructor(
 		@Inject(DI.userListsRepository)
 		private userListsRepository: UserListsRepository,
 

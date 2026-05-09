@@ -1,14 +1,14 @@
-import IPCIDR from 'ip-cidr';
-import { Redis } from 'ioredis';
+import IPCIDR from "ip-cidr";
+import { Redis } from "ioredis";
 
-const TESTER_IP_ADDRESS = '172.20.1.1';
+const TESTER_IP_ADDRESS = "172.20.1.1";
 
 /**
  * This should be same as {@link file://./../src/misc/get-ip-hash.ts}.
  */
 function getIpHash(ip: string) {
 	const prefix = IPCIDR.createAddress(ip).mask(64);
-	return `ip-${BigInt('0b' + prefix).toString(36)}`;
+	return `ip-${BigInt("0b" + prefix).toString(36)}`;
 }
 
 /**
@@ -24,15 +24,15 @@ export async function purgeLimit(host: string, client: Redis) {
 	}
 }
 
-console.log('Daemon started running');
+console.log("Daemon started running");
 
 {
 	const redisClient = new Redis({
-		host: 'redis.test',
+		host: "redis.test",
 	});
 
 	setInterval(() => {
-		purgeLimit('a.test', redisClient);
-		purgeLimit('b.test', redisClient);
+		purgeLimit("a.test", redisClient);
+		purgeLimit("b.test", redisClient);
 	}, 200);
 }

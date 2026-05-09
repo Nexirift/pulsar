@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import promiseLimit from 'promise-limit';
+import promiseLimit from "promise-limit";
 
 /**
  * Pipes a stream of values through an async mapping callback to produce a new stream of results.
@@ -77,12 +77,14 @@ export async function promiseMap<Input, Output>(
 
 type Limiter = (cb: () => Promise<void>) => Promise<void>;
 
-function createLimiter(limit: undefined | number | ReturnType<typeof promiseLimit<void>>): Limiter {
+function createLimiter(
+	limit: undefined | number | ReturnType<typeof promiseLimit<void>>,
+): Limiter {
 	if (!limit) {
-		return cb => cb();
+		return (cb) => cb();
 	}
 
-	if (typeof limit === 'number') {
+	if (typeof limit === "number") {
 		return promiseLimit<void>(limit);
 	}
 
@@ -92,14 +94,14 @@ function createLimiter(limit: undefined | number | ReturnType<typeof promiseLimi
 function throwResults(errors: unknown[]): never {
 	if (errors.length === 0) {
 		// Shouldn't happen
-		throw new Error('Mapping promise rejected');
+		throw new Error("Mapping promise rejected");
 	}
 
 	if (errors.length === 1) {
 		if (errors[0] instanceof Error) {
 			throw errors[0];
 		} else {
-			throw new Error('Mapping promise rejected', { cause: errors[0] });
+			throw new Error("Mapping promise rejected", { cause: errors[0] });
 		}
 	}
 

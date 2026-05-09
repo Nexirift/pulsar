@@ -4,13 +4,13 @@
  */
 
 export class RobotsTxt1738346484187 {
-    name = 'RobotsTxt1738346484187'
+	name = "RobotsTxt1738346484187";
 
-    async up(queryRunner) {
-        await queryRunner.query(`ALTER TABLE "meta" ADD "robotsTxt" text`);
-    }
+	async up(queryRunner) {
+		await queryRunner.query(`ALTER TABLE "meta" ADD "robotsTxt" text`);
+	}
 
-    async down(queryRunner) {
-        await queryRunner.query(`ALTER TABLE "meta" DROP COLUMN "robotsTxt"`);
-    }
+	async down(queryRunner) {
+		await queryRunner.query(`ALTER TABLE "meta" DROP COLUMN "robotsTxt"`);
+	}
 }

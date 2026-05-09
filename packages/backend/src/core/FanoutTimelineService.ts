@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import * as Redis from 'ioredis';
-import { DI } from '@/di-symbols.js';
-import { bindThis } from '@/decorators.js';
-import { IdService } from '@/core/IdService.js';
-import { TimeService } from '@/global/TimeService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import * as Redis from "ioredis";
+import { DI } from "@/di-symbols.js";
+import { bindThis } from "@/decorators.js";
+import { IdService } from "@/core/IdService.js";
+import { TimeService } from "@/global/TimeService.js";
 
-export type FanoutTimelineName = (
+export type FanoutTimelineName =
 	// home timeline
 	| `homeTimeline:${string}`
 	| `homeTimelineWithFiles:${string}` // only notes with files are included
@@ -37,8 +37,7 @@ export type FanoutTimelineName = (
 	| `channelTimeline:${string}` // replies are included
 
 	// role timelines
-	| `roleTimeline:${string}` // any notes are included
-);
+	| `roleTimeline:${string}`; // any notes are included
 
 @Injectable()
 export class FanoutTimelineService {
@@ -48,23 +47,35 @@ export class FanoutTimelineService {
 
 		private idService: IdService,
 		private readonly timeService: TimeService,
-	) {
-	}
+	) {}
 
 	@bindThis
-	public push(tl: FanoutTimelineName, id: string, maxlen: number, pipeline: Redis.ChainableCommander) {
+	public push(
+		tl: FanoutTimelineName,
+		id: string,
+		maxlen: number,
+		pipeline: Redis.ChainableCommander,
+	) {
 		// リモートから遅れて届いた(もしくは後から追加された)投稿日時が古い投稿が追加されるとページネーション時に問題を引き起こすため、
 		// 3分以内に投稿されたものでない場合、Redisにある最古のIDより新しい場合のみ追加する
-		if (this.idService.parse(id).date.getTime() > this.timeService.now - 1000 * 60 * 3) {
-			pipeline.lpush('list:' + tl, id);
-			if (Math.random() < 0.1) { // 10%の確率でトリム
-				pipeline.ltrim('list:' + tl, 0, maxlen - 1);
+		if (
+			this.idService.parse(id).date.getTime() >
+			this.timeService.now - 1000 * 60 * 3
+		) {
+			pipeline.lpush("list:" + tl, id);
+			if (Math.random() < 0.1) {
+				// 10%の確率でトリム
+				pipeline.ltrim("list:" + tl, 0, maxlen - 1);
 			}
 		} else {
 			// 末尾のIDを取得
-			this.redisForTimelines.lindex('list:' + tl, -1).then(lastId => {
-				if (lastId == null || (this.idService.parse(id).date.getTime() > this.idService.parse(lastId).date.getTime())) {
-					this.redisForTimelines.lpush('list:' + tl, id);
+			this.redisForTimelines.lindex("list:" + tl, -1).then((lastId) => {
+				if (
+					lastId == null ||
+					this.idService.parse(id).date.getTime() >
+						this.idService.parse(lastId).date.getTime()
+				) {
+					this.redisForTimelines.lpush("list:" + tl, id);
 				} else {
 					Promise.resolve();
 				}
@@ -73,45 +84,69 @@ export class FanoutTimelineService {
 	}
 
 	@bindThis
-	public get(name: FanoutTimelineName, untilId?: string | null, sinceId?: string | null) {
+	public get(
+		name: FanoutTimelineName,
+		untilId?: string | null,
+		sinceId?: string | null,
+	) {
 		if (untilId && sinceId) {
-			return this.redisForTimelines.lrange('list:' + name, 0, -1)
-				.then(ids => ids.filter(id => id < untilId && id > sinceId).sort((a, b) => a > b ? -1 : 1));
+			return this.redisForTimelines
+				.lrange("list:" + name, 0, -1)
+				.then((ids) =>
+					ids
+						.filter((id) => id < untilId && id > sinceId)
+						.sort((a, b) => (a > b ? -1 : 1)),
+				);
 		} else if (untilId) {
-			return this.redisForTimelines.lrange('list:' + name, 0, -1)
-				.then(ids => ids.filter(id => id < untilId).sort((a, b) => a > b ? -1 : 1));
+			return this.redisForTimelines
+				.lrange("list:" + name, 0, -1)
+				.then((ids) =>
+					ids.filter((id) => id < untilId).sort((a, b) => (a > b ? -1 : 1)),
+				);
 		} else if (sinceId) {
-			return this.redisForTimelines.lrange('list:' + name, 0, -1)
-				.then(ids => ids.filter(id => id > sinceId).sort((a, b) => a < b ? -1 : 1));
+			return this.redisForTimelines
+				.lrange("list:" + name, 0, -1)
+				.then((ids) =>
+					ids.filter((id) => id > sinceId).sort((a, b) => (a < b ? -1 : 1)),
+				);
 		} else {
-			return this.redisForTimelines.lrange('list:' + name, 0, -1)
-				.then(ids => ids.sort((a, b) => a > b ? -1 : 1));
+			return this.redisForTimelines
+				.lrange("list:" + name, 0, -1)
+				.then((ids) => ids.sort((a, b) => (a > b ? -1 : 1)));
 		}
 	}
 
 	@bindThis
-	public getMulti(name: FanoutTimelineName[], untilId?: string | null, sinceId?: string | null): Promise<string[][]> {
+	public getMulti(
+		name: FanoutTimelineName[],
+		untilId?: string | null,
+		sinceId?: string | null,
+	): Promise<string[][]> {
 		const pipeline = this.redisForTimelines.pipeline();
 		for (const n of name) {
-			pipeline.lrange('list:' + n, 0, -1);
+			pipeline.lrange("list:" + n, 0, -1);
 		}
-		return pipeline.exec().then(res => {
+		return pipeline.exec().then((res) => {
 			if (res == null) return [];
-			const tls = res.map(r => r[1] as string[]);
-			return tls.map(ids =>
-				(untilId && sinceId)
-					? ids.filter(id => id < untilId && id > sinceId).sort((a, b) => a > b ? -1 : 1)
+			const tls = res.map((r) => r[1] as string[]);
+			return tls.map((ids) =>
+				untilId && sinceId
+					? ids
+							.filter((id) => id < untilId && id > sinceId)
+							.sort((a, b) => (a > b ? -1 : 1))
 					: untilId
-						? ids.filter(id => id < untilId).sort((a, b) => a > b ? -1 : 1)
+						? ids.filter((id) => id < untilId).sort((a, b) => (a > b ? -1 : 1))
 						: sinceId
-							? ids.filter(id => id > sinceId).sort((a, b) => a < b ? -1 : 1)
-							: ids.sort((a, b) => a > b ? -1 : 1),
+							? ids
+									.filter((id) => id > sinceId)
+									.sort((a, b) => (a < b ? -1 : 1))
+							: ids.sort((a, b) => (a > b ? -1 : 1)),
 			);
 		});
 	}
 
 	@bindThis
 	public purge(name: FanoutTimelineName) {
-		return this.redisForTimelines.del('list:' + name);
+		return this.redisForTimelines.del("list:" + name);
 	}
 }

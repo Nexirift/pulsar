@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { throwIfAborted } from '@/misc/throw-if-aborted.js';
-import { AbortedError } from '@/misc/errors/AbortedError.js';
+import { throwIfAborted } from "@/misc/throw-if-aborted.js";
+import { AbortedError } from "@/misc/errors/AbortedError.js";
 
 /**
  * Executes a task or promise, then runs a provided cleanup task.
@@ -15,13 +15,17 @@ import { AbortedError } from '@/misc/errors/AbortedError.js';
  * @param promiseOrCallback Promise or async callback to execute
  * @param cleanup Cleanup callback to execute after execution completes or fails
  */
-export async function withCleanup<T>(promiseOrCallback: MaybeCallback<Promise<T>>, cleanup: () => MaybePromise<void>): Promise<T> {
+export async function withCleanup<T>(
+	promiseOrCallback: MaybeCallback<Promise<T>>,
+	cleanup: () => MaybePromise<void>,
+): Promise<T> {
 	// Execute the task first
 	let executionResult: Result<T>;
 	try {
-		const result = typeof(promiseOrCallback) === 'function'
-			? await promiseOrCallback()
-			: await promiseOrCallback;
+		const result =
+			typeof promiseOrCallback === "function"
+				? await promiseOrCallback()
+				: await promiseOrCallback;
 		executionResult = { success: true, result };
 	} catch (error) {
 		executionResult = { success: false, error };
@@ -65,7 +69,10 @@ export async function withCleanup<T>(promiseOrCallback: MaybeCallback<Promise<T>
  * @param factory Callback to start the promise
  * @param abortSignal Signal to terminate the promise
  */ // TODO accept a promise directly here
-export async function withSignal<T>(factory: () => Promise<T>, abortSignal: AbortSignal): Promise<T> {
+export async function withSignal<T>(
+	factory: () => Promise<T>,
+	abortSignal: AbortSignal,
+): Promise<T> {
 	// If already aborted, then don't do anything.
 	throwIfAborted(abortSignal);
 
@@ -74,23 +81,26 @@ export async function withSignal<T>(factory: () => Promise<T>, abortSignal: Abor
 	const abort = () => reject(new AbortedError(abortSignal));
 
 	// Bind the abort signal.
-	abortSignal.addEventListener('abort', abort);
+	abortSignal.addEventListener("abort", abort);
 	promise
-		.finally(() => abortSignal.removeEventListener('abort', abort))
+		.finally(() => abortSignal.removeEventListener("abort", abort))
 		.catch(() => null); // Make sure it's never an unhandled rejection!
 
 	// Bind the task promise.
 	const taskPromise = factory();
 	taskPromise
-		.then(result => resolve(result), err => reject(err))
+		.then(
+			(result) => resolve(result),
+			(err) => reject(err),
+		)
 		.catch(() => null); // Make sure it's never an unhandled rejection!
 
 	return promise;
 }
 
 type Result<T> =
-	{ success: true, result: T } |
-	{ success: false, error: unknown };
+	| { success: true; result: T }
+	| { success: false; error: unknown };
 
 type MaybeCallback<T> = T | (() => T);
 type MaybePromise<T> = T | Promise<T>;

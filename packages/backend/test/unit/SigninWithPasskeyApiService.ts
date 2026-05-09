@@ -3,27 +3,40 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { IncomingHttpHeaders } from 'node:http';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, jest, test } from '@jest/globals';
-import { Test, TestingModule } from '@nestjs/testing';
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { AuthenticationResponseJSON } from '@simplewebauthn/types';
-import { HttpHeader } from 'fastify/types/utils.js';
-import { MockMetadata, ModuleMocker } from 'jest-mock';
-import { FakeSkRateLimiterService } from '../misc/FakeSkRateLimiterService.js';
-import { MiUser } from '@/models/User.js';
-import { MiUserProfile, UserProfilesRepository, UsersRepository } from '@/models/_.js';
-import { IdService } from '@/core/IdService.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import { DI } from '@/di-symbols.js';
-import { CoreModule } from '@/core/CoreModule.js';
-import { SigninWithPasskeyApiService } from '@/server/api/SigninWithPasskeyApiService.js';
-import { WebAuthnService } from '@/core/WebAuthnService.js';
-import { SigninService } from '@/server/api/SigninService.js';
-import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { SkRateLimiterService } from '@/server/SkRateLimiterService.js';
-import { CacheManagementService } from '@/global/CacheManagementService.js';
-import { ServerModule } from '@/server/ServerModule.js';
+import { IncomingHttpHeaders } from "node:http";
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	jest,
+	test,
+} from "@jest/globals";
+import { Test, TestingModule } from "@nestjs/testing";
+import { FastifyReply, FastifyRequest } from "fastify";
+import { AuthenticationResponseJSON } from "@simplewebauthn/types";
+import { HttpHeader } from "fastify/types/utils.js";
+import { MockMetadata, ModuleMocker } from "jest-mock";
+import { FakeSkRateLimiterService } from "../misc/FakeSkRateLimiterService.js";
+import { MiUser } from "@/models/User.js";
+import {
+	MiUserProfile,
+	UserProfilesRepository,
+	UsersRepository,
+} from "@/models/_.js";
+import { IdService } from "@/core/IdService.js";
+import { GlobalModule } from "@/GlobalModule.js";
+import { DI } from "@/di-symbols.js";
+import { CoreModule } from "@/core/CoreModule.js";
+import { SigninWithPasskeyApiService } from "@/server/api/SigninWithPasskeyApiService.js";
+import { WebAuthnService } from "@/core/WebAuthnService.js";
+import { SigninService } from "@/server/api/SigninService.js";
+import { IdentifiableError } from "@/misc/identifiable-error.js";
+import { SkRateLimiterService } from "@/server/SkRateLimiterService.js";
+import { CacheManagementService } from "@/global/CacheManagementService.js";
+import { ServerModule } from "@/server/ServerModule.js";
 
 const moduleMocker = new ModuleMocker(global);
 
@@ -38,16 +51,15 @@ class DummyFastifyReply {
 	code(num: number): void {
 		this.statusCode = num;
 	}
-	header(_key: HttpHeader, _value: any): void {
-	}
+	header(_key: HttpHeader, _value: any): void {}
 }
 
 class DummyFastifyRequest {
 	public ip: string;
-	public body: { credential: any, context: string };
-	public headers: IncomingHttpHeaders = { 'accept': 'application/json' };
+	public body: { credential: any; context: string };
+	public headers: IncomingHttpHeaders = { accept: "application/json" };
 	constructor(body?: any) {
-		this.ip = '0.0.0.0';
+		this.ip = "0.0.0.0";
 		this.body = body;
 	}
 }
@@ -59,7 +71,7 @@ type ApiFastifyRequestType = FastifyRequest<{
 	};
 }>;
 
-describe('SigninWithPasskeyApiService', () => {
+describe("SigninWithPasskeyApiService", () => {
 	let app: TestingModule;
 	let passkeyApiService: SigninWithPasskeyApiService;
 	let usersRepository: UsersRepository;
@@ -76,29 +88,41 @@ describe('SigninWithPasskeyApiService', () => {
 
 	async function createUserProfile(data: Partial<MiUserProfile> = {}) {
 		await userProfilesRepository.insert(data);
-		return await userProfilesRepository.findOneByOrFail({ userId: data.userId });
+		return await userProfilesRepository.findOneByOrFail({
+			userId: data.userId,
+		});
 	}
 
 	beforeAll(async () => {
 		app = await Test.createTestingModule({
 			imports: [GlobalModule, CoreModule, ServerModule],
-		}).useMocker((token) => {
-			if (typeof token === 'function') {
-				const mockMetadata = moduleMocker.getMetadata(token) as MockMetadata<any, any>;
-				const Mock = moduleMocker.generateFromMetadata(mockMetadata);
-				return new Mock();
-			}
 		})
-			.overrideProvider(SkRateLimiterService).useClass(FakeSkRateLimiterService)
-			.overrideProvider(SigninService).useClass(FakeSigninService)
+			.useMocker((token) => {
+				if (typeof token === "function") {
+					const mockMetadata = moduleMocker.getMetadata(token) as MockMetadata<
+						any,
+						any
+					>;
+					const Mock = moduleMocker.generateFromMetadata(mockMetadata);
+					return new Mock();
+				}
+			})
+			.overrideProvider(SkRateLimiterService)
+			.useClass(FakeSkRateLimiterService)
+			.overrideProvider(SigninService)
+			.useClass(FakeSigninService)
 			.compile();
 
 		await app.init();
 		app.enableShutdownHooks();
 
-		passkeyApiService = app.get<SigninWithPasskeyApiService>(SigninWithPasskeyApiService);
+		passkeyApiService = app.get<SigninWithPasskeyApiService>(
+			SigninWithPasskeyApiService,
+		);
 		usersRepository = app.get<UsersRepository>(DI.usersRepository);
-		userProfilesRepository = app.get<UserProfilesRepository>(DI.userProfilesRepository);
+		userProfilesRepository = app.get<UserProfilesRepository>(
+			DI.userProfilesRepository,
+		);
 		webAuthnService = app.get<WebAuthnService>(WebAuthnService);
 		idService = app.get<IdService>(IdService);
 		cacheManagementService = app.get(CacheManagementService);
@@ -113,14 +137,20 @@ describe('SigninWithPasskeyApiService', () => {
 		FakeWebauthnVerify = async () => {
 			return uid;
 		};
-		jest.spyOn(webAuthnService, 'verifySignInWithPasskeyAuthentication').mockImplementation(FakeWebauthnVerify);
+		jest
+			.spyOn(webAuthnService, "verifySignInWithPasskeyAuthentication")
+			.mockImplementation(FakeWebauthnVerify);
 
 		const dummyUser = {
-			id: uid, username: uid, usernameLower: uid.toLowerCase(), uri: null, host: null,
+			id: uid,
+			username: uid,
+			usernameLower: uid.toLowerCase(),
+			uri: null,
+			host: null,
 		};
 		const dummyProfile = {
 			userId: uid,
-			password: 'qwerty',
+			password: "qwerty",
 			usePasswordLessLogin: true,
 		};
 		await createUser(dummyUser);
@@ -133,53 +163,71 @@ describe('SigninWithPasskeyApiService', () => {
 		cacheManagementService.clear();
 	});
 
-	describe('Get Passkey Options', () => {
-		it('Should return passkey Auth Options', async () => {
+	describe("Get Passkey Options", () => {
+		it("Should return passkey Auth Options", async () => {
 			const req = new DummyFastifyRequest({}) as ApiFastifyRequestType;
 			const res = new DummyFastifyReply() as unknown as FastifyReply;
 			const res_body = await passkeyApiService.signin(req, res);
 			expect(res.statusCode).toBe(200);
 			expect((res_body as any).option).toBeDefined();
-			expect(typeof (res_body as any).context).toBe('string');
+			expect(typeof (res_body as any).context).toBe("string");
 		});
 	});
-	describe('Try Passkey Auth', () => {
-		it('Should Success', async () => {
-			const req = new DummyFastifyRequest({ context: 'auth-context', credential: { dummy: [] } }) as ApiFastifyRequestType;
+	describe("Try Passkey Auth", () => {
+		it("Should Success", async () => {
+			const req = new DummyFastifyRequest({
+				context: "auth-context",
+				credential: { dummy: [] },
+			}) as ApiFastifyRequestType;
 			const res = new DummyFastifyReply() as FastifyReply;
 			const res_body = await passkeyApiService.signin(req, res);
 			expect((res_body as any).signinResponse).toBeDefined();
 		});
 
-		it('Should return 400 Without Auth Context', async () => {
-			const req = new DummyFastifyRequest({ credential: { dummy: [] } }) as ApiFastifyRequestType;
+		it("Should return 400 Without Auth Context", async () => {
+			const req = new DummyFastifyRequest({
+				credential: { dummy: [] },
+			}) as ApiFastifyRequestType;
 			const res = new DummyFastifyReply() as FastifyReply;
 			const res_body = await passkeyApiService.signin(req, res);
 			expect(res.statusCode).toBe(400);
-			expect((res_body as any).error?.id).toStrictEqual('1658cc2e-4495-461f-aee4-d403cdf073c1');
+			expect((res_body as any).error?.id).toStrictEqual(
+				"1658cc2e-4495-461f-aee4-d403cdf073c1",
+			);
 		});
 
-		it('Should return 403 When Challenge Verify fail', async () => {
-			const req = new DummyFastifyRequest({ context: 'misskey-1234', credential: { dummy: [] } }) as ApiFastifyRequestType;
+		it("Should return 403 When Challenge Verify fail", async () => {
+			const req = new DummyFastifyRequest({
+				context: "misskey-1234",
+				credential: { dummy: [] },
+			}) as ApiFastifyRequestType;
 			const res = new DummyFastifyReply() as FastifyReply;
-			jest.spyOn(webAuthnService, 'verifySignInWithPasskeyAuthentication')
+			jest
+				.spyOn(webAuthnService, "verifySignInWithPasskeyAuthentication")
 				.mockImplementation(async () => {
-					throw new IdentifiableError('THIS_ERROR_CODE_SHOULD_BE_FORWARDED');
+					throw new IdentifiableError("THIS_ERROR_CODE_SHOULD_BE_FORWARDED");
 				});
 			const res_body = await passkeyApiService.signin(req, res);
 			expect(res.statusCode).toBe(403);
-			expect((res_body as any).error?.id).toStrictEqual('THIS_ERROR_CODE_SHOULD_BE_FORWARDED');
+			expect((res_body as any).error?.id).toStrictEqual(
+				"THIS_ERROR_CODE_SHOULD_BE_FORWARDED",
+			);
 		});
 
-		it('Should return 403 When The user not Enabled Passwordless login', async () => {
-			const req = new DummyFastifyRequest({ context: 'misskey-1234', credential: { dummy: [] } }) as ApiFastifyRequestType;
+		it("Should return 403 When The user not Enabled Passwordless login", async () => {
+			const req = new DummyFastifyRequest({
+				context: "misskey-1234",
+				credential: { dummy: [] },
+			}) as ApiFastifyRequestType;
 			const res = new DummyFastifyReply() as FastifyReply;
 			const userId = await FakeWebauthnVerify();
 			const data = { userId: userId, usePasswordLessLogin: false };
 			await userProfilesRepository.update({ userId: userId }, data);
 			const res_body = await passkeyApiService.signin(req, res);
 			expect(res.statusCode).toBe(403);
-			expect((res_body as any).error?.id).toStrictEqual('2d84773e-f7b7-4d0b-8f72-bb69b584c912');
+			expect((res_body as any).error?.id).toStrictEqual(
+				"2d84773e-f7b7-4d0b-8f72-bb69b584c912",
+			);
 		});
 	});
 });

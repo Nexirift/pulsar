@@ -3,63 +3,100 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname } from 'node:path';
-import * as os from 'node:os';
-import cluster from 'node:cluster';
-import * as net from 'node:net';
-import chalk from 'chalk';
-import chalkTemplate from 'chalk-template';
-import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
-import type Logger from '@/logger.js';
-import { loadConfig } from '@/config.js';
-import type { Config } from '@/config.js';
-import type { LoggerService } from '@/core/LoggerService.js';
-import type { EnvService } from '@/global/EnvService.js';
-import type { EnvOption } from '@/env.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
-import { showMachineInfo } from '@/misc/show-machine-info.js';
-import { coreLogger } from '@/boot/coreLogger.js';
-import { jobQueue, server } from './common.js';
+import * as fs from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+import * as os from "node:os";
+import cluster from "node:cluster";
+import * as net from "node:net";
+import chalk from "chalk";
+import chalkTemplate from "chalk-template";
+import * as Sentry from "@sentry/node";
+import { nodeProfilingIntegration } from "@sentry/profiling-node";
+import type Logger from "@/logger.js";
+import { loadConfig } from "@/config.js";
+import type { Config } from "@/config.js";
+import type { LoggerService } from "@/core/LoggerService.js";
+import type { EnvService } from "@/global/EnvService.js";
+import type { EnvOption } from "@/env.js";
+import { renderInlineError } from "@/misc/render-inline-error.js";
+import { showMachineInfo } from "@/misc/show-machine-info.js";
+import { coreLogger } from "@/boot/coreLogger.js";
+import { jobQueue, server } from "./common.js";
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
 
-const meta = JSON.parse(fs.readFileSync(`${_dirname}/../../../../built/meta.json`, 'utf-8'));
+const meta = JSON.parse(
+	fs.readFileSync(`${_dirname}/../../../../built/meta.json`, "utf-8"),
+);
 
-const themeColor = chalk.hex('#86b300');
+const themeColor = chalk.hex("#86b300");
 
 function greet(logger: Logger, bootLogger: Logger, envOption: EnvOption) {
 	if (!envOption.quiet) {
 		//#region Misskey logo
-		logger.info(themeColor('  ______   __  __     __         ______     ______     ______   '));
-		logger.info(themeColor(' /\\  == \\ /\\ \\/\\ \\   /\\ \\       /\\  ___\\   /\\  __ \\   /\\  == \\  '));
-		logger.info(themeColor(' \\ \\  _-/ \\ \\ \\_\\ \\  \\ \\ \\____  \\ \\___  \\  \\ \\  __ \\  \\ \\  __<  '));
-		logger.info(themeColor('  \\ \\_\\    \\ \\_____\\  \\ \\_____\\  \\/\\_____\\  \\ \\_\\ \\_\\  \\ \\_\\ \\_\\'));
-		logger.info(themeColor('   \\/_/     \\/_____/   \\/_____/   \\/_____/   \\/_/\\/_/   \\/_/ /_/'));
-		logger.info('');
+		logger.info(
+			themeColor(
+				"  ______   __  __     __         ______     ______     ______   ",
+			),
+		);
+		logger.info(
+			themeColor(
+				" /\\  == \\ /\\ \\/\\ \\   /\\ \\       /\\  ___\\   /\\  __ \\   /\\  == \\  ",
+			),
+		);
+		logger.info(
+			themeColor(
+				" \\ \\  _-/ \\ \\ \\_\\ \\  \\ \\ \\____  \\ \\___  \\  \\ \\  __ \\  \\ \\  __<  ",
+			),
+		);
+		logger.info(
+			themeColor(
+				"  \\ \\_\\    \\ \\_____\\  \\ \\_____\\  \\/\\_____\\  \\ \\_\\ \\_\\  \\ \\_\\ \\_\\",
+			),
+		);
+		logger.info(
+			themeColor(
+				"   \\/_/     \\/_____/   \\/_____/   \\/_____/   \\/_/\\/_/   \\/_/ /_/",
+			),
+		);
+		logger.info("");
 		//#endregion
 
-		logger.info(' Pulsar is an open-source decentralized microblogging platform.');
-		logger.info(chalk.rgb(255, 136, 0)(' Pulsar is built on Sharkey. If you like Pulsar, please donate to support Sharkey\'s development. https://opencollective.com/sharkey'));
+		logger.info(
+			" Pulsar is an open-source decentralized microblogging platform.",
+		);
+		logger.info(
+			chalk.rgb(
+				255,
+				136,
+				0,
+			)(
+				" Pulsar is built on Sharkey. If you like Pulsar, please donate to support Sharkey's development. https://opencollective.com/sharkey",
+			),
+		);
 
-		logger.info('');
-		logger.info(chalkTemplate`--- ${os.hostname()} {gray (PID: ${process.pid.toString()})} ---`);
+		logger.info("");
+		logger.info(
+			chalkTemplate`--- ${os.hostname()} {gray (PID: ${process.pid.toString()})} ---`,
+		);
 	}
 
-	bootLogger.info('Welcome to Pulsar!');
+	bootLogger.info("Welcome to Pulsar!");
 	bootLogger.info(`Pulsar v${meta.gitVersion ?? meta.version}`, null, true);
 }
 
 /**
  * Init master process
  */
-export async function masterMain(loggerService: LoggerService, envService: EnvService) {
+export async function masterMain(
+	loggerService: LoggerService,
+	envService: EnvService,
+) {
 	let config!: Config;
 
-	const bootLogger = coreLogger.createSubLogger('boot', 'magenta');
+	const bootLogger = coreLogger.createSubLogger("boot", "magenta");
 	const envOption = envService.options;
 
 	// initialize app
@@ -70,18 +107,25 @@ export async function masterMain(loggerService: LoggerService, envService: EnvSe
 		showNodejsVersion(bootLogger);
 		config = loadConfig(loggerService);
 		//await connectDb();
-		if (config.pidFile) fs.writeFileSync(config.pidFile, process.pid.toString());
+		if (config.pidFile)
+			fs.writeFileSync(config.pidFile, process.pid.toString());
 	} catch (e) {
-		bootLogger.error(`Fatal error occurred during initialization: ${renderInlineError(e)}`, { e }, true);
+		bootLogger.error(
+			`Fatal error occurred during initialization: ${renderInlineError(e)}`,
+			{ e },
+			true,
+		);
 		process.exit(1);
 	}
 
-	bootLogger.info('Pulsar initialized');
+	bootLogger.info("Pulsar initialized");
 
 	if (config.sentryForBackend) {
 		Sentry.init({
 			integrations: [
-				...(config.sentryForBackend.enableNodeProfiling ? [nodeProfilingIntegration()] : []),
+				...(config.sentryForBackend.enableNodeProfiling
+					? [nodeProfilingIntegration()]
+					: []),
 			],
 
 			// Performance Monitoring
@@ -93,7 +137,7 @@ export async function masterMain(loggerService: LoggerService, envService: EnvSe
 			maxBreadcrumbs: 0,
 
 			// Set release version
-			release: 'Pulsar@' + (meta.gitVersion ?? meta.version),
+			release: "Pulsar@" + (meta.gitVersion ?? meta.version),
 
 			...config.sentryForBackend.options,
 		});
@@ -104,7 +148,9 @@ export async function masterMain(loggerService: LoggerService, envService: EnvSe
 	);
 
 	if (envOption.onlyServer && envOption.onlyQueue) {
-		bootLogger.error('Configuration error: onlyServer and onlyQueue cannot both be set. To run both server and queue workers, disable / remove both options.');
+		bootLogger.error(
+			"Configuration error: onlyServer and onlyQueue cannot both be set. To run both server and queue workers, disable / remove both options.",
+		);
 		process.exit(1);
 	}
 
@@ -123,7 +169,11 @@ export async function masterMain(loggerService: LoggerService, envService: EnvSe
 		}
 
 		if (config.clusterLimit === 0) {
-			bootLogger.error('Configuration error: we can\'t create workers, `config.clusterLimit` is 0 (if you don\'t want to use clustering, set the environment variable `MK_DISABLE_CLUSTERING` to a non-empty value instead)', null, true);
+			bootLogger.error(
+				"Configuration error: we can't create workers, `config.clusterLimit` is 0 (if you don't want to use clustering, set the environment variable `MK_DISABLE_CLUSTERING` to a non-empty value instead)",
+				null,
+				true,
+			);
 			process.exit(1);
 		}
 
@@ -142,26 +192,36 @@ export async function masterMain(loggerService: LoggerService, envService: EnvSe
 	}
 
 	if (envOption.onlyQueue) {
-		bootLogger.info('Queue started', null, true);
+		bootLogger.info("Queue started", null, true);
 	} else {
-		const addressString = net.isIPv6(config.address) ? `[${config.address}]` : config.address;
-		bootLogger.info(config.socket ? `Now listening on socket ${config.socket} on ${config.url}` : `Now listening on ${addressString}:${config.port} on ${config.url}`, null, true);
+		const addressString = net.isIPv6(config.address)
+			? `[${config.address}]`
+			: config.address;
+		bootLogger.info(
+			config.socket
+				? `Now listening on socket ${config.socket} on ${config.url}`
+				: `Now listening on ${addressString}:${config.port} on ${config.url}`,
+			null,
+			true,
+		);
 	}
 }
 
 function showEnvironment(bootLogger: Logger): void {
 	const env = process.env.NODE_ENV;
-	const logger = bootLogger.createSubLogger('env');
-	logger.info(typeof env === 'undefined' ? 'NODE_ENV is not set' : `NODE_ENV: ${env}`);
+	const logger = bootLogger.createSubLogger("env");
+	logger.info(
+		typeof env === "undefined" ? "NODE_ENV is not set" : `NODE_ENV: ${env}`,
+	);
 
-	if (env !== 'production') {
-		logger.warn('The environment is not in production mode.');
-		logger.warn('DO NOT USE FOR PRODUCTION PURPOSE!', null, true);
+	if (env !== "production") {
+		logger.warn("The environment is not in production mode.");
+		logger.warn("DO NOT USE FOR PRODUCTION PURPOSE!", null, true);
 	}
 }
 
 function showNodejsVersion(bootLogger: Logger): void {
-	const nodejsLogger = bootLogger.createSubLogger('nodejs');
+	const nodejsLogger = bootLogger.createSubLogger("nodejs");
 
 	nodejsLogger.info(`Version ${process.version} detected.`);
 }
@@ -189,20 +249,20 @@ async function spawnWorkers(bootLogger: Logger, limit = 1) {
 	// in some weird environments, node can't count the CPUs; we trust the config in those cases
 	const workers = cpuCount === 0 ? limit : Math.min(limit, cpuCount);
 
-	bootLogger.info(`Starting ${workers} worker${workers === 1 ? '' : 's'}...`);
+	bootLogger.info(`Starting ${workers} worker${workers === 1 ? "" : "s"}...`);
 	await Promise.all([...Array(workers)].map(() => spawnWorker(bootLogger)));
-	bootLogger.info('All workers started');
+	bootLogger.info("All workers started");
 }
 
 function spawnWorker(bootLogger: Logger): Promise<void> {
-	return new Promise(res => {
+	return new Promise((res) => {
 		const worker = cluster.fork();
-		worker.on('message', message => {
-			if (message === 'listenFailed') {
-				bootLogger.error('The server Listen failed due to the previous error.');
+		worker.on("message", (message) => {
+			if (message === "listenFailed") {
+				bootLogger.error("The server Listen failed due to the previous error.");
 				process.exit(1);
 			}
-			if (message !== 'ready') return;
+			if (message !== "ready") return;
 			res();
 		});
 	});

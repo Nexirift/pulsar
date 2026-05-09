@@ -4,104 +4,131 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<SearchMarker path="/settings/security" :label="i18n.ts.security" :keywords="['security']" icon="ti ti-lock" :inlining="['2fa']">
-	<div class="_gaps_m">
-		<MkFeatureBanner icon="/client-assets/locked_with_key_3d.png" color="#ffbf00">
-			<SearchKeyword>{{ i18n.ts._settings.securityBanner }}</SearchKeyword>
-		</MkFeatureBanner>
+	<SearchMarker
+		path="/settings/security"
+		:label="i18n.ts.security"
+		:keywords="['security']"
+		icon="ti ti-lock"
+		:inlining="['2fa']"
+	>
+		<div class="_gaps_m">
+			<MkFeatureBanner
+				icon="/client-assets/locked_with_key_3d.png"
+				color="#ffbf00"
+			>
+				<SearchKeyword>{{ i18n.ts._settings.securityBanner }}</SearchKeyword>
+			</MkFeatureBanner>
 
-		<SearchMarker :keywords="['password']">
-			<FormSection first>
-				<template #label><SearchLabel>{{ i18n.ts.password }}</SearchLabel></template>
+			<SearchMarker :keywords="['password']">
+				<FormSection first>
+					<template #label
+						><SearchLabel>{{ i18n.ts.password }}</SearchLabel></template
+					>
 
-				<SearchMarker>
-					<MkButton primary @click="change()">
-						<SearchLabel>{{ i18n.ts.changePassword }}</SearchLabel>
-					</MkButton>
-				</SearchMarker>
-			</FormSection>
-		</SearchMarker>
+					<SearchMarker>
+						<MkButton primary @click="change()">
+							<SearchLabel>{{ i18n.ts.changePassword }}</SearchLabel>
+						</MkButton>
+					</SearchMarker>
+				</FormSection>
+			</SearchMarker>
 
-		<X2fa/>
+			<X2fa />
 
-		<SearchMarker :keywords="['shared', 'access']">
-			<FormSection>
-				<template #label><SearchLabel>{{ i18n.ts.sharedAccess }}</SearchLabel></template>
-				<template #description>{{ i18n.ts.sharedAccessDescription2 }}</template>
+			<SearchMarker :keywords="['shared', 'access']">
+				<FormSection>
+					<template #label
+						><SearchLabel>{{ i18n.ts.sharedAccess }}</SearchLabel></template
+					>
+					<template #description>{{
+						i18n.ts.sharedAccessDescription2
+					}}</template>
 
-				<div class="_gaps_m">
-					<MkButton primary @click="grantSharedAccess">{{ i18n.ts.grantSharedAccessButton }}</MkButton>
+					<div class="_gaps_m">
+						<MkButton primary @click="grantSharedAccess">{{
+							i18n.ts.grantSharedAccessButton
+						}}</MkButton>
 
-					<XApps ref="apps" :onlySharedAccess="true" :limit="10"/>
-				</div>
-			</FormSection>
-		</SearchMarker>
-
-		<FormSection>
-			<template #label>{{ i18n.ts.signinHistory }}</template>
-			<MkPagination :pagination="pagination" disableAutoLoad>
-				<template #default="{items}">
-					<div>
-						<div v-for="item in items" :key="item.id" v-panel class="timnmucd">
-							<header>
-								<i v-if="item.success" class="ti ti-check icon succ"></i>
-								<i v-else class="ti ti-circle-x icon fail"></i>
-								<code class="ip _monospace">{{ item.ip }}</code>
-								<MkTime :time="item.createdAt" class="time"/>
-							</header>
-						</div>
+						<XApps ref="apps" :onlySharedAccess="true" :limit="10" />
 					</div>
-				</template>
-			</MkPagination>
-		</FormSection>
+				</FormSection>
+			</SearchMarker>
 
-		<FormSection>
-			<FormSlot>
-				<MkButton danger @click="regenerateToken"><i class="ti ti-refresh"></i> {{ i18n.ts.regenerateLoginToken }}</MkButton>
-				<template #caption>{{ i18n.ts.regenerateLoginTokenDescription }}</template>
-			</FormSlot>
-		</FormSection>
-	</div>
-</SearchMarker>
+			<FormSection>
+				<template #label>{{ i18n.ts.signinHistory }}</template>
+				<MkPagination :pagination="pagination" disableAutoLoad>
+					<template #default="{ items }">
+						<div>
+							<div
+								v-for="item in items"
+								:key="item.id"
+								v-panel
+								class="timnmucd"
+							>
+								<header>
+									<i v-if="item.success" class="ti ti-check icon succ"></i>
+									<i v-else class="ti ti-circle-x icon fail"></i>
+									<code class="ip _monospace">{{ item.ip }}</code>
+									<MkTime :time="item.createdAt" class="time" />
+								</header>
+							</div>
+						</div>
+					</template>
+				</MkPagination>
+			</FormSection>
+
+			<FormSection>
+				<FormSlot>
+					<MkButton danger @click="regenerateToken"
+						><i class="ti ti-refresh"></i>
+						{{ i18n.ts.regenerateLoginToken }}</MkButton
+					>
+					<template #caption>{{
+						i18n.ts.regenerateLoginTokenDescription
+					}}</template>
+				</FormSlot>
+			</FormSection>
+		</div>
+	</SearchMarker>
 </template>
 
 <script lang="ts" setup>
-import { computed, defineAsyncComponent, useTemplateRef } from 'vue';
-import X2fa from './2fa.vue';
-import XApps from '@/pages/settings/apps.vue';
-import FormSection from '@/components/form/section.vue';
-import FormSlot from '@/components/form/slot.vue';
-import MkButton from '@/components/MkButton.vue';
-import MkPagination from '@/components/MkPagination.vue';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { i18n } from '@/i18n.js';
-import { definePage } from '@/page.js';
-import MkFeatureBanner from '@/components/MkFeatureBanner.vue';
+import { computed, defineAsyncComponent, useTemplateRef } from "vue";
+import X2fa from "./2fa.vue";
+import XApps from "@/pages/settings/apps.vue";
+import FormSection from "@/components/form/section.vue";
+import FormSlot from "@/components/form/slot.vue";
+import MkButton from "@/components/MkButton.vue";
+import MkPagination from "@/components/MkPagination.vue";
+import * as os from "@/os.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { i18n } from "@/i18n.js";
+import { definePage } from "@/page.js";
+import MkFeatureBanner from "@/components/MkFeatureBanner.vue";
 
 const pagination = {
-	endpoint: 'i/signin-history' as const,
+	endpoint: "i/signin-history" as const,
 	limit: 5,
 };
 
 async function change() {
 	const { canceled: canceled2, result: newPassword } = await os.inputText({
 		title: i18n.ts.newPassword,
-		type: 'password',
-		autocomplete: 'new-password',
+		type: "password",
+		autocomplete: "new-password",
 	});
 	if (canceled2) return;
 
 	const { canceled: canceled3, result: newPassword2 } = await os.inputText({
 		title: i18n.ts.newPasswordRetype,
-		type: 'password',
-		autocomplete: 'new-password',
+		type: "password",
+		autocomplete: "new-password",
 	});
 	if (canceled3) return;
 
 	if (newPassword !== newPassword2) {
 		os.alert({
-			type: 'error',
+			type: "error",
 			text: i18n.ts.retypedNotMatch,
 		});
 		return;
@@ -110,7 +137,7 @@ async function change() {
 	const auth = await os.authenticateDialog();
 	if (auth.canceled) return;
 
-	os.apiWithDialog('i/change-password', {
+	os.apiWithDialog("i/change-password", {
 		currentPassword: auth.result.password,
 		token: auth.result.token,
 		newPassword,
@@ -121,40 +148,46 @@ async function regenerateToken() {
 	const auth = await os.authenticateDialog();
 	if (auth.canceled) return;
 
-	misskeyApi('i/regenerate-token', {
+	misskeyApi("i/regenerate-token", {
 		password: auth.result.password,
 		token: auth.result.token,
 	});
 }
 
-const apps = useTemplateRef('apps');
+const apps = useTemplateRef("apps");
 
 function grantSharedAccess() {
-	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkTokenGenerateWindow.vue')), {
-		withSharedAccess: true,
-	}, {
-		done: async result => {
-			const { name, permissions, grantees, rank } = result;
-			await os.promiseDialog(async () => {
-				await misskeyApi('miauth/gen-token', {
-					session: null,
-					name: name,
-					permission: permissions,
-					grantees: grantees,
-					rank: rank,
+	const { dispose } = os.popup(
+		defineAsyncComponent(
+			() => import("@/components/MkTokenGenerateWindow.vue"),
+		),
+		{
+			withSharedAccess: true,
+		},
+		{
+			done: async (result) => {
+				const { name, permissions, grantees, rank } = result;
+				await os.promiseDialog(async () => {
+					await misskeyApi("miauth/gen-token", {
+						session: null,
+						name: name,
+						permission: permissions,
+						grantees: grantees,
+						rank: rank,
+					});
+
+					await apps.value?.reload();
 				});
 
-				await apps.value?.reload();
-			});
-
-			await os.alert({
-				type: 'success',
-				title: i18n.ts.grantSharedAccessSuccess,
-				text: i18n.tsx.grantSharedAccessSuccess2({ num: grantees.length }),
-			});
+				await os.alert({
+					type: "success",
+					title: i18n.ts.grantSharedAccessSuccess,
+					text: i18n.tsx.grantSharedAccessSuccess2({ num: grantees.length }),
+				});
+			},
+			closed: () => dispose(),
 		},
-		closed: () => dispose(),
-	});
+	);
 }
 
 const headerActions = computed(() => []);
@@ -163,7 +196,7 @@ const headerTabs = computed(() => []);
 
 definePage(() => ({
 	title: i18n.ts.security,
-	icon: 'ti ti-lock',
+	icon: "ti ti-lock",
 }));
 </script>
 

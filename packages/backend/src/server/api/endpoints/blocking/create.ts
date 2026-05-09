@@ -3,66 +3,72 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import ms from 'ms';
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { UsersRepository, BlockingsRepository, MutingsRepository } from '@/models/_.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { UserBlockingService } from '@/core/UserBlockingService.js';
-import { UserMutingService } from '@/core/UserMutingService.js';
-import { DI } from '@/di-symbols.js';
-import { GetterService } from '@/server/api/GetterService.js';
-import { ApiError } from '../../error.js';
+import ms from "ms";
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type {
+	UsersRepository,
+	BlockingsRepository,
+	MutingsRepository,
+} from "@/models/_.js";
+import { UserEntityService } from "@/core/entities/UserEntityService.js";
+import { UserBlockingService } from "@/core/UserBlockingService.js";
+import { UserMutingService } from "@/core/UserMutingService.js";
+import { DI } from "@/di-symbols.js";
+import { GetterService } from "@/server/api/GetterService.js";
+import { ApiError } from "../../error.js";
 
 export const meta = {
-	tags: ['account'],
+	tags: ["account"],
 
 	limit: {
-		duration: ms('1hour'),
+		duration: ms("1hour"),
 		max: 20,
 	},
 
 	requireCredential: true,
 
-	kind: 'write:blocks',
+	kind: "write:blocks",
 
 	errors: {
 		noSuchUser: {
-			message: 'No such user.',
-			code: 'NO_SUCH_USER',
-			id: '7cc4f851-e2f1-4621-9633-ec9e1d00c01e',
+			message: "No such user.",
+			code: "NO_SUCH_USER",
+			id: "7cc4f851-e2f1-4621-9633-ec9e1d00c01e",
 		},
 
 		blockeeIsYourself: {
-			message: 'Blockee is yourself.',
-			code: 'BLOCKEE_IS_YOURSELF',
-			id: '88b19138-f28d-42c0-8499-6a31bbd0fdc6',
+			message: "Blockee is yourself.",
+			code: "BLOCKEE_IS_YOURSELF",
+			id: "88b19138-f28d-42c0-8499-6a31bbd0fdc6",
 		},
 
 		alreadyBlocking: {
-			message: 'You are already blocking that user.',
-			code: 'ALREADY_BLOCKING',
-			id: '787fed64-acb9-464a-82eb-afbd745b9614',
+			message: "You are already blocking that user.",
+			code: "ALREADY_BLOCKING",
+			id: "787fed64-acb9-464a-82eb-afbd745b9614",
 		},
 	},
 
 	res: {
-		type: 'object',
-		optional: false, nullable: false,
-		ref: 'UserDetailedNotMe',
+		type: "object",
+		optional: false,
+		nullable: false,
+		ref: "UserDetailedNotMe",
 	},
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		userId: { type: 'string', format: 'misskey:id' },
+		userId: { type: "string", format: "misskey:id" },
 	},
-	required: ['userId'],
+	required: ["userId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
@@ -87,10 +93,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			}
 
 			// Get blockee
-			const blockee = await this.getterService.getUser(ps.userId).catch(err => {
-				if (err.id === '15348ddd-432d-49c2-8a5a-8069753becff') throw new ApiError(meta.errors.noSuchUser);
-				throw err;
-			});
+			const blockee = await this.getterService
+				.getUser(ps.userId)
+				.catch((err) => {
+					if (err.id === "15348ddd-432d-49c2-8a5a-8069753becff")
+						throw new ApiError(meta.errors.noSuchUser);
+					throw err;
+				});
 
 			// Check if already blocking
 			const exist = await this.blockingsRepository.exists({
@@ -106,20 +115,22 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			await Promise.all([
 				this.userBlockingService.block(blocker, blockee),
-				this.mutingsRepository.exists({
-					where: {
-						muterId: blocker.id,
-						muteeId: blockee.id,
-					},
-				}).then(exists => {
-					if (!exists) {
-						this.userMutingService.mute(blocker, blockee, null);
-					}
-				}),
+				this.mutingsRepository
+					.exists({
+						where: {
+							muterId: blocker.id,
+							muteeId: blockee.id,
+						},
+					})
+					.then((exists) => {
+						if (!exists) {
+							this.userMutingService.mute(blocker, blockee, null);
+						}
+					}),
 			]);
 
 			return await this.userEntityService.pack(blockee.id, blocker, {
-				schema: 'UserDetailedNotMe',
+				schema: "UserDetailedNotMe",
 			});
 		});
 	}

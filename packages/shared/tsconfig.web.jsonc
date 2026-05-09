@@ -15,6 +15,6 @@
 
 		// Output
 		"sourceMap": true,
-		"inlineSources": true
-	}
+		"inlineSources": true,
+	},
 }

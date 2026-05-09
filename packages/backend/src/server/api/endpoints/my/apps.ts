@@ -3,26 +3,28 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AppsRepository } from '@/models/_.js';
-import { AppEntityService } from '@/core/entities/AppEntityService.js';
-import { DI } from '@/di-symbols.js';
-import { promiseMap } from '@/misc/promise-map.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { AppsRepository } from "@/models/_.js";
+import { AppEntityService } from "@/core/entities/AppEntityService.js";
+import { DI } from "@/di-symbols.js";
+import { promiseMap } from "@/misc/promise-map.js";
 
 export const meta = {
-	tags: ['account', 'app'],
+	tags: ["account", "app"],
 
 	requireCredential: true,
-	kind: 'read:account',
+	kind: "read:account",
 
 	res: {
-		type: 'array',
-		optional: false, nullable: false,
+		type: "array",
+		optional: false,
+		nullable: false,
 		items: {
-			type: 'object',
-			optional: false, nullable: false,
-			ref: 'App',
+			type: "object",
+			optional: false,
+			nullable: false,
+			ref: "App",
 		},
 	},
 
@@ -34,16 +36,17 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
-		offset: { type: 'integer', default: 0 },
+		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+		offset: { type: "integer", default: 0 },
 	},
 	required: [],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.appsRepository)
 		private appsRepository: AppsRepository,
@@ -61,11 +64,16 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				skip: ps.offset,
 			});
 
-			return await promiseMap(apps, async app => await this.appEntityService.pack(app, me, {
-				detail: true,
-			}), {
-				limit: 4,
-			});
+			return await promiseMap(
+				apps,
+				async (app) =>
+					await this.appEntityService.pack(app, me, {
+						detail: true,
+					}),
+				{
+					limit: 4,
+				},
+			);
 		});
 	}
 }

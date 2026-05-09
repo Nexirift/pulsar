@@ -4,31 +4,52 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkModal ref="modal" v-slot="{ type, maxHeight }" :manualShowing="manualShowing" :zPriority="'high'" :src="src" :transparentBg="true" :returnFocusTo="returnFocusTo" @click="click" @close="onModalClose" @closed="onModalClosed">
-	<MkMenu :items="items" :align="align" :width="width" :max-height="maxHeight" :asDrawer="type === 'drawer'" :returnFocusTo="returnFocusTo" :class="{ [$style.drawer]: type === 'drawer' }" @close="onMenuClose" @hide="hide"/>
-</MkModal>
+	<MkModal
+		ref="modal"
+		v-slot="{ type, maxHeight }"
+		:manualShowing="manualShowing"
+		:zPriority="'high'"
+		:src="src"
+		:transparentBg="true"
+		:returnFocusTo="returnFocusTo"
+		@click="click"
+		@close="onModalClose"
+		@closed="onModalClosed"
+	>
+		<MkMenu
+			:items="items"
+			:align="align"
+			:width="width"
+			:max-height="maxHeight"
+			:asDrawer="type === 'drawer'"
+			:returnFocusTo="returnFocusTo"
+			:class="{ [$style.drawer]: type === 'drawer' }"
+			@close="onMenuClose"
+			@hide="hide"
+		/>
+	</MkModal>
 </template>
 
 <script lang="ts" setup>
-import { ref, useTemplateRef } from 'vue';
-import MkModal from './MkModal.vue';
-import MkMenu from './MkMenu.vue';
-import type { MenuItem } from '@/types/menu.js';
+import { ref, useTemplateRef } from "vue";
+import MkModal from "./MkModal.vue";
+import MkMenu from "./MkMenu.vue";
+import type { MenuItem } from "@/types/menu.js";
 
 defineProps<{
 	items: MenuItem[];
-	align?: 'center' | string;
+	align?: "center" | string;
 	width?: number;
 	src?: HTMLElement | null;
 	returnFocusTo?: HTMLElement | null;
 }>();
 
 const emit = defineEmits<{
-	(ev: 'closed'): void;
-	(ev: 'closing'): void;
+	(ev: "closed"): void;
+	(ev: "closing"): void;
 }>();
 
-const modal = useTemplateRef('modal');
+const modal = useTemplateRef("modal");
 const manualShowing = ref(true);
 const hiding = ref(false);
 
@@ -37,21 +58,21 @@ function click() {
 }
 
 function onModalClose() {
-	emit('closing');
+	emit("closing");
 }
 
 function onMenuClose() {
 	close();
 	if (hiding.value) {
 		// hidingであればclosedを発火
-		emit('closed');
+		emit("closed");
 	}
 }
 
 function onModalClosed() {
 	if (!hiding.value) {
 		// hidingでなければclosedを発火
-		emit('closed');
+		emit("closed");
 	}
 }
 

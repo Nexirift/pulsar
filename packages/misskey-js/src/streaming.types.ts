@@ -11,10 +11,11 @@ import type {
 	UserDetailed,
 	UserDetailedNotMe,
 	UserLite,
-} from './autogen/models.js';
+} from "./autogen/models.js";
 import type {
 	AnnouncementCreated,
-	EmojiAdded, EmojiDeleted,
+	EmojiAdded,
+	EmojiDeleted,
 	EmojiUpdated,
 	PageEvent,
 	QueueStats,
@@ -22,10 +23,8 @@ import type {
 	ServerStats,
 	ServerStatsLog,
 	ReversiGameDetailed,
-} from './entities.js';
-import type {
-	ReversiUpdateKey,
-} from './consts.js';
+} from "./entities.js";
+import type { ReversiUpdateKey } from "./consts.js";
 
 type ReversiUpdateSettings<K extends ReversiUpdateKey> = {
 	key: K;
@@ -45,7 +44,7 @@ export type Channels = {
 			unfollow: (payload: UserDetailed) => void; // 自分が他人をフォロー解除したとき
 			meUpdated: (payload: UserDetailed) => void;
 			pageEvent: (payload: PageEvent) => void;
-			urlUploadFinished: (payload: { marker: string; file: DriveFile; }) => void;
+			urlUploadFinished: (payload: { marker: string; file: DriveFile }) => void;
 			readAllNotifications: () => void;
 			unreadNotification: (payload: Notification) => void;
 			notificationFlushed: () => void;
@@ -176,10 +175,10 @@ export type Channels = {
 		params: null;
 		events: {
 			fileCreated: (payload: DriveFile) => void;
-			fileDeleted: (payload: DriveFile['id']) => void;
+			fileDeleted: (payload: DriveFile["id"]) => void;
 			fileUpdated: (payload: DriveFile) => void;
 			folderCreated: (payload: DriveFolder) => void;
-			folderDeleted: (payload: DriveFolder['id']) => void;
+			folderDeleted: (payload: DriveFolder["id"]) => void;
 			folderUpdated: (payload: DriveFolder) => void;
 		};
 		receives: null;
@@ -218,7 +217,7 @@ export type Channels = {
 				targetUserId: string;
 				reporterId: string;
 				comment: string;
-			}
+			};
 		};
 		receives: null;
 	};
@@ -227,11 +226,18 @@ export type Channels = {
 			gameId: string;
 		};
 		events: {
-			started: (payload: { game: ReversiGameDetailed; }) => void;
-			ended: (payload: { winnerId: User['id'] | null; game: ReversiGameDetailed; }) => void;
-			canceled: (payload: { userId: User['id']; }) => void;
-			changeReadyStates: (payload: { user1: boolean; user2: boolean; }) => void;
-			updateSettings: <K extends ReversiUpdateKey>(payload: { userId: User['id']; key: K; value: ReversiGameDetailed[K]; }) => void;
+			started: (payload: { game: ReversiGameDetailed }) => void;
+			ended: (payload: {
+				winnerId: User["id"] | null;
+				game: ReversiGameDetailed;
+			}) => void;
+			canceled: (payload: { userId: User["id"] }) => void;
+			changeReadyStates: (payload: { user1: boolean; user2: boolean }) => void;
+			updateSettings: <K extends ReversiUpdateKey>(payload: {
+				userId: User["id"];
+				key: K;
+				value: ReversiGameDetailed[K];
+			}) => void;
 			log: (payload: Record<string, unknown>) => void;
 		};
 		receives: {
@@ -243,7 +249,7 @@ export type Channels = {
 			cancel: null | Record<string, never>;
 			updateSettings: ReversiUpdateSettings<ReversiUpdateKey>;
 			claimTimeIsUp: null | Record<string, never>;
-		}
+		};
 	};
 	chatUser: {
 		params: {
@@ -251,21 +257,21 @@ export type Channels = {
 		};
 		events: {
 			message: (payload: ChatMessageLite) => void;
-			deleted: (payload: ChatMessageLite['id']) => void;
+			deleted: (payload: ChatMessageLite["id"]) => void;
 			react: (payload: {
 				reaction: string;
 				user?: UserLite;
-				messageId: ChatMessageLite['id'];
+				messageId: ChatMessageLite["id"];
 			}) => void;
 			unreact: (payload: {
 				reaction: string;
 				user?: UserLite;
-				messageId: ChatMessageLite['id'];
+				messageId: ChatMessageLite["id"];
 			}) => void;
 		};
 		receives: {
 			read: {
-				id: ChatMessageLite['id'];
+				id: ChatMessageLite["id"];
 			};
 		};
 	};
@@ -275,58 +281,64 @@ export type Channels = {
 		};
 		events: {
 			message: (payload: ChatMessageLite) => void;
-			deleted: (payload: ChatMessageLite['id']) => void;
+			deleted: (payload: ChatMessageLite["id"]) => void;
 			react: (payload: {
 				reaction: string;
 				user?: UserLite;
-				messageId: ChatMessageLite['id'];
+				messageId: ChatMessageLite["id"];
 			}) => void;
 			unreact: (payload: {
 				reaction: string;
 				user?: UserLite;
-				messageId: ChatMessageLite['id'];
+				messageId: ChatMessageLite["id"];
 			}) => void;
 		};
 		receives: {
 			read: {
-				id: ChatMessageLite['id'];
+				id: ChatMessageLite["id"];
 			};
 		};
 	};
 };
 
-export type NoteUpdatedEvent = { id: Note['id'] } & ({
-	type: 'reacted';
-	body: {
-		reaction: string;
-		emoji: string | null;
-		userId: User['id'];
-	};
-} | {
-	type: 'unreacted';
-	body: {
-		reaction: string;
-		userId: User['id'];
-	};
-} | {
-	id: Note['id'];
-	type: 'updated';
-	body: {
-		cw: string | null;
-		text: string;
-	};
-} | {
-	type: 'deleted';
-	body: {
-		deletedAt: string;
-	};
-} | {
-	type: 'pollVoted';
-	body: {
-		choice: number;
-		userId: User['id'];
-	};
-});
+export type NoteUpdatedEvent = { id: Note["id"] } & (
+	| {
+			type: "reacted";
+			body: {
+				reaction: string;
+				emoji: string | null;
+				userId: User["id"];
+			};
+	  }
+	| {
+			type: "unreacted";
+			body: {
+				reaction: string;
+				userId: User["id"];
+			};
+	  }
+	| {
+			id: Note["id"];
+			type: "updated";
+			body: {
+				cw: string | null;
+				text: string;
+			};
+	  }
+	| {
+			type: "deleted";
+			body: {
+				deletedAt: string;
+			};
+	  }
+	| {
+			type: "pollVoted";
+			body: {
+				choice: number;
+				userId: User["id"];
+			};
+	  }
+);
 
 export type BroadcastEvents = {
 	noteUpdated: (payload: NoteUpdatedEvent) => void;

@@ -4,20 +4,32 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkModal ref="modal" :preferType="'dialog'" :zPriority="'high'" @click="success ? done() : () => {}" @closed="emit('closed')">
-	<div :class="[$style.root, { [$style.iconOnly]: (text == null) || success }]">
-		<i v-if="success" :class="[$style.icon, $style.success]" class="ti ti-check"></i>
-		<MkLoading v-else :class="[$style.icon, $style.waiting]" :em="true"/>
-		<div v-if="text && !success" :class="$style.text">{{ text }}<MkEllipsis/></div>
-	</div>
-</MkModal>
+	<MkModal
+		ref="modal"
+		:preferType="'dialog'"
+		:zPriority="'high'"
+		@click="success ? done() : () => {}"
+		@closed="emit('closed')"
+	>
+		<div :class="[$style.root, { [$style.iconOnly]: text == null || success }]">
+			<i
+				v-if="success"
+				:class="[$style.icon, $style.success]"
+				class="ti ti-check"
+			></i>
+			<MkLoading v-else :class="[$style.icon, $style.waiting]" :em="true" />
+			<div v-if="text && !success" :class="$style.text">
+				{{ text }}<MkEllipsis />
+			</div>
+		</div>
+	</MkModal>
 </template>
 
 <script lang="ts" setup>
-import { watch, useTemplateRef } from 'vue';
-import MkModal from '@/components/MkModal.vue';
+import { watch, useTemplateRef } from "vue";
+import MkModal from "@/components/MkModal.vue";
 
-const modal = useTemplateRef('modal');
+const modal = useTemplateRef("modal");
 
 const props = defineProps<{
 	success: boolean;
@@ -26,18 +38,21 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'done');
-	(ev: 'closed');
+	(ev: "done");
+	(ev: "closed");
 }>();
 
 function done() {
-	emit('done');
+	emit("done");
 	modal.value?.close();
 }
 
-watch(() => props.showing, () => {
-	if (!props.showing) done();
-});
+watch(
+	() => props.showing,
+	() => {
+		if (!props.showing) done();
+	},
+);
 </script>
 
 <style lang="scss" module>

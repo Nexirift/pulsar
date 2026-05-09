@@ -4,77 +4,97 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div class="timctyfi" :class="{ disabled, easing }">
-	<div class="label">
-		<slot name="label"></slot>
-	</div>
-	<div v-adaptive-border class="body">
-		<div ref="containerEl" class="container">
-			<div class="track">
-				<div class="highlight" :style="{ width: (steppedRawValue * 100) + '%' }"></div>
+	<div class="timctyfi" :class="{ disabled, easing }">
+		<div class="label">
+			<slot name="label"></slot>
+		</div>
+		<div v-adaptive-border class="body">
+			<div ref="containerEl" class="container">
+				<div class="track">
+					<div
+						class="highlight"
+						:style="{ width: steppedRawValue * 100 + '%' }"
+					></div>
+				</div>
+				<div v-if="steps && showTicks" class="ticks">
+					<div
+						v-for="i in steps + 1"
+						class="tick"
+						:style="{ left: ((i - 1) / steps) * 100 + '%' }"
+					></div>
+				</div>
+				<div
+					ref="thumbEl"
+					class="thumb"
+					:style="{ left: thumbPosition + 'px' }"
+					@mouseenter.passive="onMouseenter"
+					@mousedown="onMousedown"
+					@touchstart="onMousedown"
+				></div>
 			</div>
-			<div v-if="steps && showTicks" class="ticks">
-				<div v-for="i in (steps + 1)" class="tick" :style="{ left: (((i - 1) / steps) * 100) + '%' }"></div>
-			</div>
-			<div
-				ref="thumbEl"
-				class="thumb"
-				:style="{ left: thumbPosition + 'px' }"
-				@mouseenter.passive="onMouseenter"
-				@mousedown="onMousedown"
-				@touchstart="onMousedown"
-			></div>
+		</div>
+		<div class="caption">
+			<slot name="caption"></slot>
 		</div>
 	</div>
-	<div class="caption">
-		<slot name="caption"></slot>
-	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
-import { isTouchUsing } from '@/utility/touch.js';
-import * as os from '@/os.js';
+import {
+	computed,
+	defineAsyncComponent,
+	onMounted,
+	onUnmounted,
+	ref,
+	useTemplateRef,
+	watch,
+} from "vue";
+import { isTouchUsing } from "@/utility/touch.js";
+import * as os from "@/os.js";
 
-const props = withDefaults(defineProps<{
-	modelValue: number;
-	disabled?: boolean;
-	min: number;
-	max: number;
-	step?: number;
-	textConverter?: (value: number) => string,
-	showTicks?: boolean;
-	easing?: boolean;
-	continuousUpdate?: boolean;
-}>(), {
-	step: 1,
-	textConverter: (v) => v.toString(),
-	easing: false,
-});
+const props = withDefaults(
+	defineProps<{
+		modelValue: number;
+		disabled?: boolean;
+		min: number;
+		max: number;
+		step?: number;
+		textConverter?: (value: number) => string;
+		showTicks?: boolean;
+		easing?: boolean;
+		continuousUpdate?: boolean;
+	}>(),
+	{
+		step: 1,
+		textConverter: (v) => v.toString(),
+		easing: false,
+	},
+);
 
 const emit = defineEmits<{
-	(ev: 'update:modelValue', value: number): void;
-	(ev: 'dragEnded', value: number): void;
+	(ev: "update:modelValue", value: number): void;
+	(ev: "dragEnded", value: number): void;
 }>();
 
-const containerEl = useTemplateRef('containerEl');
-const thumbEl = useTemplateRef('thumbEl');
+const containerEl = useTemplateRef("containerEl");
+const thumbEl = useTemplateRef("thumbEl");
 
 const rawValue = ref((props.modelValue - props.min) / (props.max - props.min));
 const steppedRawValue = computed(() => {
 	if (props.step) {
 		const step = props.step / (props.max - props.min);
-		return (step * Math.round(rawValue.value / step));
+		return step * Math.round(rawValue.value / step);
 	} else {
 		return rawValue.value;
 	}
 });
 const finalValue = computed(() => {
 	if (Number.isInteger(props.step)) {
-		return Math.round((steppedRawValue.value * (props.max - props.min)) + props.min);
+		return Math.round(
+			steppedRawValue.value * (props.max - props.min) + props.min,
+		);
 	} else {
-		return (steppedRawValue.value * (props.max - props.min)) + props.min;
+		return steppedRawValue.value * (props.max - props.min) + props.min;
 	}
 });
 
@@ -87,7 +107,8 @@ const calcThumbPosition = () => {
 	if (containerEl.value == null) {
 		thumbPosition.value = 0;
 	} else {
-		thumbPosition.value = (containerEl.value.offsetWidth - getThumbWidth()) * steppedRawValue.value;
+		thumbPosition.value =
+			(containerEl.value.offsetWidth - getThumbWidth()) * steppedRawValue.value;
 	}
 };
 watch([steppedRawValue, containerEl], calcThumbPosition);
@@ -121,19 +142,29 @@ function onMouseenter() {
 
 	tooltipForHoverShowing.value = true;
 
-	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkTooltip.vue')), {
-		showing: computed(() => tooltipForHoverShowing.value && !tooltipForDragShowing.value),
-		text: computed(() => {
-			return props.textConverter(finalValue.value);
-		}),
-		targetElement: thumbEl,
-	}, {
-		closed: () => dispose(),
-	});
+	const { dispose } = os.popup(
+		defineAsyncComponent(() => import("@/components/MkTooltip.vue")),
+		{
+			showing: computed(
+				() => tooltipForHoverShowing.value && !tooltipForDragShowing.value,
+			),
+			text: computed(() => {
+				return props.textConverter(finalValue.value);
+			}),
+			targetElement: thumbEl,
+		},
+		{
+			closed: () => dispose(),
+		},
+	);
 
-	thumbEl.value!.addEventListener('mouseleave', () => {
-		tooltipForHoverShowing.value = false;
-	}, { once: true, passive: true });
+	thumbEl.value!.addEventListener(
+		"mouseleave",
+		() => {
+			tooltipForHoverShowing.value = false;
+		},
+		{ once: true, passive: true },
+	);
 }
 
 function onMousedown(ev: MouseEvent | TouchEvent) {
@@ -141,18 +172,26 @@ function onMousedown(ev: MouseEvent | TouchEvent) {
 
 	tooltipForDragShowing.value = true;
 
-	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkTooltip.vue')), {
-		showing: tooltipForDragShowing,
-		text: computed(() => {
-			return props.textConverter(finalValue.value);
-		}),
-		targetElement: thumbEl,
-	}, {
-		closed: () => dispose(),
-	});
+	const { dispose } = os.popup(
+		defineAsyncComponent(() => import("@/components/MkTooltip.vue")),
+		{
+			showing: tooltipForDragShowing,
+			text: computed(() => {
+				return props.textConverter(finalValue.value);
+			}),
+			targetElement: thumbEl,
+		},
+		{
+			closed: () => dispose(),
+		},
+	);
 
-	const style = window.document.createElement('style');
-	style.appendChild(window.document.createTextNode('* { cursor: grabbing !important; } body * { pointer-events: none !important; }'));
+	const style = window.document.createElement("style");
+	style.appendChild(
+		window.document.createTextNode(
+			"* { cursor: grabbing !important; } body * { pointer-events: none !important; }",
+		),
+	);
 	window.document.head.appendChild(style);
 
 	const thumbWidth = getThumbWidth();
@@ -161,12 +200,25 @@ function onMousedown(ev: MouseEvent | TouchEvent) {
 		ev.preventDefault();
 		let beforeValue = finalValue.value;
 		const containerRect = containerEl.value!.getBoundingClientRect();
-		const pointerX = 'touches' in ev && ev.touches.length > 0 ? ev.touches[0].clientX : 'clientX' in ev ? ev.clientX : 0;
-		const pointerPositionOnContainer = pointerX - (containerRect.left + (thumbWidth / 2));
-		rawValue.value = Math.min(1, Math.max(0, pointerPositionOnContainer / (containerEl.value!.offsetWidth - thumbWidth)));
+		const pointerX =
+			"touches" in ev && ev.touches.length > 0
+				? ev.touches[0].clientX
+				: "clientX" in ev
+					? ev.clientX
+					: 0;
+		const pointerPositionOnContainer =
+			pointerX - (containerRect.left + thumbWidth / 2);
+		rawValue.value = Math.min(
+			1,
+			Math.max(
+				0,
+				pointerPositionOnContainer /
+					(containerEl.value!.offsetWidth - thumbWidth),
+			),
+		);
 
 		if (props.continuousUpdate && beforeValue !== finalValue.value) {
-			emit('update:modelValue', finalValue.value);
+			emit("update:modelValue", finalValue.value);
 		}
 	};
 
@@ -175,22 +227,22 @@ function onMousedown(ev: MouseEvent | TouchEvent) {
 	const onMouseup = () => {
 		window.document.head.removeChild(style);
 		tooltipForDragShowing.value = false;
-		window.removeEventListener('mousemove', onDrag);
-		window.removeEventListener('touchmove', onDrag);
-		window.removeEventListener('mouseup', onMouseup);
-		window.removeEventListener('touchend', onMouseup);
+		window.removeEventListener("mousemove", onDrag);
+		window.removeEventListener("touchmove", onDrag);
+		window.removeEventListener("mouseup", onMouseup);
+		window.removeEventListener("touchend", onMouseup);
 
 		// 値が変わってたら通知
 		if (beforeValue !== finalValue.value) {
-			emit('update:modelValue', finalValue.value);
-			emit('dragEnded', finalValue.value);
+			emit("update:modelValue", finalValue.value);
+			emit("dragEnded", finalValue.value);
 		}
 	};
 
-	window.addEventListener('mousemove', onDrag);
-	window.addEventListener('touchmove', onDrag);
-	window.addEventListener('mouseup', onMouseup, { once: true });
-	window.addEventListener('touchend', onMouseup, { once: true });
+	window.addEventListener("mousemove", onDrag);
+	window.addEventListener("touchmove", onDrag);
+	window.addEventListener("mouseup", onMouseup, { once: true });
+	window.addEventListener("touchend", onMouseup, { once: true });
 }
 </script>
 

@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { defineAsyncComponent, ref } from 'vue';
-import type { Directive } from 'vue';
-import { popup } from '@/os.js';
+import { defineAsyncComponent, ref } from "vue";
+import type { Directive } from "vue";
+import { popup } from "@/os.js";
 
 export class UserPreview {
 	private el;
@@ -36,21 +36,25 @@ export class UserPreview {
 
 		const showing = ref(true);
 
-		const { dispose } = popup(defineAsyncComponent(() => import('@/components/MkUserPopup.vue')), {
-			showing,
-			q: this.user,
-			source: this.el,
-		}, {
-			pointerover: (event: PointerEvent) => {
-				if (event.pointerType === 'touch') return;
-				window.clearTimeout(this.hideTimer);
+		const { dispose } = popup(
+			defineAsyncComponent(() => import("@/components/MkUserPopup.vue")),
+			{
+				showing,
+				q: this.user,
+				source: this.el,
 			},
-			mouseleave: () => {
-				window.clearTimeout(this.showTimer);
-				this.hideTimer = window.setTimeout(this.close, 500);
+			{
+				pointerover: (event: PointerEvent) => {
+					if (event.pointerType === "touch") return;
+					window.clearTimeout(this.hideTimer);
+				},
+				mouseleave: () => {
+					window.clearTimeout(this.showTimer);
+					this.hideTimer = window.setTimeout(this.close, 500);
+				},
+				closed: () => dispose(),
 			},
-			closed: () => dispose(),
-		});
+		);
 
 		this.promise = {
 			cancel: () => {
@@ -76,7 +80,7 @@ export class UserPreview {
 	}
 
 	private onPointerover(event: PointerEvent) {
-		if (event.pointerType === 'touch') return;
+		if (event.pointerType === "touch") return;
 		window.clearTimeout(this.showTimer);
 		window.clearTimeout(this.hideTimer);
 		this.showTimer = window.setTimeout(this.show, 500);
@@ -94,15 +98,15 @@ export class UserPreview {
 	}
 
 	public attach() {
-		this.el.addEventListener('pointerover', this.onPointerover);
-		this.el.addEventListener('mouseleave', this.onMouseleave);
-		this.el.addEventListener('click', this.onClick);
+		this.el.addEventListener("pointerover", this.onPointerover);
+		this.el.addEventListener("mouseleave", this.onMouseleave);
+		this.el.addEventListener("click", this.onClick);
 	}
 
 	public detach() {
-		this.el.removeEventListener('pointerover', this.onPointerover);
-		this.el.removeEventListener('mouseleave', this.onMouseleave);
-		this.el.removeEventListener('click', this.onClick);
+		this.el.removeEventListener("pointerover", this.onPointerover);
+		this.el.removeEventListener("mouseleave", this.onMouseleave);
+		this.el.removeEventListener("click", this.onClick);
 	}
 }
 
@@ -112,7 +116,7 @@ export default {
 
 		// TODO: 新たにプロパティを作るのをやめMapを使う
 		// ただメモリ的には↓の方が省メモリかもしれないので検討中
-		const self = (el as any)._userPreviewDirective_ = {} as any;
+		const self = ((el as any)._userPreviewDirective_ = {} as any);
 
 		self.preview = new UserPreview(el, binding.value);
 	},

@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { searchIndexes as generated } from 'search-index:settings';
-import type { GeneratedSearchIndexItem } from 'search-index:settings';
+import { searchIndexes as generated } from "search-index:settings";
+import type { GeneratedSearchIndexItem } from "search-index:settings";
 
 export type SearchIndexItem = {
 	id: string;
@@ -15,7 +15,7 @@ export type SearchIndexItem = {
 	icon?: string;
 };
 
-const rootMods = new Map(generated.map(item => [item.id, item]));
+const rootMods = new Map(generated.map((item) => [item.id, item]));
 
 // link inlining here
 for (const item of generated) {
@@ -26,11 +26,10 @@ for (const item of generated) {
 				inline.parentId = item.id;
 				inline.path = item.path;
 			} else {
-				console.log('[Settings Search Index] Failed to inline', id);
+				console.log("[Settings Search Index] Failed to inline", id);
 			}
 		}
 	}
 }
 
 export const searchIndexes: SearchIndexItem[] = generated;
-

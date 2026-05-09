@@ -4,31 +4,51 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<SearchMarker path="/settings/accounts" :label="i18n.ts.accounts" :keywords="['accounts']" icon="ti ti-users">
-	<div class="_gaps">
-		<div class="_buttons">
-			<MkButton primary @click="addAccount"><i class="ti ti-plus"></i> {{ i18n.ts.addAccount }}</MkButton>
-			<!--<MkButton @click="refreshAllAccounts"><i class="ti ti-refresh"></i></MkButton>-->
-		</div>
+	<SearchMarker
+		path="/settings/accounts"
+		:label="i18n.ts.accounts"
+		:keywords="['accounts']"
+		icon="ti ti-users"
+	>
+		<div class="_gaps">
+			<div class="_buttons">
+				<MkButton primary @click="addAccount"
+					><i class="ti ti-plus"></i> {{ i18n.ts.addAccount }}</MkButton
+				>
+				<!--<MkButton @click="refreshAllAccounts"><i class="ti ti-refresh"></i></MkButton>-->
+			</div>
 
-		<MkUserCardMini v-for="x in accounts" :key="x[0] + x[1].id" :user="x[1]" :class="$style.user" @click.prevent="menu(x[0], x[1], $event)"/>
-	</div>
-</SearchMarker>
+			<MkUserCardMini
+				v-for="x in accounts"
+				:key="x[0] + x[1].id"
+				:user="x[1]"
+				:class="$style.user"
+				@click.prevent="menu(x[0], x[1], $event)"
+			/>
+		</div>
+	</SearchMarker>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
-import * as Misskey from 'misskey-js';
-import type { MenuItem } from '@/types/menu.js';
-import MkButton from '@/components/MkButton.vue';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { $i } from '@/i.js';
-import { switchAccount, removeAccount, login, getAccountWithSigninDialog, getAccountWithSignupDialog, getAccountWithSharedAccessDialog } from '@/accounts.js';
-import { i18n } from '@/i18n.js';
-import { definePage } from '@/page.js';
-import MkUserCardMini from '@/components/MkUserCardMini.vue';
-import { prefer } from '@/preferences.js';
+import { ref, computed } from "vue";
+import * as Misskey from "misskey-js";
+import type { MenuItem } from "@/types/menu.js";
+import MkButton from "@/components/MkButton.vue";
+import * as os from "@/os.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { $i } from "@/i.js";
+import {
+	switchAccount,
+	removeAccount,
+	login,
+	getAccountWithSigninDialog,
+	getAccountWithSignupDialog,
+	getAccountWithSharedAccessDialog,
+} from "@/accounts.js";
+import { i18n } from "@/i18n.js";
+import { definePage } from "@/page.js";
+import MkUserCardMini from "@/components/MkUserCardMini.vue";
+import { prefer } from "@/preferences.js";
 
 const accounts = prefer.r.accounts;
 
@@ -36,33 +56,53 @@ function refreshAllAccounts() {
 	// TODO
 }
 
-function menu(host: string, account: Misskey.entities.UserDetailed, ev: MouseEvent) {
+function menu(
+	host: string,
+	account: Misskey.entities.UserDetailed,
+	ev: MouseEvent,
+) {
 	let menu: MenuItem[];
 
-	menu = [{
-		text: i18n.ts.switch,
-		icon: 'ti ti-switch-horizontal',
-		action: () => switchAccount(host, account.id),
-	}, {
-		text: i18n.ts.remove,
-		icon: 'ti ti-trash',
-		action: () => removeAccount(host, account.id),
-	}];
+	menu = [
+		{
+			text: i18n.ts.switch,
+			icon: "ti ti-switch-horizontal",
+			action: () => switchAccount(host, account.id),
+		},
+		{
+			text: i18n.ts.remove,
+			icon: "ti ti-trash",
+			action: () => removeAccount(host, account.id),
+		},
+	];
 
 	os.popupMenu(menu, ev.currentTarget ?? ev.target);
 }
 
 function addAccount(ev: MouseEvent) {
-	os.popupMenu([{
-		text: i18n.ts.existingAccount,
-		action: () => { addExistingAccount(); },
-	}, {
-		text: i18n.ts.createAccount,
-		action: () => { createAccount(); },
-	}, {
-		text: i18n.ts.sharedAccount,
-		action: () => { addSharedAccount(); },
-	}], ev.currentTarget ?? ev.target);
+	os.popupMenu(
+		[
+			{
+				text: i18n.ts.existingAccount,
+				action: () => {
+					addExistingAccount();
+				},
+			},
+			{
+				text: i18n.ts.createAccount,
+				action: () => {
+					createAccount();
+				},
+			},
+			{
+				text: i18n.ts.sharedAccount,
+				action: () => {
+					addSharedAccount();
+				},
+			},
+		],
+		ev.currentTarget ?? ev.target,
+	);
 }
 
 function addSharedAccount() {
@@ -95,7 +135,7 @@ const headerTabs = computed(() => []);
 
 definePage(() => ({
 	title: i18n.ts.accounts,
-	icon: 'ti ti-users',
+	icon: "ti ti-users",
 }));
 </script>
 

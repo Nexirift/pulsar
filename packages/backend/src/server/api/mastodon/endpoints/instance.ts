@@ -3,17 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { FILE_TYPE_BROWSERSAFE } from '@/const.js';
-import type { Config } from '@/config.js';
-import { DI } from '@/di-symbols.js';
-import type { MiMeta } from '@/models/_.js';
-import { MastodonConverters } from '@/server/api/mastodon/MastodonConverters.js';
-import { MastodonClientService } from '@/server/api/mastodon/MastodonClientService.js';
-import { InstanceStatsService } from '@/core/InstanceStatsService.js';
-import { RoleService } from '@/core/RoleService.js';
-import type { FastifyInstance } from 'fastify';
-import type { MastodonEntity } from 'megalodon';
+import { Inject, Injectable } from "@nestjs/common";
+import { FILE_TYPE_BROWSERSAFE } from "@/const.js";
+import type { Config } from "@/config.js";
+import { DI } from "@/di-symbols.js";
+import type { MiMeta } from "@/models/_.js";
+import { MastodonConverters } from "@/server/api/mastodon/MastodonConverters.js";
+import { MastodonClientService } from "@/server/api/mastodon/MastodonClientService.js";
+import { InstanceStatsService } from "@/core/InstanceStatsService.js";
+import { RoleService } from "@/core/RoleService.js";
+import type { FastifyInstance } from "fastify";
+import type { MastodonEntity } from "megalodon";
 
 @Injectable()
 export class ApiInstanceMastodon {
@@ -31,20 +31,24 @@ export class ApiInstanceMastodon {
 	) {}
 
 	public register(fastify: FastifyInstance): void {
-		fastify.get('/v1/instance', async (_request, reply) => {
+		fastify.get("/v1/instance", async (_request, reply) => {
 			const { client, me } = await this.clientService.getAuthClient(_request);
 			const data = await client.getInstance();
-			const contact = this.meta.rootUser != null
-				? await this.mastoConverters.convertAccount(this.meta.rootUser)
-				: null;
+			const contact =
+				this.meta.rootUser != null
+					? await this.mastoConverters.convertAccount(this.meta.rootUser)
+					: null;
 			const roles = await this.roleService.getUserPolicies(me?.id ?? null);
 
 			const instance = data.data;
 			const response: MastodonEntity.Instance = {
 				uri: this.config.host,
-				title: this.meta.name || 'Pulsar',
-				description: this.meta.description || this.meta.about || 'This is a vanilla Pulsar Instance.',
-				email: instance.email || '',
+				title: this.meta.name || "Pulsar",
+				description:
+					this.meta.description ||
+					this.meta.about ||
+					"This is a vanilla Pulsar Instance.",
+				email: instance.email || "",
 				version: `3.0.0 (compatible; Pulsar ${this.config.version}; like Akkoma)`,
 				urls: instance.urls,
 				stats: {
@@ -52,7 +56,8 @@ export class ApiInstanceMastodon {
 					status_count: instance.stats.status_count,
 					domain_count: instance.stats.domain_count,
 				},
-				thumbnail: this.meta.backgroundImageUrl || '/static-assets/transparent.png',
+				thumbnail:
+					this.meta.backgroundImageUrl || "/static-assets/transparent.png",
 				languages: this.meta.langs,
 				registrations: !this.meta.disableRegistration || instance.registrations,
 				approval_required: this.meta.approvalRequiredForSignup,
@@ -92,7 +97,7 @@ export class ApiInstanceMastodon {
 			return reply.send(response);
 		});
 
-		fastify.get('/v2/instance', async (_request, reply) => {
+		fastify.get("/v2/instance", async (_request, reply) => {
 			const { client, me } = await this.clientService.getAuthClient(_request);
 			const [data, contact, roles, instanceStats] = await Promise.all([
 				client.getInstance(),
@@ -106,30 +111,34 @@ export class ApiInstanceMastodon {
 			const instance = data.data;
 			const response: MastodonEntity.InstanceV2 = {
 				domain: this.config.host,
-				title: this.meta.name || 'Sharkey',
+				title: this.meta.name || "Sharkey",
 				version: `3.0.0 (compatible; Sharkey ${this.config.version}; like Akkoma)`,
 				source_url: this.meta.repositoryUrl,
-				description: this.meta.description || this.meta.about || 'This is a vanilla Sharkey Instance.',
+				description:
+					this.meta.description ||
+					this.meta.about ||
+					"This is a vanilla Sharkey Instance.",
 				usage: {
 					users: {
 						active_month: instanceStats.usersActiveMonth,
 					},
 				},
 				thumbnail: {
-					url: this.meta.backgroundImageUrl || '/static-assets/transparent.png',
+					url: this.meta.backgroundImageUrl || "/static-assets/transparent.png",
 					blurhash: undefined,
 					versions: {
-						'@1x': this.meta.backgroundImageUrl || '/static-assets/transparent.png',
+						"@1x":
+							this.meta.backgroundImageUrl || "/static-assets/transparent.png",
 					},
 				},
 				icon: [
 					{
-						src: this.meta.app192IconUrl || '/static-assets/icons/192.png',
-						size: '192x192',
+						src: this.meta.app192IconUrl || "/static-assets/icons/192.png",
+						size: "192x192",
 					},
 					{
-						src: this.meta.app512IconUrl || '/static-assets/icons/512.png',
-						size: '512x512',
+						src: this.meta.app512IconUrl || "/static-assets/icons/512.png",
+						size: "512x512",
 					},
 				],
 				languages: this.meta.langs,
@@ -137,7 +146,7 @@ export class ApiInstanceMastodon {
 					urls: {
 						streaming: instance.urls.streaming_api,
 						status: null,
-						about: this.config.url + '/about',
+						about: this.config.url + "/about",
 						privacy_policy: this.meta.privacyPolicyUrl,
 						terms_of_service: this.meta.termsOfServiceUrl,
 					},
@@ -176,19 +185,19 @@ export class ApiInstanceMastodon {
 					},
 					timelines_access: {
 						live_feeds: {
-							local: this.meta.policies.ltlAvailable ? 'public' : 'disabled',
-							remote: this.meta.policies.gtlAvailable ? 'public' : 'disabled',
+							local: this.meta.policies.ltlAvailable ? "public" : "disabled",
+							remote: this.meta.policies.gtlAvailable ? "public" : "disabled",
 						},
 						hashtag_feeds: {
-							local: 'public',
-							remote: 'public',
+							local: "public",
+							remote: "public",
 						},
 						trending_link_feeds: {
-							local: 'disabled',
-							remote: 'disabled',
+							local: "disabled",
+							remote: "disabled",
 						},
 					},
-					limited_federation: this.meta.federation !== 'all',
+					limited_federation: this.meta.federation !== "all",
 				},
 				registrations: {
 					enabled: !this.meta.disableRegistration || instance.registrations,
@@ -200,7 +209,7 @@ export class ApiInstanceMastodon {
 				},
 				api_versions: {},
 				contact: {
-					email: instance.email || '',
+					email: instance.email || "",
 					account: contact,
 				},
 				rules: instance.rules ?? [],

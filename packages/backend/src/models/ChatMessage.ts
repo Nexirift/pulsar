@@ -3,13 +3,20 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { PrimaryColumn, Entity, Index, JoinColumn, Column, ManyToOne } from 'typeorm';
-import { id } from './util/id.js';
-import { MiUser } from './User.js';
-import { MiDriveFile } from './DriveFile.js';
-import { MiChatRoom } from './ChatRoom.js';
+import {
+	PrimaryColumn,
+	Entity,
+	Index,
+	JoinColumn,
+	Column,
+	ManyToOne,
+} from "typeorm";
+import { id } from "./util/id.js";
+import { MiUser } from "./User.js";
+import { MiDriveFile } from "./DriveFile.js";
+import { MiChatRoom } from "./ChatRoom.js";
 
-@Entity('chat_message')
+@Entity("chat_message")
 export class MiChatMessage {
 	@PrimaryColumn(id())
 	public id: string;
@@ -18,68 +25,74 @@ export class MiChatMessage {
 	@Column({
 		...id(),
 	})
-	public fromUserId: MiUser['id'];
+	public fromUserId: MiUser["id"];
 
-	@ManyToOne(type => MiUser, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiUser, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public fromUser: MiUser | null;
 
 	@Index()
 	@Column({
-		...id(), nullable: true,
+		...id(),
+		nullable: true,
 	})
-	public toUserId: MiUser['id'] | null;
+	public toUserId: MiUser["id"] | null;
 
-	@ManyToOne(type => MiUser, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiUser, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public toUser: MiUser | null;
 
 	@Index()
 	@Column({
-		...id(), nullable: true,
+		...id(),
+		nullable: true,
 	})
-	public toRoomId: MiChatRoom['id'] | null;
+	public toRoomId: MiChatRoom["id"] | null;
 
-	@ManyToOne(type => MiChatRoom, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiChatRoom, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public toRoom: MiChatRoom | null;
 
-	@Column('text', {
+	@Column("text", {
 		nullable: true,
 	})
 	public text: string | null;
 
-	@Column('varchar', {
-		length: 512, nullable: true,
+	@Column("varchar", {
+		length: 512,
+		nullable: true,
 	})
 	public uri: string | null;
 
 	@Column({
 		...id(),
-		array: true, default: '{}',
+		array: true,
+		default: "{}",
 	})
-	public reads: MiUser['id'][];
+	public reads: MiUser["id"][];
 
 	@Column({
 		...id(),
 		nullable: true,
 	})
-	public fileId: MiDriveFile['id'] | null;
+	public fileId: MiDriveFile["id"] | null;
 
-	@ManyToOne(type => MiDriveFile, {
-		onDelete: 'SET NULL',
+	@ManyToOne((type) => MiDriveFile, {
+		onDelete: "SET NULL",
 	})
 	@JoinColumn()
 	public file: MiDriveFile | null;
 
-	@Column('varchar', {
-		length: 1024, array: true, default: '{}',
+	@Column("varchar", {
+		length: 1024,
+		array: true,
+		default: "{}",
 	})
 	public reactions: string[];
 }

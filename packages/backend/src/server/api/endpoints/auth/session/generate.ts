@@ -3,41 +3,44 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { randomUUID } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AppsRepository, AuthSessionsRepository } from '@/models/_.js';
-import { IdService } from '@/core/IdService.js';
-import type { Config } from '@/config.js';
-import { DI } from '@/di-symbols.js';
-import { ApiError } from '../../../error.js';
+import { randomUUID } from "node:crypto";
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { AppsRepository, AuthSessionsRepository } from "@/models/_.js";
+import { IdService } from "@/core/IdService.js";
+import type { Config } from "@/config.js";
+import { DI } from "@/di-symbols.js";
+import { ApiError } from "../../../error.js";
 
 export const meta = {
-	tags: ['auth'],
+	tags: ["auth"],
 
 	requireCredential: false,
 
 	res: {
-		type: 'object',
-		optional: false, nullable: false,
+		type: "object",
+		optional: false,
+		nullable: false,
 		properties: {
 			token: {
-				type: 'string',
-				optional: false, nullable: false,
+				type: "string",
+				optional: false,
+				nullable: false,
 			},
 			url: {
-				type: 'string',
-				optional: false, nullable: false,
-				format: 'url',
+				type: "string",
+				optional: false,
+				nullable: false,
+				format: "url",
 			},
 		},
 	},
 
 	errors: {
 		noSuchApp: {
-			message: 'No such app.',
-			code: 'NO_SUCH_APP',
-			id: '92f93e63-428e-4f2f-a5a4-39e1407fe998',
+			message: "No such app.",
+			code: "NO_SUCH_APP",
+			id: "92f93e63-428e-4f2f-a5a4-39e1407fe998",
 		},
 	},
 
@@ -49,15 +52,16 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		appSecret: { type: 'string' },
+		appSecret: { type: "string" },
 	},
-	required: ['appSecret'],
+	required: ["appSecret"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.config)
 		private config: Config,

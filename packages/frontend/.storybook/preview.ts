@@ -3,18 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { FORCE_RE_RENDER, FORCE_REMOUNT } from '@storybook/core-events';
-import { addons } from '@storybook/preview-api';
-import { setup } from '@storybook/vue3';
-import isChromatic from 'chromatic/isChromatic';
-import { initialize, mswLoader } from 'msw-storybook-addon';
-import { userDetailed } from './fakes.js';
-import locale from './locale.js';
-import { commonHandlers, onUnhandledRequest } from './mocks.js';
-import themes from './themes.js';
-import type { Preview } from '@storybook/vue3';
-import type * as MisskeyOS from '../src/os.js';
-import '../src/style.scss';
+import { FORCE_RE_RENDER, FORCE_REMOUNT } from "@storybook/core-events";
+import { addons } from "@storybook/preview-api";
+import { setup } from "@storybook/vue3";
+import isChromatic from "chromatic/isChromatic";
+import { initialize, mswLoader } from "msw-storybook-addon";
+import { userDetailed } from "./fakes.js";
+import locale from "./locale.js";
+import { commonHandlers, onUnhandledRequest } from "./mocks.js";
+import themes from "./themes.js";
+import type { Preview } from "@storybook/vue3";
+import type * as MisskeyOS from "../src/os.js";
+import "../src/style.scss";
 
 const appInitialized = Symbol();
 
@@ -23,41 +23,47 @@ let moduleInitialized = false;
 let unobserve = () => {};
 let misskeyOS: typeof MisskeyOS | null = null;
 
-function loadTheme(applyTheme: typeof import('../src/theme')['applyTheme']) {
+function loadTheme(applyTheme: (typeof import("../src/theme"))["applyTheme"]) {
 	unobserve();
-	const theme = themes[window.document.documentElement.dataset.misskeyTheme as string];
+	const theme =
+		themes[window.document.documentElement.dataset.misskeyTheme as string];
 	if (theme) {
-		applyTheme(themes[window.document.documentElement.dataset.misskeyTheme as string]);
+		applyTheme(
+			themes[window.document.documentElement.dataset.misskeyTheme as string],
+		);
 	} else {
-		applyTheme(themes['l-light']);
+		applyTheme(themes["l-light"]);
 	}
 	const observer = new MutationObserver((entries) => {
 		for (const entry of entries) {
-			if (entry.attributeName === 'data-misskey-theme') {
+			if (entry.attributeName === "data-misskey-theme") {
 				const target = entry.target as HTMLElement;
 				const theme = themes[target.dataset.misskeyTheme as string];
 				if (theme) {
 					applyTheme(themes[target.dataset.misskeyTheme as string]);
 				} else {
-					target.removeAttribute('style');
+					target.removeAttribute("style");
 				}
 			}
 		}
 	});
 	observer.observe(window.document.documentElement, {
 		attributes: true,
-		attributeFilter: ['data-misskey-theme'],
+		attributeFilter: ["data-misskey-theme"],
 	});
 	unobserve = () => observer.disconnect();
 }
 
 function initLocalStorage() {
 	localStorage.clear();
-	localStorage.setItem('account', JSON.stringify({
-		...userDetailed(),
-		policies: {},
-	}));
-	localStorage.setItem('locale', JSON.stringify(locale));
+	localStorage.setItem(
+		"account",
+		JSON.stringify({
+			...userDetailed(),
+			policies: {},
+		}),
+	);
+	localStorage.setItem("locale", JSON.stringify(locale));
 }
 
 initialize({
@@ -66,29 +72,38 @@ initialize({
 initLocalStorage();
 queueMicrotask(() => {
 	Promise.all([
-		import('../src/components/index.js'),
-		import('../src/directives/index.js'),
-		import('../src/widgets/index.js'),
-		import('../src/theme.js'),
-		import('../src/preferences.js'),
-		import('../src/os.js'),
-	]).then(([{ default: components }, { default: directives }, { default: widgets }, { applyTheme }, { prefer }, os]) => {
-		setup((app) => {
-			moduleInitialized = true;
-			if (app[appInitialized]) {
-				return;
-			}
-			app[appInitialized] = true;
-			loadTheme(applyTheme);
-			components(app);
-			directives(app);
-			widgets(app);
-			misskeyOS = os;
-			if (isChromatic()) {
-				prefer.commit('animation', false);
-			}
-		});
-	});
+		import("../src/components/index.js"),
+		import("../src/directives/index.js"),
+		import("../src/widgets/index.js"),
+		import("../src/theme.js"),
+		import("../src/preferences.js"),
+		import("../src/os.js"),
+	]).then(
+		([
+			{ default: components },
+			{ default: directives },
+			{ default: widgets },
+			{ applyTheme },
+			{ prefer },
+			os,
+		]) => {
+			setup((app) => {
+				moduleInitialized = true;
+				if (app[appInitialized]) {
+					return;
+				}
+				app[appInitialized] = true;
+				loadTheme(applyTheme);
+				components(app);
+				directives(app);
+				widgets(app);
+				misskeyOS = os;
+				if (isChromatic()) {
+					prefer.commit("animation", false);
+				}
+			});
+		},
+	);
 });
 
 const preview = {
@@ -99,20 +114,29 @@ const preview = {
 			} else {
 				lastStory = context.id;
 				const channel = addons.getChannel();
-				const resetIndexedDBPromise = (globalThis.indexedDB as IDBFactory | undefined)?.databases
-					? indexedDB.databases().then((r) => {
-							for (let i = 0; i < r.length; i++) {
-								indexedDB.deleteDatabase(r[i].name!);
-							}
-						}).catch(() => {})
+				const resetIndexedDBPromise = (
+					globalThis.indexedDB as IDBFactory | undefined
+				)?.databases
+					? indexedDB
+							.databases()
+							.then((r) => {
+								for (let i = 0; i < r.length; i++) {
+									indexedDB.deleteDatabase(r[i].name!);
+								}
+							})
+							.catch(() => {})
 					: Promise.resolve();
-				const resetDefaultStorePromise = import('../src/store').then(({ store }) => {
-					store.init();
-				}).catch(() => {});
-				Promise.all([resetIndexedDBPromise, resetDefaultStorePromise]).then(() => {
-					initLocalStorage();
-					channel.emit(FORCE_RE_RENDER, { storyId: context.id });
-				});
+				const resetDefaultStorePromise = import("../src/store")
+					.then(({ store }) => {
+						store.init();
+					})
+					.catch(() => {});
+				Promise.all([resetIndexedDBPromise, resetDefaultStorePromise]).then(
+					() => {
+						initLocalStorage();
+						channel.emit(FORCE_RE_RENDER, { storyId: context.id });
+					},
+				);
 			}
 			const story = Story();
 			if (!moduleInitialized) {
@@ -133,7 +157,7 @@ const preview = {
 				},
 				template:
 					'<component :is="popup.component" v-for="popup in popups" :key="popup.id" v-bind="popup.props" v-on="popup.events"/>' +
-					'<story />',
+					"<story />",
 			};
 		},
 	],

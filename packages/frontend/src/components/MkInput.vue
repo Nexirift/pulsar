@@ -4,58 +4,86 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div class="_selectable">
-	<div :class="$style.label" @click="focus"><slot name="label"></slot></div>
-	<div :class="[$style.input, { [$style.inline]: inline, [$style.disabled]: disabled, [$style.focused]: focused }]">
-		<div ref="prefixEl" :class="$style.prefix"><slot name="prefix"></slot></div>
-		<input
-			ref="inputEl"
-			v-model="v"
-			v-adaptive-border
-			:class="$style.inputCore"
-			:type="type"
-			:disabled="disabled"
-			:required="required"
-			:readonly="readonly"
-			:placeholder="placeholder"
-			:pattern="pattern"
-			:autocomplete="autocomplete"
-			:autocapitalize="autocapitalize"
-			:spellcheck="spellcheck"
-			:inputmode="inputmode"
-			:step="step"
-			:list="id"
-			:min="min"
-			:max="max"
-			@focus="focused = true"
-			@blur="focused = false"
-			@keydown="onKeydown($event)"
-			@input="onInput"
+	<div class="_selectable">
+		<div :class="$style.label" @click="focus"><slot name="label"></slot></div>
+		<div
+			:class="[
+				$style.input,
+				{
+					[$style.inline]: inline,
+					[$style.disabled]: disabled,
+					[$style.focused]: focused,
+				},
+			]"
 		>
-		<datalist v-if="datalist" :id="id">
-			<option v-for="data in datalist" :key="data" :value="data"/>
-		</datalist>
-		<div ref="suffixEl" :class="$style.suffix"><slot name="suffix"></slot></div>
-	</div>
-	<div :class="$style.caption"><slot name="caption"></slot></div>
+			<div ref="prefixEl" :class="$style.prefix">
+				<slot name="prefix"></slot>
+			</div>
+			<input
+				ref="inputEl"
+				v-model="v"
+				v-adaptive-border
+				:class="$style.inputCore"
+				:type="type"
+				:disabled="disabled"
+				:required="required"
+				:readonly="readonly"
+				:placeholder="placeholder"
+				:pattern="pattern"
+				:autocomplete="autocomplete"
+				:autocapitalize="autocapitalize"
+				:spellcheck="spellcheck"
+				:inputmode="inputmode"
+				:step="step"
+				:list="id"
+				:min="min"
+				:max="max"
+				@focus="focused = true"
+				@blur="focused = false"
+				@keydown="onKeydown($event)"
+				@input="onInput"
+			/>
+			<datalist v-if="datalist" :id="id">
+				<option v-for="data in datalist" :key="data" :value="data" />
+			</datalist>
+			<div ref="suffixEl" :class="$style.suffix">
+				<slot name="suffix"></slot>
+			</div>
+		</div>
+		<div :class="$style.caption"><slot name="caption"></slot></div>
 
-	<MkButton v-if="manualSave && changed" primary :class="$style.save" @click="updated"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
-</div>
+		<MkButton
+			v-if="manualSave && changed"
+			primary
+			:class="$style.save"
+			@click="updated"
+			><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton
+		>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, nextTick, ref, useTemplateRef, watch, computed, toRefs } from 'vue';
-import { debounce } from 'throttle-debounce';
-import { useInterval } from '@@/js/use-interval.js';
-import type { InputHTMLAttributes } from 'vue';
-import type { SuggestionType } from '@/utility/autocomplete.js';
-import MkButton from '@/components/MkButton.vue';
-import { i18n } from '@/i18n.js';
-import { Autocomplete } from '@/utility/autocomplete.js';
+import {
+	onMounted,
+	onUnmounted,
+	nextTick,
+	ref,
+	useTemplateRef,
+	watch,
+	computed,
+	toRefs,
+} from "vue";
+import { debounce } from "throttle-debounce";
+import { useInterval } from "@@/js/use-interval.js";
+import type { InputHTMLAttributes } from "vue";
+import type { SuggestionType } from "@/utility/autocomplete.js";
+import MkButton from "@/components/MkButton.vue";
+import { i18n } from "@/i18n.js";
+import { Autocomplete } from "@/utility/autocomplete.js";
 
 const props = defineProps<{
 	modelValue: string | number | null;
-	type?: InputHTMLAttributes['type'];
+	type?: InputHTMLAttributes["type"];
 	required?: boolean;
 	readonly?: boolean;
 	disabled?: boolean;
@@ -63,11 +91,11 @@ const props = defineProps<{
 	placeholder?: string;
 	autofocus?: boolean;
 	autocomplete?: string;
-	mfmAutocomplete?: boolean | SuggestionType[],
+	mfmAutocomplete?: boolean | SuggestionType[];
 	autocapitalize?: string;
 	spellcheck?: boolean;
-	inputmode?: InputHTMLAttributes['inputmode'];
-	step?: InputHTMLAttributes['step'];
+	inputmode?: InputHTMLAttributes["inputmode"];
+	step?: InputHTMLAttributes["step"];
 	datalist?: string[];
 	min?: number;
 	max?: number | string;
@@ -79,10 +107,10 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'change', _ev: KeyboardEvent): void;
-	(ev: 'keydown', _ev: KeyboardEvent): void;
-	(ev: 'enter', _ev: KeyboardEvent): void;
-	(ev: 'update:modelValue', value: string | number): void;
+	(ev: "change", _ev: KeyboardEvent): void;
+	(ev: "keydown", _ev: KeyboardEvent): void;
+	(ev: "enter", _ev: KeyboardEvent): void;
+	(ev: "update:modelValue", value: string | number): void;
 }>();
 
 const { modelValue, type, autofocus } = toRefs(props);
@@ -91,44 +119,44 @@ const id = Math.random().toString(); // TODO: uuid?
 const focused = ref(false);
 const changed = ref(false);
 const invalid = ref(false);
-const filled = computed(() => v.value !== '' && v.value != null);
-const inputEl = useTemplateRef('inputEl');
-const prefixEl = useTemplateRef('prefixEl');
-const suffixEl = useTemplateRef('suffixEl');
-const height =
-	props.small ? 33 :
-	props.large ? 39 :
-	36;
+const filled = computed(() => v.value !== "" && v.value != null);
+const inputEl = useTemplateRef("inputEl");
+const prefixEl = useTemplateRef("prefixEl");
+const suffixEl = useTemplateRef("suffixEl");
+const height = props.small ? 33 : props.large ? 39 : 36;
 let autocompleteWorker: Autocomplete | null = null;
 
 const focus = () => inputEl.value?.focus();
 const onInput = (event: Event) => {
 	const ev = event as KeyboardEvent;
 	changed.value = true;
-	emit('change', ev);
+	emit("change", ev);
 };
 const onKeydown = (ev: KeyboardEvent) => {
-	if (ev.isComposing || ev.key === 'Process' || ev.keyCode === 229) return;
+	if (ev.isComposing || ev.key === "Process" || ev.keyCode === 229) return;
 
-	emit('keydown', ev);
+	emit("keydown", ev);
 
-	if (ev.code === 'Enter') {
-		emit('enter', ev);
+	if (ev.code === "Enter") {
+		emit("enter", ev);
 	}
 };
 
 const updated = () => {
 	changed.value = false;
-	if (type.value === 'number') {
-		emit('update:modelValue', typeof v.value === 'number' ? v.value : parseFloat(v.value ?? '0'));
+	if (type.value === "number") {
+		emit(
+			"update:modelValue",
+			typeof v.value === "number" ? v.value : parseFloat(v.value ?? "0"),
+		);
 	} else {
-		emit('update:modelValue', v.value ?? '');
+		emit("update:modelValue", v.value ?? "");
 	}
 };
 
 const debouncedUpdated = debounce(1000, updated);
 
-watch(modelValue, newValue => {
+watch(modelValue, (newValue) => {
 	v.value = newValue;
 });
 
@@ -146,23 +174,27 @@ watch(v, () => {
 
 // このコンポーネントが作成された時、非表示状態である場合がある
 // 非表示状態だと要素の幅などは0になってしまうので、定期的に計算する
-useInterval(() => {
-	if (inputEl.value == null) return;
+useInterval(
+	() => {
+		if (inputEl.value == null) return;
 
-	if (prefixEl.value) {
-		if (prefixEl.value.offsetWidth) {
-			inputEl.value.style.paddingLeft = prefixEl.value.offsetWidth + 'px';
+		if (prefixEl.value) {
+			if (prefixEl.value.offsetWidth) {
+				inputEl.value.style.paddingLeft = prefixEl.value.offsetWidth + "px";
+			}
 		}
-	}
-	if (suffixEl.value) {
-		if (suffixEl.value.offsetWidth) {
-			inputEl.value.style.paddingRight = suffixEl.value.offsetWidth + 'px';
+		if (suffixEl.value) {
+			if (suffixEl.value.offsetWidth) {
+				inputEl.value.style.paddingRight = suffixEl.value.offsetWidth + "px";
+			}
 		}
-	}
-}, 100, {
-	immediate: true,
-	afterMounted: true,
-});
+	},
+	100,
+	{
+		immediate: true,
+		afterMounted: true,
+	},
+);
 
 onMounted(() => {
 	nextTick(() => {
@@ -172,7 +204,11 @@ onMounted(() => {
 	});
 
 	if (props.mfmAutocomplete && inputEl.value) {
-		autocompleteWorker = new Autocomplete(inputEl.value, v, props.mfmAutocomplete === true ? undefined : props.mfmAutocomplete);
+		autocompleteWorker = new Autocomplete(
+			inputEl.value,
+			v,
+			props.mfmAutocomplete === true ? undefined : props.mfmAutocomplete,
+		);
 	}
 });
 

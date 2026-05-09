@@ -3,25 +3,25 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AntennasRepository } from '@/models/_.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { DI } from '@/di-symbols.js';
-import { ApiError } from '../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { AntennasRepository } from "@/models/_.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { DI } from "@/di-symbols.js";
+import { ApiError } from "../../error.js";
 
 export const meta = {
-	tags: ['antennas'],
+	tags: ["antennas"],
 
 	requireCredential: true,
 
-	kind: 'write:account',
+	kind: "write:account",
 
 	errors: {
 		noSuchAntenna: {
-			message: 'No such antenna.',
-			code: 'NO_SUCH_ANTENNA',
-			id: 'b34dcf9d-348f-44bb-99d0-6c9314cfe2df',
+			message: "No such antenna.",
+			code: "NO_SUCH_ANTENNA",
+			id: "b34dcf9d-348f-44bb-99d0-6c9314cfe2df",
 		},
 	},
 
@@ -33,15 +33,16 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		antennaId: { type: 'string', format: 'misskey:id' },
+		antennaId: { type: "string", format: "misskey:id" },
 	},
-	required: ['antennaId'],
+	required: ["antennaId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.antennasRepository)
 		private antennasRepository: AntennasRepository,
@@ -60,7 +61,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			await this.antennasRepository.delete(antenna.id);
 
-			this.globalEventService.publishInternalEvent('antennaDeleted', antenna);
+			this.globalEventService.publishInternalEvent("antennaDeleted", antenna);
 		});
 	}
 }

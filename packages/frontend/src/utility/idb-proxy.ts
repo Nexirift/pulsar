@@ -10,12 +10,15 @@ import {
 	set as iset,
 	del as idel,
 	clear as iclear,
-} from 'idb-keyval';
-import { miLocalStorage } from '@/local-storage.js';
+} from "idb-keyval";
+import { miLocalStorage } from "@/local-storage.js";
 
-const PREFIX = 'idbfallback::';
+const PREFIX = "idbfallback::";
 
-let idbAvailable = typeof window !== 'undefined' ? !!(window.indexedDB && typeof window.indexedDB.open === 'function') : true;
+let idbAvailable =
+	typeof window !== "undefined"
+		? !!(window.indexedDB && typeof window.indexedDB.open === "function")
+		: true;
 
 // iframe.contentWindow.indexedDB.deleteDatabase() がchromeのバグで使用できないため、indexedDBを無効化している。
 // バグが治って再度有効化するのであれば、cypressのコマンド内のコメントアウトを外すこと
@@ -24,18 +27,17 @@ let idbAvailable = typeof window !== 'undefined' ? !!(window.indexedDB && typeof
 // @ts-expect-error
 if (window.Cypress) {
 	idbAvailable = false;
-	console.log('Cypress detected. It will use localStorage.');
+	console.log("Cypress detected. It will use localStorage.");
 }
 
 if (idbAvailable) {
-	await iset('idb-test', 'test')
-		.catch(err => {
-			console.error('idb error', err);
-			console.error('indexedDB is unavailable. It will use localStorage.');
-			idbAvailable = false;
-		});
+	await iset("idb-test", "test").catch((err) => {
+		console.error("idb error", err);
+		console.error("indexedDB is unavailable. It will use localStorage.");
+		idbAvailable = false;
+	});
 } else {
-	console.error('indexedDB is unavailable. It will use localStorage.');
+	console.error("indexedDB is unavailable. It will use localStorage.");
 }
 
 export async function get(key: string) {

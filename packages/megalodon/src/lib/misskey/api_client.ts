@@ -1,20 +1,22 @@
-import axios, { type AxiosResponse, type AxiosRequestConfig } from 'axios'
-import dayjs from 'dayjs'
+import axios, { type AxiosResponse, type AxiosRequestConfig } from "axios";
+import dayjs from "dayjs";
 
-import { DEFAULT_UA } from '../default.js'
-import { type Response } from '../response.js'
-import * as Entity from './entity.js'
-import * as MegalodonEntity from '../entity.js'
-import * as MisskeyNotificationType from './notification.js'
-import * as NotificationType from '../notification.js'
-import { UnknownNotificationTypeError } from '../notification.js';
+import { DEFAULT_UA } from "../default.js";
+import { type Response } from "../response.js";
+import * as Entity from "./entity.js";
+import * as MegalodonEntity from "../entity.js";
+import * as MisskeyNotificationType from "./notification.js";
+import * as NotificationType from "../notification.js";
+import { UnknownNotificationTypeError } from "../notification.js";
 
-export type * as Entity from './entity.js';
+export type * as Entity from "./entity.js";
 
 export namespace Converter {
-	export const announcement = (a: Entity.Announcement): MegalodonEntity.Announcement => ({
+	export const announcement = (
+		a: Entity.Announcement,
+	): MegalodonEntity.Announcement => ({
 		id: a.id,
-		content: a.title + '\n' + a.text,
+		content: a.title + "\n" + a.text,
 		starts_at: null,
 		ends_at: null,
 		published: true,
@@ -26,8 +28,8 @@ export namespace Converter {
 		statuses: [],
 		tags: [],
 		emojis: [],
-		reactions: []
-	})
+		reactions: [],
+	});
 
 	export const emoji = (e: Entity.Emoji): MegalodonEntity.Emoji => {
 		return {
@@ -35,16 +37,17 @@ export namespace Converter {
 			static_url: e.url,
 			url: e.url,
 			visible_in_picker: true,
-			category: e.category
-		}
-	}
+			category: e.category,
+		};
+	};
 
-	export const user = (u: Entity.User, host: string | null = null): MegalodonEntity.Account => {
+	export const user = (
+		u: Entity.User,
+		host: string | null = null,
+	): MegalodonEntity.Account => {
 		let acct = u.username;
-		host ? host = host.replace("https://", "") : undefined;
-		let acctUrl = `https://${host || u.host || host}/@${
-			u.username
-		}`;
+		host ? (host = host.replace("https://", "")) : undefined;
+		let acctUrl = `https://${host || u.host || host}/@${u.username}`;
 		if (u.host) {
 			acct = `${u.username}@${u.host}`;
 			acctUrl = `https://${u.host}/@${u.username}`;
@@ -55,32 +58,43 @@ export namespace Converter {
 			fqn: fqn,
 			username: u.username,
 			acct: acct,
-			display_name: u.name ? u.name : '',
+			display_name: u.name ? u.name : "",
 			locked: false,
 			group: null,
 			noindex: null,
 			suspended: null,
 			limited: null,
-			created_at: u.createdAt ? u.createdAt : '',
+			created_at: u.createdAt ? u.createdAt : "",
 			followers_count: u.followersCount ? u.followersCount : 0,
 			following_count: u.followingCount ? u.followingCount : 0,
 			statuses_count: u.notesCount ? u.notesCount : 0,
-			note: u.description ? u.description : '',
+			note: u.description ? u.description : "",
 			url: u.uri ?? acctUrl,
-			avatar: u.avatarUrl ? u.avatarUrl : 'https://dev.joinsharkey.org/static-assets/avatar.png',
-			avatar_static: u.avatarUrl ? u.avatarUrl : 'https://dev.joinsharkey.org/static-assets/avatar.png',
-			header: u.bannerUrl ? u.bannerUrl : 'https://dev.joinsharkey.org/static-assets/transparent.png',
-			header_static: u.bannerUrl ? u.bannerUrl : 'https://dev.joinsharkey.org/static-assets/transparent.png',
+			avatar: u.avatarUrl
+				? u.avatarUrl
+				: "https://dev.joinsharkey.org/static-assets/avatar.png",
+			avatar_static: u.avatarUrl
+				? u.avatarUrl
+				: "https://dev.joinsharkey.org/static-assets/avatar.png",
+			header: u.bannerUrl
+				? u.bannerUrl
+				: "https://dev.joinsharkey.org/static-assets/transparent.png",
+			header_static: u.bannerUrl
+				? u.bannerUrl
+				: "https://dev.joinsharkey.org/static-assets/transparent.png",
 			emojis: mapEmojis(u.emojis),
 			moved: null,
 			fields: [],
-			bot: null
-		}
-	}
+			bot: null,
+		};
+	};
 
-	export const userDetail = (u: Entity.UserDetail, host: string | null = null): MegalodonEntity.Account => {
+	export const userDetail = (
+		u: Entity.UserDetail,
+		host: string | null = null,
+	): MegalodonEntity.Account => {
 		let acct = u.username;
-		host ? host = host.replace("https://", "") : undefined;
+		host ? (host = host.replace("https://", "")) : undefined;
 		let acctUrl = `https://${u.host || host}/@${u.username}`;
 		if (u.host) {
 			acct = `${u.username}@${u.host}`;
@@ -90,7 +104,7 @@ export namespace Converter {
 			id: u.id,
 			username: u.username,
 			acct: acct,
-			display_name: u.name ? u.name : '',
+			display_name: u.name ? u.name : "",
 			locked: u.isLocked,
 			group: null,
 			noindex: null,
@@ -100,20 +114,30 @@ export namespace Converter {
 			followers_count: u.followersCount,
 			following_count: u.followingCount,
 			statuses_count: u.notesCount,
-			note: u.description ? u.description.replace(/\n|\\n/g, "<br>") : '',
+			note: u.description ? u.description.replace(/\n|\\n/g, "<br>") : "",
 			url: u.uri ?? acctUrl,
-			avatar: u.avatarUrl ? u.avatarUrl : 'https://dev.joinsharkey.org/static-assets/avatar.png',
-			avatar_static: u.avatarUrl ? u.avatarUrl : 'https://dev.joinsharkey.org/static-assets/avatar.png',
-			header: u.bannerUrl ? u.bannerUrl : 'https://dev.joinsharkey.org/static-assets/transparent.png',
-			header_static: u.bannerUrl ? u.bannerUrl : 'https://dev.joinsharkey.org/static-assets/transparent.png',
+			avatar: u.avatarUrl
+				? u.avatarUrl
+				: "https://dev.joinsharkey.org/static-assets/avatar.png",
+			avatar_static: u.avatarUrl
+				? u.avatarUrl
+				: "https://dev.joinsharkey.org/static-assets/avatar.png",
+			header: u.bannerUrl
+				? u.bannerUrl
+				: "https://dev.joinsharkey.org/static-assets/transparent.png",
+			header_static: u.bannerUrl
+				? u.bannerUrl
+				: "https://dev.joinsharkey.org/static-assets/transparent.png",
 			emojis: mapEmojis(u.emojis),
 			moved: null,
 			fields: [],
-			bot: u.isBot
-		}
-	}
+			bot: u.isBot,
+		};
+	};
 
-	export const userPreferences = (v: "public" | "unlisted" | "private" | "direct"): MegalodonEntity.Preferences => {
+	export const userPreferences = (
+		v: "public" | "unlisted" | "private" | "direct",
+	): MegalodonEntity.Preferences => {
 		return {
 			"reading:expand:media": "default",
 			"reading:expand:spoilers": false,
@@ -123,47 +147,53 @@ export namespace Converter {
 		};
 	};
 
-	export const visibility = (v: 'public' | 'home' | 'followers' | 'specified'): 'public' | 'unlisted' | 'private' | 'direct' => {
+	export const visibility = (
+		v: "public" | "home" | "followers" | "specified",
+	): "public" | "unlisted" | "private" | "direct" => {
 		switch (v) {
-			case 'public':
-				return v
-			case 'home':
-				return 'unlisted'
-			case 'followers':
-				return 'private'
-			case 'specified':
-				return 'direct'
+			case "public":
+				return v;
+			case "home":
+				return "unlisted";
+			case "followers":
+				return "private";
+			case "specified":
+				return "direct";
 		}
-	}
+	};
 
-	export const encodeVisibility = (v: 'public' | 'unlisted' | 'private' | 'direct'): 'public' | 'home' | 'followers' | 'specified' => {
+	export const encodeVisibility = (
+		v: "public" | "unlisted" | "private" | "direct",
+	): "public" | "home" | "followers" | "specified" => {
 		switch (v) {
-			case 'public':
-				return v
-			case 'unlisted':
-				return 'home'
-			case 'private':
-				return 'followers'
-			case 'direct':
-				return 'specified'
+			case "public":
+				return v;
+			case "unlisted":
+				return "home";
+			case "private":
+				return "followers";
+			case "direct":
+				return "specified";
 		}
-	}
+	};
 
-	export const fileType = (s: string): 'unknown' | 'image' | 'gifv' | 'video' | 'audio' => {
-		if (s === 'image/gif') {
-			return 'gifv'
+	export const fileType = (
+		s: string,
+	): "unknown" | "image" | "gifv" | "video" | "audio" => {
+		if (s === "image/gif") {
+			return "gifv";
 		}
-		if (s.includes('image')) {
-			return 'image'
+		if (s.includes("image")) {
+			return "image";
 		}
-		if (s.includes('video')) {
-			return 'video'
+		if (s.includes("video")) {
+			return "video";
 		}
-		if (s.includes('audio')) {
-			return 'audio'
+		if (s.includes("audio")) {
+			return "audio";
 		}
-		return 'unknown'
-	}
+		return "unknown";
+	};
 
 	export const file = (f: Entity.File): MegalodonEntity.Attachment => {
 		return {
@@ -175,22 +205,24 @@ export namespace Converter {
 			text_url: f.url,
 			meta: {
 				width: f.properties.width,
-				height: f.properties.height
+				height: f.properties.height,
 			},
 			description: f.comment ? f.comment : null,
-			blurhash: f.blurhash ? f.blurhash : null
-		}
-	}
+			blurhash: f.blurhash ? f.blurhash : null,
+		};
+	};
 
 	export const follower = (f: Entity.Follower): MegalodonEntity.Account => {
-		return user(f.follower)
-	}
+		return user(f.follower);
+	};
 
 	export const following = (f: Entity.Following): MegalodonEntity.Account => {
-		return user(f.followee)
-	}
+		return user(f.followee);
+	};
 
-	export const relation = (r: Entity.Relation): MegalodonEntity.Relationship => {
+	export const relation = (
+		r: Entity.Relation,
+	): MegalodonEntity.Relationship => {
 		return {
 			id: r.id,
 			following: r.isFollowing,
@@ -205,54 +237,63 @@ export namespace Converter {
 			showing_reblogs: !r.isRenoteMuted,
 			endorsed: false,
 			notifying: !r.isMuted,
-			note: r.memo ?? '',
-		}
-	}
+			note: r.memo ?? "",
+		};
+	};
 
 	export const choice = (c: Entity.Choice): MegalodonEntity.PollOption => {
 		return {
 			title: c.text,
-			votes_count: c.votes
-		}
-	}
+			votes_count: c.votes,
+		};
+	};
 
 	export const poll = (p: Entity.Poll, id: string): MegalodonEntity.Poll => {
-		const now = dayjs()
-		const expire = dayjs(p.expiresAt)
-		const count = p.choices.reduce((sum, choice) => sum + choice.votes, 0)
+		const now = dayjs();
+		const expire = dayjs(p.expiresAt);
+		const count = p.choices.reduce((sum, choice) => sum + choice.votes, 0);
 		return {
 			id: id,
 			expires_at: p.expiresAt,
 			expired: now.isAfter(expire),
 			multiple: p.multiple,
 			votes_count: count,
-			options: Array.isArray(p.choices) ? p.choices.map(c => choice(c)) : [],
-			voted: Array.isArray(p.choices) ? p.choices.some(c => c.isVoted) : false,
-			own_votes: Array.isArray(p.choices) ? p.choices.filter((c) => c.isVoted).map((c) => p.choices.indexOf(c)) : [],
+			options: Array.isArray(p.choices) ? p.choices.map((c) => choice(c)) : [],
+			voted: Array.isArray(p.choices)
+				? p.choices.some((c) => c.isVoted)
+				: false,
+			own_votes: Array.isArray(p.choices)
+				? p.choices.filter((c) => c.isVoted).map((c) => p.choices.indexOf(c))
+				: [],
 			emojis: [],
-		}
-	}
+		};
+	};
 
-	export const note = (n: Entity.Note, host: string | null = null): MegalodonEntity.Status => {
-		host ? host = host.replace("https://", "") : null;
+	export const note = (
+		n: Entity.Note,
+		host: string | null = null,
+	): MegalodonEntity.Status => {
+		host ? (host = host.replace("https://", "")) : null;
 		return {
 			id: n.id,
-			uri: n.uri ? n.uri : host ? `https://${host}/notes/${n.id}` : '',
-			url: n.url ? n.url : host ? `https://${host}/notes/${n.id}` : '',
+			uri: n.uri ? n.uri : host ? `https://${host}/notes/${n.id}` : "",
+			url: n.url ? n.url : host ? `https://${host}/notes/${n.id}` : "",
 			account: user(n.user, n.user.host ? n.user.host : host ? host : null),
 			in_reply_to_id: n.replyId,
 			in_reply_to_account_id: n.reply?.userId ?? null,
-			reblog: n.renote ? note(n.renote, n.user.host ? n.user.host : host ? host : null) : null,
+			reblog: n.renote
+				? note(n.renote, n.user.host ? n.user.host : host ? host : null)
+				: null,
 			content: n.text
 				? n.text
-					.replace(/&/g, '&amp;')
-					.replace(/</g, '&lt;')
-					.replace(/>/g, '&gt;')
-					.replace(/"/g, '&quot;')
-					.replace(/'/g, '&#39;')
-					.replace(/`/g, '&#x60;')
-					.replace(/\r?\n/g, '<br>')
-				: '',
+						.replace(/&/g, "&amp;")
+						.replace(/</g, "&lt;")
+						.replace(/>/g, "&gt;")
+						.replace(/"/g, "&quot;")
+						.replace(/'/g, "&#39;")
+						.replace(/`/g, "&#x60;")
+						.replace(/\r?\n/g, "<br>")
+				: "",
 			plain_content: n.text ? n.text : null,
 			created_at: n.createdAt,
 			edited_at: n.updatedAt || null,
@@ -264,10 +305,14 @@ export namespace Converter {
 			reblogged: false,
 			favourited: !!n.myReaction,
 			muted: false,
-			sensitive: Array.isArray(n.files) ? n.files.some(f => f.isSensitive) : false,
-			spoiler_text: n.cw ? n.cw : '',
+			sensitive: Array.isArray(n.files)
+				? n.files.some((f) => f.isSensitive)
+				: false,
+			spoiler_text: n.cw ? n.cw : "",
 			visibility: visibility(n.visibility),
-			media_attachments: Array.isArray(n.files) ? n.files.map(f => file(f)) : [],
+			media_attachments: Array.isArray(n.files)
+				? n.files.map((f) => file(f))
+				: [],
 			mentions: [],
 			tags: [],
 			card: null,
@@ -275,44 +320,61 @@ export namespace Converter {
 			application: null,
 			language: null,
 			pinned: null,
-			emoji_reactions: typeof n.reactions === 'object' ? mapReactions(n.reactions, n.reactionEmojis, n.myReaction) : [],
+			emoji_reactions:
+				typeof n.reactions === "object"
+					? mapReactions(n.reactions, n.reactionEmojis, n.myReaction)
+					: [],
 			bookmarked: false,
-			quote: n.renote && n.text ? note(n.renote, n.user.host ? n.user.host : host ? host : null) : null
-		}
-	}
+			quote:
+				n.renote && n.text
+					? note(n.renote, n.user.host ? n.user.host : host ? host : null)
+					: null,
+		};
+	};
 
-	export const noteWithText = (n: Entity.Note, host: string | null = null): MegalodonEntity.StatusWithText => {
+	export const noteWithText = (
+		n: Entity.Note,
+		host: string | null = null,
+	): MegalodonEntity.StatusWithText => {
 		return {
 			...note(n, host),
-			text: n.text ?? ''
-		}
-	}
+			text: n.text ?? "",
+		};
+	};
 
 	export const notesource = (n: Entity.Note): MegalodonEntity.StatusSource => {
 		return {
 			id: n.id,
-			text: n.text ?? '',
-			spoiler_text: n.cw ? n.cw : ''
-		}
-	}
-
-	const mapEmojis = (e: Array<Entity.Emoji> | { [key: string]: string }): Array<MegalodonEntity.Emoji> => {
-		if (Array.isArray(e)) {
-			return e.map(e => emoji(e))
-		} else if (e) {
-			return mapReactionEmojis(e)
-		} else {
-			return []
-		}
-	}
-
-	export const getTotalReactions = (r: { [key: string]: number }): number => {
-		return Object.values(r).length > 0 ? Object.values(r).reduce(
-			(previousValue, currentValue) => previousValue + currentValue,
-		) : 0;
+			text: n.text ?? "",
+			spoiler_text: n.cw ? n.cw : "",
+		};
 	};
 
-	export const mapReactions = (r: { [key: string]: number }, e: Record<string, string | undefined>, myReaction?: string): Array<MegalodonEntity.Reaction> => {
+	const mapEmojis = (
+		e: Array<Entity.Emoji> | { [key: string]: string },
+	): Array<MegalodonEntity.Emoji> => {
+		if (Array.isArray(e)) {
+			return e.map((e) => emoji(e));
+		} else if (e) {
+			return mapReactionEmojis(e);
+		} else {
+			return [];
+		}
+	};
+
+	export const getTotalReactions = (r: { [key: string]: number }): number => {
+		return Object.values(r).length > 0
+			? Object.values(r).reduce(
+					(previousValue, currentValue) => previousValue + currentValue,
+				)
+			: 0;
+	};
+
+	export const mapReactions = (
+		r: { [key: string]: number },
+		e: Record<string, string | undefined>,
+		myReaction?: string,
+	): Array<MegalodonEntity.Reaction> => {
 		return Object.entries(r).map(([key, count]) => {
 			const me = myReaction != null && key === myReaction;
 
@@ -325,7 +387,7 @@ export namespace Converter {
 				const [, prefix, host] = match;
 
 				// Local custom emoji end in "@.", which we need to remove.
-				if (host && host !== '@.') {
+				if (host && host !== "@.") {
 					name = prefix + host;
 				} else {
 					name = prefix;
@@ -338,138 +400,149 @@ export namespace Converter {
 				name,
 				url: e[name],
 				static_url: e[name],
-			}
-		})
-	}
+			};
+		});
+	};
 
 	// TODO implement other properties
-	const mapReactionEmojis = (r: { [key: string]: string }): Array<MegalodonEntity.Emoji> => {
-		return Object.keys(r).map(key => ({
+	const mapReactionEmojis = (r: {
+		[key: string]: string;
+	}): Array<MegalodonEntity.Emoji> => {
+		return Object.keys(r).map((key) => ({
 			shortcode: key,
 			static_url: r[key],
 			url: r[key],
 			visible_in_picker: true,
-			category: ''
-		}))
-	}
+			category: "",
+		}));
+	};
 
-	export const reactions = (r: Array<Entity.Reaction>): Array<MegalodonEntity.Reaction> => {
-		const result: Array<MegalodonEntity.Reaction> = []
-		r.map(e => {
-			const i = result.findIndex(res => res.name === e.type)
+	export const reactions = (
+		r: Array<Entity.Reaction>,
+	): Array<MegalodonEntity.Reaction> => {
+		const result: Array<MegalodonEntity.Reaction> = [];
+		r.map((e) => {
+			const i = result.findIndex((res) => res.name === e.type);
 			if (i >= 0) {
-				result[i].count++
+				result[i].count++;
 			} else {
 				result.push({
 					count: 1,
 					me: false,
 					name: e.type,
-				})
+				});
 			}
-		})
-		return result
-	}
+		});
+		return result;
+	};
 
-	export const noteToConversation = (n: Entity.Note): MegalodonEntity.Conversation => {
-		const accounts: Array<MegalodonEntity.Account> = [user(n.user)]
+	export const noteToConversation = (
+		n: Entity.Note,
+	): MegalodonEntity.Conversation => {
+		const accounts: Array<MegalodonEntity.Account> = [user(n.user)];
 		if (n.reply) {
-			accounts.push(user(n.reply.user))
+			accounts.push(user(n.reply.user));
 		}
 		return {
 			id: n.id,
 			accounts: accounts,
 			last_status: note(n),
-			unread: false
-		}
-	}
+			unread: false,
+		};
+	};
 
 	export const list = (l: Entity.List): MegalodonEntity.List => ({
 		id: l.id,
 		title: l.name,
-		exclusive: null
-	})
+		exclusive: null,
+	});
 
 	export const encodeNotificationType = (
-		e: MegalodonEntity.NotificationType
+		e: MegalodonEntity.NotificationType,
 	): Entity.NotificationType | UnknownNotificationTypeError => {
 		switch (e) {
 			case NotificationType.Follow:
-				return MisskeyNotificationType.Follow
+				return MisskeyNotificationType.Follow;
 			case NotificationType.Mention:
-				return MisskeyNotificationType.Reply
+				return MisskeyNotificationType.Reply;
 			case NotificationType.Favourite:
 			case NotificationType.EmojiReaction:
-				return MisskeyNotificationType.Reaction
+				return MisskeyNotificationType.Reaction;
 			case NotificationType.Reblog:
-				return MisskeyNotificationType.Renote
+				return MisskeyNotificationType.Renote;
 			case NotificationType.PollVote:
-				return MisskeyNotificationType.PollVote
+				return MisskeyNotificationType.PollVote;
 			case NotificationType.FollowRequest:
-				return MisskeyNotificationType.ReceiveFollowRequest
+				return MisskeyNotificationType.ReceiveFollowRequest;
 			default:
-				return new UnknownNotificationTypeError()
+				return new UnknownNotificationTypeError();
 		}
-	}
+	};
 
 	export const decodeNotificationType = (
-		e: Entity.NotificationType
+		e: Entity.NotificationType,
 	): MegalodonEntity.NotificationType | UnknownNotificationTypeError => {
 		switch (e) {
 			case MisskeyNotificationType.Follow:
-				return NotificationType.Follow
+				return NotificationType.Follow;
 			case MisskeyNotificationType.Mention:
 			case MisskeyNotificationType.Reply:
-				return NotificationType.Mention
+				return NotificationType.Mention;
 			case MisskeyNotificationType.Renote:
 			case MisskeyNotificationType.Quote:
-				return NotificationType.Reblog
+				return NotificationType.Reblog;
 			case MisskeyNotificationType.Reaction:
-				return NotificationType.EmojiReaction
+				return NotificationType.EmojiReaction;
 			case MisskeyNotificationType.PollVote:
-				return NotificationType.PollVote
+				return NotificationType.PollVote;
 			case MisskeyNotificationType.ReceiveFollowRequest:
-				return NotificationType.FollowRequest
+				return NotificationType.FollowRequest;
 			case MisskeyNotificationType.FollowRequestAccepted:
-				return NotificationType.Follow
+				return NotificationType.Follow;
 			default:
-				return new UnknownNotificationTypeError()
+				return new UnknownNotificationTypeError();
 		}
-	}
+	};
 
-	export const notification = (n: Entity.Notification): MegalodonEntity.Notification | UnknownNotificationTypeError => {
-		const notificationType = decodeNotificationType(n.type)
+	export const notification = (
+		n: Entity.Notification,
+	): MegalodonEntity.Notification | UnknownNotificationTypeError => {
+		const notificationType = decodeNotificationType(n.type);
 		if (notificationType instanceof UnknownNotificationTypeError) {
-			return notificationType
+			return notificationType;
 		}
 		let notification = {
 			id: n.id,
 			account: user(n.user),
 			created_at: n.createdAt,
-			type: notificationType
-		}
+			type: notificationType,
+		};
 		if (n.note) {
 			notification = Object.assign(notification, {
-				status: note(n.note)
-			})
+				status: note(n.note),
+			});
 		}
 		if (n.reaction) {
 			notification = Object.assign(notification, {
-				emoji: n.reaction
-			})
+				emoji: n.reaction,
+			});
 		}
-		return notification
-	}
+		return notification;
+	};
 
 	export const stats = (s: Entity.Stats): MegalodonEntity.Stats => {
 		return {
 			user_count: s.originalUsersCount,
 			status_count: s.originalNotesCount,
-			domain_count: s.instances
-		}
-	}
+			domain_count: s.instances,
+		};
+	};
 
-	export const meta = (m: Entity.Meta, s: Entity.Stats): MegalodonEntity.Instance => {
-		const wss = m.uri.replace(/^https:\/\//, 'wss://')
+	export const meta = (
+		m: Entity.Meta,
+		s: Entity.Stats,
+	): MegalodonEntity.Instance => {
+		const wss = m.uri.replace(/^https:\/\//, "wss://");
 		return {
 			uri: m.uri,
 			title: m.name,
@@ -478,7 +551,7 @@ export namespace Converter {
 			version: m.version,
 			thumbnail: m.bannerUrl,
 			urls: {
-				streaming_api: `${wss}/streaming`
+				streaming_api: `${wss}/streaming`,
 			},
 			stats: stats(s),
 			languages: m.langs,
@@ -487,54 +560,62 @@ export namespace Converter {
 			configuration: {
 				statuses: {
 					max_characters: m.maxNoteTextLength,
-					max_media_attachments: m.policies.clipLimit
-				}
+					max_media_attachments: m.policies.clipLimit,
+				},
 			},
 			rules: m.serverRules.map((r, index) => ({
 				id: (index + 1).toString(),
 				text: r,
-			}))
-		}
-	}
+			})),
+		};
+	};
 
 	export const hashtag = (h: Entity.Hashtag): MegalodonEntity.Tag => {
 		return {
 			name: h.tag,
 			url: h.tag,
 			history: [],
-			following: false
-		}
-	}
+			following: false,
+		};
+	};
 }
 
 export const DEFAULT_SCOPE = [
-	'read:account',
-	'write:account',
-	'read:blocks',
-	'write:blocks',
-	'read:drive',
-	'write:drive',
-	'read:favorites',
-	'write:favorites',
-	'read:following',
-	'write:following',
-	'read:mutes',
-	'write:mutes',
-	'write:notes',
-	'read:notifications',
-	'write:notifications',
-	'read:reactions',
-	'write:reactions',
-	'write:votes'
-]
+	"read:account",
+	"write:account",
+	"read:blocks",
+	"write:blocks",
+	"read:drive",
+	"write:drive",
+	"read:favorites",
+	"write:favorites",
+	"read:following",
+	"write:following",
+	"read:mutes",
+	"write:mutes",
+	"write:notes",
+	"read:notifications",
+	"write:notifications",
+	"read:reactions",
+	"write:reactions",
+	"write:votes",
+];
 
 /**
  * Interface
  */
 export interface Interface {
-	get<T = any>(path: string, params?: any, headers?: { [key: string]: string }): Promise<Response<T>>
-	post<T = any>(path: string, params?: any, headers?: { [key: string]: string }): Promise<Response<T>>
-	cancel(): void
+	get<T = any>(
+		path: string,
+		params?: any,
+		headers?: { [key: string]: string },
+	): Promise<Response<T>>;
+	post<T = any>(
+		path: string,
+		params?: any,
+		headers?: { [key: string]: string },
+	): Promise<Response<T>>;
+	cancel(): void;
 }
 
 /**
@@ -543,32 +624,40 @@ export interface Interface {
  * Using axios for request, you will handle promises.
  */
 export class Client implements Interface {
-	private accessToken: string | null
-	private baseUrl: string
-	private userAgent: string
-	private abortController: AbortController
+	private accessToken: string | null;
+	private baseUrl: string;
+	private userAgent: string;
+	private abortController: AbortController;
 
 	/**
 	 * @param baseUrl hostname or base URL
 	 * @param accessToken access token from OAuth2 authorization
 	 * @param userAgent UserAgent is specified in header on request.
 	 */
-	constructor(baseUrl: string, accessToken: string | null, userAgent: string = DEFAULT_UA) {
-		this.accessToken = accessToken
-		this.baseUrl = baseUrl
-		this.userAgent = userAgent
+	constructor(
+		baseUrl: string,
+		accessToken: string | null,
+		userAgent: string = DEFAULT_UA,
+	) {
+		this.accessToken = accessToken;
+		this.baseUrl = baseUrl;
+		this.userAgent = userAgent;
 		this.abortController = new AbortController();
 	}
 
 	/**
 	 * GET request to misskey API.
 	 **/
-	public async get<T>(path: string, params: any = {}, headers: { [key: string]: string } = {}): Promise<Response<T>> {
-		if (!headers['Authorization'] && this.accessToken) {
-			headers['Authorization'] = `Bearer ${this.accessToken}`;
+	public async get<T>(
+		path: string,
+		params: any = {},
+		headers: { [key: string]: string } = {},
+	): Promise<Response<T>> {
+		if (!headers["Authorization"] && this.accessToken) {
+			headers["Authorization"] = `Bearer ${this.accessToken}`;
 		}
-		if (!headers['User-Agent']) {
-			headers['User-Agent'] = this.userAgent;
+		if (!headers["User-Agent"]) {
+			headers["User-Agent"] = this.userAgent;
 		}
 
 		let options: AxiosRequestConfig = {
@@ -577,16 +666,18 @@ export class Client implements Interface {
 			maxContentLength: Infinity,
 			maxBodyLength: Infinity,
 			signal: this.abortController.signal,
-		}
-		return axios.get<T>(this.baseUrl + path, options).then((resp: AxiosResponse<T>) => {
-			const res: Response<T> = {
-				data: resp.data,
-				status: resp.status,
-				statusText: resp.statusText,
-				headers: resp.headers
-			}
-			return res
-		})
+		};
+		return axios
+			.get<T>(this.baseUrl + path, options)
+			.then((resp: AxiosResponse<T>) => {
+				const res: Response<T> = {
+					data: resp.data,
+					status: resp.status,
+					statusText: resp.statusText,
+					headers: resp.headers,
+				};
+				return res;
+			});
 	}
 
 	/**
@@ -595,12 +686,16 @@ export class Client implements Interface {
 	 * @param params Form data
 	 * @param headers Request header object
 	 */
-	public async post<T>(path: string, params: any = {}, headers: { [key: string]: string } = {}): Promise<Response<T>> {
-		if (!headers['Authorization'] && this.accessToken) {
-			headers['Authorization'] = `Bearer ${this.accessToken}`;
+	public async post<T>(
+		path: string,
+		params: any = {},
+		headers: { [key: string]: string } = {},
+	): Promise<Response<T>> {
+		if (!headers["Authorization"] && this.accessToken) {
+			headers["Authorization"] = `Bearer ${this.accessToken}`;
 		}
-		if (!headers['User-Agent']) {
-			headers['User-Agent'] = this.userAgent;
+		if (!headers["User-Agent"]) {
+			headers["User-Agent"] = this.userAgent;
 		}
 
 		let options: AxiosRequestConfig = {
@@ -608,17 +703,19 @@ export class Client implements Interface {
 			maxContentLength: Infinity,
 			maxBodyLength: Infinity,
 			signal: this.abortController.signal,
-		}
+		};
 
-		return axios.post<T>(this.baseUrl + path, params, options).then((resp: AxiosResponse<T>) => {
-			const res: Response<T> = {
-				data: resp.data,
-				status: resp.status,
-				statusText: resp.statusText,
-				headers: resp.headers
-			}
-			return res
-		})
+		return axios
+			.post<T>(this.baseUrl + path, params, options)
+			.then((resp: AxiosResponse<T>) => {
+				const res: Response<T> = {
+					data: resp.data,
+					status: resp.status,
+					statusText: resp.statusText,
+					headers: resp.headers,
+				};
+				return res;
+			});
 	}
 
 	/**
@@ -626,6 +723,6 @@ export class Client implements Interface {
 	 * @returns void
 	 */
 	public cancel(): void {
-		return this.abortController.abort()
+		return this.abortController.abort();
 	}
 }

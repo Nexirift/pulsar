@@ -3,28 +3,28 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, type OnApplicationShutdown } from '@nestjs/common';
-import { Brackets, In, IsNull, Not } from 'typeorm';
-import * as Redis from 'ioredis';
-import sanitizeHtml from 'sanitize-html';
-import { DI } from '@/di-symbols.js';
-import { bindThis } from '@/decorators.js';
-import { GlobalEvents, GlobalEventService } from '@/core/GlobalEventService.js';
+import { Inject, Injectable, type OnApplicationShutdown } from "@nestjs/common";
+import { Brackets, In, IsNull, Not } from "typeorm";
+import * as Redis from "ioredis";
+import sanitizeHtml from "sanitize-html";
+import { DI } from "@/di-symbols.js";
+import { bindThis } from "@/decorators.js";
+import { GlobalEvents, GlobalEventService } from "@/core/GlobalEventService.js";
 import type {
 	AbuseReportNotificationRecipientRepository,
 	MiAbuseReportNotificationRecipient,
 	MiAbuseUserReport,
 	MiMeta,
 	MiUser,
-} from '@/models/_.js';
-import { EmailService } from '@/core/EmailService.js';
-import { RoleService } from '@/core/RoleService.js';
-import { RecipientMethod } from '@/models/AbuseReportNotificationRecipient.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { SystemWebhookService } from '@/core/SystemWebhookService.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { IdService } from './IdService.js';
+} from "@/models/_.js";
+import { EmailService } from "@/core/EmailService.js";
+import { RoleService } from "@/core/RoleService.js";
+import { RecipientMethod } from "@/models/AbuseReportNotificationRecipient.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
+import { SystemWebhookService } from "@/core/SystemWebhookService.js";
+import { UserEntityService } from "@/core/entities/UserEntityService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { IdService } from "./IdService.js";
 
 @Injectable()
 export class AbuseReportNotificationService implements OnApplicationShutdown {
@@ -47,7 +47,7 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 		private userEntityService: UserEntityService,
 		private readonly timeService: TimeService,
 	) {
-		this.redisForSub.on('message', this.onMessage);
+		this.redisForSub.on("message", this.onMessage);
 	}
 
 	/**
@@ -72,7 +72,7 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 			for (const abuseReport of abuseReports) {
 				this.globalEventService.publishAdminStream(
 					moderatorId,
-					'newAbuseUserReport',
+					"newAbuseUserReport",
 					{
 						id: abuseReport.id,
 						targetUserId: abuseReport.targetUserId,
@@ -89,10 +89,12 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 	 */
 	@bindThis
 	public async getRecipientEMailAddresses(): Promise<string[]> {
-		const recipientEMailAddresses = await this.fetchEMailRecipients().then(it => it
-			.filter(it => it.isActive && it.userProfile?.emailVerified)
-			.map(it => it.userProfile?.email)
-			.filter(x => x != null),
+		const recipientEMailAddresses = await this.fetchEMailRecipients().then(
+			(it) =>
+				it
+					.filter((it) => it.isActive && it.userProfile?.emailVerified)
+					.map((it) => it.userProfile?.email)
+					.filter((x) => x != null),
 		);
 
 		if (this.meta.email) {
@@ -128,11 +130,11 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 
 		for (const mailAddress of recipientEMailAddresses) {
 			await Promise.all(
-				abuseReports.map(it => {
+				abuseReports.map((it) => {
 					// TODO: 送信処理はJobQueue化したい
 					return this.emailService.sendEmail(
 						mailAddress,
-						'New Abuse Report',
+						"New Abuse Report",
 						sanitizeHtml(it.comment),
 						sanitizeHtml(it.comment),
 					);
@@ -150,24 +152,28 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 	@bindThis
 	public async notifySystemWebhook(
 		abuseReports: MiAbuseUserReport[],
-		type: 'abuseReport' | 'abuseReportResolved',
+		type: "abuseReport" | "abuseReportResolved",
 	) {
 		if (abuseReports.length <= 0) {
 			return;
 		}
 
-		const usersMap = await this.userEntityService.packMany(
-			[
-				...new Set([
-					...abuseReports.map(it => it.reporter ?? it.reporterId),
-					...abuseReports.map(it => it.targetUser ?? it.targetUserId),
-					...abuseReports.map(it => it.assignee ?? it.assigneeId),
-				].filter(x => x != null)),
-			],
-			null,
-			{ schema: 'UserLite' },
-		).then(it => new Map(it.map(it => [it.id, it])));
-		const convertedReports = abuseReports.map(it => {
+		const usersMap = await this.userEntityService
+			.packMany(
+				[
+					...new Set(
+						[
+							...abuseReports.map((it) => it.reporter ?? it.reporterId),
+							...abuseReports.map((it) => it.targetUser ?? it.targetUserId),
+							...abuseReports.map((it) => it.assignee ?? it.assigneeId),
+						].filter((x) => x != null),
+					),
+				],
+				null,
+				{ schema: "UserLite" },
+			)
+			.then((it) => new Map(it.map((it) => [it.id, it])));
+		const convertedReports = abuseReports.map((it) => {
 			return {
 				...it,
 				reporter: usersMap.get(it.reporterId) ?? null,
@@ -176,20 +182,17 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 			};
 		});
 
-		const inactiveRecipients = await this.fetchWebhookRecipients()
-			.then(it => it.filter(it => !it.isActive));
+		const inactiveRecipients = await this.fetchWebhookRecipients().then((it) =>
+			it.filter((it) => !it.isActive),
+		);
 		const withoutWebhookIds = inactiveRecipients
-			.map(it => it.systemWebhookId)
-			.filter(x => x != null);
+			.map((it) => it.systemWebhookId)
+			.filter((x) => x != null);
 		return Promise.all(
-			convertedReports.map(it => {
-				return this.systemWebhookService.enqueueSystemWebhook(
-					type,
-					it,
-					{
-						excludes: withoutWebhookIds,
-					},
-				);
+			convertedReports.map((it) => {
+				return this.systemWebhookService.enqueueSystemWebhook(type, it, {
+					excludes: withoutWebhookIds,
+				});
 			}),
 		);
 	}
@@ -208,24 +211,27 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 	@bindThis
 	public async fetchRecipients(
 		params?: {
-			ids?: MiAbuseReportNotificationRecipient['id'][],
-			method?: RecipientMethod[],
+			ids?: MiAbuseReportNotificationRecipient["id"][];
+			method?: RecipientMethod[];
 		},
 		opts?: {
-			removeUnauthorized?: boolean,
-			joinUser?: boolean,
-			joinSystemWebhook?: boolean,
+			removeUnauthorized?: boolean;
+			joinUser?: boolean;
+			joinSystemWebhook?: boolean;
 		},
 	): Promise<MiAbuseReportNotificationRecipient[]> {
-		const query = this.abuseReportNotificationRecipientRepository.createQueryBuilder('recipient');
+		const query =
+			this.abuseReportNotificationRecipientRepository.createQueryBuilder(
+				"recipient",
+			);
 
 		if (opts?.joinUser) {
-			query.innerJoinAndSelect('user', 'user', 'recipient.userId = user.id');
-			query.innerJoinAndSelect('recipient.userProfile', 'userProfile');
+			query.innerJoinAndSelect("user", "user", "recipient.userId = user.id");
+			query.innerJoinAndSelect("recipient.userProfile", "userProfile");
 		}
 
 		if (opts?.joinSystemWebhook) {
-			query.innerJoinAndSelect('recipient.systemWebhook', 'systemWebhook');
+			query.innerJoinAndSelect("recipient.systemWebhook", "systemWebhook");
 		}
 
 		if (params?.ids) {
@@ -233,14 +239,16 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 		}
 
 		if (params?.method) {
-			query.andWhere(new Brackets(qb => {
-				if (params.method?.includes('email')) {
-					qb.orWhere({ method: 'email', userId: Not(IsNull()) });
-				}
-				if (params.method?.includes('webhook')) {
-					qb.orWhere({ method: 'webhook', userId: IsNull() });
-				}
-			}));
+			query.andWhere(
+				new Brackets((qb) => {
+					if (params.method?.includes("email")) {
+						qb.orWhere({ method: "email", userId: Not(IsNull()) });
+					}
+					if (params.method?.includes("webhook")) {
+						qb.orWhere({ method: "webhook", userId: IsNull() });
+					}
+				}),
+			);
 		}
 
 		const recipients = await query.getMany();
@@ -264,9 +272,12 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 	 */
 	@bindThis
 	public async fetchEMailRecipients(opts?: {
-		removeUnauthorized?: boolean
+		removeUnauthorized?: boolean;
 	}): Promise<MiAbuseReportNotificationRecipient[]> {
-		return this.fetchRecipients({ method: ['email'] }, { joinUser: true, ...opts });
+		return this.fetchRecipients(
+			{ method: ["email"] },
+			{ joinUser: true, ...opts },
+		);
 	}
 
 	/**
@@ -274,8 +285,13 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 	 * リレーション先の{@link MiSystemWebhook}も同時に取得する.
 	 */
 	@bindThis
-	public fetchWebhookRecipients(): Promise<MiAbuseReportNotificationRecipient[]> {
-		return this.fetchRecipients({ method: ['webhook'] }, { joinSystemWebhook: true });
+	public fetchWebhookRecipients(): Promise<
+		MiAbuseReportNotificationRecipient[]
+	> {
+		return this.fetchRecipients(
+			{ method: ["webhook"] },
+			{ joinSystemWebhook: true },
+		);
 	}
 
 	/**
@@ -284,11 +300,11 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 	@bindThis
 	public async createRecipient(
 		params: {
-			isActive: MiAbuseReportNotificationRecipient['isActive'];
-			name: MiAbuseReportNotificationRecipient['name'];
-			method: MiAbuseReportNotificationRecipient['method'];
-			userId: MiAbuseReportNotificationRecipient['userId'];
-			systemWebhookId: MiAbuseReportNotificationRecipient['systemWebhookId'];
+			isActive: MiAbuseReportNotificationRecipient["isActive"];
+			name: MiAbuseReportNotificationRecipient["name"];
+			method: MiAbuseReportNotificationRecipient["method"];
+			userId: MiAbuseReportNotificationRecipient["userId"];
+			systemWebhookId: MiAbuseReportNotificationRecipient["systemWebhookId"];
 		},
 		updater: MiUser,
 	): Promise<MiAbuseReportNotificationRecipient> {
@@ -298,13 +314,19 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 			id,
 		});
 
-		const created = await this.abuseReportNotificationRecipientRepository.findOneByOrFail({ id: id });
+		const created =
+			await this.abuseReportNotificationRecipientRepository.findOneByOrFail({
+				id: id,
+			});
 
-		this.moderationLogService
-			.log(updater, 'createAbuseReportNotificationRecipient', {
+		this.moderationLogService.log(
+			updater,
+			"createAbuseReportNotificationRecipient",
+			{
 				recipientId: id,
 				recipient: created,
-			});
+			},
+		);
 
 		return created;
 	}
@@ -315,16 +337,19 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 	@bindThis
 	public async updateRecipient(
 		params: {
-			id: MiAbuseReportNotificationRecipient['id'];
-			isActive: MiAbuseReportNotificationRecipient['isActive'];
-			name: MiAbuseReportNotificationRecipient['name'];
-			method: MiAbuseReportNotificationRecipient['method'];
-			userId: MiAbuseReportNotificationRecipient['userId'];
-			systemWebhookId: MiAbuseReportNotificationRecipient['systemWebhookId'];
+			id: MiAbuseReportNotificationRecipient["id"];
+			isActive: MiAbuseReportNotificationRecipient["isActive"];
+			name: MiAbuseReportNotificationRecipient["name"];
+			method: MiAbuseReportNotificationRecipient["method"];
+			userId: MiAbuseReportNotificationRecipient["userId"];
+			systemWebhookId: MiAbuseReportNotificationRecipient["systemWebhookId"];
 		},
 		updater: MiUser,
 	): Promise<MiAbuseReportNotificationRecipient> {
-		const beforeEntity = await this.abuseReportNotificationRecipientRepository.findOneByOrFail({ id: params.id });
+		const beforeEntity =
+			await this.abuseReportNotificationRecipientRepository.findOneByOrFail({
+				id: params.id,
+			});
 
 		await this.abuseReportNotificationRecipientRepository.update(params.id, {
 			isActive: params.isActive,
@@ -335,14 +360,20 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 			systemWebhookId: params.systemWebhookId,
 		});
 
-		const afterEntity = await this.abuseReportNotificationRecipientRepository.findOneByOrFail({ id: params.id });
+		const afterEntity =
+			await this.abuseReportNotificationRecipientRepository.findOneByOrFail({
+				id: params.id,
+			});
 
-		this.moderationLogService
-			.log(updater, 'updateAbuseReportNotificationRecipient', {
+		this.moderationLogService.log(
+			updater,
+			"updateAbuseReportNotificationRecipient",
+			{
 				recipientId: params.id,
 				before: beforeEntity,
 				after: afterEntity,
-			});
+			},
+		);
 
 		return afterEntity;
 	}
@@ -352,18 +383,23 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 	 */
 	@bindThis
 	public async deleteRecipient(
-		id: MiAbuseReportNotificationRecipient['id'],
+		id: MiAbuseReportNotificationRecipient["id"],
 		updater: MiUser,
 	) {
-		const entity = await this.abuseReportNotificationRecipientRepository.findBy({ id });
+		const entity = await this.abuseReportNotificationRecipientRepository.findBy(
+			{ id },
+		);
 
 		await this.abuseReportNotificationRecipientRepository.delete(id);
 
-		this.moderationLogService
-			.log(updater, 'deleteAbuseReportNotificationRecipient', {
+		this.moderationLogService.log(
+			updater,
+			"deleteAbuseReportNotificationRecipient",
+			{
 				recipientId: id,
 				recipient: entity,
-			});
+			},
+		);
 	}
 
 	/**
@@ -377,9 +413,13 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 	 * @returns {@lisk recipients}からモデレータ権限を持たない通知先を削除した配列
 	 */
 	@bindThis
-	private async removeUnauthorizedRecipientUsers(recipients: MiAbuseReportNotificationRecipient[]): Promise<MiAbuseReportNotificationRecipient[]> {
-		const userRecipients = recipients.filter(it => it.userId !== null);
-		const recipientUserIds = new Set(userRecipients.map(it => it.userId).filter(x => x != null));
+	private async removeUnauthorizedRecipientUsers(
+		recipients: MiAbuseReportNotificationRecipient[],
+	): Promise<MiAbuseReportNotificationRecipient[]> {
+		const userRecipients = recipients.filter((it) => it.userId !== null);
+		const recipientUserIds = new Set(
+			userRecipients.map((it) => it.userId).filter((x) => x != null),
+		);
 		if (recipientUserIds.size <= 0) {
 			// ユーザが通知先として設定されていない場合、この関数での処理を行うべきレコードが無い
 			return recipients;
@@ -390,8 +430,10 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 			includeAdmins: true,
 			excludeExpire: true,
 		});
-		const authorizedUserRecipients = Array.of<MiAbuseReportNotificationRecipient>();
-		const unauthorizedUserRecipients = Array.of<MiAbuseReportNotificationRecipient>();
+		const authorizedUserRecipients =
+			Array.of<MiAbuseReportNotificationRecipient>();
+		const unauthorizedUserRecipients =
+			Array.of<MiAbuseReportNotificationRecipient>();
 		for (const recipient of userRecipients) {
 			// eslint-disable-next-line
 			if (authorizedUserIds.includes(recipient.userId!)) {
@@ -403,29 +445,34 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 
 		// モデレータ権限を持たない通知先をDBから削除する
 		if (unauthorizedUserRecipients.length > 0) {
-			await this.abuseReportNotificationRecipientRepository.delete(unauthorizedUserRecipients.map(it => it.id));
+			await this.abuseReportNotificationRecipientRepository.delete(
+				unauthorizedUserRecipients.map((it) => it.id),
+			);
 		}
-		const nonUserRecipients = recipients.filter(it => it.userId === null);
-		return [...nonUserRecipients, ...authorizedUserRecipients].sort((a, b) => a.id.localeCompare(b.id));
+		const nonUserRecipients = recipients.filter((it) => it.userId === null);
+		return [...nonUserRecipients, ...authorizedUserRecipients].sort((a, b) =>
+			a.id.localeCompare(b.id),
+		);
 	}
 
 	@bindThis
 	private async onMessage(_: string, data: string): Promise<void> {
 		const obj = JSON.parse(data);
-		if (obj.channel !== 'internal') {
+		if (obj.channel !== "internal") {
 			return;
 		}
 
-		const { type } = obj.message as GlobalEvents['internal']['payload'];
+		const { type } = obj.message as GlobalEvents["internal"]["payload"];
 		switch (type) {
-			case 'roleUpdated':
-			case 'roleDeleted':
-			case 'userRoleUnassigned': {
+			case "roleUpdated":
+			case "roleDeleted":
+			case "userRoleUnassigned": {
 				// 場合によってはキャッシュ更新よりも先にここが呼ばれてしまう可能性があるのでnextTickで遅延実行
 				process.nextTick(async () => {
-					const recipients = await this.abuseReportNotificationRecipientRepository.findBy({
-						userId: Not(IsNull()),
-					});
+					const recipients =
+						await this.abuseReportNotificationRecipientRepository.findBy({
+							userId: Not(IsNull()),
+						});
 					await this.removeUnauthorizedRecipientUsers(recipients);
 				});
 				break;
@@ -438,7 +485,7 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 
 	@bindThis
 	public dispose(): void {
-		this.redisForSub.off('message', this.onMessage);
+		this.redisForSub.off("message", this.onMessage);
 	}
 
 	@bindThis

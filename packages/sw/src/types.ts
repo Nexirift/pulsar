@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type * as Misskey from 'misskey-js';
+import type * as Misskey from "misskey-js";
 
-export type SwMessageOrderType = 'post' | 'push';
+export type SwMessageOrderType = "post" | "push";
 
 export type SwMessage = {
-	type: 'order';
+	type: "order";
 	order: SwMessageOrderType;
 	loginId?: string;
 	url: string;
@@ -26,7 +26,9 @@ type PushNotificationDataSourceMap = {
 	newChatMessage: Misskey.entities.ChatMessage;
 };
 
-export type PushNotificationData<K extends keyof PushNotificationDataSourceMap> = {
+export type PushNotificationData<
+	K extends keyof PushNotificationDataSourceMap,
+> = {
 	type: K;
 	body: PushNotificationDataSourceMap[K];
 	userId: string;
@@ -38,19 +40,19 @@ export type PushNotificationDataMap = {
 };
 
 export type BadgeNames =
-	| 'null'
-	| 'antenna'
-	| 'apps'
-	| 'arrow-back-up'
-	| 'at'
-	| 'bell'
-	| 'chart-arrows'
-	| 'circle-check'
-	| 'medal'
-	| 'messages'
-	| 'plus'
-	| 'quote'
-	| 'repeat'
-	| 'user-plus'
-	| 'users'
-	| 'login-2';
+	| "null"
+	| "antenna"
+	| "apps"
+	| "arrow-back-up"
+	| "at"
+	| "bell"
+	| "chart-arrows"
+	| "circle-check"
+	| "medal"
+	| "messages"
+	| "plus"
+	| "quote"
+	| "repeat"
+	| "user-plus"
+	| "users"
+	| "login-2";

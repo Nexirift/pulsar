@@ -4,20 +4,26 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkTooltip ref="tooltip" :showing="showing" :targetElement="targetElement" :maxWidth="250" @closed="emit('closed')">
-	<div :class="$style.root">
-		<div v-for="u in users" :key="u.id" :class="$style.user">
-			<MkAvatar :class="$style.avatar" :user="u"/>
-			<MkUserName :user="u" :nowrap="true"/>
+	<MkTooltip
+		ref="tooltip"
+		:showing="showing"
+		:targetElement="targetElement"
+		:maxWidth="250"
+		@closed="emit('closed')"
+	>
+		<div :class="$style.root">
+			<div v-for="u in users" :key="u.id" :class="$style.user">
+				<MkAvatar :class="$style.avatar" :user="u" />
+				<MkUserName :user="u" :nowrap="true" />
+			</div>
+			<div v-if="users.length < count">+{{ count - users.length }}</div>
 		</div>
-		<div v-if="users.length < count">+{{ count - users.length }}</div>
-	</div>
-</MkTooltip>
+	</MkTooltip>
 </template>
 
 <script lang="ts" setup>
-import * as Misskey from 'misskey-js';
-import MkTooltip from './MkTooltip.vue';
+import * as Misskey from "misskey-js";
+import MkTooltip from "./MkTooltip.vue";
 
 defineProps<{
 	showing: boolean;
@@ -27,7 +33,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'closed'): void;
+	(ev: "closed"): void;
 }>();
 </script>
 

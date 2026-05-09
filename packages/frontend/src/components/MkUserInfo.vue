@@ -4,54 +4,84 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div class="_panel" :class="$style.root">
-	<div :class="$style.banner" :style="user.bannerUrl ? { backgroundImage: `url(${prefer.s.disableShowingAnimatedImages ? getStaticImageUrl(user.bannerUrl) : user.bannerUrl})` } : ''"></div>
-	<MkAvatar :class="$style.avatar" :user="user" indicator/>
-	<div :class="$style.title">
-		<MkA :class="$style.name" :to="userPage(user)"><MkUserName :user="user" :nowrap="false"/></MkA>
-		<p :class="$style.username"><MkAcct :user="user"/></p>
+	<div class="_panel" :class="$style.root">
+		<div
+			:class="$style.banner"
+			:style="
+				user.bannerUrl
+					? {
+							backgroundImage: `url(${prefer.s.disableShowingAnimatedImages ? getStaticImageUrl(user.bannerUrl) : user.bannerUrl})`,
+						}
+					: ''
+			"
+		></div>
+		<MkAvatar :class="$style.avatar" :user="user" indicator />
+		<div :class="$style.title">
+			<MkA :class="$style.name" :to="userPage(user)"
+				><MkUserName :user="user" :nowrap="false"
+			/></MkA>
+			<p :class="$style.username"><MkAcct :user="user" /></p>
+		</div>
+		<ul v-if="$i && $i.id != user.id" :class="$style.infoBadges">
+			<li v-if="user.isFollowed && user.isFollowing">{{ i18n.ts.mutuals }}</li>
+			<li v-else-if="user.isFollowing">{{ i18n.ts.following }}</li>
+			<li v-else-if="user.isFollowed">{{ i18n.ts.followsYou }}</li>
+			<li v-if="user.isMuted">{{ i18n.ts.muted }}</li>
+			<li v-if="user.isRenoteMuted">{{ i18n.ts.renoteMuted }}</li>
+			<li v-if="user.isBlocking">{{ i18n.ts.blocked }}</li>
+			<li v-if="user.isBlocked && $i.isModerator">{{ i18n.ts.blockingYou }}</li>
+			<li v-if="user.isAdultsOnly">Adults Only</li>
+		</ul>
+		<div :class="$style.description">
+			<div v-if="user.description" :class="$style.mfm">
+				<Mfm :text="user.description" :isBlock="true" :author="user" />
+			</div>
+			<span v-else style="opacity: 0.7">{{
+				i18n.ts.noAccountDescription
+			}}</span>
+		</div>
+		<div :class="$style.status">
+			<div :class="$style.statusItem">
+				<p :class="$style.statusItemLabel">{{ i18n.ts.notes }}</p>
+				<span :class="$style.statusItemValue">{{
+					number(user.notesCount)
+				}}</span>
+			</div>
+			<div v-if="isFollowingVisibleForMe(user)" :class="$style.statusItem">
+				<p :class="$style.statusItemLabel">{{ i18n.ts.following }}</p>
+				<span :class="$style.statusItemValue">{{
+					number(user.followingCount)
+				}}</span>
+			</div>
+			<div v-if="isFollowersVisibleForMe(user)" :class="$style.statusItem">
+				<p :class="$style.statusItemLabel">{{ i18n.ts.followers }}</p>
+				<span :class="$style.statusItemValue">{{
+					number(user.followersCount)
+				}}</span>
+			</div>
+		</div>
+		<MkFollowButton
+			v-if="user.id != $i?.id"
+			:class="$style.follow"
+			:user="user"
+			mini
+		/>
 	</div>
-	<ul v-if="$i && $i.id != user.id" :class="$style.infoBadges">
-		<li v-if="user.isFollowed && user.isFollowing">{{ i18n.ts.mutuals }}</li>
-		<li v-else-if="user.isFollowing">{{ i18n.ts.following }}</li>
-		<li v-else-if="user.isFollowed">{{ i18n.ts.followsYou }}</li>
-		<li v-if="user.isMuted">{{ i18n.ts.muted }}</li>
-		<li v-if="user.isRenoteMuted">{{ i18n.ts.renoteMuted }}</li>
-		<li v-if="user.isBlocking">{{ i18n.ts.blocked }}</li>
-		<li v-if="user.isBlocked && $i.isModerator">{{ i18n.ts.blockingYou }}</li>
-		<li v-if="user.isAdultsOnly">Adults Only</li>
-	</ul>
-	<div :class="$style.description">
-		<div v-if="user.description" :class="$style.mfm">
-			<Mfm :text="user.description" :isBlock="true" :author="user"/>
-		</div>
-		<span v-else style="opacity: 0.7;">{{ i18n.ts.noAccountDescription }}</span>
-	</div>
-	<div :class="$style.status">
-		<div :class="$style.statusItem">
-			<p :class="$style.statusItemLabel">{{ i18n.ts.notes }}</p><span :class="$style.statusItemValue">{{ number(user.notesCount) }}</span>
-		</div>
-		<div v-if="isFollowingVisibleForMe(user)" :class="$style.statusItem">
-			<p :class="$style.statusItemLabel">{{ i18n.ts.following }}</p><span :class="$style.statusItemValue">{{ number(user.followingCount) }}</span>
-		</div>
-		<div v-if="isFollowersVisibleForMe(user)" :class="$style.statusItem">
-			<p :class="$style.statusItemLabel">{{ i18n.ts.followers }}</p><span :class="$style.statusItemValue">{{ number(user.followersCount) }}</span>
-		</div>
-	</div>
-	<MkFollowButton v-if="user.id != $i?.id" :class="$style.follow" :user="user" mini/>
-</div>
 </template>
 
 <script lang="ts" setup>
-import * as Misskey from 'misskey-js';
-import MkFollowButton from '@/components/MkFollowButton.vue';
-import number from '@/filters/number.js';
-import { userPage } from '@/filters/user.js';
-import { i18n } from '@/i18n.js';
-import { $i } from '@/i.js';
-import { isFollowingVisibleForMe, isFollowersVisibleForMe } from '@/utility/isFfVisibleForMe.js';
-import { getStaticImageUrl } from '@/utility/media-proxy.js';
-import { prefer } from '@/preferences.js';
+import * as Misskey from "misskey-js";
+import MkFollowButton from "@/components/MkFollowButton.vue";
+import number from "@/filters/number.js";
+import { userPage } from "@/filters/user.js";
+import { i18n } from "@/i18n.js";
+import { $i } from "@/i.js";
+import {
+	isFollowingVisibleForMe,
+	isFollowersVisibleForMe,
+} from "@/utility/isFfVisibleForMe.js";
+import { getStaticImageUrl } from "@/utility/media-proxy.js";
+import { prefer } from "@/preferences.js";
 
 defineProps<{
 	user: Misskey.entities.UserDetailed;

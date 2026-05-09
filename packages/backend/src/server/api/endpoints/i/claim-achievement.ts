@@ -3,17 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { DI } from '@/di-symbols.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { AchievementService } from '@/core/AchievementService.js';
-import { ACHIEVEMENT_TYPES } from '@/models/UserProfile.js';
-import type { MiMeta } from '@/models/_.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { DI } from "@/di-symbols.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { AchievementService } from "@/core/AchievementService.js";
+import { ACHIEVEMENT_TYPES } from "@/models/UserProfile.js";
+import type { MiMeta } from "@/models/_.js";
 
 export const meta = {
 	requireCredential: true,
 	prohibitMoved: true,
-	kind: 'write:account',
+	kind: "write:account",
 
 	// 10 calls per 5 seconds
 	limit: {
@@ -23,15 +23,16 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		name: { type: 'string', enum: ACHIEVEMENT_TYPES },
+		name: { type: "string", enum: ACHIEVEMENT_TYPES },
 	},
-	required: ['name'],
+	required: ["name"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.meta)
 		private serverSettings: MiMeta,

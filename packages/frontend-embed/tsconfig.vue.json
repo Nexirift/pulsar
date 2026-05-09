@@ -18,9 +18,7 @@
 			"./node_modules/@vue-macros",
 			"./node_modules"
 		],
-		"types": [
-			"vite/client"
-		],
+		"types": ["vite/client"],
 		"jsx": "preserve"
 	},
 	"include": [
@@ -29,8 +27,5 @@
 		"./@types/**/*.ts",
 		"./vue-shims.d.ts"
 	],
-	"exclude": [
-		"node_modules",
-		".storybook/**/*"
-	]
+	"exclude": ["node_modules", ".storybook/**/*"]
 }

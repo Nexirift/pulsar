@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { isPureRenote, isQuote, isRenote } from '@/misc/is-renote.js';
-import { MiNote } from '@/models/Note.js';
+import { isPureRenote, isQuote, isRenote } from "@/misc/is-renote.js";
+import { MiNote } from "@/models/Note.js";
 
 const base: MiNote = {
-	id: 'some-note-id',
+	id: "some-note-id",
 	updatedAt: null,
 	replyId: null,
 	reply: null,
@@ -17,7 +17,7 @@ const base: MiNote = {
 	text: null,
 	name: null,
 	cw: null,
-	userId: 'some-user-id',
+	userId: "some-user-id",
 	user: null,
 	localOnly: false,
 	reactionAcceptance: null,
@@ -25,14 +25,14 @@ const base: MiNote = {
 	repliesCount: 0,
 	clippedCount: 0,
 	reactions: {},
-	visibility: 'public',
+	visibility: "public",
 	uri: null,
 	url: null,
 	fileIds: [],
 	attachedFileTypes: [],
 	visibleUserIds: [],
 	mentions: [],
-	mentionedRemoteUsers: '',
+	mentionedRemoteUsers: "",
 	reactionAndUserPairCache: [],
 	emojis: [],
 	tags: [],
@@ -51,61 +51,77 @@ const base: MiNote = {
 	mandatoryCW: null,
 };
 
-describe('misc:is-renote', () => {
-	test('note without renoteId should not be Renote', () => {
+describe("misc:is-renote", () => {
+	test("note without renoteId should not be Renote", () => {
 		expect(isRenote(base)).toBe(false);
 	});
 
-	test('note with renoteId should be Renote and not be Quote', () => {
-		const note: MiNote = { ...base, renoteId: 'some-renote-id' };
+	test("note with renoteId should be Renote and not be Quote", () => {
+		const note: MiNote = { ...base, renoteId: "some-renote-id" };
 		expect(isRenote(note)).toBe(true);
 		expect(isQuote(note as any)).toBe(false);
 	});
 
-	test('note with renoteId and text should be Quote', () => {
-		const note: MiNote = { ...base, renoteId: 'some-renote-id', text: 'some-text' };
+	test("note with renoteId and text should be Quote", () => {
+		const note: MiNote = {
+			...base,
+			renoteId: "some-renote-id",
+			text: "some-text",
+		};
 		expect(isRenote(note)).toBe(true);
 		expect(isQuote(note as any)).toBe(true);
 	});
 
-	test('note with renoteId and cw should be Quote', () => {
-		const note: MiNote = { ...base, renoteId: 'some-renote-id', cw: 'some-cw' };
+	test("note with renoteId and cw should be Quote", () => {
+		const note: MiNote = { ...base, renoteId: "some-renote-id", cw: "some-cw" };
 		expect(isRenote(note)).toBe(true);
 		expect(isQuote(note as any)).toBe(true);
 	});
 
-	test('note with renoteId and replyId should be Quote', () => {
-		const note: MiNote = { ...base, renoteId: 'some-renote-id', replyId: 'some-reply-id' };
+	test("note with renoteId and replyId should be Quote", () => {
+		const note: MiNote = {
+			...base,
+			renoteId: "some-renote-id",
+			replyId: "some-reply-id",
+		};
 		expect(isRenote(note)).toBe(true);
 		expect(isQuote(note as any)).toBe(true);
 	});
 
-	test('note with renoteId and poll should be Quote', () => {
-		const note: MiNote = { ...base, renoteId: 'some-renote-id', hasPoll: true };
+	test("note with renoteId and poll should be Quote", () => {
+		const note: MiNote = { ...base, renoteId: "some-renote-id", hasPoll: true };
 		expect(isRenote(note)).toBe(true);
 		expect(isQuote(note as any)).toBe(true);
 	});
 
-	test('note with renoteId and non-empty fileIds should be Quote', () => {
-		const note: MiNote = { ...base, renoteId: 'some-renote-id', fileIds: ['some-file-id'] };
+	test("note with renoteId and non-empty fileIds should be Quote", () => {
+		const note: MiNote = {
+			...base,
+			renoteId: "some-renote-id",
+			fileIds: ["some-file-id"],
+		};
 		expect(isRenote(note)).toBe(true);
 		expect(isQuote(note as any)).toBe(true);
 	});
 
-	describe('isPureRenote', () => {
-		it('should return true when note is pure renote', () => {
-			const note = new MiNote({ renoteId: 'abc123', fileIds: [] });
+	describe("isPureRenote", () => {
+		it("should return true when note is pure renote", () => {
+			const note = new MiNote({ renoteId: "abc123", fileIds: [] });
 			const result = isPureRenote(note);
 			expect(result).toBeTruthy();
 		});
 
-		it('should return false when note is quote', () => {
-			const note = new MiNote({ renoteId: 'abc123', text: 'text', fileIds: [] });
+		it("should return false when note is quote", () => {
+			const note = new MiNote({
+				renoteId: "abc123",
+				text: "text",
+				fileIds: [],
+			});
 			const result = isPureRenote(note);
 			expect(result).toBeFalsy();
 		});
 
-		it('should return false when note is not renote', () => {
+		it("should return false when note is not renote", () => {
 			const note = new MiNote({ renoteId: null, fileIds: [] });
 			const result = isPureRenote(note);
 			expect(result).toBeFalsy();

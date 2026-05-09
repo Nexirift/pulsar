@@ -10,14 +10,18 @@ function defaultUseWorkerNumber(prev: number) {
 type WorkerNumberGetter = (prev: number, totalWorkers: number) => number;
 
 export class WorkerMultiDispatch<POST = unknown, RETURN = unknown> {
-	private symbol = Symbol('WorkerMultiDispatch');
+	private symbol = Symbol("WorkerMultiDispatch");
 	private workers: Worker[] = [];
 	private terminated = false;
 	private prevWorkerNumber = 0;
 	private getUseWorkerNumber: WorkerNumberGetter;
 	private finalizationRegistry: FinalizationRegistry<symbol>;
 
-	constructor(workerConstructor: () => Worker, concurrency: number, getUseWorkerNumber = defaultUseWorkerNumber) {
+	constructor(
+		workerConstructor: () => Worker,
+		concurrency: number,
+		getUseWorkerNumber = defaultUseWorkerNumber,
+	) {
 		this.getUseWorkerNumber = getUseWorkerNumber;
 		for (let i = 0; i < concurrency; i++) {
 			this.workers.push(workerConstructor());
@@ -28,13 +32,25 @@ export class WorkerMultiDispatch<POST = unknown, RETURN = unknown> {
 		});
 		this.finalizationRegistry.register(this, this.symbol);
 
-		if (_DEV_) console.debug('WorkerMultiDispatch: Created', this);
+		if (_DEV_) console.debug("WorkerMultiDispatch: Created", this);
 	}
 
-	public postMessage(message: POST, options?: Transferable[] | StructuredSerializeOptions, useWorkerNumber: WorkerNumberGetter = this.getUseWorkerNumber) {
-		let workerNumber = useWorkerNumber(this.prevWorkerNumber, this.workers.length);
+	public postMessage(
+		message: POST,
+		options?: Transferable[] | StructuredSerializeOptions,
+		useWorkerNumber: WorkerNumberGetter = this.getUseWorkerNumber,
+	) {
+		let workerNumber = useWorkerNumber(
+			this.prevWorkerNumber,
+			this.workers.length,
+		);
 		workerNumber = Math.abs(Math.round(workerNumber)) % this.workers.length;
-		if (_DEV_) console.debug('WorkerMultiDispatch: Posting message to worker', workerNumber, useWorkerNumber);
+		if (_DEV_)
+			console.debug(
+				"WorkerMultiDispatch: Posting message to worker",
+				workerNumber,
+				useWorkerNumber,
+			);
 		this.prevWorkerNumber = workerNumber;
 
 		// 不毛だがunionをoverloadに突っ込めない
@@ -49,23 +65,29 @@ export class WorkerMultiDispatch<POST = unknown, RETURN = unknown> {
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	public addListener(callback: (this: Worker, ev: MessageEvent<RETURN>) => any, options?: boolean | AddEventListenerOptions) {
-		this.workers.forEach(worker => {
-			worker.addEventListener('message', callback, options);
+	public addListener(
+		callback: (this: Worker, ev: MessageEvent<RETURN>) => any,
+		options?: boolean | AddEventListenerOptions,
+	) {
+		this.workers.forEach((worker) => {
+			worker.addEventListener("message", callback, options);
 		});
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	public removeListener(callback: (this: Worker, ev: MessageEvent<RETURN>) => any, options?: boolean | AddEventListenerOptions) {
-		this.workers.forEach(worker => {
-			worker.removeEventListener('message', callback, options);
+	public removeListener(
+		callback: (this: Worker, ev: MessageEvent<RETURN>) => any,
+		options?: boolean | AddEventListenerOptions,
+	) {
+		this.workers.forEach((worker) => {
+			worker.removeEventListener("message", callback, options);
 		});
 	}
 
 	public terminate() {
 		this.terminated = true;
-		if (_DEV_) console.debug('WorkerMultiDispatch: Terminating', this);
-		this.workers.forEach(worker => {
+		if (_DEV_) console.debug("WorkerMultiDispatch: Terminating", this);
+		this.workers.forEach((worker) => {
 			worker.terminate();
 		});
 		this.workers = [];

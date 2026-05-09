@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { getBaseUrl } from '@/server/api/mastodon/MastodonClientService.js';
+import { FastifyReply, FastifyRequest } from "fastify";
+import { getBaseUrl } from "@/server/api/mastodon/MastodonClientService.js";
 
 interface AnyEntity {
 	readonly id: string;
@@ -19,7 +19,11 @@ interface AnyEntity {
  * @param reply Fastify reply object
  * @param results Results array, ordered in ascending or descending order
  */
-export function attachMinMaxPagination(request: FastifyRequest, reply: FastifyReply, results: AnyEntity[]): void {
+export function attachMinMaxPagination(
+	request: FastifyRequest,
+	reply: FastifyReply,
+	results: AnyEntity[],
+): void {
 	// No results, nothing to do
 	if (!hasItems(results)) return;
 
@@ -35,7 +39,7 @@ export function attachMinMaxPagination(request: FastifyRequest, reply: FastifyRe
 
 	// https://docs.joinmastodon.org/api/guidelines/#pagination
 	const link = `${next}, ${prev}`;
-	reply.header('link', link);
+	reply.header("link", link);
 }
 
 /**
@@ -47,7 +51,11 @@ export function attachMinMaxPagination(request: FastifyRequest, reply: FastifyRe
  * @param reply Fastify reply object
  * @param results Results array, ordered in ascending or descending order
  */
-export function attachOffsetPagination(request: FastifyRequest, reply: FastifyReply, results: unknown[]): void {
+export function attachOffsetPagination(
+	request: FastifyRequest,
+	reply: FastifyReply,
+	results: unknown[],
+): void {
 	const links: string[] = [];
 
 	// Find initial offset
@@ -70,15 +78,18 @@ export function attachOffsetPagination(request: FastifyRequest, reply: FastifyRe
 			const prevUrl = createPaginationUrl(request, { offset: newest }); // Previous page (newer) has entries greater than the newest of this page
 			links.push(`<${prevUrl}>; rel="prev"`);
 		} else {
-			const prevUrl = createPaginationUrl(request, { offset: 0, limit: offset }); // Previous page (newer) has entries greater than the newest of this page
+			const prevUrl = createPaginationUrl(request, {
+				offset: 0,
+				limit: offset,
+			}); // Previous page (newer) has entries greater than the newest of this page
 			links.push(`<${prevUrl}>; rel="prev"`);
 		}
 	}
 
 	// https://docs.joinmastodon.org/api/guidelines/#pagination
 	if (links.length > 0) {
-		const link = links.join(', ');
-		reply.header('link', link);
+		const link = links.join(", ");
+		reply.header("link", link);
 	}
 }
 
@@ -87,15 +98,15 @@ function hasItems<T>(items: T[]): items is [T, ...T[]] {
 }
 
 function findOffset(request: FastifyRequest): number {
-	if (typeof(request.query) !== 'object') return 0;
+	if (typeof request.query !== "object") return 0;
 
 	const query = request.query as Record<string, string | string[] | undefined>;
 	if (!query.offset) return 0;
 
 	if (Array.isArray(query.offset)) {
 		const offsets = query.offset
-			.map(o => parseInt(o))
-			.filter(o => !isNaN(o));
+			.map((o) => parseInt(o))
+			.filter((o) => !isNaN(o));
 		const offset = Math.max(...offsets);
 		return isNaN(offset) ? 0 : offset;
 	}
@@ -105,15 +116,13 @@ function findOffset(request: FastifyRequest): number {
 }
 
 function findLimit(request: FastifyRequest): number | null {
-	if (typeof(request.query) !== 'object') return null;
+	if (typeof request.query !== "object") return null;
 
 	const query = request.query as Record<string, string | string[] | undefined>;
 	if (!query.limit) return null;
 
 	if (Array.isArray(query.limit)) {
-		const limits = query.limit
-			.map(l => parseInt(l))
-			.filter(l => !isNaN(l));
+		const limits = query.limit.map((l) => parseInt(l)).filter((l) => !isNaN(l));
 		const limit = Math.max(...limits);
 		return isNaN(limit) ? null : limit;
 	}
@@ -146,25 +155,28 @@ function isOlder(a: string, b: string): boolean {
 	return a < b;
 }
 
-function createPaginationUrl(request: FastifyRequest, data: {
-	min_id?: string;
-	max_id?: string;
-	offset?: number;
-	limit?: number;
-}): string {
+function createPaginationUrl(
+	request: FastifyRequest,
+	data: {
+		min_id?: string;
+		max_id?: string;
+		offset?: number;
+		limit?: number;
+	},
+): string {
 	const baseUrl = getBaseUrl(request);
 	const requestUrl = new URL(request.url, baseUrl);
 
 	// Remove any existing pagination
-	requestUrl.searchParams.delete('min_id');
-	requestUrl.searchParams.delete('max_id');
-	requestUrl.searchParams.delete('since_id');
-	requestUrl.searchParams.delete('offset');
+	requestUrl.searchParams.delete("min_id");
+	requestUrl.searchParams.delete("max_id");
+	requestUrl.searchParams.delete("since_id");
+	requestUrl.searchParams.delete("offset");
 
-	if (data.min_id) requestUrl.searchParams.set('min_id', data.min_id);
-	if (data.max_id) requestUrl.searchParams.set('max_id', data.max_id);
-	if (data.offset) requestUrl.searchParams.set('offset', String(data.offset));
-	if (data.limit) requestUrl.searchParams.set('limit', String(data.limit));
+	if (data.min_id) requestUrl.searchParams.set("min_id", data.min_id);
+	if (data.max_id) requestUrl.searchParams.set("max_id", data.max_id);
+	if (data.offset) requestUrl.searchParams.set("offset", String(data.offset));
+	if (data.limit) requestUrl.searchParams.set("limit", String(data.limit));
 
 	return requestUrl.href;
 }

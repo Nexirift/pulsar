@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { bindThis } from '@/decorators.js';
-import type { Packed } from '@/misc/json-schema.js';
-import type { JsonObject, JsonValue } from '@/misc/json-value.js';
-import type { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import type Connection from '@/server/api/stream/Connection.js';
+import { bindThis } from "@/decorators.js";
+import type { Packed } from "@/misc/json-schema.js";
+import type { JsonObject, JsonValue } from "@/misc/json-value.js";
+import type { NoteEntityService } from "@/core/entities/NoteEntityService.js";
+import type Connection from "@/server/api/stream/Connection.js";
 
 /**
  * Stream channel
@@ -110,21 +110,32 @@ export abstract class Channel {
 		this.connection = connection;
 	}
 
-	public send(payload: { type: string, body: JsonValue }): void;
+	public send(payload: { type: string; body: JsonValue }): void;
 	public send(type: string, payload: JsonValue): void;
 	@bindThis
-	public send(typeOrPayload: { type: string, body: JsonValue } | string, payload?: JsonValue) {
-		const type = payload === undefined ? (typeOrPayload as { type: string, body: JsonValue }).type : (typeOrPayload as string);
-		const body = payload === undefined ? (typeOrPayload as { type: string, body: JsonValue }).body : payload;
+	public send(
+		typeOrPayload: { type: string; body: JsonValue } | string,
+		payload?: JsonValue,
+	) {
+		const type =
+			payload === undefined
+				? (typeOrPayload as { type: string; body: JsonValue }).type
+				: (typeOrPayload as string);
+		const body =
+			payload === undefined
+				? (typeOrPayload as { type: string; body: JsonValue }).body
+				: payload;
 
-		this.connection.sendMessageToWs('channel', {
+		this.connection.sendMessageToWs("channel", {
 			id: this.id,
 			type: type,
 			body: body,
 		});
 	}
 
-	public abstract init(params: JsonObject): void | Promise<void> | Promise<boolean>;
+	public abstract init(
+		params: JsonObject,
+	): void | Promise<void> | Promise<boolean>;
 
 	public dispose?(): void;
 
@@ -154,8 +165,14 @@ export abstract class NoteChannel extends Channel {
 	 * who owns this connection, for whatever reason.
 	 */
 	@bindThis
-	protected async prepareNote(note: Packed<'Note'>): Promise<Packed<'Note'> | null> {
-		const { accessible, silence } = await this.noteVisibilityService.checkNoteVisibilityAsync(note, this.user);
+	protected async prepareNote(
+		note: Packed<"Note">,
+	): Promise<Packed<"Note"> | null> {
+		const { accessible, silence } =
+			await this.noteVisibilityService.checkNoteVisibilityAsync(
+				note,
+				this.user,
+			);
 
 		// Skip notes that the user can't or shouldn't access
 		if (!accessible || silence) {

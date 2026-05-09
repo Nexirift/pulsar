@@ -4,18 +4,23 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.timelineRoot">
-	<div v-if="showHeader" :class="$style.header"><slot name="header"></slot></div>
-	<div :class="$style.body"><slot name="body"></slot></div>
-</div>
+	<div :class="$style.timelineRoot">
+		<div v-if="showHeader" :class="$style.header">
+			<slot name="header"></slot>
+		</div>
+		<div :class="$style.body"><slot name="body"></slot></div>
+	</div>
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{
-	showHeader?: boolean;
-}>(), {
-	showHeader: true,
-});
+withDefaults(
+	defineProps<{
+		showHeader?: boolean;
+	}>(),
+	{
+		showHeader: true,
+	},
+);
 </script>
 
 <style module lang="scss">

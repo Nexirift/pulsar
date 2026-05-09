@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import sharp from 'sharp';
+import { Injectable } from "@nestjs/common";
+import sharp from "sharp";
 
 export type IImage = {
 	data: Buffer;
@@ -43,26 +43,34 @@ export const avifDefault: sharp.AvifOptions = {
 	effort: 2,
 };
 
-import { bindThis } from '@/decorators.js';
-import { Readable } from 'node:stream';
+import { bindThis } from "@/decorators.js";
+import { Readable } from "node:stream";
 
 @Injectable()
 export class ImageProcessingService {
-	constructor(
-	) {
-	}
+	constructor() {}
 
 	/**
 	 * Convert to WebP
 	 *   with resize, remove metadata, resolve orientation, stop animation
 	 */
 	@bindThis
-	public async convertToWebp(path: string, width: number, height: number, options: sharp.WebpOptions = webpDefault): Promise<IImage> {
+	public async convertToWebp(
+		path: string,
+		width: number,
+		height: number,
+		options: sharp.WebpOptions = webpDefault,
+	): Promise<IImage> {
 		return await this.convertSharpToWebp(sharp(path), width, height, options);
 	}
 
 	@bindThis
-	public async convertSharpToWebp(sharp: sharp.Sharp, width: number, height: number, options: sharp.WebpOptions = webpDefault): Promise<IImage> {
+	public async convertSharpToWebp(
+		sharp: sharp.Sharp,
+		width: number,
+		height: number,
+		options: sharp.WebpOptions = webpDefault,
+	): Promise<IImage> {
 		const result = this.convertSharpToWebpStream(sharp, width, height, options);
 
 		return {
@@ -73,15 +81,25 @@ export class ImageProcessingService {
 	}
 
 	@bindThis
-	public convertToWebpStream(path: string, width: number, height: number, options: sharp.WebpOptions = webpDefault): IImageSharp {
+	public convertToWebpStream(
+		path: string,
+		width: number,
+		height: number,
+		options: sharp.WebpOptions = webpDefault,
+	): IImageSharp {
 		return this.convertSharpToWebpStream(sharp(path), width, height, options);
 	}
 
 	@bindThis
-	public convertSharpToWebpStream(sharp: sharp.Sharp, width: number, height: number, options: sharp.WebpOptions = webpDefault): IImageSharp {
+	public convertSharpToWebpStream(
+		sharp: sharp.Sharp,
+		width: number,
+		height: number,
+		options: sharp.WebpOptions = webpDefault,
+	): IImageSharp {
 		const data = sharp
 			.resize(width, height, {
-				fit: 'inside',
+				fit: "inside",
 				withoutEnlargement: true,
 			})
 			.rotate()
@@ -89,8 +107,8 @@ export class ImageProcessingService {
 
 		return {
 			data,
-			ext: 'webp',
-			type: 'image/webp',
+			ext: "webp",
+			type: "image/webp",
 		};
 	}
 
@@ -99,12 +117,22 @@ export class ImageProcessingService {
 	 *   with resize, remove metadata, resolve orientation, stop animation
 	 */
 	@bindThis
-	public async convertToAvif(path: string, width: number, height: number, options: sharp.AvifOptions = avifDefault): Promise<IImage> {
+	public async convertToAvif(
+		path: string,
+		width: number,
+		height: number,
+		options: sharp.AvifOptions = avifDefault,
+	): Promise<IImage> {
 		return await this.convertSharpToAvif(sharp(path), width, height, options);
 	}
 
 	@bindThis
-	public async convertSharpToAvif(sharp: sharp.Sharp, width: number, height: number, options: sharp.AvifOptions = avifDefault): Promise<IImage> {
+	public async convertSharpToAvif(
+		sharp: sharp.Sharp,
+		width: number,
+		height: number,
+		options: sharp.AvifOptions = avifDefault,
+	): Promise<IImage> {
 		const result = this.convertSharpToAvifStream(sharp, width, height, options);
 
 		return {
@@ -115,15 +143,25 @@ export class ImageProcessingService {
 	}
 
 	@bindThis
-	public convertToAvifStream(path: string, width: number, height: number, options: sharp.AvifOptions = avifDefault): IImageSharp {
+	public convertToAvifStream(
+		path: string,
+		width: number,
+		height: number,
+		options: sharp.AvifOptions = avifDefault,
+	): IImageSharp {
 		return this.convertSharpToAvifStream(sharp(path), width, height, options);
 	}
 
 	@bindThis
-	public convertSharpToAvifStream(sharp: sharp.Sharp, width: number, height: number, options: sharp.AvifOptions = avifDefault): IImageSharp {
+	public convertSharpToAvifStream(
+		sharp: sharp.Sharp,
+		width: number,
+		height: number,
+		options: sharp.AvifOptions = avifDefault,
+	): IImageSharp {
 		const data = sharp
 			.resize(width, height, {
-				fit: 'inside',
+				fit: "inside",
 				withoutEnlargement: true,
 			})
 			.rotate()
@@ -131,8 +169,8 @@ export class ImageProcessingService {
 
 		return {
 			data,
-			ext: 'avif',
-			type: 'image/avif',
+			ext: "avif",
+			type: "image/avif",
 		};
 	}
 
@@ -141,15 +179,23 @@ export class ImageProcessingService {
 	 *   with resize, remove metadata, resolve orientation, stop animation
 	 */
 	@bindThis
-	public async convertToPng(path: string, width: number, height: number): Promise<IImage> {
+	public async convertToPng(
+		path: string,
+		width: number,
+		height: number,
+	): Promise<IImage> {
 		return await this.convertSharpToPng(sharp(path), width, height);
 	}
 
 	@bindThis
-	public async convertSharpToPng(sharp: sharp.Sharp, width: number, height: number): Promise<IImage> {
+	public async convertSharpToPng(
+		sharp: sharp.Sharp,
+		width: number,
+		height: number,
+	): Promise<IImage> {
 		const data = await sharp
 			.resize(width, height, {
-				fit: 'inside',
+				fit: "inside",
 				withoutEnlargement: true,
 			})
 			.rotate()
@@ -158,8 +204,8 @@ export class ImageProcessingService {
 
 		return {
 			data,
-			ext: 'png',
-			type: 'image/png',
+			ext: "png",
+			type: "image/png",
 		};
 	}
 }

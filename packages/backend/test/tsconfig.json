@@ -15,9 +15,5 @@
 		// Output
 		"outDir": "./built"
 	},
-	"include": [
-		"./**/*.ts",
-		"../src/**/*.test.ts",
-		"../src/@types/**/*.ts"
-	]
+	"include": ["./**/*.ts", "../src/**/*.test.ts", "../src/@types/**/*.ts"]
 }

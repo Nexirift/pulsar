@@ -6,29 +6,44 @@ List that displays the most recent note from each followed user, in order, with 
 -->
 
 <template>
-<MkPullToRefresh :refresher="() => reload()">
-	<MkPagination ref="latestNotesPaging" :pagination="latestNotesPagination" @init="onListReady">
-		<template #empty><MkResult type="empty" :text="i18n.ts.noNotes"/></template>
+	<MkPullToRefresh :refresher="() => reload()">
+		<MkPagination
+			ref="latestNotesPaging"
+			:pagination="latestNotesPagination"
+			@init="onListReady"
+		>
+			<template #empty
+				><MkResult type="empty" :text="i18n.ts.noNotes"
+			/></template>
 
-		<template #default="{ items: notes }">
-			<!-- TODO replace with SkDateSeparatedList when merged -->
-			<MkDateSeparatedList v-slot="{ item: note }" :items="notes" :class="$style.panel" :noGap="true">
-				<SkFollowingFeedEntry :note="note" :class="props.selectedUserId == note.userId && $style.selected" @select="u => selectUser(u.id)"/>
-			</MkDateSeparatedList>
-		</template>
-	</MkPagination>
-</MkPullToRefresh>
+			<template #default="{ items: notes }">
+				<!-- TODO replace with SkDateSeparatedList when merged -->
+				<MkDateSeparatedList
+					v-slot="{ item: note }"
+					:items="notes"
+					:class="$style.panel"
+					:noGap="true"
+				>
+					<SkFollowingFeedEntry
+						:note="note"
+						:class="props.selectedUserId == note.userId && $style.selected"
+						@select="(u) => selectUser(u.id)"
+					/>
+				</MkDateSeparatedList>
+			</template>
+		</MkPagination>
+	</MkPullToRefresh>
 </template>
 
 <script setup lang="ts">
-import { computed, shallowRef } from 'vue';
-import type { Paging } from '@/components/MkPagination.vue';
-import type { FollowingFeedTab } from '@/types/following-feed.js';
-import { i18n } from '@/i18n.js';
-import MkDateSeparatedList from '@/components/MkDateSeparatedList.vue';
-import MkPagination from '@/components/MkPagination.vue';
-import SkFollowingFeedEntry from '@/components/SkFollowingFeedEntry.vue';
-import MkPullToRefresh from '@/components/MkPullToRefresh.vue';
+import { computed, shallowRef } from "vue";
+import type { Paging } from "@/components/MkPagination.vue";
+import type { FollowingFeedTab } from "@/types/following-feed.js";
+import { i18n } from "@/i18n.js";
+import MkDateSeparatedList from "@/components/MkDateSeparatedList.vue";
+import MkPagination from "@/components/MkPagination.vue";
+import SkFollowingFeedEntry from "@/components/SkFollowingFeedEntry.vue";
+import MkPullToRefresh from "@/components/MkPullToRefresh.vue";
 
 const props = defineProps<{
 	userList: FollowingFeedTab;
@@ -41,8 +56,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(event: 'loaded', initialUserId?: string): void;
-	(event: 'userSelected', userId: string): void;
+	(event: "loaded", initialUserId?: string): void;
+	(event: "userSelected", userId: string): void;
 }>();
 
 defineExpose({ reload });
@@ -52,7 +67,7 @@ async function reload() {
 }
 
 function selectUser(userId: string) {
-	emit('userSelected', userId);
+	emit("userSelected", userId);
 }
 
 async function onListReady(): Promise<void> {
@@ -61,11 +76,11 @@ async function onListReady(): Promise<void> {
 		? latestNotesPaging.value.items.values().next().value?.userId
 		: undefined;
 
-	emit('loaded', initialUserId);
+	emit("loaded", initialUserId);
 }
 
-const latestNotesPagination: Paging<'notes/following'> = {
-	endpoint: 'notes/following' as const,
+const latestNotesPagination: Paging<"notes/following"> = {
+	endpoint: "notes/following" as const,
 	limit: 20,
 	params: computed(() => ({
 		list: props.userList,

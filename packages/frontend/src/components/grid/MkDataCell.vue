@@ -4,118 +4,138 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div
-	v-if="cell.row.using"
-	ref="rootEl"
-	class="mk_grid_td"
-	:class="$style.cell"
-	:style="{ maxWidth: cellWidth, minWidth: cellWidth }"
-	:tabindex="-1"
-	data-grid-cell
-	:data-grid-cell-row="cell.row.index"
-	:data-grid-cell-col="cell.column.index"
-	@keydown="onCellKeyDown"
-	@dblclick.prevent="onCellDoubleClick"
->
 	<div
-		:class="[
-			$style.root,
-			[(cell.violation.valid || cell.selected) ? {} : $style.error],
-			[cell.selected ? $style.selected : {}],
-			// 行が選択されているときは範囲選択色の適用を行側に任せる
-			[(cell.ranged && !cell.row.ranged) ? $style.ranged : {}],
-			[needsContentCentering ? $style.center : {}],
-		]"
+		v-if="cell.row.using"
+		ref="rootEl"
+		class="mk_grid_td"
+		:class="$style.cell"
+		:style="{ maxWidth: cellWidth, minWidth: cellWidth }"
+		:tabindex="-1"
+		data-grid-cell
+		:data-grid-cell-row="cell.row.index"
+		:data-grid-cell-col="cell.column.index"
+		@keydown="onCellKeyDown"
+		@dblclick.prevent="onCellDoubleClick"
 	>
-		<div v-if="!editing" :class="[$style.contentArea]" :style="cellType === 'boolean' ? 'justify-content: center' : ''">
-			<div ref="contentAreaEl" :class="$style.content">
-				<div v-if="cellType === 'text'">
-					{{ cell.value }}
-				</div>
-				<div v-if="cellType === 'number'">
-					{{ cell.value }}
-				</div>
-				<div v-if="cellType === 'date'">
-					{{ cell.value }}
-				</div>
-				<div v-else-if="cellType === 'boolean'">
-					<div
-						:class="[$style.bool, {
-							[$style.boolTrue]: cell.value === true,
-							'ti ti-check': cell.value === true,
-						}]"
-					></div>
-				</div>
-				<div v-else-if="cellType === 'image'">
-					<img
-						:src="cell.value"
-						:alt="cell.value"
-						:class="$style.viewImage"
-						@load="emitContentSizeChanged"
-					/>
+		<div
+			:class="[
+				$style.root,
+				[cell.violation.valid || cell.selected ? {} : $style.error],
+				[cell.selected ? $style.selected : {}],
+				// 行が選択されているときは範囲選択色の適用を行側に任せる
+				[cell.ranged && !cell.row.ranged ? $style.ranged : {}],
+				[needsContentCentering ? $style.center : {}],
+			]"
+		>
+			<div
+				v-if="!editing"
+				:class="[$style.contentArea]"
+				:style="cellType === 'boolean' ? 'justify-content: center' : ''"
+			>
+				<div ref="contentAreaEl" :class="$style.content">
+					<div v-if="cellType === 'text'">
+						{{ cell.value }}
+					</div>
+					<div v-if="cellType === 'number'">
+						{{ cell.value }}
+					</div>
+					<div v-if="cellType === 'date'">
+						{{ cell.value }}
+					</div>
+					<div v-else-if="cellType === 'boolean'">
+						<div
+							:class="[
+								$style.bool,
+								{
+									[$style.boolTrue]: cell.value === true,
+									'ti ti-check': cell.value === true,
+								},
+							]"
+						></div>
+					</div>
+					<div v-else-if="cellType === 'image'">
+						<img
+							:src="cell.value"
+							:alt="cell.value"
+							:class="$style.viewImage"
+							@load="emitContentSizeChanged"
+						/>
+					</div>
 				</div>
 			</div>
-		</div>
-		<div v-else ref="inputAreaEl" :class="$style.inputArea">
-			<input
-				v-if="cellType === 'text'"
-				type="text"
-				:class="$style.editingInput"
-				:value="editingValue"
-				@input="onInputText"
-				@mousedown.stop
-				@contextmenu.stop
-			/>
-			<input
-				v-if="cellType === 'number'"
-				type="number"
-				:class="$style.editingInput"
-				:value="editingValue"
-				@input="onInputText"
-				@mousedown.stop
-				@contextmenu.stop
-			/>
-			<input
-				v-if="cellType === 'date'"
-				type="date"
-				:class="$style.editingInput"
-				:value="editingValue"
-				@input="onInputText"
-				@mousedown.stop
-				@contextmenu.stop
-			/>
+			<div v-else ref="inputAreaEl" :class="$style.inputArea">
+				<input
+					v-if="cellType === 'text'"
+					type="text"
+					:class="$style.editingInput"
+					:value="editingValue"
+					@input="onInputText"
+					@mousedown.stop
+					@contextmenu.stop
+				/>
+				<input
+					v-if="cellType === 'number'"
+					type="number"
+					:class="$style.editingInput"
+					:value="editingValue"
+					@input="onInputText"
+					@mousedown.stop
+					@contextmenu.stop
+				/>
+				<input
+					v-if="cellType === 'date'"
+					type="date"
+					:class="$style.editingInput"
+					:value="editingValue"
+					@input="onInputText"
+					@mousedown.stop
+					@contextmenu.stop
+				/>
+			</div>
 		</div>
 	</div>
-</div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, useTemplateRef, toRefs, watch } from 'vue';
-import type { Size } from '@/components/grid/grid.js';
-import type { CellValue, GridCell } from '@/components/grid/cell.js';
-import type { GridRowSetting } from '@/components/grid/row.js';
-import { GridEventEmitter } from '@/components/grid/grid.js';
-import { useTooltip } from '@/use/use-tooltip.js';
-import * as os from '@/os.js';
-import { equalCellAddress, getCellAddress } from '@/components/grid/grid-utils.js';
+import {
+	computed,
+	defineAsyncComponent,
+	nextTick,
+	onMounted,
+	onUnmounted,
+	ref,
+	useTemplateRef,
+	toRefs,
+	watch,
+} from "vue";
+import type { Size } from "@/components/grid/grid.js";
+import type { CellValue, GridCell } from "@/components/grid/cell.js";
+import type { GridRowSetting } from "@/components/grid/row.js";
+import { GridEventEmitter } from "@/components/grid/grid.js";
+import { useTooltip } from "@/use/use-tooltip.js";
+import * as os from "@/os.js";
+import {
+	equalCellAddress,
+	getCellAddress,
+} from "@/components/grid/grid-utils.js";
 
 const emit = defineEmits<{
-	(ev: 'operation:beginEdit', sender: GridCell): void;
-	(ev: 'operation:endEdit', sender: GridCell): void;
-	(ev: 'change:value', sender: GridCell, newValue: CellValue): void;
-	(ev: 'change:contentSize', sender: GridCell, newSize: Size): void;
+	(ev: "operation:beginEdit", sender: GridCell): void;
+	(ev: "operation:endEdit", sender: GridCell): void;
+	(ev: "change:value", sender: GridCell, newValue: CellValue): void;
+	(ev: "change:contentSize", sender: GridCell, newSize: Size): void;
 }>();
 const props = defineProps<{
-	cell: GridCell,
-	rowSetting: GridRowSetting,
-	bus: GridEventEmitter,
+	cell: GridCell;
+	rowSetting: GridRowSetting;
+	bus: GridEventEmitter;
 }>();
 
 const { cell, bus } = toRefs(props);
 
-const rootEl = useTemplateRef('rootEl');
-const contentAreaEl = useTemplateRef('contentAreaEl');
-const inputAreaEl = useTemplateRef('inputAreaEl');
+const rootEl = useTemplateRef("rootEl");
+const contentAreaEl = useTemplateRef("contentAreaEl");
+const inputAreaEl = useTemplateRef("inputAreaEl");
 
 /** 値が編集中かどうか */
 const editing = ref<boolean>(false);
@@ -126,27 +146,34 @@ const cellWidth = computed(() => cell.value.column.width);
 const cellType = computed(() => cell.value.column.setting.type);
 const needsContentCentering = computed(() => {
 	switch (cellType.value) {
-		case 'boolean':
+		case "boolean":
 			return true;
 		default:
 			return false;
 	}
 });
 
-watch(() => [cell.value.value], () => {
-	// 中身がセットされた直後はサイズが分からないので、次のタイミングで更新する
-	nextTick(emitContentSizeChanged);
-}, { immediate: true });
+watch(
+	() => [cell.value.value],
+	() => {
+		// 中身がセットされた直後はサイズが分からないので、次のタイミングで更新する
+		nextTick(emitContentSizeChanged);
+	},
+	{ immediate: true },
+);
 
-watch(() => cell.value.selected, () => {
-	if (cell.value.selected) {
-		requestFocus();
-	}
-});
+watch(
+	() => cell.value.selected,
+	() => {
+		if (cell.value.selected) {
+			requestFocus();
+		}
+	},
+);
 
 function onCellDoubleClick(ev: MouseEvent) {
 	switch (ev.type) {
-		case 'dblclick': {
+		case "dblclick": {
 			beginEditing(ev.target as HTMLElement);
 			break;
 		}
@@ -154,8 +181,15 @@ function onCellDoubleClick(ev: MouseEvent) {
 }
 
 function onOutsideMouseDown(ev: MouseEvent) {
-	const isOutside = ev.target instanceof Node && !rootEl.value?.contains(ev.target);
-	if (isOutside || !equalCellAddress(cell.value.address, getCellAddress(ev.target as HTMLElement))) {
+	const isOutside =
+		ev.target instanceof Node && !rootEl.value?.contains(ev.target);
+	if (
+		isOutside ||
+		!equalCellAddress(
+			cell.value.address,
+			getCellAddress(ev.target as HTMLElement),
+		)
+	) {
 		endEditing(true, false);
 	}
 }
@@ -164,21 +198,21 @@ function onCellKeyDown(ev: KeyboardEvent) {
 	if (!editing.value) {
 		ev.preventDefault();
 		switch (ev.code) {
-			case 'NumpadEnter':
-			case 'Enter':
-			case 'F2': {
+			case "NumpadEnter":
+			case "Enter":
+			case "F2": {
 				beginEditing(ev.target as HTMLElement);
 				break;
 			}
 		}
 	} else {
 		switch (ev.code) {
-			case 'Escape': {
+			case "Escape": {
 				endEditing(false, true);
 				break;
 			}
-			case 'NumpadEnter':
-			case 'Enter': {
+			case "NumpadEnter":
+			case "Enter": {
 				if (!ev.isComposing) {
 					endEditing(true, true);
 				}
@@ -197,27 +231,31 @@ function onForceRefreshContentSize() {
 
 function registerOutsideMouseDown() {
 	unregisterOutsideMouseDown();
-	addEventListener('mousedown', onOutsideMouseDown);
+	addEventListener("mousedown", onOutsideMouseDown);
 }
 
 function unregisterOutsideMouseDown() {
-	removeEventListener('mousedown', onOutsideMouseDown);
+	removeEventListener("mousedown", onOutsideMouseDown);
 }
 
 async function beginEditing(target: HTMLElement) {
-	if (editing.value || !cell.value.selected || !cell.value.column.setting.editable) {
+	if (
+		editing.value ||
+		!cell.value.selected ||
+		!cell.value.column.setting.editable
+	) {
 		return;
 	}
 
 	if (cell.value.column.setting.customValueEditor) {
-		emit('operation:beginEdit', cell.value);
+		emit("operation:beginEdit", cell.value);
 		const newValue = await cell.value.column.setting.customValueEditor(
 			cell.value.row,
 			cell.value.column,
 			cell.value.value,
 			target,
 		);
-		emit('operation:endEdit', cell.value);
+		emit("operation:endEdit", cell.value);
 
 		if (newValue !== cell.value.value) {
 			emitValueChange(newValue);
@@ -226,23 +264,23 @@ async function beginEditing(target: HTMLElement) {
 		requestFocus();
 	} else {
 		switch (cellType.value) {
-			case 'number':
-			case 'date':
-			case 'text': {
+			case "number":
+			case "date":
+			case "text": {
 				editingValue.value = cell.value.value;
 				editing.value = true;
 				registerOutsideMouseDown();
-				emit('operation:beginEdit', cell.value);
+				emit("operation:beginEdit", cell.value);
 
 				await nextTick(() => {
 					// inputの展開後にフォーカスを当てたい
 					if (inputAreaEl.value) {
-						(inputAreaEl.value.querySelector('*') as HTMLElement).focus();
+						(inputAreaEl.value.querySelector("*") as HTMLElement).focus();
 					}
 				});
 				break;
 			}
-			case 'boolean': {
+			case "boolean": {
 				// とくに特殊なUIは設けず、トグルするだけ
 				emitValueChange(!cell.value.value);
 				break;
@@ -259,7 +297,7 @@ function endEditing(applyValue: boolean, requireFocus: boolean) {
 	const newValue = editingValue.value;
 	editingValue.value = undefined;
 
-	emit('operation:endEdit', cell.value);
+	emit("operation:endEdit", cell.value);
 	unregisterOutsideMouseDown();
 
 	if (applyValue && newValue !== cell.value.value) {
@@ -281,11 +319,11 @@ function requestFocus() {
 
 function emitValueChange(newValue: CellValue) {
 	const _cell = cell.value;
-	emit('change:value', _cell, newValue);
+	emit("change:value", _cell, newValue);
 }
 
 function emitContentSizeChanged() {
-	emit('change:contentSize', cell.value, {
+	emit("change:contentSize", cell.value, {
 		width: contentAreaEl.value?.clientWidth ?? 0,
 		height: contentAreaEl.value?.clientHeight ?? 0,
 	});
@@ -296,26 +334,32 @@ useTooltip(rootEl, (showing) => {
 		return;
 	}
 
-	const content = cell.value.violation.violations.filter(it => !it.valid).map(it => it.result.message).join('\n');
-	const result = os.popup(defineAsyncComponent(() => import('@/components/grid/MkCellTooltip.vue')), {
-		showing,
-		content,
-		targetElement: rootEl.value!,
-	}, {
-		closed: () => {
-			result.dispose();
+	const content = cell.value.violation.violations
+		.filter((it) => !it.valid)
+		.map((it) => it.result.message)
+		.join("\n");
+	const result = os.popup(
+		defineAsyncComponent(() => import("@/components/grid/MkCellTooltip.vue")),
+		{
+			showing,
+			content,
+			targetElement: rootEl.value!,
 		},
-	});
+		{
+			closed: () => {
+				result.dispose();
+			},
+		},
+	);
 });
 
 onMounted(() => {
-	bus.value.on('forceRefreshContentSize', onForceRefreshContentSize);
+	bus.value.on("forceRefreshContentSize", onForceRefreshContentSize);
 });
 
 onUnmounted(() => {
-	bus.value.off('forceRefreshContentSize', onForceRefreshContentSize);
+	bus.value.off("forceRefreshContentSize", onForceRefreshContentSize);
 });
-
 </script>
 
 <style module lang="scss">
@@ -361,7 +405,8 @@ $cellHeight: 28px;
 	}
 }
 
-.contentArea, .inputArea {
+.contentArea,
+.inputArea {
 	display: flex;
 	align-items: center;
 	width: 100%;
@@ -415,7 +460,8 @@ $cellHeight: 28px;
 	height: $cellHeight - 2;
 	outline: none;
 	border: none;
-	font-family: 'Hiragino Maru Gothic Pro', "BIZ UDGothic", Roboto, HelveticaNeue, Arial, sans-serif;
+	font-family:
+		"Hiragino Maru Gothic Pro", "BIZ UDGothic", Roboto, HelveticaNeue, Arial,
+		sans-serif;
 }
-
 </style>

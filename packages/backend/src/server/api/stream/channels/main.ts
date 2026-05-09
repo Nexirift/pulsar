@@ -3,25 +3,29 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { isUserFromMutedInstance } from '@/misc/is-instance-muted.js';
-import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import { bindThis } from '@/decorators.js';
-import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
-import type { JsonObject } from '@/misc/json-value.js';
-import type { GlobalEvents } from '@/core/GlobalEventService.js';
-import { type Channel, NoteChannel, type MiChannelService } from '../channel.js';
+import { Injectable } from "@nestjs/common";
+import { isUserFromMutedInstance } from "@/misc/is-instance-muted.js";
+import { NoteEntityService } from "@/core/entities/NoteEntityService.js";
+import { bindThis } from "@/decorators.js";
+import { errorCodes, IdentifiableError } from "@/misc/identifiable-error.js";
+import type { JsonObject } from "@/misc/json-value.js";
+import type { GlobalEvents } from "@/core/GlobalEventService.js";
+import {
+	type Channel,
+	NoteChannel,
+	type MiChannelService,
+} from "../channel.js";
 
 // TODO does not need to be NoteChannel?
 class MainChannel extends NoteChannel {
-	public readonly chName = 'main';
+	public readonly chName = "main";
 	public static shouldShare = true;
 	public static requireCredential = true as const;
-	public static kind = 'read:account';
+	public static kind = "read:account";
 
 	constructor(
 		id: string,
-		connection: Channel['connection'],
+		connection: Channel["connection"],
 		noteEntityService: NoteEntityService,
 	) {
 		super(id, connection, noteEntityService);
@@ -30,7 +34,11 @@ class MainChannel extends NoteChannel {
 	@bindThis
 	public async init(): Promise<boolean> {
 		if (!this.user) return false;
-		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
+		if (!this.subscriber)
+			throw new IdentifiableError(
+				errorCodes.websocketError,
+				`Cannot init ${this.chName} channel: socket is not connected`,
+			);
 
 		this.subscriber.on(`mainStream:${this.user.id}`, this.onEvent);
 
@@ -38,12 +46,13 @@ class MainChannel extends NoteChannel {
 	}
 
 	@bindThis
-	private async onEvent(data: GlobalEvents['main']['payload']): Promise<void> {
+	private async onEvent(data: GlobalEvents["main"]["payload"]): Promise<void> {
 		switch (data.type) {
-			case 'notification': {
+			case "notification": {
 				// Ignore notifications from instances the user has muted
 				if (isUserFromMutedInstance(data.body, this.userMutedInstances)) return;
-				if (data.body.userId && this.userIdsWhoMeMuting.has(data.body.userId)) return;
+				if (data.body.userId && this.userIdsWhoMeMuting.has(data.body.userId))
+					return;
 
 				if (data.body.note) {
 					const preparedNote = await this.prepareNote(data.body.note);
@@ -53,7 +62,7 @@ class MainChannel extends NoteChannel {
 				}
 				break;
 			}
-			case 'mention': {
+			case "mention": {
 				const preparedNote = await this.prepareNote(data.body);
 				if (preparedNote) {
 					this.send(data.type, preparedNote);
@@ -77,17 +86,10 @@ export class MainChannelService implements MiChannelService<true> {
 	public readonly requireCredential = MainChannel.requireCredential;
 	public readonly kind = MainChannel.kind;
 
-	constructor(
-		private noteEntityService: NoteEntityService,
-	) {
-	}
+	constructor(private noteEntityService: NoteEntityService) {}
 
 	@bindThis
-	public create(id: string, connection: Channel['connection']): MainChannel {
-		return new MainChannel(
-			id,
-			connection,
-			this.noteEntityService,
-		);
+	public create(id: string, connection: Channel["connection"]): MainChannel {
+		return new MainChannel(id, connection, this.noteEntityService);
 	}
 }

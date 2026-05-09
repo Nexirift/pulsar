@@ -4,12 +4,23 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-	<XColumn :menu="menu" :column="column" :isStacked="isStacked"
-		:refresher="async () => { await timeline?.reloadTimeline() }">
+	<XColumn
+		:menu="menu"
+		:column="column"
+		:isStacked="isStacked"
+		:refresher="
+			async () => {
+				await timeline?.reloadTimeline();
+			}
+		"
+	>
 		<template #header>
 			<i v-if="column.tl != null" :class="basicTimelineIconClass(column.tl)" />
-			<span style="margin-left: 8px;">{{ column.name || (column.tl ? i18n.ts._timelines[column.tl] : null) ||
-				i18n.ts._deck._columns.tl }}</span>
+			<span style="margin-left: 8px">{{
+				column.name ||
+				(column.tl ? i18n.ts._timelines[column.tl] : null) ||
+				i18n.ts._deck._columns.tl
+			}}</span>
 		</template>
 
 		<div v-if="!isAvailableBasicTimeline(column.tl)" :class="$style.disabled">
@@ -17,74 +28,91 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<i class="ti ti-circle-minus"></i>
 				{{ i18n.ts._disabledTimeline.title }}
 			</p>
-			<p :class="$style.disabledDescription">{{ i18n.ts._disabledTimeline.description }}</p>
+			<p :class="$style.disabledDescription">
+				{{ i18n.ts._disabledTimeline.description }}
+			</p>
 		</div>
-		<MkTimeline v-else-if="column.tl" ref="timeline" :key="column.tl + withRenotes + withReplies + onlyFiles"
-			:src="column.tl" :withRenotes="withRenotes" :withReplies="withReplies" :withSensitive="withSensitive"
-			:withAdultsOnly="withAdultsOnly" :onlyFiles="onlyFiles" @note="onNote" />
+		<MkTimeline
+			v-else-if="column.tl"
+			ref="timeline"
+			:key="column.tl + withRenotes + withReplies + onlyFiles"
+			:src="column.tl"
+			:withRenotes="withRenotes"
+			:withReplies="withReplies"
+			:withSensitive="withSensitive"
+			:withAdultsOnly="withAdultsOnly"
+			:onlyFiles="onlyFiles"
+			@note="onNote"
+		/>
 	</XColumn>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, watch, ref, useTemplateRef, computed } from 'vue';
-import XColumn from './column.vue';
-import type { Column } from '@/deck.js';
-import type { MenuItem } from '@/types/menu.js';
-import type { SoundStore } from '@/preferences/def.js';
-import { removeColumn, updateColumn } from '@/deck.js';
-import MkTimeline from '@/components/MkTimeline.vue';
-import * as os from '@/os.js';
-import { i18n } from '@/i18n.js';
-import { hasWithReplies, isAvailableBasicTimeline, basicTimelineIconClass } from '@/timelines.js';
-import { soundSettingsButton } from '@/ui/deck/tl-note-notification.js';
-import * as sound from '@/utility/sound.js';
-import { $i } from '@/i';
+import { onMounted, watch, ref, useTemplateRef, computed } from "vue";
+import XColumn from "./column.vue";
+import type { Column } from "@/deck.js";
+import type { MenuItem } from "@/types/menu.js";
+import type { SoundStore } from "@/preferences/def.js";
+import { removeColumn, updateColumn } from "@/deck.js";
+import MkTimeline from "@/components/MkTimeline.vue";
+import * as os from "@/os.js";
+import { i18n } from "@/i18n.js";
+import {
+	hasWithReplies,
+	isAvailableBasicTimeline,
+	basicTimelineIconClass,
+} from "@/timelines.js";
+import { soundSettingsButton } from "@/ui/deck/tl-note-notification.js";
+import * as sound from "@/utility/sound.js";
+import { $i } from "@/i";
 
 const props = defineProps<{
 	column: Column;
 	isStacked: boolean;
 }>();
 
-const timeline = useTemplateRef('timeline');
+const timeline = useTemplateRef("timeline");
 
-const soundSetting = ref<SoundStore>(props.column.soundSetting ?? { type: null, volume: 1 });
+const soundSetting = ref<SoundStore>(
+	props.column.soundSetting ?? { type: null, volume: 1 },
+);
 const withRenotes = ref(props.column.withRenotes ?? true);
 const withReplies = ref(props.column.withReplies ?? false);
 const withSensitive = ref(props.column.withSensitive ?? true);
 const withAdultsOnly = ref(props.column.withAdultsOnly ?? false);
 const onlyFiles = ref(props.column.onlyFiles ?? false);
 
-watch(withRenotes, v => {
+watch(withRenotes, (v) => {
 	updateColumn(props.column.id, {
 		withRenotes: v,
 	});
 });
 
-watch(withReplies, v => {
+watch(withReplies, (v) => {
 	updateColumn(props.column.id, {
 		withReplies: v,
 	});
 });
 
-watch(withSensitive, v => {
+watch(withSensitive, (v) => {
 	updateColumn(props.column.id, {
 		withSensitive: v,
 	});
 });
 
-watch(withAdultsOnly, v => {
+watch(withAdultsOnly, (v) => {
 	updateColumn(props.column.id, {
 		withAdultsOnly: v,
 	});
 });
 
-watch(onlyFiles, v => {
+watch(onlyFiles, (v) => {
 	updateColumn(props.column.id, {
 		onlyFiles: v,
 	});
 });
 
-watch(soundSetting, v => {
+watch(soundSetting, (v) => {
 	updateColumn(props.column.id, { soundSetting: v });
 });
 
@@ -97,17 +125,28 @@ onMounted(() => {
 async function setType() {
 	const { canceled, result: src } = await os.select({
 		title: i18n.ts.timeline,
-		items: [{
-			value: 'home' as const, text: i18n.ts._timelines.home,
-		}, {
-			value: 'local' as const, text: i18n.ts._timelines.local,
-		}, {
-			value: 'social' as const, text: i18n.ts._timelines.social,
-		}, {
-			value: 'bubble' as const, text: i18n.ts._timelines.bubble,
-		}, {
-			value: 'global' as const, text: i18n.ts._timelines.global,
-		}],
+		items: [
+			{
+				value: "home" as const,
+				text: i18n.ts._timelines.home,
+			},
+			{
+				value: "local" as const,
+				text: i18n.ts._timelines.local,
+			},
+			{
+				value: "social" as const,
+				text: i18n.ts._timelines.social,
+			},
+			{
+				value: "bubble" as const,
+				text: i18n.ts._timelines.bubble,
+			},
+			{
+				value: "global" as const,
+				text: i18n.ts._timelines.global,
+			},
+		],
 	});
 	if (canceled) {
 		if (props.column.tl == null) {
@@ -128,53 +167,63 @@ function onNote() {
 const menu = computed<MenuItem[]>(() => {
 	const menuItems: MenuItem[] = [];
 
-	menuItems.push({
-		icon: 'ti ti-pencil',
-		text: i18n.ts.timeline,
-		action: setType,
-	}, {
-		icon: 'ti ti-bell',
-		text: i18n.ts._deck.newNoteNotificationSettings,
-		action: () => soundSettingsButton(soundSetting),
-	}, {
-		type: 'switch',
-		text: i18n.ts.showRenotes,
-		ref: withRenotes,
-	});
+	menuItems.push(
+		{
+			icon: "ti ti-pencil",
+			text: i18n.ts.timeline,
+			action: setType,
+		},
+		{
+			icon: "ti ti-bell",
+			text: i18n.ts._deck.newNoteNotificationSettings,
+			action: () => soundSettingsButton(soundSetting),
+		},
+		{
+			type: "switch",
+			text: i18n.ts.showRenotes,
+			ref: withRenotes,
+		},
+	);
 
 	if (hasWithReplies(props.column.tl)) {
 		menuItems.push({
-			type: 'switch',
+			type: "switch",
 			text: i18n.ts.showRepliesToOthersInTimeline,
 			ref: withReplies,
 			disabled: onlyFiles,
 		});
 	}
 
-	menuItems.push({
-		type: 'switch',
-		text: i18n.ts.fileAttachedOnly,
-		ref: onlyFiles,
-		disabled: hasWithReplies(props.column.tl) ? withReplies : false,
-	}, {
-		type: 'switch',
-		text: i18n.ts.withSensitive,
-		ref: withSensitive,
-	}, {
-		type: 'switch',
-		text: i18n.ts.withAdultsOnly,
-		ref: withAdultsOnly,
-		disabled: $i?.birthday ? (() => {
-			const birth = new Date($i?.birthday);
-			const today = new Date();
-			let age = today.getFullYear() - birth.getFullYear();
-			const m = today.getMonth() - birth.getMonth();
-			if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-				age--;
-			}
-			return age < 18;
-		})() : false,
-	});
+	menuItems.push(
+		{
+			type: "switch",
+			text: i18n.ts.fileAttachedOnly,
+			ref: onlyFiles,
+			disabled: hasWithReplies(props.column.tl) ? withReplies : false,
+		},
+		{
+			type: "switch",
+			text: i18n.ts.withSensitive,
+			ref: withSensitive,
+		},
+		{
+			type: "switch",
+			text: i18n.ts.withAdultsOnly,
+			ref: withAdultsOnly,
+			disabled: $i?.birthday
+				? (() => {
+						const birth = new Date($i?.birthday);
+						const today = new Date();
+						let age = today.getFullYear() - birth.getFullYear();
+						const m = today.getMonth() - birth.getMonth();
+						if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+							age--;
+						}
+						return age < 18;
+					})()
+				: false,
+		},
+	);
 
 	return menuItems;
 });

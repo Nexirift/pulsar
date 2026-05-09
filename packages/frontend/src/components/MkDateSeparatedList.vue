@@ -6,17 +6,17 @@ SPDX-License-Identifier: AGPL-3.0-only
 <!-- TODO: 親からスタイルを当てにくいことや実装がトリッキーなことを鑑み廃止または使用の縮小(timeline-date-separate.tsを使う) -->
 
 <script lang="ts">
-import { defineComponent, h, TransitionGroup, useCssModule } from 'vue';
-import type { PropType } from 'vue';
-import type { MisskeyEntity } from '@/types/date-separated-list.js';
-import MkAd from '@/components/global/MkAd.vue';
-import { isDebuggerEnabled, stackTraceInstances } from '@/debug.js';
-import * as os from '@/os.js';
-import { instance } from '@/instance.js';
-import { prefer } from '@/preferences.js';
-import { getDateText } from '@/utility/timeline-date-separate.js';
-import { $i } from '@/i.js';
-import SkTransitionGroup from '@/components/SkTransitionGroup.vue';
+import { defineComponent, h, TransitionGroup, useCssModule } from "vue";
+import type { PropType } from "vue";
+import type { MisskeyEntity } from "@/types/date-separated-list.js";
+import MkAd from "@/components/global/MkAd.vue";
+import { isDebuggerEnabled, stackTraceInstances } from "@/debug.js";
+import * as os from "@/os.js";
+import { instance } from "@/instance.js";
+import { prefer } from "@/preferences.js";
+import { getDateText } from "@/utility/timeline-date-separate.js";
+import { $i } from "@/i.js";
+import SkTransitionGroup from "@/components/SkTransitionGroup.vue";
 
 export default defineComponent({
 	props: {
@@ -27,7 +27,7 @@ export default defineComponent({
 		direction: {
 			type: String,
 			required: false,
-			default: 'down',
+			default: "down",
 		},
 		reversed: {
 			type: Boolean,
@@ -51,66 +51,99 @@ export default defineComponent({
 
 		if (props.items.length === 0) return;
 
-		const renderChildrenImpl = (shouldHideAds: boolean) => props.items.map((item, i) => {
-			if (!slots || !slots.default) return;
+		const renderChildrenImpl = (shouldHideAds: boolean) =>
+			props.items.map((item, i) => {
+				if (!slots || !slots.default) return;
 
-			const el = slots.default({
-				item: item,
-			})[0];
-			if (el.key == null && item.id) el.key = item.id;
+				const el = slots.default({
+					item: item,
+				})[0];
+				if (el.key == null && item.id) el.key = item.id;
 
-			const date = new Date(item.createdAt);
-			const nextDate = props.items[i + 1] ? new Date(props.items[i + 1].createdAt) : null;
+				const date = new Date(item.createdAt);
+				const nextDate = props.items[i + 1]
+					? new Date(props.items[i + 1].createdAt)
+					: null;
 
-			if (
-				i !== props.items.length - 1 &&
-				nextDate != null && (
-					date.getFullYear() !== nextDate.getFullYear() ||
-					date.getMonth() !== nextDate.getMonth() ||
-					date.getDate() !== nextDate.getDate()
-				)
-			) {
-				const separator = h('div', {
-					class: $style['separator'],
-					key: item.id + ':separator',
-				}, h('p', {
-					class: $style['date'],
-				}, [
-					h('span', {
-						class: $style['date-1'],
-					}, [
-						h('i', {
-							class: `ti ti-chevron-up ${$style['date-1-icon']}`,
-						}),
-						getDateText(date),
-					]),
-					h('span', {
-						class: $style['date-2'],
-					}, [
-						getDateText(nextDate),
-						h('i', {
-							class: `ti ti-chevron-down ${$style['date-2-icon']}`,
-						}),
-					]),
-				]));
+				if (
+					i !== props.items.length - 1 &&
+					nextDate != null &&
+					(date.getFullYear() !== nextDate.getFullYear() ||
+						date.getMonth() !== nextDate.getMonth() ||
+						date.getDate() !== nextDate.getDate())
+				) {
+					const separator = h(
+						"div",
+						{
+							class: $style["separator"],
+							key: item.id + ":separator",
+						},
+						h(
+							"p",
+							{
+								class: $style["date"],
+							},
+							[
+								h(
+									"span",
+									{
+										class: $style["date-1"],
+									},
+									[
+										h("i", {
+											class: `ti ti-chevron-up ${$style["date-1-icon"]}`,
+										}),
+										getDateText(date),
+									],
+								),
+								h(
+									"span",
+									{
+										class: $style["date-2"],
+									},
+									[
+										getDateText(nextDate),
+										h("i", {
+											class: `ti ti-chevron-down ${$style["date-2-icon"]}`,
+										}),
+									],
+								),
+							],
+						),
+					);
 
-				return [el, separator];
-			} else {
-				if (props.ad && instance.ads.length > 0 && item._shouldInsertAd_ && !shouldHideAds) {
-					return [h('div', {
-						key: item.id + ':ad',
-						class: $style['ad-wrapper'],
-					}, [h(MkAd, {
-						prefer: ['horizontal', 'horizontal-big'],
-					})]), el];
+					return [el, separator];
 				} else {
-					return el;
+					if (
+						props.ad &&
+						instance.ads.length > 0 &&
+						item._shouldInsertAd_ &&
+						!shouldHideAds
+					) {
+						return [
+							h(
+								"div",
+								{
+									key: item.id + ":ad",
+									class: $style["ad-wrapper"],
+								},
+								[
+									h(MkAd, {
+										prefer: ["horizontal", "horizontal-big"],
+									}),
+								],
+							),
+							el,
+						];
+					} else {
+						return el;
+					}
 				}
-			}
-		});
+			});
 
 		const renderChildren = () => {
-			const shouldHideAds = (!prefer.s.forceShowAds && $i && $i.policies.canHideAds) ?? false;
+			const shouldHideAds =
+				(!prefer.s.forceShowAds && $i && $i.policies.canHideAds) ?? false;
 
 			const children = renderChildrenImpl(shouldHideAds);
 			if (isDebuggerEnabled(6864)) {
@@ -119,7 +152,12 @@ export default defineComponent({
 				if (keys.size !== nodes.length) {
 					const id = crypto.randomUUID();
 					const instances = stackTraceInstances();
-					os.toast(instances.reduce((a, c) => `${a} at ${c.type.name}`, `[DEBUG_6864 (${id})]: ${nodes.length - keys.size} duplicated keys found`));
+					os.toast(
+						instances.reduce(
+							(a, c) => `${a} at ${c.type.name}`,
+							`[DEBUG_6864 (${id})]: ${nodes.length - keys.size} duplicated keys found`,
+						),
+					);
 					console.warn({ id, debugId: 6864, stack: instances });
 				}
 			}
@@ -134,26 +172,31 @@ export default defineComponent({
 
 		function onLeaveCancelled(el: Element) {
 			if (!(el instanceof HTMLElement)) return;
-			el.style.top = '';
-			el.style.left = '';
+			el.style.top = "";
+			el.style.left = "";
 		}
 
 		// eslint-disable-next-line vue/no-setup-props-reactivity-loss
 		const classes = {
-			[$style['date-separated-list']]: true,
-			[$style['date-separated-list-nogap']]: props.noGap,
-			[$style['reversed']]: props.reversed,
-			[$style['direction-down']]: props.direction === 'down',
-			[$style['direction-up']]: props.direction === 'up',
+			[$style["date-separated-list"]]: true,
+			[$style["date-separated-list-nogap"]]: props.noGap,
+			[$style["reversed"]]: props.reversed,
+			[$style["direction-down"]]: props.direction === "down",
+			[$style["direction-up"]]: props.direction === "up",
 		};
 
-		return () => h(SkTransitionGroup, {
-			class: classes,
-			name: 'list',
-			tag: 'div',
-			onBeforeLeave,
-			onLeaveCancelled,
-		}, { default: renderChildren });
+		return () =>
+			h(
+				SkTransitionGroup,
+				{
+					class: classes,
+					name: "list",
+					tag: "div",
+					onBeforeLeave,
+					onLeaveCancelled,
+				},
+				{ default: renderChildren },
+			);
 	},
 });
 </script>
@@ -168,7 +211,9 @@ export default defineComponent({
 		}
 
 		> .list-enter-active {
-			transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+			transition:
+				transform 0.7s cubic-bezier(0.23, 1, 0.32, 1),
+				opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1);
 		}
 
 		> *:empty {
@@ -198,20 +243,20 @@ export default defineComponent({
 
 .direction-up {
 	&:global {
-	> .list-enter-from,
-	> .list-leave-to {
-		opacity: 0;
-		transform: translateY(64px);
-	}
+		> .list-enter-from,
+		> .list-leave-to {
+			opacity: 0;
+			transform: translateY(64px);
+		}
 	}
 }
 .direction-down {
 	&:global {
-	> .list-enter-from,
-	> .list-leave-to {
-		opacity: 0;
-		transform: translateY(-64px);
-	}
+		> .list-enter-from,
+		> .list-leave-to {
+			opacity: 0;
+			transform: translateY(-64px);
+		}
 	}
 }
 
@@ -254,7 +299,12 @@ export default defineComponent({
 .ad-wrapper {
 	padding: 8px;
 	background-size: auto auto;
-	background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, var(--MI_THEME-bg) 8px, var(--MI_THEME-bg) 14px);
+	background-image: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 8px,
+		var(--MI_THEME-bg) 8px,
+		var(--MI_THEME-bg) 14px
+	);
 }
 </style>
-

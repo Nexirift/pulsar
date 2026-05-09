@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as Misskey from 'misskey-js';
-import { defineAsyncComponent, ref, watch } from 'vue';
-import type { Ref } from 'vue';
-import { popup } from '@/os.js';
-import { prefer } from '@/preferences.js';
+import * as Misskey from "misskey-js";
+import { defineAsyncComponent, ref, watch } from "vue";
+import type { Ref } from "vue";
+import { popup } from "@/os.js";
+import { prefer } from "@/preferences.js";
 
 class ReactionPicker {
 	private src: Ref<HTMLElement | null> = ref(null);
@@ -23,33 +23,53 @@ class ReactionPicker {
 	public async init() {
 		const reactionsRef = ref<string[]>([]);
 
-		watch([prefer.r.emojiPaletteForReaction, prefer.r.emojiPalettes], () => {
-			reactionsRef.value = prefer.s.emojiPaletteForReaction == null ? prefer.s.emojiPalettes[0].emojis : prefer.s.emojiPalettes.find(palette => palette.id === prefer.s.emojiPaletteForReaction)?.emojis ?? [];
-		}, {
-			immediate: true,
-		});
+		watch(
+			[prefer.r.emojiPaletteForReaction, prefer.r.emojiPalettes],
+			() => {
+				reactionsRef.value =
+					prefer.s.emojiPaletteForReaction == null
+						? prefer.s.emojiPalettes[0].emojis
+						: (prefer.s.emojiPalettes.find(
+								(palette) => palette.id === prefer.s.emojiPaletteForReaction,
+							)?.emojis ?? []);
+			},
+			{
+				immediate: true,
+			},
+		);
 
-		await popup(defineAsyncComponent(() => import('@/components/MkEmojiPickerDialog.vue')), {
-			src: this.src,
-			pinnedEmojis: reactionsRef,
-			asReactionPicker: true,
-			targetNote: this.targetNote,
-			manualShowing: this.manualShowing,
-		}, {
-			done: reaction => {
-				if (this.onChosen) this.onChosen(reaction);
+		await popup(
+			defineAsyncComponent(
+				() => import("@/components/MkEmojiPickerDialog.vue"),
+			),
+			{
+				src: this.src,
+				pinnedEmojis: reactionsRef,
+				asReactionPicker: true,
+				targetNote: this.targetNote,
+				manualShowing: this.manualShowing,
 			},
-			close: () => {
-				this.manualShowing.value = false;
+			{
+				done: (reaction) => {
+					if (this.onChosen) this.onChosen(reaction);
+				},
+				close: () => {
+					this.manualShowing.value = false;
+				},
+				closed: () => {
+					this.src.value = null;
+					if (this.onClosed) this.onClosed();
+				},
 			},
-			closed: () => {
-				this.src.value = null;
-				if (this.onClosed) this.onClosed();
-			},
-		});
+		);
 	}
 
-	public show(src: HTMLElement | null, targetNote: Misskey.entities.Note | null, onChosen?: ReactionPicker['onChosen'], onClosed?: ReactionPicker['onClosed']) {
+	public show(
+		src: HTMLElement | null,
+		targetNote: Misskey.entities.Note | null,
+		onChosen?: ReactionPicker["onChosen"],
+		onClosed?: ReactionPicker["onClosed"],
+	) {
 		this.src.value = src;
 		this.targetNote.value = targetNote;
 		this.manualShowing.value = true;

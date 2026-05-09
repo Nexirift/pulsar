@@ -4,76 +4,110 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div style="position: relative;">
-	<MkA :to="`/channels/${channel.id}`" class="eftoefju _panel" @click="updateLastReadedAt">
-		<div class="banner" :style="bannerStyle">
-			<div class="fade"></div>
-			<div class="name"><i class="ti ti-device-tv"></i> {{ channel.name }}</div>
-			<div v-if="channel.isSensitive" class="sensitiveIndicator">{{ i18n.ts.sensitive }}</div>
-			<div class="status">
-				<div>
-					<i class="ti ti-users ti-fw"></i>
-					<I18n :src="i18n.ts._channel.usersCount" tag="span" style="margin-left: 4px;">
-						<template #n>
-							<b>{{ channel.usersCount }}</b>
-						</template>
-					</I18n>
+	<div style="position: relative">
+		<MkA
+			:to="`/channels/${channel.id}`"
+			class="eftoefju _panel"
+			@click="updateLastReadedAt"
+		>
+			<div class="banner" :style="bannerStyle">
+				<div class="fade"></div>
+				<div class="name">
+					<i class="ti ti-device-tv"></i> {{ channel.name }}
 				</div>
-				<div>
-					<i class="ti ti-pencil ti-fw"></i>
-					<I18n :src="i18n.ts._channel.notesCount" tag="span" style="margin-left: 4px;">
-						<template #n>
-							<b>{{ channel.notesCount }}</b>
-						</template>
-					</I18n>
+				<div v-if="channel.isSensitive" class="sensitiveIndicator">
+					{{ i18n.ts.sensitive }}
+				</div>
+				<div class="status">
+					<div>
+						<i class="ti ti-users ti-fw"></i>
+						<I18n
+							:src="i18n.ts._channel.usersCount"
+							tag="span"
+							style="margin-left: 4px"
+						>
+							<template #n>
+								<b>{{ channel.usersCount }}</b>
+							</template>
+						</I18n>
+					</div>
+					<div>
+						<i class="ti ti-pencil ti-fw"></i>
+						<I18n
+							:src="i18n.ts._channel.notesCount"
+							tag="span"
+							style="margin-left: 4px"
+						>
+							<template #n>
+								<b>{{ channel.notesCount }}</b>
+							</template>
+						</I18n>
+					</div>
 				</div>
 			</div>
-		</div>
-		<article v-if="channel.description">
-			<p :title="channel.description">{{ channel.description.length > 85 ? channel.description.slice(0, 85) + '…' : channel.description }}</p>
-		</article>
-		<footer>
-			<span v-if="channel.lastNotedAt">
-				{{ i18n.ts.updatedAt }}: <MkTime :time="channel.lastNotedAt"/>
-			</span>
-		</footer>
-	</MkA>
-	<div
-		v-if="channel.lastNotedAt && (channel.isFavorited || channel.isFollowing) && (!lastReadedAt || Date.parse(channel.lastNotedAt) > lastReadedAt)"
-		class="indicator"
-	></div>
-</div>
+			<article v-if="channel.description">
+				<p :title="channel.description">
+					{{
+						channel.description.length > 85
+							? channel.description.slice(0, 85) + "…"
+							: channel.description
+					}}
+				</p>
+			</article>
+			<footer>
+				<span v-if="channel.lastNotedAt">
+					{{ i18n.ts.updatedAt }}: <MkTime :time="channel.lastNotedAt" />
+				</span>
+			</footer>
+		</MkA>
+		<div
+			v-if="
+				channel.lastNotedAt &&
+				(channel.isFavorited || channel.isFollowing) &&
+				(!lastReadedAt || Date.parse(channel.lastNotedAt) > lastReadedAt)
+			"
+			class="indicator"
+		></div>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue';
-import * as Misskey from 'misskey-js';
-import { i18n } from '@/i18n.js';
-import { miLocalStorage } from '@/local-storage.js';
+import { computed, ref, watch } from "vue";
+import * as Misskey from "misskey-js";
+import { i18n } from "@/i18n.js";
+import { miLocalStorage } from "@/local-storage.js";
 
 const props = defineProps<{
 	channel: Misskey.entities.Channel;
 }>();
 
 const getLastReadedAt = (): number | null => {
-	return miLocalStorage.getItemAsJson(`channelLastReadedAt:${props.channel.id}`) ?? null;
+	return (
+		miLocalStorage.getItemAsJson(`channelLastReadedAt:${props.channel.id}`) ??
+		null
+	);
 };
 
 const lastReadedAt = ref(getLastReadedAt());
 
-watch(() => props.channel.id, () => {
-	lastReadedAt.value = getLastReadedAt();
-});
+watch(
+	() => props.channel.id,
+	() => {
+		lastReadedAt.value = getLastReadedAt();
+	},
+);
 
 const updateLastReadedAt = () => {
-	lastReadedAt.value = props.channel.lastNotedAt ? Date.parse(props.channel.lastNotedAt) : Date.now();
+	lastReadedAt.value = props.channel.lastNotedAt
+		? Date.parse(props.channel.lastNotedAt)
+		: Date.now();
 };
 
 const bannerStyle = computed(() => {
 	if (props.channel.bannerUrl) {
 		return { backgroundImage: `url(${props.channel.bannerUrl})` };
 	} else {
-		return { backgroundColor: '#4c5e6d' };
+		return { backgroundColor: "#4c5e6d" };
 	}
 });
 </script>
@@ -93,7 +127,7 @@ const bannerStyle = computed(() => {
 		outline: none;
 
 		&::after {
-			content: '';
+			content: "";
 			position: absolute;
 			top: 0;
 			left: 0;
@@ -118,7 +152,11 @@ const bannerStyle = computed(() => {
 			left: 0;
 			width: 100%;
 			height: 64px;
-			background: linear-gradient(0deg, var(--MI_THEME-panel), color(from var(--MI_THEME-panel) srgb r g b / 0));
+			background: linear-gradient(
+				0deg,
+				var(--MI_THEME-panel),
+				color(from var(--MI_THEME-panel) srgb r g b / 0)
+			);
 		}
 
 		> .name {
@@ -223,5 +261,4 @@ const bannerStyle = computed(() => {
 	height: 1.5rem;
 	aspect-ratio: 1 / 1;
 }
-
 </style>

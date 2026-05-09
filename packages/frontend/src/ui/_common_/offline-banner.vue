@@ -4,28 +4,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<Transition
-	:enterActiveClass="$style.transition_enterActive"
-	:leaveActiveClass="$style.transition_leaveActive"
-	:enterFromClass="$style.transition_enterFrom"
-	:leaveToClass="$style.transition_leaveTo"
->
-	<div v-if="!isOnline" :class="$style.offlineBanner">
-		<div :class="$style.content">
-			<i class="ti ti-wifi-off" :class="$style.icon"></i>
-			<span :class="$style.text">{{ i18n.ts._offlineScreen.header }}</span>
-			<button :class="$style.retryButton" @click="retry">
-				<i class="ti ti-refresh"></i>
-				{{ i18n.ts.retry }}
-			</button>
+	<Transition
+		:enterActiveClass="$style.transition_enterActive"
+		:leaveActiveClass="$style.transition_leaveActive"
+		:enterFromClass="$style.transition_enterFrom"
+		:leaveToClass="$style.transition_leaveTo"
+	>
+		<div v-if="!isOnline" :class="$style.offlineBanner">
+			<div :class="$style.content">
+				<i class="ti ti-wifi-off" :class="$style.icon"></i>
+				<span :class="$style.text">{{ i18n.ts._offlineScreen.header }}</span>
+				<button :class="$style.retryButton" @click="retry">
+					<i class="ti ti-refresh"></i>
+					{{ i18n.ts.retry }}
+				</button>
+			</div>
 		</div>
-	</div>
-</Transition>
+	</Transition>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onBeforeUnmount, getCurrentInstance } from 'vue';
-import { i18n } from '@/i18n.js';
+import { ref, onMounted, onBeforeUnmount, getCurrentInstance } from "vue";
+import { i18n } from "@/i18n.js";
 
 const isOnline = ref(navigator.onLine);
 let checkInterval: number | undefined;
@@ -36,7 +36,7 @@ function updateOnlineStatus() {
 
 function retry() {
 	// Force a connectivity check by making a lightweight request
-	fetch('/', { method: 'HEAD', cache: 'no-cache' })
+	fetch("/", { method: "HEAD", cache: "no-cache" })
 		.then(() => {
 			isOnline.value = true;
 			window.location.reload();
@@ -54,7 +54,7 @@ function startConnectivityCheck() {
 			isOnline.value = false;
 		} else {
 			// Double-check with an actual request
-			fetch('/', { method: 'HEAD', cache: 'no-cache' })
+			fetch("/", { method: "HEAD", cache: "no-cache" })
 				.then(() => {
 					isOnline.value = true;
 					stopConnectivityCheck();
@@ -82,9 +82,9 @@ function handleOffline() {
 const instance = getCurrentInstance();
 if (instance) {
 	onMounted(() => {
-		window.addEventListener('online', updateOnlineStatus);
-		window.addEventListener('offline', handleOffline);
-		
+		window.addEventListener("online", updateOnlineStatus);
+		window.addEventListener("offline", handleOffline);
+
 		// Initial check
 		if (!navigator.onLine) {
 			isOnline.value = false;
@@ -93,8 +93,8 @@ if (instance) {
 	});
 
 	onBeforeUnmount(() => {
-		window.removeEventListener('online', updateOnlineStatus);
-		window.removeEventListener('offline', handleOffline);
+		window.removeEventListener("online", updateOnlineStatus);
+		window.removeEventListener("offline", handleOffline);
 		stopConnectivityCheck();
 	});
 }
@@ -146,11 +146,11 @@ if (instance) {
 	font-weight: 600;
 	cursor: pointer;
 	transition: all 0.2s;
-	
+
 	&:hover {
 		background: rgba(255, 255, 255, 0.3);
 	}
-	
+
 	&:active {
 		transform: scale(0.95);
 	}
@@ -171,7 +171,7 @@ if (instance) {
 	.text {
 		display: none;
 	}
-	
+
 	.content {
 		justify-content: space-between;
 	}

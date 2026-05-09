@@ -4,56 +4,68 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root">
-	<div class="_table status">
-		<div class="_row">
-			<div class="_cell" style="text-align: center;"><div class="_label">Process</div>{{ number(activeSincePrevTick) }}</div>
-			<div class="_cell" style="text-align: center;"><div class="_label">Active</div>{{ number(active) }}</div>
-			<div class="_cell" style="text-align: center;"><div class="_label">Waiting</div>{{ number(waiting) }}</div>
-			<div class="_cell" style="text-align: center;"><div class="_label">Delayed</div>{{ number(delayed) }}</div>
+	<div :class="$style.root">
+		<div class="_table status">
+			<div class="_row">
+				<div class="_cell" style="text-align: center">
+					<div class="_label">Process</div>
+					{{ number(activeSincePrevTick) }}
+				</div>
+				<div class="_cell" style="text-align: center">
+					<div class="_label">Active</div>
+					{{ number(active) }}
+				</div>
+				<div class="_cell" style="text-align: center">
+					<div class="_label">Waiting</div>
+					{{ number(waiting) }}
+				</div>
+				<div class="_cell" style="text-align: center">
+					<div class="_label">Delayed</div>
+					{{ number(delayed) }}
+				</div>
+			</div>
+		</div>
+		<div class="charts">
+			<div class="chart">
+				<div class="title">Process</div>
+				<XChart ref="chartProcess" type="process" />
+			</div>
+			<div class="chart">
+				<div class="title">Active</div>
+				<XChart ref="chartActive" type="active" />
+			</div>
+			<div class="chart">
+				<div class="title">Delayed</div>
+				<XChart ref="chartDelayed" type="delayed" />
+			</div>
+			<div class="chart">
+				<div class="title">Waiting</div>
+				<XChart ref="chartWaiting" type="waiting" />
+			</div>
 		</div>
 	</div>
-	<div class="charts">
-		<div class="chart">
-			<div class="title">Process</div>
-			<XChart ref="chartProcess" type="process"/>
-		</div>
-		<div class="chart">
-			<div class="title">Active</div>
-			<XChart ref="chartActive" type="active"/>
-		</div>
-		<div class="chart">
-			<div class="title">Delayed</div>
-			<XChart ref="chartDelayed" type="delayed"/>
-		</div>
-		<div class="chart">
-			<div class="title">Waiting</div>
-			<XChart ref="chartWaiting" type="waiting"/>
-		</div>
-	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { markRaw, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
-import * as Misskey from 'misskey-js';
-import XChart from './overview.queue.chart.vue';
-import number from '@/filters/number.js';
-import { useStream } from '@/stream.js';
+import { markRaw, onMounted, onUnmounted, ref, useTemplateRef } from "vue";
+import * as Misskey from "misskey-js";
+import XChart from "./overview.queue.chart.vue";
+import number from "@/filters/number.js";
+import { useStream } from "@/stream.js";
 
-const connection = markRaw(useStream().useChannel('queueStats'));
+const connection = markRaw(useStream().useChannel("queueStats"));
 
 const activeSincePrevTick = ref(0);
 const active = ref(0);
 const delayed = ref(0);
 const waiting = ref(0);
-const chartProcess = useTemplateRef('chartProcess');
-const chartActive = useTemplateRef('chartActive');
-const chartDelayed = useTemplateRef('chartDelayed');
-const chartWaiting = useTemplateRef('chartWaiting');
+const chartProcess = useTemplateRef("chartProcess");
+const chartActive = useTemplateRef("chartActive");
+const chartDelayed = useTemplateRef("chartDelayed");
+const chartWaiting = useTemplateRef("chartWaiting");
 
 const props = defineProps<{
-	domain: 'inbox' | 'deliver' | 'background';
+	domain: "inbox" | "deliver" | "background";
 }>();
 
 function onStats(stats: Misskey.entities.QueueStats) {
@@ -88,17 +100,17 @@ function onStatsLog(statsLog: Misskey.entities.QueueStatsLog) {
 }
 
 onMounted(() => {
-	connection.on('stats', onStats);
-	connection.on('statsLog', onStatsLog);
-	connection.send('requestLog', {
+	connection.on("stats", onStats);
+	connection.on("statsLog", onStatsLog);
+	connection.send("requestLog", {
 		id: Math.random().toString().substring(2, 10),
 		length: 100,
 	});
 });
 
 onUnmounted(() => {
-	connection.off('stats', onStats);
-	connection.off('statsLog', onStatsLog);
+	connection.off("stats", onStats);
+	connection.off("statsLog", onStatsLog);
 	connection.dispose();
 });
 </script>

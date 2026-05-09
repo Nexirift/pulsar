@@ -3,30 +3,32 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { ReversiService } from '@/core/ReversiService.js';
-import { ReversiGameEntityService } from '@/core/entities/ReversiGameEntityService.js';
-import { ApiError } from '../../error.js';
+import { Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { ReversiService } from "@/core/ReversiService.js";
+import { ReversiGameEntityService } from "@/core/entities/ReversiGameEntityService.js";
+import { ApiError } from "../../error.js";
 
 export const meta = {
 	errors: {
 		noSuchGame: {
-			message: 'No such game.',
-			code: 'NO_SUCH_GAME',
-			id: '8fb05624-b525-43dd-90f7-511852bdfeee',
+			message: "No such game.",
+			code: "NO_SUCH_GAME",
+			id: "8fb05624-b525-43dd-90f7-511852bdfeee",
 		},
 	},
 
 	res: {
-		type: 'object',
-		optional: false, nullable: false,
+		type: "object",
+		optional: false,
+		nullable: false,
 		properties: {
-			desynced: { type: 'boolean' },
+			desynced: { type: "boolean" },
 			game: {
-				type: 'object',
-				optional: true, nullable: true,
-				ref: 'ReversiGameDetailed',
+				type: "object",
+				optional: true,
+				nullable: true,
+				ref: "ReversiGameDetailed",
 			},
 		},
 	},
@@ -39,16 +41,17 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		gameId: { type: 'string', format: 'misskey:id' },
-		crc32: { type: 'string' },
+		gameId: { type: "string", format: "misskey:id" },
+		crc32: { type: "string" },
 	},
-	required: ['gameId', 'crc32'],
+	required: ["gameId", "crc32"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		private reversiService: ReversiService,
 		private reversiGameEntityService: ReversiGameEntityService,

@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { crawlNote } from '@/misc/crawl-note.js';
-import { Packed } from '@/misc/json-schema.js';
+import { crawlNote } from "@/misc/crawl-note.js";
+import { Packed } from "@/misc/json-schema.js";
 
 describe(crawlNote, () => {
-	it('should include the input note', () => {
-		const input = {} as Packed<'Note'>;
+	it("should include the input note", () => {
+		const input = {} as Packed<"Note">;
 
 		const result = crawlNote(input);
 
@@ -16,10 +16,10 @@ describe(crawlNote, () => {
 		expect(result).toContain(input);
 	});
 
-	it('should include the input note\'s renote', () => {
+	it("should include the input note's renote", () => {
 		const input = {
 			renote: {},
-		} as Packed<'Note'>;
+		} as Packed<"Note">;
 
 		const result = crawlNote(input);
 
@@ -28,12 +28,12 @@ describe(crawlNote, () => {
 		expect(result).toContain(input.renote);
 	});
 
-	it('should include the input note\'s renote renote', () => {
+	it("should include the input note's renote renote", () => {
 		const input = {
 			renote: {
 				renote: {},
 			},
-		} as Packed<'Note'>;
+		} as Packed<"Note">;
 
 		const result = crawlNote(input);
 
@@ -43,12 +43,12 @@ describe(crawlNote, () => {
 		expect(result).toContain(input.renote?.renote);
 	});
 
-	it('should include the input note\'s renote reply', () => {
+	it("should include the input note's renote reply", () => {
 		const input = {
 			renote: {
 				reply: {},
 			},
-		} as Packed<'Note'>;
+		} as Packed<"Note">;
 
 		const result = crawlNote(input);
 
@@ -58,10 +58,10 @@ describe(crawlNote, () => {
 		expect(result).toContain(input.renote?.reply);
 	});
 
-	it('should include the input note\'s reply', () => {
+	it("should include the input note's reply", () => {
 		const input = {
 			reply: {},
-		} as Packed<'Note'>;
+		} as Packed<"Note">;
 
 		const result = crawlNote(input);
 
@@ -70,12 +70,12 @@ describe(crawlNote, () => {
 		expect(result).toContain(input.reply);
 	});
 
-	it('should include the input note\'s reply renote', () => {
+	it("should include the input note's reply renote", () => {
 		const input = {
 			reply: {
 				renote: {},
 			},
-		} as Packed<'Note'>;
+		} as Packed<"Note">;
 
 		const result = crawlNote(input);
 
@@ -85,12 +85,12 @@ describe(crawlNote, () => {
 		expect(result).toContain(input.reply?.renote);
 	});
 
-	it('should include the input note\'s reply reply', () => {
+	it("should include the input note's reply reply", () => {
 		const input = {
 			reply: {
 				reply: {},
 			},
-		} as Packed<'Note'>;
+		} as Packed<"Note">;
 
 		const result = crawlNote(input);
 
@@ -100,15 +100,15 @@ describe(crawlNote, () => {
 		expect(result).toContain(input.reply?.reply);
 	});
 
-	it('should include all instances of the same note', () => {
+	it("should include all instances of the same note", () => {
 		const input = {
 			reply: {
-				id: '1',
+				id: "1",
 			},
 			renote: {
-				id: '1',
+				id: "1",
 			},
-		} as Packed<'Note'>;
+		} as Packed<"Note">;
 
 		const result = crawlNote(input);
 
@@ -118,20 +118,20 @@ describe(crawlNote, () => {
 		expect(result).toContain(input.renote);
 	});
 
-	it('should include each instance only once', () => {
-		const replyRenoteReplyRenote = {} as Packed<'Note'>;
+	it("should include each instance only once", () => {
+		const replyRenoteReplyRenote = {} as Packed<"Note">;
 		const input = {
 			reply: {
-				id: '1',
+				id: "1",
 				reply: replyRenoteReplyRenote,
 				renote: replyRenoteReplyRenote,
 			},
 			renote: {
-				id: '1',
+				id: "1",
 				reply: replyRenoteReplyRenote,
 				renote: replyRenoteReplyRenote,
 			},
-		} as Packed<'Note'>;
+		} as Packed<"Note">;
 
 		const result = crawlNote(input);
 
@@ -142,9 +142,9 @@ describe(crawlNote, () => {
 		expect(result).toContain(replyRenoteReplyRenote);
 	});
 
-	it('should write into existing array if provided', () => {
-		const input1 = {} as Packed<'Note'>;
-		const input2 = {} as Packed<'Note'>;
+	it("should write into existing array if provided", () => {
+		const input1 = {} as Packed<"Note">;
+		const input2 = {} as Packed<"Note">;
 		const output = [input1];
 
 		const result = crawlNote(input2, output);
@@ -155,11 +155,11 @@ describe(crawlNote, () => {
 		expect(result).toContain(input2);
 	});
 
-	it('should skip duplicates in existing array', () => {
-		const input1 = {} as Packed<'Note'>;
+	it("should skip duplicates in existing array", () => {
+		const input1 = {} as Packed<"Note">;
 		const input2 = {
 			reply: input1,
-		} as Packed<'Note'>;
+		} as Packed<"Note">;
 		const output = [input1];
 
 		const result = crawlNote(input2, output);

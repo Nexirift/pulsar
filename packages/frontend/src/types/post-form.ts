@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type * as Misskey from 'misskey-js';
+import type * as Misskey from "misskey-js";
 
 export interface PostFormProps {
 	reply?: Misskey.entities.Note;
@@ -19,7 +19,7 @@ export interface PostFormProps {
 	initialVisibleUsers?: Misskey.entities.UserDetailed[];
 	/* TODO inline this into the entity */
 	initialNote?: Misskey.entities.Note & {
-		isSchedule?: boolean,
+		isSchedule?: boolean;
 	};
 	instant?: boolean;
 }

@@ -4,19 +4,36 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div
-	:class="[$style.root, { [$style.active]: active }]"
-	@click="emit('click')"
->
-	<div :class="$style.name"><MkCondensedLine :minScale="0.5">{{ decoration.name }}</MkCondensedLine></div>
-	<MkAvatar style="width: 60px; height: 60px;" :user="$i" :decorations="[{ url: decoration.url, angle, flipH, flipV, offsetX, offsetY, showBelow }]" forceShowDecoration/>
-	<i v-if="locked" :class="$style.lock" class="ti ti-lock"></i>
-</div>
+	<div
+		:class="[$style.root, { [$style.active]: active }]"
+		@click="emit('click')"
+	>
+		<div :class="$style.name">
+			<MkCondensedLine :minScale="0.5">{{ decoration.name }}</MkCondensedLine>
+		</div>
+		<MkAvatar
+			style="width: 60px; height: 60px"
+			:user="$i"
+			:decorations="[
+				{
+					url: decoration.url,
+					angle,
+					flipH,
+					flipV,
+					offsetX,
+					offsetY,
+					showBelow,
+				},
+			]"
+			forceShowDecoration
+		/>
+		<i v-if="locked" :class="$style.lock" class="ti ti-lock"></i>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
-import { ensureSignin } from '@/i.js';
+import { computed } from "vue";
+import { ensureSignin } from "@/i.js";
 
 const $i = ensureSignin();
 
@@ -37,10 +54,16 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'click'): void;
+	(ev: "click"): void;
 }>();
 
-const locked = computed(() => props.decoration.roleIdsThatCanBeUsedThisDecoration.length > 0 && !$i.roles.some(r => props.decoration.roleIdsThatCanBeUsedThisDecoration.includes(r.id)));
+const locked = computed(
+	() =>
+		props.decoration.roleIdsThatCanBeUsedThisDecoration.length > 0 &&
+		!$i.roles.some((r) =>
+			props.decoration.roleIdsThatCanBeUsedThisDecoration.includes(r.id),
+		),
+);
 </script>
 
 <style lang="scss" module>

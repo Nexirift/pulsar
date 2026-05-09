@@ -3,27 +3,27 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { DI } from '@/di-symbols.js';
-import { bindThis } from '@/decorators.js';
-import type { GlobalEvents } from '@/core/GlobalEventService.js';
-import type { JsonObject } from '@/misc/json-value.js';
-import { ChatService } from '@/core/ChatService.js';
-import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import { errorCodes, IdentifiableError } from '@/misc/identifiable-error.js';
-import type { ChatRoomsRepository } from '@/models/_.js';
-import { Channel, type MiChannelService } from '../channel.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { DI } from "@/di-symbols.js";
+import { bindThis } from "@/decorators.js";
+import type { GlobalEvents } from "@/core/GlobalEventService.js";
+import type { JsonObject } from "@/misc/json-value.js";
+import { ChatService } from "@/core/ChatService.js";
+import { NoteEntityService } from "@/core/entities/NoteEntityService.js";
+import { errorCodes, IdentifiableError } from "@/misc/identifiable-error.js";
+import type { ChatRoomsRepository } from "@/models/_.js";
+import { Channel, type MiChannelService } from "../channel.js";
 
 class ChatRoomChannel extends Channel {
-	public readonly chName = 'chatRoom';
+	public readonly chName = "chatRoom";
 	public static shouldShare = false;
 	public static requireCredential = true as const;
-	public static kind = 'read:chat';
+	public static kind = "read:chat";
 	private roomId: string;
 
 	constructor(
 		id: string,
-		connection: Channel['connection'],
+		connection: Channel["connection"],
 
 		private chatRoomsRepository: ChatRoomsRepository,
 		private chatService: ChatService,
@@ -33,15 +33,20 @@ class ChatRoomChannel extends Channel {
 
 	@bindThis
 	public async init(params: JsonObject): Promise<boolean> {
-		if (!this.subscriber) throw new IdentifiableError(errorCodes.websocketError, `Cannot init ${this.chName} channel: socket is not connected`);
-		if (typeof params.roomId !== 'string') return false;
+		if (!this.subscriber)
+			throw new IdentifiableError(
+				errorCodes.websocketError,
+				`Cannot init ${this.chName} channel: socket is not connected`,
+			);
+		if (typeof params.roomId !== "string") return false;
 
 		this.roomId = params.roomId;
 
-		const exists = await this.chatRoomsRepository.findOne({
-			select: { id: true },
-			where: { id: this.roomId },
-		}) != null;
+		const exists =
+			(await this.chatRoomsRepository.findOne({
+				select: { id: true },
+				where: { id: this.roomId },
+			})) != null;
 
 		if (!exists) return true;
 
@@ -51,14 +56,14 @@ class ChatRoomChannel extends Channel {
 	}
 
 	@bindThis
-	private async onEvent(data: GlobalEvents['chatRoom']['payload']) {
+	private async onEvent(data: GlobalEvents["chatRoom"]["payload"]) {
 		this.send(data.type, data.body);
 	}
 
 	@bindThis
 	public onMessage(type: string, body: any) {
 		switch (type) {
-			case 'read':
+			case "read":
 				if (this.roomId) {
 					this.chatService.readRoomChatMessage(this.user!.id, this.roomId);
 				}
@@ -83,11 +88,13 @@ export class ChatRoomChannelService implements MiChannelService<true> {
 		private readonly chatRoomsRepository: ChatRoomsRepository,
 
 		private readonly chatService: ChatService,
-	) {
-	}
+	) {}
 
 	@bindThis
-	public create(id: string, connection: Channel['connection']): ChatRoomChannel {
+	public create(
+		id: string,
+		connection: Channel["connection"],
+	): ChatRoomChannel {
 		return new ChatRoomChannel(
 			id,
 			connection,

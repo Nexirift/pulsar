@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { TransformStream } from 'node:stream/web';
+import { TransformStream } from "node:stream/web";
 
 /**
  * ストリームに流れてきた各データについて`JSON.stringify()`した上で、それらを一つの配列にまとめる
@@ -15,17 +15,17 @@ export class JsonArrayStream extends TransformStream<unknown, string> {
 
 		super({
 			start(controller) {
-				controller.enqueue('[');
+				controller.enqueue("[");
 			},
 			flush(controller) {
-				controller.enqueue(']');
+				controller.enqueue("]");
 			},
 			transform(chunk, controller) {
 				if (isFirst) {
 					isFirst = false;
 				} else {
 					// 妥当なJSON配列にするためには最初以外の要素の前に`,`を挿入しなければならない
-					controller.enqueue(',\n');
+					controller.enqueue(",\n");
 				}
 
 				controller.enqueue(JSON.stringify(chunk));

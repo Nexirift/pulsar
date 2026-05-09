@@ -14,8 +14,10 @@
 export function bindThis(target: any, key: string, descriptor: any) {
 	const fn = descriptor.value;
 
-	if (typeof fn !== 'function') {
-		throw new TypeError(`@bindThis decorator can only be applied to methods not: ${typeof fn}`);
+	if (typeof fn !== "function") {
+		throw new TypeError(
+			`@bindThis decorator can only be applied to methods not: ${typeof fn}`,
+		);
 	}
 
 	return {

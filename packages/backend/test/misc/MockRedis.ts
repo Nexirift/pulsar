@@ -3,12 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { FakeRedis, ok, type RedisString } from './FakeRedis.js';
-import type { RedisKey, RedisNumber, RedisValue, RedisCallback, Ok } from './FakeRedis.js';
-import type { ChainableCommander } from 'ioredis';
-import { TimeService, NativeTimeService } from '@/global/TimeService.js';
-import { bindThis } from '@/decorators.js';
+import { Injectable } from "@nestjs/common";
+import { FakeRedis, ok, type RedisString } from "./FakeRedis.js";
+import type {
+	RedisKey,
+	RedisNumber,
+	RedisValue,
+	RedisCallback,
+	Ok,
+} from "./FakeRedis.js";
+import type { ChainableCommander } from "ioredis";
+import { TimeService, NativeTimeService } from "@/global/TimeService.js";
+import { bindThis } from "@/decorators.js";
 
 export interface MockRedisConstructor {
 	new (timeService?: TimeService): MockRedis;
@@ -63,22 +69,29 @@ class MockTransactionImpl extends FakeRedis {
 		commands: unknown[][] = [],
 	) {
 		super();
-		this.commands = commands.map(([command, ...args]) => ([
+		this.commands = commands.map(([command, ...args]) => [
 			String(command).toLowerCase() as keyof MockRedis,
 			...args,
-		]));
+		]);
 	}
 
 	@bindThis
-	public async exec(callback?: RedisCallback<[error: Error | null, result: unknown][] | null>): Promise<[error: Error | null, result: unknown][] | null> {
+	public async exec(
+		callback?: RedisCallback<[error: Error | null, result: unknown][] | null>,
+	): Promise<[error: Error | null, result: unknown][] | null> {
 		const results: [error: Error | null, result: unknown][] = [];
 
 		for (const [command, ...args] of this.commands) {
 			try {
-				const res = await (this.mockRedis[command] as (...args: unknown[]) => Promise<unknown>)(...args);
+				const res = await (
+					this.mockRedis[command] as (...args: unknown[]) => Promise<unknown>
+				)(...args);
 				results.push([null, res]);
 			} catch (err) {
-				const error = err instanceof Error ? err : new Error('Unknown error', { cause: err });
+				const error =
+					err instanceof Error
+						? err
+						: new Error("Unknown error", { cause: err });
 				results.push([error, undefined]);
 			}
 		}
@@ -137,7 +150,11 @@ function createMockRedis(): MockRedisConstructor {
 		}
 
 		@bindThis
-		mockSet(key: RedisKey, value: RedisValue, expiration: number | null = null): void {
+		mockSet(
+			key: RedisKey,
+			value: RedisValue,
+			expiration: number | null = null,
+		): void {
 			const mapped = mapKey(key);
 			this.mockData.set(mapped, {
 				expiration,
@@ -178,13 +195,14 @@ function createMockRedis(): MockRedisConstructor {
 		}
 
 		@bindThis
-		public async subscribe(...args: (RedisString | RedisCallback)[]): Promise<unknown> {
-			const callback = args
-				.find(a => typeof(a) === 'function');
+		public async subscribe(
+			...args: (RedisString | RedisCallback)[]
+		): Promise<unknown> {
+			const callback = args.find((a) => typeof a === "function");
 			const channels = args
-				.filter(a => typeof(a) !== 'function')
+				.filter((a) => typeof a !== "function")
 				.flat()
-				.map(s => parseString(s));
+				.map((s) => parseString(s));
 
 			for (const channel of channels) {
 				this.mockChannels.add(channel);
@@ -195,14 +213,15 @@ function createMockRedis(): MockRedisConstructor {
 		}
 
 		@bindThis
-		public async unsubscribe(...args: (RedisString | RedisCallback | undefined)[]): Promise<unknown> {
-			const callback = args
-				.find(a => typeof(a) === 'function');
+		public async unsubscribe(
+			...args: (RedisString | RedisCallback | undefined)[]
+		): Promise<unknown> {
+			const callback = args.find((a) => typeof a === "function");
 			const channels = args
-				.filter(a => typeof(a) !== 'function')
+				.filter((a) => typeof a !== "function")
 				.flat()
-				.filter(s => s != null)
-				.map(s => parseString(s));
+				.filter((s) => s != null)
+				.map((s) => parseString(s));
 
 			for (const channel of channels) {
 				this.mockChannels.delete(channel);
@@ -213,7 +232,11 @@ function createMockRedis(): MockRedisConstructor {
 		}
 
 		@bindThis
-		public async publish(channel: RedisString, message: RedisString, callback?: RedisCallback<number>): Promise<number> {
+		public async publish(
+			channel: RedisString,
+			message: RedisString,
+			callback?: RedisCallback<number>,
+		): Promise<number> {
 			const channelString = parseString(channel);
 			if (!this.mockChannels.has(channelString)) {
 				callback?.(null, 0);
@@ -222,10 +245,10 @@ function createMockRedis(): MockRedisConstructor {
 
 			if (Buffer.isBuffer(message)) {
 				channel = Buffer.from(channel);
-				this.mockEvents.emit('messageBuffer', channel, message);
+				this.mockEvents.emit("messageBuffer", channel, message);
 			} else {
 				message = parseString(message);
-				this.mockEvents.emit('message', channelString, message);
+				this.mockEvents.emit("message", channelString, message);
 			}
 
 			callback?.(null, 1);
@@ -241,7 +264,9 @@ function createMockRedis(): MockRedisConstructor {
 		public multi(options: { pipeline: true }): ChainableCommander;
 		public multi(commands?: unknown[][]): ChainableCommander;
 		@bindThis
-		public multi(commandsOrOptions?: unknown[][] | { pipeline: boolean }): Promise<Ok> | ChainableCommander {
+		public multi(
+			commandsOrOptions?: unknown[][] | { pipeline: boolean },
+		): Promise<Ok> | ChainableCommander {
 			if (Array.isArray(commandsOrOptions)) {
 				return new MockTransaction(this, commandsOrOptions);
 			} else if (commandsOrOptions == null || commandsOrOptions.pipeline) {
@@ -252,16 +277,19 @@ function createMockRedis(): MockRedisConstructor {
 		}
 
 		@bindThis
-		public async get(key: RedisKey, callback?: RedisCallback<string | null>): Promise<string | null> {
+		public async get(
+			key: RedisKey,
+			callback?: RedisCallback<string | null>,
+		): Promise<string | null> {
 			let value = this.mockGet(key);
 
 			// Emulate implicit casts
-			if (typeof(value) === 'number') {
+			if (typeof value === "number") {
 				value = String(value);
 			}
 
-			if (value != null && typeof(value) !== 'string') {
-				const err = new Error('get failed: cannot GET a non-string value');
+			if (value != null && typeof value !== "string") {
+				const err = new Error("get failed: cannot GET a non-string value");
 				callback?.(err);
 				throw err;
 			}
@@ -271,16 +299,21 @@ function createMockRedis(): MockRedisConstructor {
 		}
 
 		@bindThis
-		public async getBuffer(key: RedisKey, callback?: RedisCallback<Buffer | null>): Promise<Buffer | null> {
+		public async getBuffer(
+			key: RedisKey,
+			callback?: RedisCallback<Buffer | null>,
+		): Promise<Buffer | null> {
 			let value = this.mockGet(key);
 
 			// Emulate implicit casts
-			if (typeof(value) === 'number') {
+			if (typeof value === "number") {
 				value = String(value);
 			}
 
 			if (value != null && !Buffer.isBuffer(value)) {
-				const err = new Error('getBuffer failed: cannot GET a non-buffer value');
+				const err = new Error(
+					"getBuffer failed: cannot GET a non-buffer value",
+				);
 				callback?.(err);
 				throw err;
 			}
@@ -290,16 +323,21 @@ function createMockRedis(): MockRedisConstructor {
 		}
 
 		@bindThis
-		public async getDel(key: RedisKey, callback?: RedisCallback<string | null>): Promise<string | null> {
+		public async getDel(
+			key: RedisKey,
+			callback?: RedisCallback<string | null>,
+		): Promise<string | null> {
 			let value = this.mockGet(key);
 
 			// Emulate implicit casts
-			if (typeof(value) === 'number') {
+			if (typeof value === "number") {
 				value = String(value);
 			}
 
-			if (value != null && typeof(value) !== 'string') {
-				const err = new Error('getDel failed: cannot GETDEL a non-string value');
+			if (value != null && typeof value !== "string") {
+				const err = new Error(
+					"getDel failed: cannot GETDEL a non-string value",
+				);
 				callback?.(err);
 				throw err;
 			}
@@ -311,11 +349,16 @@ function createMockRedis(): MockRedisConstructor {
 		}
 
 		@bindThis
-		public async getDelBuffer(key: RedisKey, callback?: RedisCallback<Buffer | null>): Promise<Buffer | null> {
+		public async getDelBuffer(
+			key: RedisKey,
+			callback?: RedisCallback<Buffer | null>,
+		): Promise<Buffer | null> {
 			const value = this.mockGet(key);
 
 			if (value != null && !Buffer.isBuffer(value)) {
-				const err = new Error('getDelBuffer failed: cannot GETDEL a non-string value');
+				const err = new Error(
+					"getDelBuffer failed: cannot GETDEL a non-string value",
+				);
 				callback?.(err);
 				throw err;
 			}
@@ -327,11 +370,17 @@ function createMockRedis(): MockRedisConstructor {
 		}
 
 		@bindThis
-		public async getSet(key: RedisKey, newValue: RedisValue, callback?: RedisCallback<string | null>): Promise<string | null> {
+		public async getSet(
+			key: RedisKey,
+			newValue: RedisValue,
+			callback?: RedisCallback<string | null>,
+		): Promise<string | null> {
 			const oldValue = this.mockGet(key);
 
-			if (oldValue != null && typeof(oldValue) !== 'string') {
-				const err = new Error('getSet failed: cannot GETSET a non-string value');
+			if (oldValue != null && typeof oldValue !== "string") {
+				const err = new Error(
+					"getSet failed: cannot GETSET a non-string value",
+				);
 				callback?.(err);
 				throw err;
 			}
@@ -343,11 +392,17 @@ function createMockRedis(): MockRedisConstructor {
 		}
 
 		@bindThis
-		public async getSetBuffer(key: RedisKey, newValue: RedisValue, callback?: RedisCallback<Buffer | null>): Promise<Buffer | null> {
+		public async getSetBuffer(
+			key: RedisKey,
+			newValue: RedisValue,
+			callback?: RedisCallback<Buffer | null>,
+		): Promise<Buffer | null> {
 			const oldValue = this.mockGet(key);
 
 			if (oldValue != null && !Buffer.isBuffer(oldValue)) {
-				const err = new Error('getSetBuffer failed: cannot GETSET a non-string value');
+				const err = new Error(
+					"getSetBuffer failed: cannot GETSET a non-string value",
+				);
 				callback?.(err);
 				throw err;
 			}
@@ -359,9 +414,11 @@ function createMockRedis(): MockRedisConstructor {
 		}
 
 		@bindThis
-		public async del(...args: (RedisKey | RedisKey[] | RedisCallback<number> | undefined)[]): Promise<number> {
-			const callback = args.find(a => typeof(a) === 'function');
-			const keys = args.filter(a => typeof(a) !== 'function').flat();
+		public async del(
+			...args: (RedisKey | RedisKey[] | RedisCallback<number> | undefined)[]
+		): Promise<number> {
+			const callback = args.find((a) => typeof a === "function");
+			const keys = args.filter((a) => typeof a !== "function").flat();
 
 			let total = 0;
 			for (const key of keys) {
@@ -381,31 +438,53 @@ function createMockRedis(): MockRedisConstructor {
 		}
 
 		@bindThis
-		public async incr(key: RedisKey, callback?: RedisCallback<number>): Promise<number> {
-			return await this.incrCommon(key, 1, true, 'incr', callback);
+		public async incr(
+			key: RedisKey,
+			callback?: RedisCallback<number>,
+		): Promise<number> {
+			return await this.incrCommon(key, 1, true, "incr", callback);
 		}
 
 		@bindThis
-		public async incrby(key: RedisKey, increment: RedisNumber, callback?: RedisCallback<number>): Promise<number> {
-			return await this.incrCommon(key, increment, true, 'incrby', callback);
+		public async incrby(
+			key: RedisKey,
+			increment: RedisNumber,
+			callback?: RedisCallback<number>,
+		): Promise<number> {
+			return await this.incrCommon(key, increment, true, "incrby", callback);
 		}
 
 		@bindThis
-		public async decr(key: RedisKey, callback?: RedisCallback<number>): Promise<number> {
-			return await this.incrCommon(key, 1, false, 'decr', callback);
+		public async decr(
+			key: RedisKey,
+			callback?: RedisCallback<number>,
+		): Promise<number> {
+			return await this.incrCommon(key, 1, false, "decr", callback);
 		}
 
 		@bindThis
-		public async decrby(key: RedisKey, increment: RedisNumber, callback?: RedisCallback<number>): Promise<number> {
-			return await this.incrCommon(key, increment, false, 'decrby', callback);
+		public async decrby(
+			key: RedisKey,
+			increment: RedisNumber,
+			callback?: RedisCallback<number>,
+		): Promise<number> {
+			return await this.incrCommon(key, increment, false, "decrby", callback);
 		}
 
 		@bindThis
-		private async incrCommon(key: RedisKey, increment: RedisNumber, add: boolean, func: string, callback?: RedisCallback<number>): Promise<number> {
+		private async incrCommon(
+			key: RedisKey,
+			increment: RedisNumber,
+			add: boolean,
+			func: string,
+			callback?: RedisCallback<number>,
+		): Promise<number> {
 			// Parse the increment
 			const inc = parseNumber(increment);
 			if (inc == null) {
-				const err = new Error(`${func} failed: cannot parse increment as integer`);
+				const err = new Error(
+					`${func} failed: cannot parse increment as integer`,
+				);
 				callback?.(err);
 				throw err;
 			}
@@ -414,7 +493,9 @@ function createMockRedis(): MockRedisConstructor {
 			const entry = this.mockGetEntry(key);
 			let value = entry != null ? parseNumber(entry.value) : 0;
 			if (value == null) {
-				const err = new Error(`${func} failed: cannot ${func.toUpperCase()} a non-number value`);
+				const err = new Error(
+					`${func} failed: cannot ${func.toUpperCase()} a non-number value`,
+				);
 				callback?.(err);
 				throw err;
 			}
@@ -433,19 +514,49 @@ function createMockRedis(): MockRedisConstructor {
 			return value;
 		}
 
-		expire(key: RedisKey, seconds: RedisNumber, callback?: RedisCallback<number>): Promise<number>;
-		expire(key: RedisKey, seconds: RedisNumber, flag: 'NX', callback?: RedisCallback<number>): Promise<number>;
-		expire(key: RedisKey, seconds: RedisNumber, flag: 'XX', callback?: RedisCallback<number>): Promise<number>;
-		expire(key: RedisKey, seconds: RedisNumber, flag: 'GT', callback?: RedisCallback<number>): Promise<number>;
-		expire(key: RedisKey, seconds: RedisNumber, flag: 'LT', callback?: RedisCallback<number>): Promise<number>;
+		expire(
+			key: RedisKey,
+			seconds: RedisNumber,
+			callback?: RedisCallback<number>,
+		): Promise<number>;
+		expire(
+			key: RedisKey,
+			seconds: RedisNumber,
+			flag: "NX",
+			callback?: RedisCallback<number>,
+		): Promise<number>;
+		expire(
+			key: RedisKey,
+			seconds: RedisNumber,
+			flag: "XX",
+			callback?: RedisCallback<number>,
+		): Promise<number>;
+		expire(
+			key: RedisKey,
+			seconds: RedisNumber,
+			flag: "GT",
+			callback?: RedisCallback<number>,
+		): Promise<number>;
+		expire(
+			key: RedisKey,
+			seconds: RedisNumber,
+			flag: "LT",
+			callback?: RedisCallback<number>,
+		): Promise<number>;
 		@bindThis
-		public async expire(key: RedisKey, seconds: RedisNumber, callbackOrFlag?: RedisCallback<number> | 'NX' | 'XX' | 'GT' | 'LT', orCallback?: RedisCallback<number>): Promise<number> {
-			const flag = typeof(callbackOrFlag) === 'string' ? callbackOrFlag : null;
-			const callback = typeof(callbackOrFlag) === 'function' ? callbackOrFlag : orCallback;
+		public async expire(
+			key: RedisKey,
+			seconds: RedisNumber,
+			callbackOrFlag?: RedisCallback<number> | "NX" | "XX" | "GT" | "LT",
+			orCallback?: RedisCallback<number>,
+		): Promise<number> {
+			const flag = typeof callbackOrFlag === "string" ? callbackOrFlag : null;
+			const callback =
+				typeof callbackOrFlag === "function" ? callbackOrFlag : orCallback;
 
 			const expiresSec = parseNumber(seconds);
 			if (expiresSec == null) {
-				const err = new Error('expire failed: cannot parse seconds as integer');
+				const err = new Error("expire failed: cannot parse seconds as integer");
 				callback?.(err);
 				throw err;
 			}
@@ -462,24 +573,24 @@ function createMockRedis(): MockRedisConstructor {
 				return 0;
 			}
 
-			if (flag === 'NX' && entry.expiration != null) {
+			if (flag === "NX" && entry.expiration != null) {
 				callback?.(null, 0);
 				return 0;
 			}
 
-			if (flag === 'XX' && entry.expiration == null) {
+			if (flag === "XX" && entry.expiration == null) {
 				callback?.(null, 0);
 				return 0;
 			}
 
-			const expiresAt = this.timeService.now + (expiresSec * 1000);
+			const expiresAt = this.timeService.now + expiresSec * 1000;
 			if (entry.expiration != null) {
-				if (flag === 'GT' && expiresAt <= entry.expiration) {
+				if (flag === "GT" && expiresAt <= entry.expiration) {
 					callback?.(null, 0);
 					return 0;
 				}
 
-				if (flag === 'LT' && expiresAt >= entry.expiration) {
+				if (flag === "LT" && expiresAt >= entry.expiration) {
 					callback?.(null, 0);
 					return 0;
 				}
@@ -492,15 +603,24 @@ function createMockRedis(): MockRedisConstructor {
 		}
 
 		@bindThis
-		public async setex(key: RedisKey, seconds: RedisNumber, value: RedisValue, callback?: RedisCallback<Ok>): Promise<Ok> {
-			await this.set(key, value, 'EX', seconds);
+		public async setex(
+			key: RedisKey,
+			seconds: RedisNumber,
+			value: RedisValue,
+			callback?: RedisCallback<Ok>,
+		): Promise<Ok> {
+			await this.set(key, value, "EX", seconds);
 			callback?.(null, ok);
 			return ok;
 		}
 
 		@bindThis
-		public async setnx(key: RedisKey, value: RedisValue, callback?: RedisCallback<number>): Promise<number> {
-			const ok = await this.set(key, value, 'NX');
+		public async setnx(
+			key: RedisKey,
+			value: RedisValue,
+			callback?: RedisCallback<number>,
+		): Promise<number> {
+			const ok = await this.set(key, value, "NX");
 			callback?.(null, ok ? 1 : 0);
 			return ok ? 1 : 0;
 		}
@@ -519,16 +639,25 @@ function createMockRedis(): MockRedisConstructor {
 			const entry = this.mockGetEntry(key);
 
 			// Parse ops
-			const { nx, ex, get, cb, err } = this._parseSetOps(entry ?? null, [op1, op2, op3, op4, op5]);
+			const { nx, ex, get, cb, err } = this._parseSetOps(entry ?? null, [
+				op1,
+				op2,
+				op3,
+				op4,
+				op5,
+			]);
 
 			// Additional error from the "GET" flag
-			if (get && entry != null && typeof(entry.value) !== 'string') {
-				err.push(new Error('set failed: cannot GET a non-string value.'));
+			if (get && entry != null && typeof entry.value !== "string") {
+				err.push(new Error("set failed: cannot GET a non-string value."));
 			}
 
 			// Abort on errors
 			if (err.length > 1) {
-				const agg = new AggregateError(err, 'set failed: see "errors" property for details.');
+				const agg = new AggregateError(
+					err,
+					'set failed: see "errors" property for details.',
+				);
 				if (cb) cb(agg);
 				throw agg;
 			} else if (err.length > 0) {
@@ -579,62 +708,102 @@ function createMockRedis(): MockRedisConstructor {
 				}
 
 				const opRaw = ops[i];
-				const op = typeof(opRaw) === 'function' ? opRaw : parseString(opRaw);
+				const op = typeof opRaw === "function" ? opRaw : parseString(opRaw);
 
 				const argRaw = ops[i + 1];
-				const arg = typeof(argRaw) === 'function' ? argRaw : parseNumber(argRaw);
+				const arg = typeof argRaw === "function" ? argRaw : parseNumber(argRaw);
 
-				if (typeof(op) === 'function') {
+				if (typeof op === "function") {
 					cb = op as RedisCallback<Ok | string | null>;
-				} else if (op === 'KEEPTTL') {
+				} else if (op === "KEEPTTL") {
 					ex = entry?.expiration;
-				} else if (op === 'GET') {
+				} else if (op === "GET") {
 					get = true;
-				} else if (op === 'NX') {
+				} else if (op === "NX") {
 					nx = true;
-				} else if (op === 'XX') {
+				} else if (op === "XX") {
 					nx = false;
-				} else if (op === 'EX') {
+				} else if (op === "EX") {
 					nextIsParam = true;
 					if (arg == null) {
-						err.push(new Error('Missing required argument for set "EX" parameter'));
-					} else if (typeof(arg) !== 'number') {
-						err.push(new Error('Invalid argument for set "EX" parameter: must be a number'));
+						err.push(
+							new Error('Missing required argument for set "EX" parameter'),
+						);
+					} else if (typeof arg !== "number") {
+						err.push(
+							new Error(
+								'Invalid argument for set "EX" parameter: must be a number',
+							),
+						);
 					} else if (arg < 0) {
-						err.push(new Error('Invalid argument for set "EX" parameter: must be a positive integer'));
+						err.push(
+							new Error(
+								'Invalid argument for set "EX" parameter: must be a positive integer',
+							),
+						);
 					} else {
-						ex = this.timeService.now + (arg * 1000);
+						ex = this.timeService.now + arg * 1000;
 					}
-				} else if (op === 'PX') {
+				} else if (op === "PX") {
 					nextIsParam = true;
 					if (arg == null) {
-						err.push(new Error('Missing required argument for set "EX" parameter'));
-					} else if (typeof(arg) !== 'number') {
-						err.push(new Error('Invalid argument for set "EX" parameter: must be a number'));
+						err.push(
+							new Error('Missing required argument for set "EX" parameter'),
+						);
+					} else if (typeof arg !== "number") {
+						err.push(
+							new Error(
+								'Invalid argument for set "EX" parameter: must be a number',
+							),
+						);
 					} else if (arg < 0) {
-						err.push(new Error('Invalid argument for set "EX" parameter: must be a positive integer'));
+						err.push(
+							new Error(
+								'Invalid argument for set "EX" parameter: must be a positive integer',
+							),
+						);
 					} else {
 						ex = this.timeService.now + arg;
 					}
-				} else if (op === 'EXAT') {
+				} else if (op === "EXAT") {
 					nextIsParam = true;
 					if (arg == null) {
-						err.push(new Error('Missing required argument for set "EX" parameter'));
-					} else if (typeof(arg) !== 'number') {
-						err.push(new Error('Invalid argument for set "EX" parameter: must be a number'));
+						err.push(
+							new Error('Missing required argument for set "EX" parameter'),
+						);
+					} else if (typeof arg !== "number") {
+						err.push(
+							new Error(
+								'Invalid argument for set "EX" parameter: must be a number',
+							),
+						);
 					} else if (arg < 0) {
-						err.push(new Error('Invalid argument for set "EX" parameter: must be a positive integer'));
+						err.push(
+							new Error(
+								'Invalid argument for set "EX" parameter: must be a positive integer',
+							),
+						);
 					} else {
 						ex = arg * 1000;
 					}
-				} else if (op === 'PXAT') {
+				} else if (op === "PXAT") {
 					nextIsParam = true;
 					if (arg == null) {
-						err.push(new Error('Missing required argument for set "EX" parameter'));
-					} else if (typeof(arg) !== 'number') {
-						err.push(new Error('Invalid argument for set "EX" parameter: must be a number'));
+						err.push(
+							new Error('Missing required argument for set "EX" parameter'),
+						);
+					} else if (typeof arg !== "number") {
+						err.push(
+							new Error(
+								'Invalid argument for set "EX" parameter: must be a number',
+							),
+						);
 					} else if (arg < 0) {
-						err.push(new Error('Invalid argument for set "EX" parameter: must be a positive integer'));
+						err.push(
+							new Error(
+								'Invalid argument for set "EX" parameter: must be a positive integer',
+							),
+						);
 					} else {
 						ex = arg;
 					}
@@ -651,20 +820,24 @@ function createMockRedis(): MockRedisConstructor {
 }
 
 function mapKey(key: RedisKey): string {
-	const prefix = Buffer.isBuffer(key) ? 'b' : 's';
+	const prefix = Buffer.isBuffer(key) ? "b" : "s";
 	const mapped = parseString(key);
 	return `${prefix}:${mapped}`;
 }
 
 function parseNumber(value: RedisValue | undefined): number | undefined;
-function parseNumber(value: RedisValue | null | undefined): number | null | undefined;
+function parseNumber(
+	value: RedisValue | null | undefined,
+): number | null | undefined;
 
-function parseNumber(value: RedisValue | null | undefined): number | null | undefined {
+function parseNumber(
+	value: RedisValue | null | undefined,
+): number | null | undefined {
 	if (value == null) {
 		return value;
 	}
 
-	if (typeof(value) !== 'number') {
+	if (typeof value !== "number") {
 		value = parseString(value);
 		value = parseInt(value);
 	}
@@ -683,24 +856,28 @@ function parseNumber(value: RedisValue | null | undefined): number | null | unde
 function parseString(value: RedisValue): string;
 function parseString(value: RedisValue | null): string | null;
 function parseString(value: RedisValue | undefined): string | undefined;
-function parseString(value: RedisValue | null | undefined): string | null | undefined;
+function parseString(
+	value: RedisValue | null | undefined,
+): string | null | undefined;
 
-function parseString(value: RedisValue | null | undefined): string | null | undefined {
+function parseString(
+	value: RedisValue | null | undefined,
+): string | null | undefined {
 	if (value == null) {
 		return value;
 	}
 
 	if (Buffer.isBuffer(value)) {
-		return value.toString('utf-8');
+		return value.toString("utf-8");
 	}
 
 	return String(value);
 }
 
 type SetOp = SetOp1 | SetOp2 | SetOp3 | SetArg | undefined;
-type SetOp1 = SetOp2 | 'NX' | 'XX';
-type SetOp2 = SetOp3 | 'GET';
-type SetOp3 = 'EX' | 'PX' | 'EXAT' | 'PXAT' | 'KEEPTTL';
+type SetOp1 = SetOp2 | "NX" | "XX";
+type SetOp2 = SetOp3 | "GET";
+type SetOp3 = "EX" | "PX" | "EXAT" | "PXAT" | "KEEPTTL";
 type SetArg = RedisNumber | RedisCallback<Ok | string | null>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -762,9 +939,7 @@ class EventManager {
 class EventGroup {
 	private readonly listeners = new Set<AnyCallback>();
 
-	constructor(
-		public readonly ev: string,
-	) {}
+	constructor(public readonly ev: string) {}
 
 	public add(listener: AnyCallback): void {
 		this.listeners.add(listener);

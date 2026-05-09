@@ -3,19 +3,24 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { In } from 'typeorm';
-import { DI } from '@/di-symbols.js';
-import { bindThis } from '@/decorators.js';
-import type { AbuseUserReportsRepository, MiAbuseUserReport, MiUser, UsersRepository } from '@/models/_.js';
-import { AbuseReportNotificationService } from '@/core/AbuseReportNotificationService.js';
-import { QueueService } from '@/core/QueueService.js';
-import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { SystemAccountService } from '@/core/SystemAccountService.js';
-import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { trackPromise } from '@/misc/promise-tracker.js';
-import { IdService } from './IdService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { In } from "typeorm";
+import { DI } from "@/di-symbols.js";
+import { bindThis } from "@/decorators.js";
+import type {
+	AbuseUserReportsRepository,
+	MiAbuseUserReport,
+	MiUser,
+	UsersRepository,
+} from "@/models/_.js";
+import { AbuseReportNotificationService } from "@/core/AbuseReportNotificationService.js";
+import { QueueService } from "@/core/QueueService.js";
+import { ApRendererService } from "@/core/activitypub/ApRendererService.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
+import { SystemAccountService } from "@/core/SystemAccountService.js";
+import { IdentifiableError } from "@/misc/identifiable-error.js";
+import { trackPromise } from "@/misc/promise-tracker.js";
+import { IdService } from "./IdService.js";
 
 @Injectable()
 export class AbuseReportService {
@@ -32,8 +37,7 @@ export class AbuseReportService {
 		private systemAccountService: SystemAccountService,
 		private apRendererService: ApRendererService,
 		private moderationLogService: ModerationLogService,
-	) {
-	}
+	) {}
 
 	/**
 	 * ユーザからの通報をDBに記録し、その内容を下記の手段で管理者各位に通知する.
@@ -45,14 +49,16 @@ export class AbuseReportService {
 	 * @see AbuseReportNotificationService.notify
 	 */
 	@bindThis
-	public async report(params: {
-		targetUserId: MiAbuseUserReport['targetUserId'],
-		targetUserHost: MiAbuseUserReport['targetUserHost'],
-		reporterId: MiAbuseUserReport['reporterId'],
-		reporterHost: MiAbuseUserReport['reporterHost'],
-		comment: string,
-	}[]) {
-		const entities = params.map(param => {
+	public async report(
+		params: {
+			targetUserId: MiAbuseUserReport["targetUserId"];
+			targetUserHost: MiAbuseUserReport["targetUserHost"];
+			reporterId: MiAbuseUserReport["reporterId"];
+			reporterHost: MiAbuseUserReport["reporterHost"];
+			comment: string;
+		}[],
+	) {
+		const entities = params.map((param) => {
 			return {
 				id: this.idService.gen(),
 				targetUserId: param.targetUserId,
@@ -69,11 +75,16 @@ export class AbuseReportService {
 			reports.push(report);
 		}
 
-		trackPromise(Promise.all([
-			this.abuseReportNotificationService.notifyAdminStream(reports),
-			this.abuseReportNotificationService.notifySystemWebhook(reports, 'abuseReport'),
-			this.abuseReportNotificationService.notifyMail(reports),
-		]));
+		trackPromise(
+			Promise.all([
+				this.abuseReportNotificationService.notifyAdminStream(reports),
+				this.abuseReportNotificationService.notifySystemWebhook(
+					reports,
+					"abuseReport",
+				),
+				this.abuseReportNotificationService.notifyMail(reports),
+			]),
+		);
 	}
 
 	/**
@@ -88,13 +99,13 @@ export class AbuseReportService {
 	public async resolve(
 		params: {
 			reportId: string;
-			resolvedAs: MiAbuseUserReport['resolvedAs'];
+			resolvedAs: MiAbuseUserReport["resolvedAs"];
 		}[],
 		moderator: MiUser,
 	) {
-		const paramsMap = new Map(params.map(it => [it.reportId, it]));
+		const paramsMap = new Map(params.map((it) => [it.reportId, it]));
 		const reports = await this.abuseUserReportsRepository.findBy({
-			id: In(params.map(it => it.reportId)),
+			id: In(params.map((it) => it.reportId)),
 		});
 
 		for (const report of reports) {
@@ -107,67 +118,92 @@ export class AbuseReportService {
 				resolvedAs: ps.resolvedAs,
 			});
 
-			this.moderationLogService
-				.log(moderator, 'resolveAbuseReport', {
-					reportId: report.id,
-					report: report,
-					resolvedAs: ps.resolvedAs,
-				});
+			this.moderationLogService.log(moderator, "resolveAbuseReport", {
+				reportId: report.id,
+				report: report,
+				resolvedAs: ps.resolvedAs,
+			});
 		}
 
-		return this.abuseUserReportsRepository.findBy({ id: In(reports.map(it => it.id)) })
-			.then(reports => this.abuseReportNotificationService.notifySystemWebhook(reports, 'abuseReportResolved'));
+		return this.abuseUserReportsRepository
+			.findBy({ id: In(reports.map((it) => it.id)) })
+			.then((reports) =>
+				this.abuseReportNotificationService.notifySystemWebhook(
+					reports,
+					"abuseReportResolved",
+				),
+			);
 	}
 
 	@bindThis
-	public async forward(
-		reportId: MiAbuseUserReport['id'],
-		moderator: MiUser,
-	) {
-		const report = await this.abuseUserReportsRepository.findOneByOrFail({ id: reportId });
+	public async forward(reportId: MiAbuseUserReport["id"], moderator: MiUser) {
+		const report = await this.abuseUserReportsRepository.findOneByOrFail({
+			id: reportId,
+		});
 
 		if (report.targetUserHost == null) {
-			throw new IdentifiableError('0b1ce202-b2c1-4ee4-8af4-2742a51b383d', 'The target user host is null.');
+			throw new IdentifiableError(
+				"0b1ce202-b2c1-4ee4-8af4-2742a51b383d",
+				"The target user host is null.",
+			);
 		}
 
 		if (report.forwarded) {
-			throw new IdentifiableError('5c008bdf-f0e8-4154-9f34-804e114516d7', 'The report has already been forwarded.');
+			throw new IdentifiableError(
+				"5c008bdf-f0e8-4154-9f34-804e114516d7",
+				"The report has already been forwarded.",
+			);
 		}
 
 		await this.abuseUserReportsRepository.update(report.id, {
 			forwarded: true,
 		});
 
-		const actor = await this.systemAccountService.fetch('actor');
-		const targetUser = await this.usersRepository.findOneByOrFail({ id: report.targetUserId });
+		const actor = await this.systemAccountService.fetch("actor");
+		const targetUser = await this.usersRepository.findOneByOrFail({
+			id: report.targetUserId,
+		});
 
-		const flag = this.apRendererService.renderFlag(actor, targetUser.uri!, report.comment);
+		const flag = this.apRendererService.renderFlag(
+			actor,
+			targetUser.uri!,
+			report.comment,
+		);
 		const contextAssignedFlag = this.apRendererService.addContext(flag);
-		this.queueService.deliver(actor, contextAssignedFlag, targetUser.inbox, false);
+		this.queueService.deliver(
+			actor,
+			contextAssignedFlag,
+			targetUser.inbox,
+			false,
+		);
 
-		this.moderationLogService
-			.log(moderator, 'forwardAbuseReport', {
-				reportId: report.id,
-				report: report,
-			});
+		this.moderationLogService.log(moderator, "forwardAbuseReport", {
+			reportId: report.id,
+			report: report,
+		});
 	}
 
 	@bindThis
 	public async update(
-		reportId: MiAbuseUserReport['id'],
+		reportId: MiAbuseUserReport["id"],
 		params: {
-			moderationNote?: MiAbuseUserReport['moderationNote'];
+			moderationNote?: MiAbuseUserReport["moderationNote"];
 		},
 		moderator: MiUser,
 	) {
-		const report = await this.abuseUserReportsRepository.findOneByOrFail({ id: reportId });
+		const report = await this.abuseUserReportsRepository.findOneByOrFail({
+			id: reportId,
+		});
 
 		await this.abuseUserReportsRepository.update(report.id, {
 			moderationNote: params.moderationNote,
 		});
 
-		if (params.moderationNote != null && report.moderationNote !== params.moderationNote) {
-			this.moderationLogService.log(moderator, 'updateAbuseReportNote', {
+		if (
+			params.moderationNote != null &&
+			report.moderationNote !== params.moderationNote
+		) {
+			this.moderationLogService.log(moderator, "updateAbuseReportNote", {
 				reportId: report.id,
 				report: report,
 				before: report.moderationNote,

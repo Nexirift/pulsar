@@ -5,9 +5,9 @@
 
 // NIRAX --- A lightweight router
 
-import { onBeforeUnmount, onMounted, shallowRef } from 'vue';
-import { EventEmitter } from 'eventemitter3';
-import type { Component, ShallowRef } from 'vue';
+import { onBeforeUnmount, onMounted, shallowRef } from "vue";
+import { EventEmitter } from "eventemitter3";
+import type { Component, ShallowRef } from "vue";
 
 function safeURIDecode(str: string): string {
 	try {
@@ -27,7 +27,7 @@ interface RouteDefBase {
 }
 
 interface RouteDefWithComponent extends RouteDefBase {
-	component: Component,
+	component: Component;
 }
 
 interface RouteDefWithRedirect extends RouteDefBase {
@@ -36,14 +36,17 @@ interface RouteDefWithRedirect extends RouteDefBase {
 
 export type RouteDef = RouteDefWithComponent | RouteDefWithRedirect;
 
-export type RouterFlag = 'forcePage';
+export type RouterFlag = "forcePage";
 
-type ParsedPath = (string | {
-	name: string;
-	startsWith?: string;
-	wildcard?: boolean;
-	optional?: boolean;
-})[];
+type ParsedPath = (
+	| string
+	| {
+			name: string;
+			startsWith?: string;
+			wildcard?: boolean;
+			optional?: boolean;
+	  }
+)[];
 
 export type RouterEvents = {
 	change: (ctx: {
@@ -51,9 +54,7 @@ export type RouterEvents = {
 		fullPath: string;
 		resolved: PathResolvedResult;
 	}) => void;
-	replace: (ctx: {
-		fullPath: string;
-	}) => void;
+	replace: (ctx: { fullPath: string }) => void;
 	push: (ctx: {
 		beforeFullPath: string;
 		fullPath: string;
@@ -82,15 +83,15 @@ function parsePath(path: string): ParsedPath {
 
 	path = path.substring(1);
 
-	for (const part of path.split('/')) {
-		if (part.includes(':')) {
-			const prefix = part.substring(0, part.indexOf(':'));
-			const placeholder = part.substring(part.indexOf(':') + 1);
-			const wildcard = placeholder.includes('(*)');
-			const optional = placeholder.endsWith('?');
+	for (const part of path.split("/")) {
+		if (part.includes(":")) {
+			const prefix = part.substring(0, part.indexOf(":"));
+			const placeholder = part.substring(part.indexOf(":") + 1);
+			const wildcard = placeholder.includes("(*)");
+			const optional = placeholder.endsWith("?");
 			res.push({
-				name: placeholder.replace('(*)', '').replace('?', ''),
-				startsWith: prefix !== '' ? prefix : undefined,
+				name: placeholder.replace("(*)", "").replace("?", ""),
+				startsWith: prefix !== "" ? prefix : undefined,
 				wildcard,
 				optional,
 			});
@@ -112,9 +113,15 @@ export class Nirax<DEF extends RouteDef[]> extends EventEmitter<RouterEvents> {
 	private notFoundPageComponent: Component;
 	private redirectCount = 0;
 
-	public navHook: ((fullPath: string, flag?: RouterFlag) => boolean) | null = null;
+	public navHook: ((fullPath: string, flag?: RouterFlag) => boolean) | null =
+		null;
 
-	constructor(routes: DEF, currentFullPath: Nirax<DEF>['currentFullPath'], isLoggedIn: boolean, notFoundPageComponent: Component) {
+	constructor(
+		routes: DEF,
+		currentFullPath: Nirax<DEF>["currentFullPath"],
+		isLoggedIn: boolean,
+		notFoundPageComponent: Component,
+	) {
 		super();
 
 		this.routes = routes;
@@ -128,7 +135,7 @@ export class Nirax<DEF extends RouteDef[]> extends EventEmitter<RouterEvents> {
 
 	public init() {
 		const res = this.navigate(this.currentFullPath, false);
-		this.emit('replace', {
+		this.emit("replace", {
 			fullPath: res._parsedRoute.fullPath,
 		});
 	}
@@ -137,14 +144,14 @@ export class Nirax<DEF extends RouteDef[]> extends EventEmitter<RouterEvents> {
 		let path = fullPath;
 		let queryString: string | null = null;
 		let hash: string | null = null;
-		if (path[0] === '/') path = path.substring(1);
-		if (path.includes('#')) {
-			hash = path.substring(path.indexOf('#') + 1);
-			path = path.substring(0, path.indexOf('#'));
+		if (path[0] === "/") path = path.substring(1);
+		if (path.includes("#")) {
+			hash = path.substring(path.indexOf("#") + 1);
+			path = path.substring(0, path.indexOf("#"));
 		}
-		if (path.includes('?')) {
-			queryString = path.substring(path.indexOf('?') + 1);
-			path = path.substring(0, path.indexOf('?'));
+		if (path.includes("?")) {
+			queryString = path.substring(path.indexOf("?") + 1);
+			path = path.substring(0, path.indexOf("?"));
 		}
 
 		const _parsedRoute = {
@@ -153,15 +160,16 @@ export class Nirax<DEF extends RouteDef[]> extends EventEmitter<RouterEvents> {
 			hash,
 		};
 
-		function check(routes: RouteDef[], _parts: string[]): PathResolvedResult | null {
-			forEachRouteLoop:
-			for (const route of routes) {
+		function check(
+			routes: RouteDef[],
+			_parts: string[],
+		): PathResolvedResult | null {
+			forEachRouteLoop: for (const route of routes) {
 				let parts = [..._parts];
 				const props = new Map<string, string>();
 
-				pathMatchLoop:
-				for (const p of parsePath(route.path)) {
-					if (typeof p === 'string') {
+				pathMatchLoop: for (const p of parsePath(route.path)) {
+					if (typeof p === "string") {
 						if (p === parts[0]) {
 							parts.shift();
 						} else {
@@ -173,15 +181,19 @@ export class Nirax<DEF extends RouteDef[]> extends EventEmitter<RouterEvents> {
 						}
 						if (p.wildcard) {
 							if (parts.length !== 0) {
-								props.set(p.name, safeURIDecode(parts.join('/')));
+								props.set(p.name, safeURIDecode(parts.join("/")));
 								parts = [];
 							}
 							break pathMatchLoop;
 						} else {
 							if (p.startsWith) {
-								if (parts[0] == null || !parts[0].startsWith(p.startsWith)) continue forEachRouteLoop;
+								if (parts[0] == null || !parts[0].startsWith(p.startsWith))
+									continue forEachRouteLoop;
 
-								props.set(p.name, safeURIDecode(parts[0].substring(p.startsWith.length)));
+								props.set(
+									p.name,
+									safeURIDecode(parts[0].substring(p.startsWith.length)),
+								);
 								parts.shift();
 							} else {
 								if (parts[0]) {
@@ -213,8 +225,9 @@ export class Nirax<DEF extends RouteDef[]> extends EventEmitter<RouterEvents> {
 					}
 
 					if (route.query != null && queryString != null) {
-						const queryObject = [...new URLSearchParams(queryString).entries()]
-							.reduce((obj, entry) => ({ ...obj, [entry[0]]: entry[1] }), {});
+						const queryObject = [
+							...new URLSearchParams(queryString).entries(),
+						].reduce((obj, entry) => ({ ...obj, [entry[0]]: entry[1] }), {});
 
 						for (const q in route.query) {
 							const as = route.query[q];
@@ -251,32 +264,45 @@ export class Nirax<DEF extends RouteDef[]> extends EventEmitter<RouterEvents> {
 			return null;
 		}
 
-		const _parts = path.split('/').filter(part => part.length !== 0);
+		const _parts = path.split("/").filter((part) => part.length !== 0);
 
 		return check(this.routes, _parts);
 	}
 
-	private navigate(fullPath: string, emitChange = true, _redirected = false): PathResolvedResult {
+	private navigate(
+		fullPath: string,
+		emitChange = true,
+		_redirected = false,
+	): PathResolvedResult {
 		const beforeFullPath = this.currentFullPath;
 		this.currentFullPath = fullPath;
 
 		const res = this.resolve(this.currentFullPath);
 
 		if (res == null) {
-			throw new Error('no route found for: ' + fullPath);
+			throw new Error("no route found for: " + fullPath);
 		}
 
-		for (let current: PathResolvedResult | undefined = res; current; current = current.child) {
-			if ('redirect' in current.route) {
+		for (
+			let current: PathResolvedResult | undefined = res;
+			current;
+			current = current.child
+		) {
+			if ("redirect" in current.route) {
 				let redirectPath: string;
-				if (typeof current.route.redirect === 'function') {
+				if (typeof current.route.redirect === "function") {
 					redirectPath = current.route.redirect(current.props);
 				} else {
-					redirectPath = current.route.redirect + (current._parsedRoute.queryString ? '?' + current._parsedRoute.queryString : '') + (current._parsedRoute.hash ? '#' + current._parsedRoute.hash : '');
+					redirectPath =
+						current.route.redirect +
+						(current._parsedRoute.queryString
+							? "?" + current._parsedRoute.queryString
+							: "") +
+						(current._parsedRoute.hash ? "#" + current._parsedRoute.hash : "");
 				}
-				if (_DEV_) console.debug('Redirecting to: ', redirectPath);
+				if (_DEV_) console.debug("Redirecting to: ", redirectPath);
 				if (_redirected && this.redirectCount++ > 10) {
-					throw new Error('redirect loop detected');
+					throw new Error("redirect loop detected");
 				}
 				return this.navigate(redirectPath, emitChange, true);
 			}
@@ -284,15 +310,15 @@ export class Nirax<DEF extends RouteDef[]> extends EventEmitter<RouterEvents> {
 
 		if (res.route.loginRequired && !this.isLoggedIn) {
 			res.route.component = this.notFoundPageComponent;
-			res.props.set('showLoginPopup', true);
+			res.props.set("showLoginPopup", true);
 		}
 
 		this.current = res;
 		this.currentRef.value = res;
 		this.currentRoute.value = res.route;
 
-		if (emitChange && res.route.path !== '/:(*)') {
-			this.emit('change', {
+		if (emitChange && res.route.path !== "/:(*)") {
+			this.emit("change", {
 				beforeFullPath,
 				fullPath,
 				resolved: res,
@@ -313,7 +339,7 @@ export class Nirax<DEF extends RouteDef[]> extends EventEmitter<RouterEvents> {
 	public push(fullPath: string, flag?: RouterFlag) {
 		const beforeFullPath = this.currentFullPath;
 		if (fullPath === beforeFullPath) {
-			this.emit('same');
+			this.emit("same");
 			return;
 		}
 		if (this.navHook) {
@@ -321,10 +347,10 @@ export class Nirax<DEF extends RouteDef[]> extends EventEmitter<RouterEvents> {
 			if (cancel) return;
 		}
 		const res = this.navigate(fullPath);
-		if (res.route.path === '/:(*)') {
+		if (res.route.path === "/:(*)") {
 			window.location.href = fullPath;
 		} else {
-			this.emit('push', {
+			this.emit("push", {
 				beforeFullPath,
 				fullPath: res._parsedRoute.fullPath,
 				route: res.route,
@@ -335,12 +361,15 @@ export class Nirax<DEF extends RouteDef[]> extends EventEmitter<RouterEvents> {
 
 	public replace(fullPath: string) {
 		const res = this.navigate(fullPath);
-		this.emit('replace', {
+		this.emit("replace", {
 			fullPath: res._parsedRoute.fullPath,
 		});
 	}
 
-	public useListener<E extends keyof RouterEvents, L = RouterEvents[E]>(event: E, listener: L) {
+	public useListener<E extends keyof RouterEvents, L = RouterEvents[E]>(
+		event: E,
+		listener: L,
+	) {
 		this.addListener(event, listener);
 
 		onBeforeUnmount(() => {

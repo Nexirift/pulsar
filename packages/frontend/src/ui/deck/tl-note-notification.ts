@@ -3,20 +3,26 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as Misskey from 'misskey-js';
-import type { Ref } from 'vue';
-import type { SoundType } from '@/utility/sound.js';
-import type { SoundStore } from '@/preferences/def.js';
-import { getSoundDuration, playMisskeySfxFile, soundsTypes } from '@/utility/sound.js';
-import { i18n } from '@/i18n.js';
-import * as os from '@/os.js';
+import * as Misskey from "misskey-js";
+import type { Ref } from "vue";
+import type { SoundType } from "@/utility/sound.js";
+import type { SoundStore } from "@/preferences/def.js";
+import {
+	getSoundDuration,
+	playMisskeySfxFile,
+	soundsTypes,
+} from "@/utility/sound.js";
+import { i18n } from "@/i18n.js";
+import * as os from "@/os.js";
 
-export async function soundSettingsButton(soundSetting: Ref<SoundStore>): Promise<void> {
+export async function soundSettingsButton(
+	soundSetting: Ref<SoundStore>,
+): Promise<void> {
 	function getSoundTypeName(f: SoundType): string {
 		switch (f) {
 			case null:
 				return i18n.ts.none;
-			case '_driveFile_':
+			case "_driveFile_":
 				return i18n.ts._soundSettings.driveFile;
 			default:
 				return f;
@@ -25,22 +31,26 @@ export async function soundSettingsButton(soundSetting: Ref<SoundStore>): Promis
 
 	const { canceled, result } = await os.form(i18n.ts.sound, {
 		type: {
-			type: 'enum',
+			type: "enum",
 			label: i18n.ts.sound,
-			default: soundSetting.value.type ?? 'none',
-			enum: soundsTypes.map(f => ({
-				value: f ?? 'none', label: getSoundTypeName(f),
+			default: soundSetting.value.type ?? "none",
+			enum: soundsTypes.map((f) => ({
+				value: f ?? "none",
+				label: getSoundTypeName(f),
 			})),
 		},
 		soundFile: {
-			type: 'drive-file',
+			type: "drive-file",
 			label: i18n.ts.file,
-			defaultFileId: soundSetting.value.type === '_driveFile_' ? soundSetting.value.fileId : null,
-			hidden: v => v.type !== '_driveFile_',
+			defaultFileId:
+				soundSetting.value.type === "_driveFile_"
+					? soundSetting.value.fileId
+					: null,
+			hidden: (v) => v.type !== "_driveFile_",
 			validate: async (file: Misskey.entities.DriveFile) => {
-				if (!file.type.startsWith('audio')) {
+				if (!file.type.startsWith("audio")) {
 					os.alert({
-						type: 'warning',
+						type: "warning",
 						title: i18n.ts._soundSettings.driveFileTypeWarn,
 						text: i18n.ts._soundSettings.driveFileTypeWarnDescription,
 					});
@@ -50,7 +60,7 @@ export async function soundSettingsButton(soundSetting: Ref<SoundStore>): Promis
 				const duration = await getSoundDuration(file.url);
 				if (duration >= 2000) {
 					const { canceled } = await os.confirm({
-						type: 'warning',
+						type: "warning",
 						title: i18n.ts._soundSettings.driveFileDurationWarn,
 						text: i18n.ts._soundSettings.driveFileDurationWarnDescription,
 						okText: i18n.ts.continue,
@@ -63,7 +73,7 @@ export async function soundSettingsButton(soundSetting: Ref<SoundStore>): Promis
 			},
 		},
 		volume: {
-			type: 'range',
+			type: "range",
 			label: i18n.ts.volume,
 			default: soundSetting.value.volume ?? 1,
 			textConverter: (v) => `${Math.floor(v * 100)}%`,
@@ -72,7 +82,7 @@ export async function soundSettingsButton(soundSetting: Ref<SoundStore>): Promis
 			step: 0.05,
 		},
 		listen: {
-			type: 'button',
+			type: "button",
 			content: i18n.ts.listen,
 			action: (_, v) => {
 				const sound = buildSoundStore(v);
@@ -87,15 +97,23 @@ export async function soundSettingsButton(soundSetting: Ref<SoundStore>): Promis
 	if (res) soundSetting.value = res;
 
 	function buildSoundStore(result: any): SoundStore | null {
-		const type = (result.type === 'none' ? null : result.type) as SoundType;
+		const type = (result.type === "none" ? null : result.type) as SoundType;
 		const volume = result.volume as number;
-		const fileId = result.soundFile?.id ?? (soundSetting.value.type === '_driveFile_' ? soundSetting.value.fileId : undefined);
-		const fileUrl = result.soundFile?.url ?? (soundSetting.value.type === '_driveFile_' ? soundSetting.value.fileUrl : undefined);
+		const fileId =
+			result.soundFile?.id ??
+			(soundSetting.value.type === "_driveFile_"
+				? soundSetting.value.fileId
+				: undefined);
+		const fileUrl =
+			result.soundFile?.url ??
+			(soundSetting.value.type === "_driveFile_"
+				? soundSetting.value.fileUrl
+				: undefined);
 
-		if (type === '_driveFile_') {
+		if (type === "_driveFile_") {
 			if (!fileUrl || !fileId) {
 				os.alert({
-					type: 'warning',
+					type: "warning",
 					text: i18n.ts._soundSettings.driveFileWarn,
 				});
 				return null;

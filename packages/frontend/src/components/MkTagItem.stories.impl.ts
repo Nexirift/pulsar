@@ -5,9 +5,9 @@
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable import/no-default-export */
-import { action } from '@storybook/addon-actions';
-import type { StoryObj } from '@storybook/vue3';
-import MkTagItem from './MkTagItem.vue';
+import { action } from "@storybook/addon-actions";
+import type { StoryObj } from "@storybook/vue3";
+import MkTagItem from "./MkTagItem.vue";
 
 export const Default = {
 	render(args) {
@@ -28,8 +28,8 @@ export const Default = {
 				},
 				events() {
 					return {
-						click: action('click'),
-						exButtonClick: action('exButtonClick'),
+						click: action("click"),
+						exButtonClick: action("exButtonClick"),
 					};
 				},
 			},
@@ -37,10 +37,10 @@ export const Default = {
 		};
 	},
 	args: {
-		content: 'name',
+		content: "name",
 	},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkTagItem>;
 
@@ -48,7 +48,7 @@ export const Icon = {
 	...Default,
 	args: {
 		...Default.args,
-		iconClass: 'ti ti-arrow-up',
+		iconClass: "ti ti-arrow-up",
 	},
 } satisfies StoryObj<typeof MkTagItem>;
 
@@ -56,7 +56,7 @@ export const ExButton = {
 	...Default,
 	args: {
 		...Default.args,
-		exButtonIconClass: 'ti ti-x',
+		exButtonIconClass: "ti ti-x",
 	},
 } satisfies StoryObj<typeof MkTagItem>;
 
@@ -64,7 +64,7 @@ export const IconExButton = {
 	...Default,
 	args: {
 		...Default.args,
-		iconClass: 'ti ti-arrow-up',
-		exButtonIconClass: 'ti ti-x',
+		iconClass: "ti ti-arrow-up",
+		exButtonIconClass: "ti ti-x",
 	},
 } satisfies StoryObj<typeof MkTagItem>;

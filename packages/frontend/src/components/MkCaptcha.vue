@@ -4,49 +4,109 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div>
-	<span v-if="!available">Loading<MkEllipsis/></span>
-	<div v-if="props.provider == 'mcaptcha'">
-		<div id="mcaptcha__widget-container" class="m-captcha-style"></div>
-		<div ref="captchaEl"></div>
-	</div>
-	<div v-if="props.provider == 'testcaptcha'" style="background: #eee; border: solid 1px #888; padding: 8px; color: #000; max-width: 320px; display: flex; gap: 10px; align-items: center; box-shadow: 2px 2px 6px #0004; border-radius: 4px;">
-		<img src="/client-assets/testcaptcha.png" style="width: 60px; height: 60px; "/>
-		<div v-if="testcaptchaPassed">
-			<div style="color: green;">Test captcha passed!</div>
+	<div>
+		<span v-if="!available">Loading<MkEllipsis /></span>
+		<div v-if="props.provider == 'mcaptcha'">
+			<div id="mcaptcha__widget-container" class="m-captcha-style"></div>
+			<div ref="captchaEl"></div>
 		</div>
-		<div v-else>
-			<div style="font-size: 13px; margin-bottom: 4px;">Type "ai-chan-kawaii" to pass captcha</div>
-			<input v-model="testcaptchaInput" data-cy-testcaptcha-input/>
-			<button type="button" data-cy-testcaptcha-submit @click="testcaptchaSubmit">Submit</button>
+		<div
+			v-if="props.provider == 'testcaptcha'"
+			style="
+				background: #eee;
+				border: solid 1px #888;
+				padding: 8px;
+				color: #000;
+				max-width: 320px;
+				display: flex;
+				gap: 10px;
+				align-items: center;
+				box-shadow: 2px 2px 6px #0004;
+				border-radius: 4px;
+			"
+		>
+			<img
+				src="/client-assets/testcaptcha.png"
+				style="width: 60px; height: 60px"
+			/>
+			<div v-if="testcaptchaPassed">
+				<div style="color: green">Test captcha passed!</div>
+			</div>
+			<div v-else>
+				<div style="font-size: 13px; margin-bottom: 4px">
+					Type "ai-chan-kawaii" to pass captcha
+				</div>
+				<input v-model="testcaptchaInput" data-cy-testcaptcha-input />
+				<button
+					type="button"
+					data-cy-testcaptcha-submit
+					@click="testcaptchaSubmit"
+				>
+					Submit
+				</button>
+			</div>
 		</div>
+		<div v-else ref="captchaEl"></div>
 	</div>
-	<div v-else ref="captchaEl"></div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { ref, useTemplateRef, computed, onMounted, onBeforeUnmount, watch, onUnmounted } from 'vue';
-import { store } from '@/store.js';
+import {
+	ref,
+	useTemplateRef,
+	computed,
+	onMounted,
+	onBeforeUnmount,
+	watch,
+	onUnmounted,
+} from "vue";
+import { store } from "@/store.js";
 
 // APIs provided by Captcha services
 // see: https://docs.hcaptcha.com/configuration/#javascript-api
 // see: https://developers.google.com/recaptcha/docs/display?hl=ja
 // see: https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/#explicitly-render-the-turnstile-widget
 export type Captcha = {
-	render(container: string | Node, options: {
-		readonly [_ in 'sitekey' | 'theme' | 'type' | 'size' | 'tabindex' | 'callback' | 'expired' | 'expired-callback' | 'error-callback' | 'endpoint']?: unknown;
-	}): string;
+	render(
+		container: string | Node,
+		options: {
+			readonly [_ in
+				| "sitekey"
+				| "theme"
+				| "type"
+				| "size"
+				| "tabindex"
+				| "callback"
+				| "expired"
+				| "expired-callback"
+				| "error-callback"
+				| "endpoint"]?: unknown;
+		},
+	): string;
 	remove(id: string): void;
 	execute(id: string): void;
 	reset(id?: string): void;
 	getResponse(id: string): string;
-	WidgetInstance(container: string | Node, options: {
-		readonly [_ in 'sitekey' | 'doneCallback' | 'errorCallback' | 'puzzleEndpoint']?: unknown;
-	}): void;
+	WidgetInstance(
+		container: string | Node,
+		options: {
+			readonly [_ in
+				| "sitekey"
+				| "doneCallback"
+				| "errorCallback"
+				| "puzzleEndpoint"]?: unknown;
+		},
+	): void;
 };
 
-export type CaptchaProvider = 'hcaptcha' | 'recaptcha' | 'turnstile' | 'mcaptcha' | 'altcha' | 'fc' | 'testcaptcha';
+export type CaptchaProvider =
+	| "hcaptcha"
+	| "recaptcha"
+	| "turnstile"
+	| "mcaptcha"
+	| "altcha"
+	| "fc"
+	| "testcaptcha";
 
 type CaptchaContainer = {
 	readonly [_ in CaptchaProvider]?: Captcha;
@@ -55,7 +115,7 @@ type CaptchaContainer = {
 declare global {
 	// Window を拡張してるため、空ではない
 	// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-	interface Window extends CaptchaContainer { }
+	interface Window extends CaptchaContainer {}
 }
 
 const props = defineProps<{
@@ -67,25 +127,32 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'update:modelValue', v: string | null): void;
+	(ev: "update:modelValue", v: string | null): void;
 }>();
 
 const available = ref(false);
 
-const captchaEl = useTemplateRef('captchaEl');
+const captchaEl = useTemplateRef("captchaEl");
 const captchaWidgetId = ref<string | undefined>(undefined);
-const testcaptchaInput = ref('');
+const testcaptchaInput = ref("");
 const testcaptchaPassed = ref(false);
 
 const variable = computed(() => {
 	switch (props.provider) {
-		case 'hcaptcha': return 'hcaptcha';
-		case 'recaptcha': return 'grecaptcha';
-		case 'turnstile': return 'turnstile';
-		case 'mcaptcha': return 'mcaptcha';
-		case 'altcha': return 'altcha';
-		case 'fc': return 'friendlyChallenge';
-		case 'testcaptcha': return 'testcaptcha';
+		case "hcaptcha":
+			return "hcaptcha";
+		case "recaptcha":
+			return "grecaptcha";
+		case "turnstile":
+			return "turnstile";
+		case "mcaptcha":
+			return "mcaptcha";
+		case "altcha":
+			return "altcha";
+		case "fc":
+			return "friendlyChallenge";
+		case "testcaptcha":
+			return "testcaptcha";
 	}
 });
 
@@ -93,46 +160,70 @@ const loaded = !!window[variable.value];
 
 const src = computed(() => {
 	switch (props.provider) {
-		case 'hcaptcha': return 'https://js.hcaptcha.com/1/api.js?render=explicit&recaptchacompat=off';
-		case 'recaptcha': return 'https://www.recaptcha.net/recaptcha/api.js?render=explicit';
-		case 'turnstile': return 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-		case 'altcha': return 'https://cdn.jsdelivr.net/npm/altcha@0.6.3/dist/altcha.min.js';
-		case 'fc': return 'https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.18/widget.min.js';
-		case 'mcaptcha': return null;
-		case 'testcaptcha': return null;
-		default: return null;
+		case "hcaptcha":
+			return "https://js.hcaptcha.com/1/api.js?render=explicit&recaptchacompat=off";
+		case "recaptcha":
+			return "https://www.recaptcha.net/recaptcha/api.js?render=explicit";
+		case "turnstile":
+			return "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+		case "altcha":
+			return "https://cdn.jsdelivr.net/npm/altcha@0.6.3/dist/altcha.min.js";
+		case "fc":
+			return "https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.18/widget.min.js";
+		case "mcaptcha":
+			return null;
+		case "testcaptcha":
+			return null;
+		default:
+			return null;
 	}
 });
 
 const scriptId = computed(() => `script-${props.provider}`);
 
-const captcha = computed<Captcha>(() => window[variable.value] || {} as unknown as Captcha);
+const captcha = computed<Captcha>(
+	() => window[variable.value] || ({} as unknown as Captcha),
+);
 
-watch(() => [props.instanceUrl, props.sitekey, props.secretKey], async () => {
-	// 変更があったときはリフレッシュと再レンダリングをしておかないと、変更後の値で再検証が出来ない
-	if (available.value) {
-		callback(undefined);
-		clearWidget();
-		await requestRender();
-	}
-});
+watch(
+	() => [props.instanceUrl, props.sitekey, props.secretKey],
+	async () => {
+		// 変更があったときはリフレッシュと再レンダリングをしておかないと、変更後の値で再検証が出来ない
+		if (available.value) {
+			callback(undefined);
+			clearWidget();
+			await requestRender();
+		}
+	},
+);
 
-if (loaded || props.provider === 'mcaptcha' || props.provider === 'testcaptcha') {
+if (
+	loaded ||
+	props.provider === "mcaptcha" ||
+	props.provider === "testcaptcha"
+) {
 	available.value = true;
 } else if (src.value !== null) {
-	const scriptElement = window.document.getElementById(scriptId.value) ?? window.document.head.appendChild(Object.assign(window.document.createElement('script'), {
-		async: true,
-		id: scriptId.value,
-		src: src.value,
-		...(props.provider === 'altcha' ? { type: 'module' } : {}),
-	}));
-	scriptElement.addEventListener('load', () => {
+	const scriptElement =
+		window.document.getElementById(scriptId.value) ??
+		window.document.head.appendChild(
+			Object.assign(window.document.createElement("script"), {
+				async: true,
+				id: scriptId.value,
+				src: src.value,
+				...(props.provider === "altcha" ? { type: "module" } : {}),
+			}),
+		);
+	scriptElement.addEventListener("load", () => {
 		available.value = true;
 		// For ALTCHA, we need to wait a bit for the custom element to be defined
-		if (props.provider === 'altcha') {
+		if (props.provider === "altcha") {
 			window.setTimeout(() => {
-				if (window.customElements && !window.customElements.get('altcha-widget')) {
-					console.warn('ALTCHA widget not registered after script load');
+				if (
+					window.customElements &&
+					!window.customElements.get("altcha-widget")
+				) {
+					console.warn("ALTCHA widget not registered after script load");
 				}
 			}, 100);
 		}
@@ -149,13 +240,13 @@ function reset() {
 		}
 	}
 	testcaptchaPassed.value = false;
-	testcaptchaInput.value = '';
+	testcaptchaInput.value = "";
 }
 
 function remove() {
 	if (captcha.value.remove && captchaWidgetId.value) {
 		try {
-			if (_DEV_) console.debug('remove', props.provider, captchaWidgetId.value);
+			if (_DEV_) console.debug("remove", props.provider, captchaWidgetId.value);
 			captcha.value.remove(captchaWidgetId.value);
 		} catch (error: unknown) {
 			// ignore
@@ -165,59 +256,76 @@ function remove() {
 }
 
 async function requestRender() {
-	if (captcha.value.render && captchaEl.value instanceof Element && props.sitekey) {
+	if (
+		captcha.value.render &&
+		captchaEl.value instanceof Element &&
+		props.sitekey
+	) {
 		// reCAPTCHAのレンダリング重複判定を回避するため、captchaEl配下に仮のdivを用意する.
 		// （同じdivに対して複数回renderを呼び出すとreCAPTCHAはエラーを返すので）
-		const elem = window.document.createElement('div');
+		const elem = window.document.createElement("div");
 		captchaEl.value.appendChild(elem);
 
 		captchaWidgetId.value = captcha.value.render(elem, {
 			sitekey: props.sitekey,
-			theme: store.s.darkMode ? 'dark' : 'light',
+			theme: store.s.darkMode ? "dark" : "light",
 			callback: callback,
-			'expired-callback': () => callback(undefined),
-			'error-callback': () => callback(undefined),
+			"expired-callback": () => callback(undefined),
+			"error-callback": () => callback(undefined),
 		});
-	} else if (props.provider === 'mcaptcha' && props.instanceUrl && props.sitekey) {
-		const { default: Widget } = await import('@mcaptcha/vanilla-glue');
+	} else if (
+		props.provider === "mcaptcha" &&
+		props.instanceUrl &&
+		props.sitekey
+	) {
+		const { default: Widget } = await import("@mcaptcha/vanilla-glue");
 		new Widget({
 			siteKey: {
 				instanceUrl: new URL(props.instanceUrl),
 				key: props.sitekey,
 			},
 		});
-	} else if (props.provider === 'altcha' && captchaEl.value instanceof Element && props.sitekey) {
-		const widget = window.document.createElement('altcha-widget');
+	} else if (
+		props.provider === "altcha" &&
+		captchaEl.value instanceof Element &&
+		props.sitekey
+	) {
+		const widget = window.document.createElement("altcha-widget");
 		// If instanceUrl is provided, use Sentinel mode; otherwise use sitekey as the challenge URL
-		const challengeUrl = props.instanceUrl 
+		const challengeUrl = props.instanceUrl
 			? `${props.instanceUrl}/v1/challenge?apiKey=${props.sitekey}`
 			: props.sitekey;
-		widget.setAttribute('challengeurl', challengeUrl);
-		widget.setAttribute('hidefooter', 'true');
-		widget.addEventListener('statechange', (ev: Event) => {
-			if ((ev as CustomEvent).detail?.state === 'verified') {
+		widget.setAttribute("challengeurl", challengeUrl);
+		widget.setAttribute("hidefooter", "true");
+		widget.addEventListener("statechange", (ev: Event) => {
+			if ((ev as CustomEvent).detail?.state === "verified") {
 				callback((ev as CustomEvent).detail?.payload);
 			}
 		});
 		captchaEl.value.appendChild(widget);
-	} else if (variable.value === 'friendlyChallenge' && captchaEl.value instanceof Element) {
+	} else if (
+		variable.value === "friendlyChallenge" &&
+		captchaEl.value instanceof Element
+	) {
 		new captcha.value.WidgetInstance(captchaEl.value, {
 			sitekey: props.sitekey,
 			doneCallback: callback,
 			errorCallback: callback,
 		});
 		// The following line is needed so that the design gets applied without it the captcha will look broken
-		captchaEl.value.className = 'frc-captcha';
+		captchaEl.value.className = "frc-captcha";
 	} else {
 		window.setTimeout(requestRender, 1);
 	}
 }
 
 function clearWidget() {
-	if (props.provider === 'mcaptcha') {
-		const container = window.document.getElementById('mcaptcha__widget-container');
+	if (props.provider === "mcaptcha") {
+		const container = window.document.getElementById(
+			"mcaptcha__widget-container",
+		);
 		if (container) {
-			container.innerHTML = '';
+			container.innerHTML = "";
 		}
 	} else {
 		reset();
@@ -225,32 +333,35 @@ function clearWidget() {
 
 		if (captchaEl.value) {
 			// レンダリング先のコンテナの中身を掃除し、フォームが増殖するのを抑止
-			captchaEl.value.innerHTML = '';
+			captchaEl.value.innerHTML = "";
 		}
 	}
 }
 
 function callback(response?: string) {
-	emit('update:modelValue', typeof response === 'string' ? response : null);
+	emit("update:modelValue", typeof response === "string" ? response : null);
 }
 
 function onReceivedMessage(message: MessageEvent) {
 	if (message.data.token) {
-		if (props.instanceUrl && new URL(message.origin).host === new URL(props.instanceUrl).host) {
+		if (
+			props.instanceUrl &&
+			new URL(message.origin).host === new URL(props.instanceUrl).host
+		) {
 			callback(message.data.token);
 		}
 	}
 }
 
 function testcaptchaSubmit() {
-	testcaptchaPassed.value = testcaptchaInput.value === 'ai-chan-kawaii';
-	callback(testcaptchaPassed.value ? 'testcaptcha-passed' : undefined);
-	if (!testcaptchaPassed.value) testcaptchaInput.value = '';
+	testcaptchaPassed.value = testcaptchaInput.value === "ai-chan-kawaii";
+	callback(testcaptchaPassed.value ? "testcaptcha-passed" : undefined);
+	if (!testcaptchaPassed.value) testcaptchaInput.value = "";
 }
 
 onMounted(() => {
 	if (available.value) {
-		window.addEventListener('message', onReceivedMessage);
+		window.addEventListener("message", onReceivedMessage);
 		requestRender();
 	} else {
 		watch(available, requestRender);
@@ -258,7 +369,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-	window.removeEventListener('message', onReceivedMessage);
+	window.removeEventListener("message", onReceivedMessage);
 });
 
 onBeforeUnmount(() => {
@@ -268,5 +379,4 @@ onBeforeUnmount(() => {
 defineExpose({
 	reset,
 });
-
 </script>

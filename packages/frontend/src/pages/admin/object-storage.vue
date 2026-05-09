@@ -4,95 +4,132 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader :tabs="headerTabs">
-	<div class="_spacer" style="--MI_SPACER-w: 700px; --MI_SPACER-min: 16px; --MI_SPACER-max: 32px;">
-		<FormSuspense :p="init">
-			<div class="_gaps_m">
-				<MkSwitch v-model="useObjectStorage">{{ i18n.ts.useObjectStorage }}</MkSwitch>
+	<PageWithHeader :tabs="headerTabs">
+		<div
+			class="_spacer"
+			style="--MI_SPACER-w: 700px; --MI_SPACER-min: 16px; --MI_SPACER-max: 32px"
+		>
+			<FormSuspense :p="init">
+				<div class="_gaps_m">
+					<MkSwitch v-model="useObjectStorage">{{
+						i18n.ts.useObjectStorage
+					}}</MkSwitch>
 
-				<template v-if="useObjectStorage">
-					<MkInput v-model="objectStorageBaseUrl" :placeholder="'https://example.com'" type="url">
-						<template #label>{{ i18n.ts.objectStorageBaseUrl }}</template>
-						<template #caption>{{ i18n.ts.objectStorageBaseUrlDesc }}</template>
-					</MkInput>
-
-					<MkInput v-model="objectStorageBucket">
-						<template #label>{{ i18n.ts.objectStorageBucket }}</template>
-						<template #caption>{{ i18n.ts.objectStorageBucketDesc }}</template>
-					</MkInput>
-
-					<MkInput v-model="objectStoragePrefix">
-						<template #label>{{ i18n.ts.objectStoragePrefix }}</template>
-						<template #caption>{{ i18n.ts.objectStoragePrefixDesc }}</template>
-					</MkInput>
-
-					<MkInput v-model="objectStorageEndpoint" :placeholder="'example.com'">
-						<template #label>{{ i18n.ts.objectStorageEndpoint }}</template>
-						<template #prefix>https://</template>
-						<template #caption>{{ i18n.ts.objectStorageEndpointDesc }}</template>
-					</MkInput>
-
-					<MkInput v-model="objectStorageRegion">
-						<template #label>{{ i18n.ts.objectStorageRegion }}</template>
-						<template #caption>{{ i18n.ts.objectStorageRegionDesc }}</template>
-					</MkInput>
-
-					<FormSplit :minWidth="280">
-						<MkInput v-model="objectStorageAccessKey">
-							<template #prefix><i class="ti ti-key"></i></template>
-							<template #label>Access key</template>
+					<template v-if="useObjectStorage">
+						<MkInput
+							v-model="objectStorageBaseUrl"
+							:placeholder="'https://example.com'"
+							type="url"
+						>
+							<template #label>{{ i18n.ts.objectStorageBaseUrl }}</template>
+							<template #caption>{{
+								i18n.ts.objectStorageBaseUrlDesc
+							}}</template>
 						</MkInput>
 
-						<MkInput v-model="objectStorageSecretKey" type="password">
-							<template #prefix><i class="ti ti-key"></i></template>
-							<template #label>Secret key</template>
+						<MkInput v-model="objectStorageBucket">
+							<template #label>{{ i18n.ts.objectStorageBucket }}</template>
+							<template #caption>{{
+								i18n.ts.objectStorageBucketDesc
+							}}</template>
 						</MkInput>
-					</FormSplit>
 
-					<MkSwitch v-model="objectStorageUseSSL">
-						<template #label>{{ i18n.ts.objectStorageUseSSL }}</template>
-						<template #caption>{{ i18n.ts.objectStorageUseSSLDesc }}</template>
-					</MkSwitch>
+						<MkInput v-model="objectStoragePrefix">
+							<template #label>{{ i18n.ts.objectStoragePrefix }}</template>
+							<template #caption>{{
+								i18n.ts.objectStoragePrefixDesc
+							}}</template>
+						</MkInput>
 
-					<MkSwitch v-model="objectStorageUseProxy">
-						<template #label>{{ i18n.ts.objectStorageUseProxy }}</template>
-						<template #caption>{{ i18n.ts.objectStorageUseProxyDesc }}</template>
-					</MkSwitch>
+						<MkInput
+							v-model="objectStorageEndpoint"
+							:placeholder="'example.com'"
+						>
+							<template #label>{{ i18n.ts.objectStorageEndpoint }}</template>
+							<template #prefix>https://</template>
+							<template #caption>{{
+								i18n.ts.objectStorageEndpointDesc
+							}}</template>
+						</MkInput>
 
-					<MkSwitch v-model="objectStorageSetPublicRead">
-						<template #label>{{ i18n.ts.objectStorageSetPublicRead }}</template>
-					</MkSwitch>
+						<MkInput v-model="objectStorageRegion">
+							<template #label>{{ i18n.ts.objectStorageRegion }}</template>
+							<template #caption>{{
+								i18n.ts.objectStorageRegionDesc
+							}}</template>
+						</MkInput>
 
-					<MkSwitch v-model="objectStorageS3ForcePathStyle">
-						<template #label>s3ForcePathStyle</template>
-						<template #caption>{{ i18n.ts.s3ForcePathStyleDesc }}</template>
-					</MkSwitch>
-				</template>
-			</div>
-		</FormSuspense>
-	</div>
-	<template #footer>
-		<div :class="$style.footer">
-			<div class="_spacer" style="--MI_SPACER-w: 700px; --MI_SPACER-min: 16px; --MI_SPACER-max: 16px;">
-				<MkButton primary rounded @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
-			</div>
+						<FormSplit :minWidth="280">
+							<MkInput v-model="objectStorageAccessKey">
+								<template #prefix><i class="ti ti-key"></i></template>
+								<template #label>Access key</template>
+							</MkInput>
+
+							<MkInput v-model="objectStorageSecretKey" type="password">
+								<template #prefix><i class="ti ti-key"></i></template>
+								<template #label>Secret key</template>
+							</MkInput>
+						</FormSplit>
+
+						<MkSwitch v-model="objectStorageUseSSL">
+							<template #label>{{ i18n.ts.objectStorageUseSSL }}</template>
+							<template #caption>{{
+								i18n.ts.objectStorageUseSSLDesc
+							}}</template>
+						</MkSwitch>
+
+						<MkSwitch v-model="objectStorageUseProxy">
+							<template #label>{{ i18n.ts.objectStorageUseProxy }}</template>
+							<template #caption>{{
+								i18n.ts.objectStorageUseProxyDesc
+							}}</template>
+						</MkSwitch>
+
+						<MkSwitch v-model="objectStorageSetPublicRead">
+							<template #label>{{
+								i18n.ts.objectStorageSetPublicRead
+							}}</template>
+						</MkSwitch>
+
+						<MkSwitch v-model="objectStorageS3ForcePathStyle">
+							<template #label>s3ForcePathStyle</template>
+							<template #caption>{{ i18n.ts.s3ForcePathStyleDesc }}</template>
+						</MkSwitch>
+					</template>
+				</div>
+			</FormSuspense>
 		</div>
-	</template>
-</PageWithHeader>
+		<template #footer>
+			<div :class="$style.footer">
+				<div
+					class="_spacer"
+					style="
+						--MI_SPACER-w: 700px;
+						--MI_SPACER-min: 16px;
+						--MI_SPACER-max: 16px;
+					"
+				>
+					<MkButton primary rounded @click="save"
+						><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton
+					>
+				</div>
+			</div>
+		</template>
+	</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
-import MkSwitch from '@/components/MkSwitch.vue';
-import MkInput from '@/components/MkInput.vue';
-import FormSuspense from '@/components/form/suspense.vue';
-import FormSplit from '@/components/form/split.vue';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { fetchInstance } from '@/instance.js';
-import { i18n } from '@/i18n.js';
-import { definePage } from '@/page.js';
-import MkButton from '@/components/MkButton.vue';
+import { ref, computed } from "vue";
+import MkSwitch from "@/components/MkSwitch.vue";
+import MkInput from "@/components/MkInput.vue";
+import FormSuspense from "@/components/form/suspense.vue";
+import FormSplit from "@/components/form/split.vue";
+import * as os from "@/os.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { fetchInstance } from "@/instance.js";
+import { i18n } from "@/i18n.js";
+import { definePage } from "@/page.js";
+import MkButton from "@/components/MkButton.vue";
 
 const useObjectStorage = ref<boolean>(false);
 const objectStorageBaseUrl = ref<string | null>(null);
@@ -109,7 +146,7 @@ const objectStorageSetPublicRead = ref<boolean>(false);
 const objectStorageS3ForcePathStyle = ref<boolean>(true);
 
 async function init() {
-	const meta = await misskeyApi('admin/meta');
+	const meta = await misskeyApi("admin/meta");
 	useObjectStorage.value = meta.useObjectStorage;
 	objectStorageBaseUrl.value = meta.objectStorageBaseUrl;
 	objectStorageBucket.value = meta.objectStorageBucket;
@@ -126,7 +163,7 @@ async function init() {
 }
 
 function save() {
-	os.apiWithDialog('admin/update-meta', {
+	os.apiWithDialog("admin/update-meta", {
 		useObjectStorage: useObjectStorage.value,
 		objectStorageBaseUrl: objectStorageBaseUrl.value,
 		objectStorageBucket: objectStorageBucket.value,
@@ -149,7 +186,7 @@ const headerTabs = computed(() => []);
 
 definePage(() => ({
 	title: i18n.ts.objectStorage,
-	icon: 'ti ti-cloud',
+	icon: "ti ti-cloud",
 }));
 </script>
 

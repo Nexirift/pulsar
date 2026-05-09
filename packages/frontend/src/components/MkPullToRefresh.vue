@@ -4,29 +4,39 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div ref="rootEl" :class="isPulling ? $style.isPulling : null">
-	<!-- 小数が含まれるとレンダリングが高頻度になりすぎパフォーマンスが悪化するためround -->
-	<div v-if="isPulling" :class="$style.frame" :style="`--frame-min-height: ${Math.round(pullDistance / (PULL_BRAKE_BASE + (pullDistance / PULL_BRAKE_FACTOR)))}px;`">
-		<div :class="$style.frameContent">
-			<MkLoading v-if="isRefreshing" :class="$style.loader" :em="true"/>
-			<i v-else class="ti ti-arrow-bar-to-down" :class="[$style.icon, { [$style.refresh]: isPulledEnough }]"></i>
-			<div :class="$style.text">
-				<template v-if="isPulledEnough">{{ i18n.ts.releaseToRefresh }}</template>
-				<template v-else-if="isRefreshing">{{ i18n.ts.refreshing }}</template>
-				<template v-else>{{ i18n.ts.pullDownToRefresh }}</template>
+	<div ref="rootEl" :class="isPulling ? $style.isPulling : null">
+		<!-- 小数が含まれるとレンダリングが高頻度になりすぎパフォーマンスが悪化するためround -->
+		<div
+			v-if="isPulling"
+			:class="$style.frame"
+			:style="`--frame-min-height: ${Math.round(pullDistance / (PULL_BRAKE_BASE + pullDistance / PULL_BRAKE_FACTOR))}px;`"
+		>
+			<div :class="$style.frameContent">
+				<MkLoading v-if="isRefreshing" :class="$style.loader" :em="true" />
+				<i
+					v-else
+					class="ti ti-arrow-bar-to-down"
+					:class="[$style.icon, { [$style.refresh]: isPulledEnough }]"
+				></i>
+				<div :class="$style.text">
+					<template v-if="isPulledEnough">{{
+						i18n.ts.releaseToRefresh
+					}}</template>
+					<template v-else-if="isRefreshing">{{ i18n.ts.refreshing }}</template>
+					<template v-else>{{ i18n.ts.pullDownToRefresh }}</template>
+				</div>
 			</div>
 		</div>
-	</div>
 
-	<slot/>
-</div>
+		<slot />
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
-import { getScrollContainer } from '@@/js/scroll.js';
-import { i18n } from '@/i18n.js';
-import { isHorizontalSwipeSwiping } from '@/utility/touch.js';
+import { onMounted, onUnmounted, ref, useTemplateRef } from "vue";
+import { getScrollContainer } from "@@/js/scroll.js";
+import { i18n } from "@/i18n.js";
+import { isHorizontalSwipeSwiping } from "@/utility/touch.js";
 
 const SCROLL_STOP = 10;
 const MAX_PULL_DISTANCE = Infinity;
@@ -42,17 +52,20 @@ const pullDistance = ref(0);
 
 let startScreenY: number | null = null;
 
-const rootEl = useTemplateRef('rootEl');
+const rootEl = useTemplateRef("rootEl");
 let scrollEl: HTMLElement | null = null;
 
-const props = withDefaults(defineProps<{
-	refresher: () => Promise<void>;
-}>(), {
-	refresher: () => Promise.resolve(),
-});
+const props = withDefaults(
+	defineProps<{
+		refresher: () => Promise<void>;
+	}>(),
+	{
+		refresher: () => Promise.resolve(),
+	},
+);
 
 const emit = defineEmits<{
-	(ev: 'refresh'): void;
+	(ev: "refresh"): void;
 }>();
 
 function getScreenY(event: TouchEvent | MouseEvent | PointerEvent): number {
@@ -66,14 +79,14 @@ function getScreenY(event: TouchEvent | MouseEvent | PointerEvent): number {
 // When at the top of the page, disable vertical overscroll so passive touch listeners can take over.
 function lockDownScroll() {
 	if (scrollEl == null) return;
-	scrollEl.style.touchAction = 'pan-x pan-down pinch-zoom';
-	scrollEl.style.overscrollBehavior = 'none';
+	scrollEl.style.touchAction = "pan-x pan-down pinch-zoom";
+	scrollEl.style.overscrollBehavior = "none";
 }
 
 function unlockDownScroll() {
 	if (scrollEl == null) return;
-	scrollEl.style.touchAction = 'auto';
-	scrollEl.style.overscrollBehavior = 'contain';
+	scrollEl.style.touchAction = "auto";
+	scrollEl.style.overscrollBehavior = "contain";
 }
 
 function moveStartByMouse(event: MouseEvent) {
@@ -94,11 +107,15 @@ function moveStartByMouse(event: MouseEvent) {
 	startScreenY = getScreenY(event);
 	pullDistance.value = 0;
 
-	window.addEventListener('mousemove', moving, { passive: true });
-	window.addEventListener('mouseup', () => {
-		window.removeEventListener('mousemove', moving);
-		onPullRelease();
-	}, { passive: true, once: true });
+	window.addEventListener("mousemove", moving, { passive: true });
+	window.addEventListener(
+		"mouseup",
+		() => {
+			window.removeEventListener("mousemove", moving);
+			onPullRelease();
+		},
+		{ passive: true, once: true },
+	);
 }
 
 function moveStartByTouch(event: TouchEvent) {
@@ -116,15 +133,19 @@ function moveStartByTouch(event: TouchEvent) {
 	startScreenY = getScreenY(event);
 	pullDistance.value = 0;
 
-	window.addEventListener('touchmove', moving, { passive: true });
-	window.addEventListener('touchend', () => {
-		window.removeEventListener('touchmove', moving);
-		onPullRelease();
-	}, { passive: true, once: true });
+	window.addEventListener("touchmove", moving, { passive: true });
+	window.addEventListener(
+		"touchend",
+		() => {
+			window.removeEventListener("touchmove", moving);
+			onPullRelease();
+		},
+		{ passive: true, once: true },
+	);
 }
 
 function moveBySystem(to: number): Promise<void> {
-	return new Promise(r => {
+	return new Promise((r) => {
 		const startHeight = pullDistance.value;
 		const overHeight = pullDistance.value - to;
 		if (overHeight < 1) {
@@ -140,7 +161,8 @@ function moveBySystem(to: number): Promise<void> {
 				r();
 				return;
 			}
-			const nextHeight = startHeight - (overHeight / RELEASE_TRANSITION_DURATION) * time;
+			const nextHeight =
+				startHeight - (overHeight / RELEASE_TRANSITION_DURATION) * time;
 			if (pullDistance.value < nextHeight) return;
 			pullDistance.value = nextHeight;
 		}, 1);
@@ -165,13 +187,13 @@ function onPullRelease() {
 		isPulledEnough.value = false;
 		isRefreshing.value = true;
 		fixOverContent().then(() => {
-			emit('refresh');
+			emit("refresh");
 			props.refresher().then(() => {
 				refreshFinished();
 			});
 		});
 	} else {
-		closeContent().then(() => isPulling.value = false);
+		closeContent().then(() => (isPulling.value = false));
 	}
 }
 
@@ -185,7 +207,10 @@ function toggleScrollLockOnTouchEnd() {
 }
 
 function moving(event: MouseEvent | TouchEvent) {
-	if ((scrollEl?.scrollTop ?? 0) > SCROLL_STOP + pullDistance.value || isHorizontalSwipeSwiping.value) {
+	if (
+		(scrollEl?.scrollTop ?? 0) > SCROLL_STOP + pullDistance.value ||
+		isHorizontalSwipeSwiping.value
+	) {
 		pullDistance.value = 0;
 		isPulledEnough.value = false;
 		onPullRelease();
@@ -219,16 +244,25 @@ onMounted(() => {
 	if (rootEl.value == null) return;
 	scrollEl = getScrollContainer(rootEl.value);
 	lockDownScroll();
-	rootEl.value.addEventListener('mousedown', moveStartByMouse, { passive: false }); // preventDefaultするため
-	rootEl.value.addEventListener('touchstart', moveStartByTouch, { passive: true });
-	rootEl.value.addEventListener('touchend', toggleScrollLockOnTouchEnd, { passive: true });
+	rootEl.value.addEventListener("mousedown", moveStartByMouse, {
+		passive: false,
+	}); // preventDefaultするため
+	rootEl.value.addEventListener("touchstart", moveStartByTouch, {
+		passive: true,
+	});
+	rootEl.value.addEventListener("touchend", toggleScrollLockOnTouchEnd, {
+		passive: true,
+	});
 });
 
 onUnmounted(() => {
 	unlockDownScroll();
-	if (rootEl.value) rootEl.value.removeEventListener('mousedown', moveStartByMouse);
-	if (rootEl.value) rootEl.value.removeEventListener('touchstart', moveStartByTouch);
-	if (rootEl.value) rootEl.value.removeEventListener('touchend', toggleScrollLockOnTouchEnd);
+	if (rootEl.value)
+		rootEl.value.removeEventListener("mousedown", moveStartByMouse);
+	if (rootEl.value)
+		rootEl.value.removeEventListener("touchstart", moveStartByTouch);
+	if (rootEl.value)
+		rootEl.value.removeEventListener("touchend", toggleScrollLockOnTouchEnd);
 });
 </script>
 
@@ -245,7 +279,12 @@ onUnmounted(() => {
 	min-height: var(--frame-min-height, 0px);
 
 	mask-image: linear-gradient(90deg, #000 0%, #000 80%, transparent);
-	-webkit-mask-image: -webkit-linear-gradient(90deg, #000 0%, #000 80%, transparent);
+	-webkit-mask-image: -webkit-linear-gradient(
+		90deg,
+		#000 0%,
+		#000 80%,
+		transparent
+	);
 
 	pointer-events: none;
 }
@@ -259,12 +298,13 @@ onUnmounted(() => {
 	flex-direction: column;
 	align-items: center;
 
-	> .icon, > .loader {
+	> .icon,
+	> .loader {
 		margin: 6px 0;
 	}
 
 	> .icon {
-		transition: transform .25s;
+		transition: transform 0.25s;
 
 		&.refresh {
 			transform: rotate(180deg);

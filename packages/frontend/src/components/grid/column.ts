@@ -3,19 +3,37 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { calcCellWidth } from '@/components/grid/grid-utils.js';
-import type { GridCellValidator } from '@/components/grid/cell-validators.js';
-import type { Size, SizeStyle } from '@/components/grid/grid.js';
-import type { CellValue, GridCell } from '@/components/grid/cell.js';
-import type { GridRow } from '@/components/grid/row.js';
-import type { MenuItem } from '@/types/menu.js';
-import type { GridContext } from '@/components/grid/grid-event.js';
+import { calcCellWidth } from "@/components/grid/grid-utils.js";
+import type { GridCellValidator } from "@/components/grid/cell-validators.js";
+import type { Size, SizeStyle } from "@/components/grid/grid.js";
+import type { CellValue, GridCell } from "@/components/grid/cell.js";
+import type { GridRow } from "@/components/grid/row.js";
+import type { MenuItem } from "@/types/menu.js";
+import type { GridContext } from "@/components/grid/grid-event.js";
 
-export type ColumnType = 'text' | 'number' | 'date' | 'boolean' | 'image' | 'hidden';
+export type ColumnType =
+	| "text"
+	| "number"
+	| "date"
+	| "boolean"
+	| "image"
+	| "hidden";
 
-export type CustomValueEditor = (row: GridRow, col: GridColumn, value: CellValue, cellElement: HTMLElement) => Promise<CellValue>;
-export type CellValueTransformer = (row: GridRow, col: GridColumn, value: CellValue) => CellValue;
-export type GridColumnContextMenuFactory = (col: GridColumn, context: GridContext) => MenuItem[];
+export type CustomValueEditor = (
+	row: GridRow,
+	col: GridColumn,
+	value: CellValue,
+	cellElement: HTMLElement,
+) => Promise<CellValue>;
+export type CellValueTransformer = (
+	row: GridRow,
+	col: GridColumn,
+	value: CellValue,
+) => CellValue;
+export type GridColumnContextMenuFactory = (
+	col: GridColumn,
+	context: GridContext,
+) => MenuItem[];
 
 export type GridColumnSetting = {
 	bindTo: string;
@@ -32,7 +50,7 @@ export type GridColumnSetting = {
 		copy?: (value: CellValue) => string;
 		paste?: (text: string) => CellValue;
 		delete?: (cell: GridCell, context: GridContext) => void;
-	}
+	};
 };
 
 export type GridColumn = {
@@ -42,7 +60,10 @@ export type GridColumn = {
 	contentSize: Size;
 };
 
-export function createColumn(setting: GridColumnSetting, index: number): GridColumn {
+export function createColumn(
+	setting: GridColumnSetting,
+	index: number,
+): GridColumn {
 	return {
 		index,
 		setting,
@@ -50,4 +71,3 @@ export function createColumn(setting: GridColumnSetting, index: number): GridCol
 		contentSize: { width: 0, height: 0 },
 	};
 }
-

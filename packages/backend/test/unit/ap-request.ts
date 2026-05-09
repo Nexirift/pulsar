@@ -3,62 +3,85 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as assert from 'assert';
-import httpSignature from '@peertube/http-signature';
+import * as assert from "assert";
+import httpSignature from "@peertube/http-signature";
 
-import { genRsaKeyPair } from '@/misc/gen-key-pair.js';
-import { ApRequestCreator } from '@/core/activitypub/ApRequestService.js';
-import { IObject } from '@/core/activitypub/type.js';
+import { genRsaKeyPair } from "@/misc/gen-key-pair.js";
+import { ApRequestCreator } from "@/core/activitypub/ApRequestService.js";
+import { IObject } from "@/core/activitypub/type.js";
 
-export const buildParsedSignature = (signingString: string, signature: string, algorithm: string) => {
+export const buildParsedSignature = (
+	signingString: string,
+	signature: string,
+	algorithm: string,
+) => {
 	return {
-		scheme: 'Signature',
+		scheme: "Signature",
 		params: {
-			keyId: 'KeyID',	// dummy, not used for verify
+			keyId: "KeyID", // dummy, not used for verify
 			algorithm: algorithm,
-			headers: ['(request-target)', 'date', 'host', 'digest'],	// dummy, not used for verify
+			headers: ["(request-target)", "date", "host", "digest"], // dummy, not used for verify
 			signature: signature,
 		},
 		signingString: signingString,
 		algorithm: algorithm.toUpperCase(),
-		keyId: 'KeyID',	// dummy, not used for verify
+		keyId: "KeyID", // dummy, not used for verify
 	};
 };
 
 function cartesianProduct<T, U>(a: T[], b: U[]): [T, U][] {
-	return a.flatMap(a => b.map(b => [a, b] as [T, U]));
+	return a.flatMap((a) => b.map((b) => [a, b] as [T, U]));
 }
 
-describe('ap-request', () => {
-	test('createSignedPost with verify', async () => {
+describe("ap-request", () => {
+	test("createSignedPost with verify", async () => {
 		const keypair = await genRsaKeyPair();
-		const key = { keyId: 'x', 'privateKeyPem': keypair.privateKey };
-		const url = 'https://example.com/inbox';
+		const key = { keyId: "x", privateKeyPem: keypair.privateKey };
+		const url = "https://example.com/inbox";
 		const activity = { a: 1 };
 		const body = JSON.stringify(activity);
 		const headers = {
-			'User-Agent': 'UA',
+			"User-Agent": "UA",
 		};
 
-		const req = ApRequestCreator.createSignedPost({ key, url, body, additionalHeaders: headers, now: Date.now() });
+		const req = ApRequestCreator.createSignedPost({
+			key,
+			url,
+			body,
+			additionalHeaders: headers,
+			now: Date.now(),
+		});
 
-		const parsed = buildParsedSignature(req.signingString, req.signature, 'rsa-sha256');
+		const parsed = buildParsedSignature(
+			req.signingString,
+			req.signature,
+			"rsa-sha256",
+		);
 
 		const result = httpSignature.verifySignature(parsed, keypair.publicKey);
 		assert.deepStrictEqual(result, true);
 	});
 
-	test('createSignedGet with verify', async () => {
+	test("createSignedGet with verify", async () => {
 		const keypair = await genRsaKeyPair();
-		const key = { keyId: 'x', 'privateKeyPem': keypair.privateKey };
-		const url = 'https://example.com/outbox';
+		const key = { keyId: "x", privateKeyPem: keypair.privateKey };
+		const url = "https://example.com/outbox";
 		const headers = {
-			'User-Agent': 'UA',
+			"User-Agent": "UA",
 		};
 
-		const req = ApRequestCreator.createSignedGet({ key, url, additionalHeaders: headers, now: Date.now() });
+		const req = ApRequestCreator.createSignedGet({
+			key,
+			url,
+			additionalHeaders: headers,
+			now: Date.now(),
+		});
 
-		const parsed = buildParsedSignature(req.signingString, req.signature, 'rsa-sha256');
+		const parsed = buildParsedSignature(
+			req.signingString,
+			req.signature,
+			"rsa-sha256",
+		);
 
 		const result = httpSignature.verifySignature(parsed, keypair.publicKey);
 		assert.deepStrictEqual(result, true);

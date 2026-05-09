@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { action } from '@storybook/addon-actions';
-import type { StoryObj } from '@storybook/vue3';
-import MkDrive_file from './MkDrive.file.vue';
-import { file } from '../../.storybook/fakes.js';
+import { action } from "@storybook/addon-actions";
+import type { StoryObj } from "@storybook/vue3";
+import MkDrive_file from "./MkDrive.file.vue";
+import { file } from "../../.storybook/fakes.js";
 export const Default = {
 	render(args) {
 		return {
@@ -26,9 +26,9 @@ export const Default = {
 				},
 				events() {
 					return {
-						chosen: action('chosen'),
-						dragstart: action('dragstart'),
-						dragend: action('dragend'),
+						chosen: action("chosen"),
+						dragstart: action("dragstart"),
+						dragend: action("dragend"),
 					};
 				},
 			},
@@ -43,6 +43,6 @@ export const Default = {
 			// NOTE: ロードが終わるまで待つ
 			delay: 3000,
 		},
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkDrive_file>;

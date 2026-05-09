@@ -4,7 +4,7 @@
  */
 
 export class AddNoteMandatoryCW1751077195277 {
-	name = 'AddNoteMandatoryCW1751077195277'
+	name = "AddNoteMandatoryCW1751077195277";
 
 	async up(queryRunner) {
 		await queryRunner.query(`ALTER TABLE "note" ADD "mandatoryCW" text`);

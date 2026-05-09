@@ -4,24 +4,30 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<span :class="[$style.root, { [$style.static]: static }]">
-	<span :class="$style.dot">.</span><span :class="$style.dot">.</span><span :class="$style.dot">.</span>
-</span>
+	<span :class="[$style.root, { [$style.static]: static }]">
+		<span :class="$style.dot">.</span><span :class="$style.dot">.</span
+		><span :class="$style.dot">.</span>
+	</span>
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
+import {} from "vue";
 
-const props = withDefaults(defineProps<{
-	static?: boolean;
-}>(), {
-	static: false,
-});
+const props = withDefaults(
+	defineProps<{
+		static?: boolean;
+	}>(),
+	{
+		static: false,
+	},
+);
 </script>
 
 <style lang="scss" module>
 @keyframes ellipsis {
-	0%, 80%, 100% {
+	0%,
+	80%,
+	100% {
 		opacity: 1;
 	}
 	40% {

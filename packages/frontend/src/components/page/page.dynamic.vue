@@ -5,27 +5,33 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <!-- 動的ページのブロックの代替。利用できないということを表示する -->
 <template>
-<div :class="$style.root">
-	<div :class="$style.heading"><i class="ti ti-dice-5"></i> {{ i18n.ts._pages.blocks.dynamic }}</div>
-	<I18n :src="i18n.ts._pages.blocks.dynamicDescription" tag="div" :class="$style.text">
-		<template #play>
-			<MkA to="/play" class="_link">Play</MkA>
-		</template>
-	</I18n>
-</div>
+	<div :class="$style.root">
+		<div :class="$style.heading">
+			<i class="ti ti-dice-5"></i> {{ i18n.ts._pages.blocks.dynamic }}
+		</div>
+		<I18n
+			:src="i18n.ts._pages.blocks.dynamicDescription"
+			tag="div"
+			:class="$style.text"
+		>
+			<template #play>
+				<MkA to="/play" class="_link">Play</MkA>
+			</template>
+		</I18n>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import * as Misskey from 'misskey-js';
-import { i18n } from '@/i18n.js';
+import * as Misskey from "misskey-js";
+import { i18n } from "@/i18n.js";
 
 const props = defineProps<{
-	block: Misskey.entities.PageBlock,
-	page: Misskey.entities.Page,
+	block: Misskey.entities.PageBlock;
+	page: Misskey.entities.Page;
 }>();
 
 defineEmits<{
-	(ev: 'expandMute', note: Misskey.entities.Note): void;
+	(ev: "expandMute", note: Misskey.entities.Note): void;
 }>();
 </script>
 

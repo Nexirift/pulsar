@@ -4,69 +4,91 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkWindow
-	ref="windowEl"
-	:initialWidth="500"
-	:initialHeight="500"
-	:canResize="true"
-	:closeButton="true"
-	:buttonsLeft="buttonsLeft"
-	:buttonsRight="buttonsRight"
-	:contextmenu="contextmenu"
-	@closed="emit('closed')"
->
-	<template #header>
-		<template v-if="pageMetadata">
-			<i v-if="pageMetadata.icon" :class="pageMetadata.icon" style="margin-right: 0.5em;"></i>
-			<span><MkUserName v-if="pageMetadata.userName?.name" :user="pageMetadata.userName" />{{ pageMetadata.title }}</span>
+	<MkWindow
+		ref="windowEl"
+		:initialWidth="500"
+		:initialHeight="500"
+		:canResize="true"
+		:closeButton="true"
+		:buttonsLeft="buttonsLeft"
+		:buttonsRight="buttonsRight"
+		:contextmenu="contextmenu"
+		@closed="emit('closed')"
+	>
+		<template #header>
+			<template v-if="pageMetadata">
+				<i
+					v-if="pageMetadata.icon"
+					:class="pageMetadata.icon"
+					style="margin-right: 0.5em"
+				></i>
+				<span
+					><MkUserName
+						v-if="pageMetadata.userName?.name"
+						:user="pageMetadata.userName"
+					/>{{ pageMetadata.title }}</span
+				>
+			</template>
 		</template>
-	</template>
 
-	<div :class="$style.root" class="_forceShrinkSpacer">
-		<StackingRouterView v-if="prefer.s['experimental.stackingRouterView']" :key="reloadCount" :router="windowRouter"/>
-		<RouterView v-else :key="reloadCount" :router="windowRouter"/>
-	</div>
-</MkWindow>
+		<div :class="$style.root" class="_forceShrinkSpacer">
+			<StackingRouterView
+				v-if="prefer.s['experimental.stackingRouterView']"
+				:key="reloadCount"
+				:router="windowRouter"
+			/>
+			<RouterView v-else :key="reloadCount" :router="windowRouter" />
+		</div>
+	</MkWindow>
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, onUnmounted, provide, ref, useTemplateRef } from 'vue';
-import { url } from '@@/js/config.js';
-import type { PageMetadata } from '@/page.js';
-import MkUserName from './global/MkUserName.vue';
-import RouterView from '@/components/global/RouterView.vue';
-import MkWindow from '@/components/MkWindow.vue';
-import { popout as _popout } from '@/utility/popout.js';
-import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
-import { i18n } from '@/i18n.js';
-import { provideMetadataReceiver, provideReactiveMetadata } from '@/page.js';
-import { openingWindowsCount } from '@/os.js';
-import { claimAchievement } from '@/utility/achievements.js';
-import { createRouter, mainRouter } from '@/router.js';
-import { DI } from '@/di.js';
-import { prefer } from '@/preferences.js';
+import {
+	computed,
+	onMounted,
+	onUnmounted,
+	provide,
+	ref,
+	useTemplateRef,
+} from "vue";
+import { url } from "@@/js/config.js";
+import type { PageMetadata } from "@/page.js";
+import MkUserName from "./global/MkUserName.vue";
+import RouterView from "@/components/global/RouterView.vue";
+import MkWindow from "@/components/MkWindow.vue";
+import { popout as _popout } from "@/utility/popout.js";
+import { copyToClipboard } from "@/utility/copy-to-clipboard.js";
+import { i18n } from "@/i18n.js";
+import { provideMetadataReceiver, provideReactiveMetadata } from "@/page.js";
+import { openingWindowsCount } from "@/os.js";
+import { claimAchievement } from "@/utility/achievements.js";
+import { createRouter, mainRouter } from "@/router.js";
+import { DI } from "@/di.js";
+import { prefer } from "@/preferences.js";
 
 const props = defineProps<{
 	initialPath: string;
 }>();
 
 const emit = defineEmits<{
-	(ev: 'closed'): void;
+	(ev: "closed"): void;
 }>();
 
 const windowRouter = createRouter(props.initialPath);
 
 const pageMetadata = ref<null | PageMetadata>(null);
-const windowEl = useTemplateRef('windowEl');
-const history = ref<{ path: string; }[]>([{
-	path: windowRouter.getCurrentFullPath(),
-}]);
+const windowEl = useTemplateRef("windowEl");
+const history = ref<{ path: string }[]>([
+	{
+		path: windowRouter.getCurrentFullPath(),
+	},
+]);
 const buttonsLeft = computed(() => {
 	const buttons: Record<string, unknown>[] = [];
 
 	if (history.value.length > 1) {
 		buttons.push({
-			icon: 'ti ti-arrow-left',
+			icon: "ti ti-arrow-left",
 			onClick: back,
 		});
 	}
@@ -74,39 +96,42 @@ const buttonsLeft = computed(() => {
 	return buttons;
 });
 const buttonsRight = computed(() => {
-	const buttons = [{
-		icon: 'ti ti-reload',
-		title: i18n.ts.reload,
-		onClick: reload,
-	}, {
-		icon: 'ti ti-player-eject',
-		title: i18n.ts.showInPage,
-		onClick: expand,
-	}];
+	const buttons = [
+		{
+			icon: "ti ti-reload",
+			title: i18n.ts.reload,
+			onClick: reload,
+		},
+		{
+			icon: "ti ti-player-eject",
+			title: i18n.ts.showInPage,
+			onClick: expand,
+		},
+	];
 
 	return buttons;
 });
 const reloadCount = ref(0);
 
 function getSearchMarker(path: string) {
-	const hash = path.split('#')[1];
+	const hash = path.split("#")[1];
 	if (hash == null) return null;
 	return hash;
 }
 
 const searchMarkerId = ref<string | null>(getSearchMarker(props.initialPath));
 
-windowRouter.addListener('push', ctx => {
+windowRouter.addListener("push", (ctx) => {
 	history.value.push({ path: ctx.fullPath });
 });
 
-windowRouter.addListener('replace', ctx => {
+windowRouter.addListener("replace", (ctx) => {
 	history.value.pop();
 	history.value.push({ path: ctx.fullPath });
 });
 
-windowRouter.addListener('change', ctx => {
-	if (_DEV_) console.debug('windowRouter: change', ctx.fullPath);
+windowRouter.addListener("change", (ctx) => {
+	if (_DEV_) console.debug("windowRouter: change", ctx.fullPath);
 	searchMarkerId.value = getSearchMarker(ctx.fullPath);
 });
 
@@ -119,32 +144,41 @@ provideMetadataReceiver((metadataGetter) => {
 	pageMetadata.value = info;
 });
 provideReactiveMetadata(pageMetadata);
-provide('shouldOmitHeaderTitle', true);
-provide('shouldHeaderThin', true);
-provide('shouldBackButton', false);
+provide("shouldOmitHeaderTitle", true);
+provide("shouldHeaderThin", true);
+provide("shouldBackButton", false);
 
-const contextmenu = computed(() => ([{
-	icon: 'ti ti-player-eject',
-	text: i18n.ts.showInPage,
-	action: expand,
-}, {
-	icon: 'ti ti-window-maximize',
-	text: i18n.ts.popout,
-	action: popout,
-}, {
-	icon: 'ti ti-external-link',
-	text: i18n.ts.openInNewTab,
-	action: () => {
-		window.open(url + windowRouter.getCurrentFullPath(), '_blank', 'noopener');
-		windowEl.value?.close();
+const contextmenu = computed(() => [
+	{
+		icon: "ti ti-player-eject",
+		text: i18n.ts.showInPage,
+		action: expand,
 	},
-}, {
-	icon: 'ti ti-link',
-	text: i18n.ts.copyLink,
-	action: () => {
-		copyToClipboard(url + windowRouter.getCurrentFullPath());
+	{
+		icon: "ti ti-window-maximize",
+		text: i18n.ts.popout,
+		action: popout,
 	},
-}]));
+	{
+		icon: "ti ti-external-link",
+		text: i18n.ts.openInNewTab,
+		action: () => {
+			window.open(
+				url + windowRouter.getCurrentFullPath(),
+				"_blank",
+				"noopener",
+			);
+			windowEl.value?.close();
+		},
+	},
+	{
+		icon: "ti ti-link",
+		text: i18n.ts.copyLink,
+		action: () => {
+			copyToClipboard(url + windowRouter.getCurrentFullPath());
+		},
+	},
+]);
 
 function back() {
 	history.value.pop();
@@ -160,7 +194,7 @@ function close() {
 }
 
 function expand() {
-	mainRouter.push(windowRouter.getCurrentFullPath(), 'forcePage');
+	mainRouter.push(windowRouter.getCurrentFullPath(), "forcePage");
 	windowEl.value?.close();
 }
 
@@ -172,7 +206,7 @@ function popout() {
 onMounted(() => {
 	openingWindowsCount.value++;
 	if (openingWindowsCount.value >= 3) {
-		claimAchievement('open3windows');
+		claimAchievement("open3windows");
 	}
 });
 

@@ -3,30 +3,30 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { MockResolver } from './mock-resolver.js';
-import type { Config } from '@/config.js';
-import type { MiMeta } from '@/models/Meta.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { MockResolver } from "./mock-resolver.js";
+import type { Config } from "@/config.js";
+import type { MiMeta } from "@/models/Meta.js";
 import type {
 	UsersRepository,
 	NotesRepository,
 	PollsRepository,
 	NoteReactionsRepository,
 	FollowRequestsRepository,
-} from '@/models/_.js';
-import { ApResolverService } from '@/core/activitypub/ApResolverService.js';
-import { DI } from '@/di-symbols.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import { SystemAccountService } from '@/core/SystemAccountService.js';
-import { ApRequestService } from '@/core/activitypub/ApRequestService.js';
-import { HttpRequestService } from '@/core/HttpRequestService.js';
-import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
-import { ApDbResolverService } from '@/core/activitypub/ApDbResolverService.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import { ApLogService } from '@/core/ApLogService.js';
-import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
-import { CacheService } from '@/core/CacheService.js';
-import { bindThis } from '@/decorators.js';
+} from "@/models/_.js";
+import { ApResolverService } from "@/core/activitypub/ApResolverService.js";
+import { DI } from "@/di-symbols.js";
+import { UtilityService } from "@/core/UtilityService.js";
+import { SystemAccountService } from "@/core/SystemAccountService.js";
+import { ApRequestService } from "@/core/activitypub/ApRequestService.js";
+import { HttpRequestService } from "@/core/HttpRequestService.js";
+import { ApRendererService } from "@/core/activitypub/ApRendererService.js";
+import { ApDbResolverService } from "@/core/activitypub/ApDbResolverService.js";
+import { LoggerService } from "@/core/LoggerService.js";
+import { ApLogService } from "@/core/ApLogService.js";
+import { ApUtilityService } from "@/core/activitypub/ApUtilityService.js";
+import { CacheService } from "@/core/CacheService.js";
+import { bindThis } from "@/decorators.js";
 
 /**
  * Mock implementation of ApResolverService to automatically provide a MockResolver to the entire test environment.

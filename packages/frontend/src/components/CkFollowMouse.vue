@@ -4,15 +4,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<span ref="container" :class="$style.root">
-	<span ref="el" :class="$style.inner" style="position: absolute">
-		<slot></slot>
+	<span ref="container" :class="$style.root">
+		<span ref="el" :class="$style.inner" style="position: absolute">
+			<slot></slot>
+		</span>
 	</span>
-</span>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, shallowRef } from 'vue';
+import { onMounted, onUnmounted, shallowRef } from "vue";
 const el = shallowRef<HTMLElement>();
 const container = shallowRef<HTMLElement>();
 const props = defineProps({
@@ -26,7 +26,7 @@ const props = defineProps({
 	},
 	speed: {
 		type: String,
-		default: '0.1s',
+		default: "0.1s",
 	},
 	rotateByVelocity: {
 		type: Boolean,
@@ -67,11 +67,11 @@ const updatePosition = (mouseEvent: MouseEvent) => {
 };
 
 onMounted(() => {
-	window.addEventListener('mousemove', updatePosition);
+	window.addEventListener("mousemove", updatePosition);
 });
 
 onUnmounted(() => {
-	window.removeEventListener('mousemove', updatePosition);
+	window.removeEventListener("mousemove", updatePosition);
 });
 </script>
 

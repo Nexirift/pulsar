@@ -22,10 +22,7 @@
 		"../src/**/*.ts",
 		"../src/**/*.vue",
 		"../@types/**/*.ts",
-		"./**/*.ts",
+		"./**/*.ts"
 	],
-	"exclude": [
-		"node_modules",
-		"../.storybook/**/*"
-	]
+	"exclude": ["node_modules", "../.storybook/**/*"]
 }

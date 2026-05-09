@@ -4,34 +4,41 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader :actions="headerActions" :tabs="headerTabs">
-	<div class="_spacer" style="--MI_SPACER-w: 900px;">
-		<div class="_gaps_m">
-			<MkButton primary @click="onCreateWebhookClicked">
-				<i class="ti ti-plus"></i> {{ i18n.ts._webhookSettings.createWebhook }}
-			</MkButton>
+	<PageWithHeader :actions="headerActions" :tabs="headerTabs">
+		<div class="_spacer" style="--MI_SPACER-w: 900px">
+			<div class="_gaps_m">
+				<MkButton primary @click="onCreateWebhookClicked">
+					<i class="ti ti-plus"></i>
+					{{ i18n.ts._webhookSettings.createWebhook }}
+				</MkButton>
 
-			<FormSection>
-				<div class="_gaps">
-					<XItem v-for="item in webhooks" :key="item.id" :entity="item" @edit="onEditButtonClicked" @delete="onDeleteButtonClicked"/>
-				</div>
-			</FormSection>
+				<FormSection>
+					<div class="_gaps">
+						<XItem
+							v-for="item in webhooks"
+							:key="item.id"
+							:entity="item"
+							@edit="onEditButtonClicked"
+							@delete="onDeleteButtonClicked"
+						/>
+					</div>
+				</FormSection>
+			</div>
 		</div>
-	</div>
-</PageWithHeader>
+	</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue';
-import { entities } from 'misskey-js';
-import XItem from './system-webhook.item.vue';
-import FormSection from '@/components/form/section.vue';
-import { definePage } from '@/page.js';
-import { i18n } from '@/i18n.js';
-import MkButton from '@/components/MkButton.vue';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { showSystemWebhookEditorDialog } from '@/components/MkSystemWebhookEditor.impl.js';
-import * as os from '@/os.js';
+import { computed, onMounted, ref } from "vue";
+import { entities } from "misskey-js";
+import XItem from "./system-webhook.item.vue";
+import FormSection from "@/components/form/section.vue";
+import { definePage } from "@/page.js";
+import { i18n } from "@/i18n.js";
+import MkButton from "@/components/MkButton.vue";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { showSystemWebhookEditorDialog } from "@/components/MkSystemWebhookEditor.impl.js";
+import * as os from "@/os.js";
 
 const webhooks = ref<entities.SystemWebhook[]>([]);
 
@@ -40,7 +47,7 @@ const headerTabs = computed(() => []);
 
 async function onCreateWebhookClicked() {
 	await showSystemWebhookEditorDialog({
-		mode: 'create',
+		mode: "create",
 	});
 
 	await fetchWebhooks();
@@ -48,7 +55,7 @@ async function onCreateWebhookClicked() {
 
 async function onEditButtonClicked(webhook: entities.SystemWebhook) {
 	await showSystemWebhookEditorDialog({
-		mode: 'edit',
+		mode: "edit",
 		id: webhook.id,
 	});
 
@@ -57,11 +64,11 @@ async function onEditButtonClicked(webhook: entities.SystemWebhook) {
 
 async function onDeleteButtonClicked(webhook: entities.SystemWebhook) {
 	const result = await os.confirm({
-		type: 'warning',
+		type: "warning",
 		title: i18n.ts._webhookSettings.deleteConfirm,
 	});
 	if (!result.canceled) {
-		await misskeyApi('admin/system-webhook/delete', {
+		await misskeyApi("admin/system-webhook/delete", {
 			id: webhook.id,
 		});
 		await fetchWebhooks();
@@ -69,7 +76,7 @@ async function onDeleteButtonClicked(webhook: entities.SystemWebhook) {
 }
 
 async function fetchWebhooks() {
-	const result = await misskeyApi('admin/system-webhook/list', {});
+	const result = await misskeyApi("admin/system-webhook/list", {});
 	webhooks.value = result.sort((a, b) => a.id.localeCompare(b.id));
 }
 
@@ -78,11 +85,9 @@ onMounted(async () => {
 });
 
 definePage(() => ({
-	title: 'SystemWebhook',
-	icon: 'ti ti-webhook',
+	title: "SystemWebhook",
+	icon: "ti ti-webhook",
 }));
 </script>
 
-<style module lang="scss">
-
-</style>
+<style module lang="scss"></style>

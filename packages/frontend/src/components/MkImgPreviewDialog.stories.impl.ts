@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { StoryObj } from '@storybook/vue3';
-import { file } from '../../.storybook/fakes.js';
-import MkImgPreviewDialog from './MkImgPreviewDialog.vue';
+import { StoryObj } from "@storybook/vue3";
+import { file } from "../../.storybook/fakes.js";
+import MkImgPreviewDialog from "./MkImgPreviewDialog.vue";
 export const Default = {
 	render(args) {
 		return {
@@ -35,6 +35,6 @@ export const Default = {
 			// NOTE: ロードが終わるまで待つ
 			delay: 3000,
 		},
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkImgPreviewDialog>;

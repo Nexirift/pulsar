@@ -4,11 +4,11 @@
  */
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import type { StoryObj } from '@storybook/vue3';
-import { HttpResponse, http } from 'msw';
-import { userDetailed, inviteCode } from '../../.storybook/fakes.js';
-import { commonHandlers } from '../../.storybook/mocks.js';
-import MkInviteCode from './MkInviteCode.vue';
+import type { StoryObj } from "@storybook/vue3";
+import { HttpResponse, http } from "msw";
+import { userDetailed, inviteCode } from "../../.storybook/fakes.js";
+import { commonHandlers } from "../../.storybook/mocks.js";
+import MkInviteCode from "./MkInviteCode.vue";
 
 export const Default = {
 	render(args) {
@@ -35,19 +35,21 @@ export const Default = {
 		invite: inviteCode() as any,
 	},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 		msw: {
 			handlers: [
 				...commonHandlers,
-				http.post('/api/users/show', ({ params }) => {
+				http.post("/api/users/show", ({ params }) => {
 					return HttpResponse.json(userDetailed(params.userId as string));
 				}),
 			],
 		},
 	},
-	decorators: [() => ({
-		template: '<div style="width:100cqmin"><story/></div>',
-	})],
+	decorators: [
+		() => ({
+			template: '<div style="width:100cqmin"><story/></div>',
+		}),
+	],
 } satisfies StoryObj<typeof MkInviteCode>;
 
 export const Used = {

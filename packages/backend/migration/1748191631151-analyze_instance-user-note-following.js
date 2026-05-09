@@ -12,7 +12,7 @@
  * @implements {MigrationInterface}
  */
 export class AnalyzeInstanceUserNoteFollowing1748191631151 {
-	name = 'AnalyzeInstanceUserNoteFollowing1748191631151'
+	name = "AnalyzeInstanceUserNoteFollowing1748191631151";
 
 	async up(queryRunner) {
 		// Refresh statistics for tables impacted by new indexes.
@@ -20,6 +20,5 @@ export class AnalyzeInstanceUserNoteFollowing1748191631151 {
 		await queryRunner.query(`ANALYZE "instance", "user", "following", "note"`);
 	}
 
-	async down(queryRunner) {
-	}
+	async down(queryRunner) {}
 }

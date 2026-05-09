@@ -3,20 +3,20 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type * as Redis from 'ioredis';
-import { bindThis } from '@/decorators.js';
-import type { TimeService } from '@/global/TimeService.js';
+import type * as Redis from "ioredis";
+import { bindThis } from "@/decorators.js";
+import type { TimeService } from "@/global/TimeService.js";
 
 export interface RedisCacheServices extends MemoryCacheServices {
-	readonly redisClient: Redis.Redis
+	readonly redisClient: Redis.Redis;
 }
 
 export interface RedisKVCacheOpts<T> {
 	lifetime: number;
 	memoryCacheLifetime: number;
-	fetcher?: RedisKVCache<T>['fetcher'];
-	toRedisConverter?: RedisKVCache<T>['toRedisConverter'];
-	fromRedisConverter?: RedisKVCache<T>['fromRedisConverter'];
+	fetcher?: RedisKVCache<T>["fetcher"];
+	toRedisConverter?: RedisKVCache<T>["toRedisConverter"];
+	fromRedisConverter?: RedisKVCache<T>["fromRedisConverter"];
 }
 
 export class RedisKVCache<T> {
@@ -36,14 +36,26 @@ export class RedisKVCache<T> {
 		this.lifetime = opts.lifetime;
 		// OK: we forward all management calls to the inner cache.
 		// eslint-disable-next-line no-restricted-syntax
-		this.memoryCache = new MemoryKVCache(name + ':mem', services, { lifetime: Math.min(opts.lifetime, opts.memoryCacheLifetime) });
-		this.fetcher = opts.fetcher ?? (() => { throw new Error('fetch not supported - use get/set directly'); });
-		this.toRedisConverter = opts.toRedisConverter ?? ((value) => JSON.stringify(value));
-		this.fromRedisConverter = opts.fromRedisConverter ?? ((value) => JSON.parse(value));
+		this.memoryCache = new MemoryKVCache(name + ":mem", services, {
+			lifetime: Math.min(opts.lifetime, opts.memoryCacheLifetime),
+		});
+		this.fetcher =
+			opts.fetcher ??
+			(() => {
+				throw new Error("fetch not supported - use get/set directly");
+			});
+		this.toRedisConverter =
+			opts.toRedisConverter ?? ((value) => JSON.stringify(value));
+		this.fromRedisConverter =
+			opts.fromRedisConverter ?? ((value) => JSON.parse(value));
 	}
 
 	@bindThis
-	public async set(key: string, value: T, lifetime: number = this.lifetime): Promise<void> {
+	public async set(
+		key: string,
+		value: T,
+		lifetime: number = this.lifetime,
+	): Promise<void> {
 		this.memoryCache.set(key, value);
 		lifetime = Math.max(lifetime, this.lifetime);
 		if (lifetime === Infinity) {
@@ -55,7 +67,8 @@ export class RedisKVCache<T> {
 			await this.redisClient.set(
 				`kvcache:${this.name}:${key}`,
 				this.toRedisConverter(value),
-				'EX', Math.round(lifetime / 1000),
+				"EX",
+				Math.round(lifetime / 1000),
 			);
 		}
 	}
@@ -130,9 +143,9 @@ export class RedisKVCache<T> {
 export interface RedisSingleCacheOpts<T> {
 	lifetime: number;
 	memoryCacheLifetime: number;
-	fetcher?: RedisSingleCache<T>['fetcher'];
-	toRedisConverter?: RedisSingleCache<T>['toRedisConverter'];
-	fromRedisConverter?: RedisSingleCache<T>['fromRedisConverter'];
+	fetcher?: RedisSingleCache<T>["fetcher"];
+	toRedisConverter?: RedisSingleCache<T>["toRedisConverter"];
+	fromRedisConverter?: RedisSingleCache<T>["fromRedisConverter"];
 }
 
 export class RedisSingleCache<T> {
@@ -152,11 +165,19 @@ export class RedisSingleCache<T> {
 		this.lifetime = opts.lifetime;
 		// OK: we forward all management calls to the inner cache.
 		// eslint-disable-next-line no-restricted-syntax
-		this.memoryCache = new MemorySingleCache(name + ':mem', services, { lifetime: Math.min(opts.lifetime, opts.memoryCacheLifetime) });
+		this.memoryCache = new MemorySingleCache(name + ":mem", services, {
+			lifetime: Math.min(opts.lifetime, opts.memoryCacheLifetime),
+		});
 
-		this.fetcher = opts.fetcher ?? (() => { throw new Error('fetch not supported - use get/set directly'); });
-		this.toRedisConverter = opts.toRedisConverter ?? ((value) => JSON.stringify(value));
-		this.fromRedisConverter = opts.fromRedisConverter ?? ((value) => JSON.parse(value));
+		this.fetcher =
+			opts.fetcher ??
+			(() => {
+				throw new Error("fetch not supported - use get/set directly");
+			});
+		this.toRedisConverter =
+			opts.toRedisConverter ?? ((value) => JSON.stringify(value));
+		this.fromRedisConverter =
+			opts.fromRedisConverter ?? ((value) => JSON.parse(value));
 	}
 
 	@bindThis
@@ -172,7 +193,8 @@ export class RedisSingleCache<T> {
 			await this.redisClient.set(
 				`singlecache:${this.name}`,
 				this.toRedisConverter(value),
-				'EX', Math.round(lifetime / 1000),
+				"EX",
+				Math.round(lifetime / 1000),
 			);
 		}
 	}
@@ -256,7 +278,7 @@ export interface MemoryCacheOpts {
 // TODO: メモリ節約のためあまり参照されないキーを定期的に削除できるようにする？
 
 export class MemoryKVCache<T> {
-	private readonly cache = new Map<string, { date: number; value: T; }>();
+	private readonly cache = new Map<string, { date: number; value: T }>();
 	private readonly timeService: TimeService;
 	private readonly lifetime: number;
 
@@ -285,7 +307,7 @@ export class MemoryKVCache<T> {
 	public get(key: string): T | undefined {
 		const cached = this.cache.get(key);
 		if (cached == null) return undefined;
-		if ((this.timeService.now - cached.date) > this.lifetime) {
+		if (this.timeService.now - cached.date > this.lifetime) {
 			this.cache.delete(key);
 			return undefined;
 		}
@@ -295,7 +317,7 @@ export class MemoryKVCache<T> {
 	public has(key: string): boolean {
 		const cached = this.cache.get(key);
 		if (cached == null) return false;
-		if ((this.timeService.now - cached.date) > this.lifetime) {
+		if (this.timeService.now - cached.date > this.lifetime) {
 			this.cache.delete(key);
 			return false;
 		}
@@ -312,7 +334,11 @@ export class MemoryKVCache<T> {
 	 * optional: キャッシュが存在してもvalidatorでfalseを返すとキャッシュ無効扱いにします
 	 */
 	@bindThis
-	public async fetch(key: string, fetcher: () => Promise<T>, validator?: (cachedValue: T) => boolean): Promise<T> {
+	public async fetch(
+		key: string,
+		fetcher: () => Promise<T>,
+		validator?: (cachedValue: T) => boolean,
+	): Promise<T> {
 		const cachedValue = this.get(key);
 		if (cachedValue !== undefined) {
 			if (validator) {
@@ -337,7 +363,11 @@ export class MemoryKVCache<T> {
 	 * optional: キャッシュが存在してもvalidatorでfalseを返すとキャッシュ無効扱いにします
 	 */
 	@bindThis
-	public async fetchMaybe(key: string, fetcher: () => Promise<T | undefined>, validator?: (cachedValue: T) => boolean): Promise<T | undefined> {
+	public async fetchMaybe(
+		key: string,
+		fetcher: () => Promise<T | undefined>,
+		validator?: (cachedValue: T) => boolean,
+	): Promise<T | undefined> {
 		const cachedValue = this.get(key);
 		if (cachedValue !== undefined) {
 			if (validator) {
@@ -455,7 +485,10 @@ export class MemorySingleCache<T> {
 	 * optional: キャッシュが存在してもvalidatorでfalseを返すとキャッシュ無効扱いにします
 	 */
 	@bindThis
-	public async fetch(fetcher: () => Promise<T>, validator?: (cachedValue: T) => boolean): Promise<T> {
+	public async fetch(
+		fetcher: () => Promise<T>,
+		validator?: (cachedValue: T) => boolean,
+	): Promise<T> {
 		const cachedValue = this.get();
 		if (cachedValue !== undefined) {
 			if (validator) {
@@ -480,7 +513,10 @@ export class MemorySingleCache<T> {
 	 * optional: キャッシュが存在してもvalidatorでfalseを返すとキャッシュ無効扱いにします
 	 */
 	@bindThis
-	public async fetchMaybe(fetcher: () => Promise<T | undefined>, validator?: (cachedValue: T) => boolean): Promise<T | undefined> {
+	public async fetchMaybe(
+		fetcher: () => Promise<T | undefined>,
+		validator?: (cachedValue: T) => boolean,
+	): Promise<T | undefined> {
 		const cachedValue = this.get();
 		if (cachedValue !== undefined) {
 			if (validator) {

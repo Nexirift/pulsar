@@ -3,16 +3,20 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { UtilityService } from '@/core/UtilityService.js';
-import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { toArray } from '@/misc/prelude/array.js';
-import { getApId, getNullableApId, getOneApHrefNullable } from '@/core/activitypub/type.js';
-import type { IObject, IObjectWithId } from '@/core/activitypub/type.js';
-import { bindThis } from '@/decorators.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import type Logger from '@/logger.js';
+import { Injectable } from "@nestjs/common";
+import { UtilityService } from "@/core/UtilityService.js";
+import { IdentifiableError } from "@/misc/identifiable-error.js";
+import { toArray } from "@/misc/prelude/array.js";
+import {
+	getApId,
+	getNullableApId,
+	getOneApHrefNullable,
+} from "@/core/activitypub/type.js";
+import type { IObject, IObjectWithId } from "@/core/activitypub/type.js";
+import { bindThis } from "@/decorators.js";
+import { renderInlineError } from "@/misc/render-inline-error.js";
+import { LoggerService } from "@/core/LoggerService.js";
+import type Logger from "@/logger.js";
 
 @Injectable()
 export class ApUtilityService {
@@ -22,7 +26,7 @@ export class ApUtilityService {
 		private readonly utilityService: UtilityService,
 		loggerService: LoggerService,
 	) {
-		this.logger = loggerService.getLogger('ap-utility');
+		this.logger = loggerService.getLogger("ap-utility");
 	}
 
 	/**
@@ -38,7 +42,10 @@ export class ApUtilityService {
 		// Make sure the object ID matches the final URL (which is where it actually exists).
 		// The caller (ApResolverService) will verify the ID against the original / entry URL, which ensures that all three match.
 		if (!this.haveSameAuthority(url, id)) {
-			throw new IdentifiableError('fd93c2fa-69a8-440f-880b-bf178e0ec877', `invalid AP object ${url}: id ${id} has different host authority`);
+			throw new IdentifiableError(
+				"fd93c2fa-69a8-440f-880b-bf178e0ec877",
+				`invalid AP object ${url}: id ${id} has different host authority`,
+			);
 		}
 	}
 
@@ -70,11 +77,10 @@ export class ApUtilityService {
 
 		const rawUrls = toArray(object.url);
 		const acceptableUrls = rawUrls
-			.map(raw => ({
+			.map((raw) => ({
 				url: getOneApHrefNullable(raw),
-				type: typeof(raw) === 'object'
-					? raw.mediaType?.toLowerCase()
-					: undefined,
+				type:
+					typeof raw === "object" ? raw.mediaType?.toLowerCase() : undefined,
 			}))
 			.filter(({ url, type }) => {
 				try {
@@ -110,7 +116,15 @@ export class ApUtilityService {
 	 * @param keyPath If obj is *itself* a nested object, set this to the property path from root to obj (including the trailing '.'). This does not affect the logic, but improves the clarity of logs.
 	 */
 	@bindThis
-	public sanitizeInlineObject<Key extends string>(obj: Partial<Record<Key, string | { id?: string } | (string | { id?: string })[]>>, key: Key, parentUri: string | URL, parentHost: string, keyPath = ''): obj is Partial<Record<Key, string | { id: string }>> {
+	public sanitizeInlineObject<Key extends string>(
+		obj: Partial<
+			Record<Key, string | { id?: string } | (string | { id?: string })[]>
+		>,
+		key: Key,
+		parentUri: string | URL,
+		parentHost: string,
+		keyPath = "",
+	): obj is Partial<Record<Key, string | { id: string }>> {
 		let value: unknown = obj[key];
 
 		// Unpack arrays
@@ -128,20 +142,26 @@ export class ApUtilityService {
 
 		// Exclude nested arrays
 		if (Array.isArray(value)) {
-			this.logger.warn(`Excluding ${keyPath}${key} from object ${parentUri}: nested arrays are prohibited`);
+			this.logger.warn(
+				`Excluding ${keyPath}${key} from object ${parentUri}: nested arrays are prohibited`,
+			);
 			return false;
 		}
 
 		// Exclude incorrect types
-		if (typeof(value) !== 'string' && typeof(value) !== 'object') {
-			this.logger.warn(`Excluding ${keyPath}${key} from object ${parentUri}: incorrect type ${typeof(value)}`);
+		if (typeof value !== "string" && typeof value !== "object") {
+			this.logger.warn(
+				`Excluding ${keyPath}${key} from object ${parentUri}: incorrect type ${typeof value}`,
+			);
 			return false;
 		}
 
 		const valueId = getNullableApId(value);
 		if (!valueId) {
 			// Exclude missing ID
-			this.logger.warn(`Excluding ${keyPath}${key} from object ${parentUri}: missing or invalid ID`);
+			this.logger.warn(
+				`Excluding ${keyPath}${key} from object ${parentUri}: missing or invalid ID`,
+			);
 			return false;
 		}
 
@@ -150,12 +170,16 @@ export class ApUtilityService {
 			const parsedHost = this.utilityService.punyHostPSLDomain(parsed);
 			if (parsedHost !== parentHost) {
 				// Exclude wrong host
-				this.logger.warn(`Excluding ${keyPath}${key} from object ${parentUri}: wrong host in ${valueId} (got ${parsedHost}, expected ${parentHost})`);
+				this.logger.warn(
+					`Excluding ${keyPath}${key} from object ${parentUri}: wrong host in ${valueId} (got ${parsedHost}, expected ${parentHost})`,
+				);
 				return false;
 			}
 		} catch (err) {
 			// Exclude invalid URLs
-			this.logger.warn(`Excluding ${keyPath}${key} from object ${parentUri}: invalid URL ${valueId}: ${renderInlineError(err)}`);
+			this.logger.warn(
+				`Excluding ${keyPath}${key} from object ${parentUri}: invalid URL ${valueId}: ${renderInlineError(err)}`,
+			);
 			return false;
 		}
 
@@ -167,17 +191,17 @@ export class ApUtilityService {
 
 function isAcceptableUrlType(type: string | undefined): boolean {
 	if (!type) return true;
-	if (type.startsWith('text/')) return true;
-	if (type.startsWith('application/ld+json')) return true;
-	if (type.startsWith('application/activity+json')) return true;
+	if (type.startsWith("text/")) return true;
+	if (type.startsWith("application/ld+json")) return true;
+	if (type.startsWith("application/activity+json")) return true;
 	return false;
 }
 
 function rankUrlType(type: string | undefined): number {
 	if (!type) return 2;
-	if (type === 'text/html') return 0;
-	if (type.startsWith('text/')) return 1;
-	if (type.startsWith('application/ld+json')) return 3;
-	if (type.startsWith('application/activity+json')) return 4;
+	if (type === "text/html") return 0;
+	if (type.startsWith("text/")) return 1;
+	if (type.startsWith("application/ld+json")) return 3;
+	if (type.startsWith("application/activity+json")) return 4;
 	return 5;
 }

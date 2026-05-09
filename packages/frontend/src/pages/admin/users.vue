@@ -4,72 +4,105 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader :actions="headerActions" :tabs="headerTabs">
-	<div class="_spacer" style="--MI_SPACER-w: 900px;">
-		<div class="_gaps">
-			<div :class="$style.inputs">
-				<MkButton style="margin-left: auto" @click="resetQuery">{{ i18n.ts.reset }}</MkButton>
-			</div>
-			<div :class="$style.inputs">
-				<MkSelect v-model="sort" style="flex: 1;">
-					<template #label>{{ i18n.ts.sort }}</template>
-					<option value="-createdAt">{{ i18n.ts.registeredDate }} ({{ i18n.ts.ascendingOrder }})</option>
-					<option value="+createdAt">{{ i18n.ts.registeredDate }} ({{ i18n.ts.descendingOrder }})</option>
-					<option value="-updatedAt">{{ i18n.ts.lastUsed }} ({{ i18n.ts.ascendingOrder }})</option>
-					<option value="+updatedAt">{{ i18n.ts.lastUsed }} ({{ i18n.ts.descendingOrder }})</option>
-				</MkSelect>
-				<MkSelect v-model="state" style="flex: 1;">
-					<template #label>{{ i18n.ts.state }}</template>
-					<option value="all">{{ i18n.ts.all }}</option>
-					<option value="available">{{ i18n.ts.normal }}</option>
-					<option value="approved">{{ i18n.ts.notApproved }}</option>
-					<option value="admin">{{ i18n.ts.administrator }}</option>
-					<option value="moderator">{{ i18n.ts.moderator }}</option>
-					<option value="suspended">{{ i18n.ts.suspend }}</option>
-				</MkSelect>
-				<MkSelect v-model="origin" style="flex: 1;">
-					<template #label>{{ i18n.ts.instance }}</template>
-					<option value="combined">{{ i18n.ts.all }}</option>
-					<option value="local">{{ i18n.ts.local }}</option>
-					<option value="remote">{{ i18n.ts.remote }}</option>
-				</MkSelect>
-			</div>
-			<div :class="$style.inputs">
-				<MkInput v-model="searchUsername" style="flex: 1;" type="text" :spellcheck="false" debounce>
-					<template #prefix>@</template>
-					<template #label>{{ i18n.ts.username }}</template>
-				</MkInput>
-				<MkInput v-model="searchHost" style="flex: 1;" type="text" :spellcheck="false" :disabled="pagination.params.origin === 'local'">
-					<template #prefix>@</template>
-					<template #label>{{ i18n.ts.host }}</template>
-				</MkInput>
-			</div>
-
-			<MkPagination v-slot="{items}" ref="paginationComponent" :pagination="pagination" :displayLimit="50">
-				<div :class="$style.users">
-					<MkA v-for="user in items" :key="user.id" v-tooltip.mfm="`Last posted: ${dateString(user.updatedAt)}`" :class="$style.user" :to="`/admin/user/${user.id}`">
-						<MkUserCardMini :user="user"/>
-					</MkA>
+	<PageWithHeader :actions="headerActions" :tabs="headerTabs">
+		<div class="_spacer" style="--MI_SPACER-w: 900px">
+			<div class="_gaps">
+				<div :class="$style.inputs">
+					<MkButton style="margin-left: auto" @click="resetQuery">{{
+						i18n.ts.reset
+					}}</MkButton>
 				</div>
-			</MkPagination>
+				<div :class="$style.inputs">
+					<MkSelect v-model="sort" style="flex: 1">
+						<template #label>{{ i18n.ts.sort }}</template>
+						<option value="-createdAt">
+							{{ i18n.ts.registeredDate }} ({{ i18n.ts.ascendingOrder }})
+						</option>
+						<option value="+createdAt">
+							{{ i18n.ts.registeredDate }} ({{ i18n.ts.descendingOrder }})
+						</option>
+						<option value="-updatedAt">
+							{{ i18n.ts.lastUsed }} ({{ i18n.ts.ascendingOrder }})
+						</option>
+						<option value="+updatedAt">
+							{{ i18n.ts.lastUsed }} ({{ i18n.ts.descendingOrder }})
+						</option>
+					</MkSelect>
+					<MkSelect v-model="state" style="flex: 1">
+						<template #label>{{ i18n.ts.state }}</template>
+						<option value="all">{{ i18n.ts.all }}</option>
+						<option value="available">{{ i18n.ts.normal }}</option>
+						<option value="approved">{{ i18n.ts.notApproved }}</option>
+						<option value="admin">{{ i18n.ts.administrator }}</option>
+						<option value="moderator">{{ i18n.ts.moderator }}</option>
+						<option value="suspended">{{ i18n.ts.suspend }}</option>
+					</MkSelect>
+					<MkSelect v-model="origin" style="flex: 1">
+						<template #label>{{ i18n.ts.instance }}</template>
+						<option value="combined">{{ i18n.ts.all }}</option>
+						<option value="local">{{ i18n.ts.local }}</option>
+						<option value="remote">{{ i18n.ts.remote }}</option>
+					</MkSelect>
+				</div>
+				<div :class="$style.inputs">
+					<MkInput
+						v-model="searchUsername"
+						style="flex: 1"
+						type="text"
+						:spellcheck="false"
+						debounce
+					>
+						<template #prefix>@</template>
+						<template #label>{{ i18n.ts.username }}</template>
+					</MkInput>
+					<MkInput
+						v-model="searchHost"
+						style="flex: 1"
+						type="text"
+						:spellcheck="false"
+						:disabled="pagination.params.origin === 'local'"
+					>
+						<template #prefix>@</template>
+						<template #label>{{ i18n.ts.host }}</template>
+					</MkInput>
+				</div>
+
+				<MkPagination
+					v-slot="{ items }"
+					ref="paginationComponent"
+					:pagination="pagination"
+					:displayLimit="50"
+				>
+					<div :class="$style.users">
+						<MkA
+							v-for="user in items"
+							:key="user.id"
+							v-tooltip.mfm="`Last posted: ${dateString(user.updatedAt)}`"
+							:class="$style.user"
+							:to="`/admin/user/${user.id}`"
+						>
+							<MkUserCardMini :user="user" />
+						</MkA>
+					</div>
+				</MkPagination>
+			</div>
 		</div>
-	</div>
-</PageWithHeader>
+	</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { computed, useTemplateRef, ref, watchEffect } from 'vue';
-import { defaultMemoryStorage } from '@/memory-storage';
-import MkButton from '@/components/MkButton.vue';
-import MkInput from '@/components/MkInput.vue';
-import MkSelect from '@/components/MkSelect.vue';
-import MkPagination from '@/components/MkPagination.vue';
-import * as os from '@/os.js';
-import { lookupUser } from '@/utility/admin-lookup.js';
-import { i18n } from '@/i18n.js';
-import { definePage } from '@/page.js';
-import MkUserCardMini from '@/components/MkUserCardMini.vue';
-import { dateString } from '@/filters/date.js';
+import { computed, useTemplateRef, ref, watchEffect } from "vue";
+import { defaultMemoryStorage } from "@/memory-storage";
+import MkButton from "@/components/MkButton.vue";
+import MkInput from "@/components/MkInput.vue";
+import MkSelect from "@/components/MkSelect.vue";
+import MkPagination from "@/components/MkPagination.vue";
+import * as os from "@/os.js";
+import { lookupUser } from "@/utility/admin-lookup.js";
+import { i18n } from "@/i18n.js";
+import { definePage } from "@/page.js";
+import MkUserCardMini from "@/components/MkUserCardMini.vue";
+import { dateString } from "@/filters/date.js";
 
 type SearchQuery = {
 	sort?: string;
@@ -79,16 +112,18 @@ type SearchQuery = {
 	hostname?: string;
 };
 
-const paginationComponent = useTemplateRef('paginationComponent');
-const storedQuery = JSON.parse(defaultMemoryStorage.getItem('admin-users-query') ?? '{}') as SearchQuery;
+const paginationComponent = useTemplateRef("paginationComponent");
+const storedQuery = JSON.parse(
+	defaultMemoryStorage.getItem("admin-users-query") ?? "{}",
+) as SearchQuery;
 
-const sort = ref(storedQuery.sort ?? '+createdAt');
-const state = ref(storedQuery.state ?? 'all');
-const origin = ref(storedQuery.origin ?? 'local');
-const searchUsername = ref(storedQuery.username ?? '');
-const searchHost = ref(storedQuery.hostname ?? '');
+const sort = ref(storedQuery.sort ?? "+createdAt");
+const state = ref(storedQuery.state ?? "all");
+const origin = ref(storedQuery.origin ?? "local");
+const searchUsername = ref(storedQuery.username ?? "");
+const searchHost = ref(storedQuery.hostname ?? "");
 const pagination = {
-	endpoint: 'admin/show-users' as const,
+	endpoint: "admin/show-users" as const,
 	limit: 10,
 	params: computed(() => ({
 		sort: sort.value,
@@ -101,7 +136,7 @@ const pagination = {
 };
 
 function searchUser() {
-	os.selectUser({ includeSelf: true }).then(user => {
+	os.selectUser({ includeSelf: true }).then((user) => {
 		show(user);
 	});
 }
@@ -114,14 +149,14 @@ async function addUser() {
 
 	const { canceled: canceled2, result: password } = await os.inputText({
 		title: i18n.ts.password,
-		type: 'password',
+		type: "password",
 	});
 	if (canceled2 || password == null) return;
 
-	os.apiWithDialog('admin/accounts/create', {
+	os.apiWithDialog("admin/accounts/create", {
 		username: username,
 		password: password,
-	}).then(res => {
+	}).then((res) => {
 		paginationComponent.value?.reload();
 	});
 }
@@ -131,44 +166,51 @@ function show(user) {
 }
 
 function resetQuery() {
-	sort.value = '+createdAt';
-	state.value = 'all';
-	origin.value = 'local';
-	searchUsername.value = '';
-	searchHost.value = '';
+	sort.value = "+createdAt";
+	state.value = "all";
+	origin.value = "local";
+	searchUsername.value = "";
+	searchHost.value = "";
 }
 
-const headerActions = computed(() => [{
-	icon: 'ti ti-search',
-	text: i18n.ts.search,
-	handler: searchUser,
-}, {
-	asFullButton: true,
-	icon: 'ti ti-plus',
-	text: i18n.ts.addUser,
-	handler: addUser,
-}, {
-	asFullButton: true,
-	icon: 'ti ti-search',
-	text: i18n.ts.lookup,
-	handler: lookupUser,
-}]);
+const headerActions = computed(() => [
+	{
+		icon: "ti ti-search",
+		text: i18n.ts.search,
+		handler: searchUser,
+	},
+	{
+		asFullButton: true,
+		icon: "ti ti-plus",
+		text: i18n.ts.addUser,
+		handler: addUser,
+	},
+	{
+		asFullButton: true,
+		icon: "ti ti-search",
+		text: i18n.ts.lookup,
+		handler: lookupUser,
+	},
+]);
 
 const headerTabs = computed(() => []);
 
 watchEffect(() => {
-	defaultMemoryStorage.setItem('admin-users-query', JSON.stringify({
-		sort: sort.value,
-		state: state.value,
-		origin: origin.value,
-		username: searchUsername.value,
-		hostname: searchHost.value,
-	}));
+	defaultMemoryStorage.setItem(
+		"admin-users-query",
+		JSON.stringify({
+			sort: sort.value,
+			state: state.value,
+			origin: origin.value,
+			username: searchUsername.value,
+			hostname: searchHost.value,
+		}),
+	);
 });
 
 definePage(() => ({
 	title: i18n.ts.users,
-	icon: 'ti ti-users',
+	icon: "ti ti-users",
 }));
 </script>
 

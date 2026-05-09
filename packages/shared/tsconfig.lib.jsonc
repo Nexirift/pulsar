@@ -17,6 +17,6 @@
 		"removeComments": false,
 		"noEmitOnError": false,
 		"noEmit": false,
-		"composite": true
-	}
+		"composite": true,
+	},
 }

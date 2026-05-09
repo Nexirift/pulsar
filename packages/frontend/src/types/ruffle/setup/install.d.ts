@@ -5,11 +5,11 @@
  * `onFirstLoad` to potentially configure webpack prior to loading wasm files.
  */
 export interface InstallationOptions {
-    /**
-     * A callback to be run before the very first time Ruffle is loaded.
-     * This may be used to configure a bundler prior to asset loading.
-     */
-    onFirstLoad?: () => void;
+	/**
+	 * A callback to be run before the very first time Ruffle is loaded.
+	 * This may be used to configure a bundler prior to asset loading.
+	 */
+	onFirstLoad?: () => void;
 }
 /**
  * Install this version of Ruffle into the current page.
@@ -25,4 +25,7 @@ export interface InstallationOptions {
  * regardless of what those installations are or which version they represent.
  * @param options Any options used to configure this specific installation of Ruffle.
  */
-export declare function installRuffle(sourceName: string, options?: InstallationOptions): void;
+export declare function installRuffle(
+	sourceName: string,
+	options?: InstallationOptions,
+): void;

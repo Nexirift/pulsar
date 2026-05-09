@@ -4,38 +4,46 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root">
-	<div :class="$style.contents">
-		<!--
+	<div :class="$style.root">
+		<div :class="$style.contents">
+			<!--
 			デッキUIが設定されている場合はデッキUIに戻れるようにする (ただし?zenが明示された場合は表示しない)
 			See https://github.com/misskey-dev/misskey/issues/10905
 		-->
-		<button v-if="showDeckNav" class="_buttonPrimary" :class="$style.deckNav" @click="goToDeck">{{ i18n.ts.goToDeck }}</button>
+			<button
+				v-if="showDeckNav"
+				class="_buttonPrimary"
+				:class="$style.deckNav"
+				@click="goToDeck"
+			>
+				{{ i18n.ts.goToDeck }}
+			</button>
 
-		<div style="flex: 1; min-height: 0;">
-			<RouterView/>
+			<div style="flex: 1; min-height: 0">
+				<RouterView />
+			</div>
 		</div>
-	</div>
 
-	<XCommon/>
-</div>
+		<XCommon />
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { computed, provide, ref } from 'vue';
-import { instanceName, ui } from '@@/js/config.js';
-import XCommon from './_common_/common.vue';
-import type { PageMetadata } from '@/page.js';
-import { provideMetadataReceiver, provideReactiveMetadata } from '@/page.js';
-import { i18n } from '@/i18n.js';
-import { mainRouter } from '@/router.js';
-import { DI } from '@/di.js';
+import { computed, provide, ref } from "vue";
+import { instanceName, ui } from "@@/js/config.js";
+import XCommon from "./_common_/common.vue";
+import type { PageMetadata } from "@/page.js";
+import { provideMetadataReceiver, provideReactiveMetadata } from "@/page.js";
+import { i18n } from "@/i18n.js";
+import { mainRouter } from "@/router.js";
+import { DI } from "@/di.js";
 
-const isRoot = computed(() => mainRouter.currentRoute.value.name === 'index');
+const isRoot = computed(() => mainRouter.currentRoute.value.name === "index");
 
 const pageMetadata = ref<null | PageMetadata>(null);
 
-const showDeckNav = !(new URLSearchParams(window.location.search)).has('zen') && ui === 'deck';
+const showDeckNav =
+	!new URLSearchParams(window.location.search).has("zen") && ui === "deck";
 
 provide(DI.router, mainRouter);
 provideMetadataReceiver((metadataGetter) => {
@@ -52,7 +60,7 @@ provideMetadataReceiver((metadataGetter) => {
 provideReactiveMetadata(pageMetadata);
 
 function goToDeck() {
-	window.location.href = '/';
+	window.location.href = "/";
 }
 </script>
 

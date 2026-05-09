@@ -4,64 +4,76 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div
-	:class="[$style.root, { [$style.draghover]: draghover }]"
-	draggable="true"
-	:title="title"
-	@click="onClick"
-	@contextmenu.stop="onContextmenu"
-	@mouseover="onMouseover"
-	@mouseout="onMouseout"
-	@dragover.prevent.stop="onDragover"
-	@dragenter.prevent="onDragenter"
-	@dragleave="onDragleave"
-	@drop.prevent.stop="onDrop"
-	@dragstart="onDragstart"
-	@dragend="onDragend"
->
-	<p :class="$style.name">
-		<template v-if="hover"><i :class="$style.icon" class="ti ti-folder ti-fw"></i></template>
-		<template v-if="!hover"><i :class="$style.icon" class="ti ti-folder ti-fw"></i></template>
-		{{ folder.name }}
-	</p>
-	<p v-if="prefer.s.uploadFolder == folder.id" :class="$style.upload">
-		{{ i18n.ts.uploadFolder }}
-	</p>
-	<button v-if="selectMode" class="_button" :class="$style.checkboxWrapper" @click.prevent.stop="checkboxClicked">
-		<div :class="[$style.checkbox, { [$style.checked]: isSelected }]"></div>
-	</button>
-</div>
+	<div
+		:class="[$style.root, { [$style.draghover]: draghover }]"
+		draggable="true"
+		:title="title"
+		@click="onClick"
+		@contextmenu.stop="onContextmenu"
+		@mouseover="onMouseover"
+		@mouseout="onMouseout"
+		@dragover.prevent.stop="onDragover"
+		@dragenter.prevent="onDragenter"
+		@dragleave="onDragleave"
+		@drop.prevent.stop="onDrop"
+		@dragstart="onDragstart"
+		@dragend="onDragend"
+	>
+		<p :class="$style.name">
+			<template v-if="hover"
+				><i :class="$style.icon" class="ti ti-folder ti-fw"></i
+			></template>
+			<template v-if="!hover"
+				><i :class="$style.icon" class="ti ti-folder ti-fw"></i
+			></template>
+			{{ folder.name }}
+		</p>
+		<p v-if="prefer.s.uploadFolder == folder.id" :class="$style.upload">
+			{{ i18n.ts.uploadFolder }}
+		</p>
+		<button
+			v-if="selectMode"
+			class="_button"
+			:class="$style.checkboxWrapper"
+			@click.prevent.stop="checkboxClicked"
+		>
+			<div :class="[$style.checkbox, { [$style.checked]: isSelected }]"></div>
+		</button>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { computed, defineAsyncComponent, ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import type { MenuItem } from '@/types/menu.js';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { i18n } from '@/i18n.js';
-import { claimAchievement } from '@/utility/achievements.js';
-import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
-import { prefer } from '@/preferences.js';
+import { computed, defineAsyncComponent, ref } from "vue";
+import * as Misskey from "misskey-js";
+import type { MenuItem } from "@/types/menu.js";
+import * as os from "@/os.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { i18n } from "@/i18n.js";
+import { claimAchievement } from "@/utility/achievements.js";
+import { copyToClipboard } from "@/utility/copy-to-clipboard.js";
+import { prefer } from "@/preferences.js";
 
-const props = withDefaults(defineProps<{
-	folder: Misskey.entities.DriveFolder;
-	isSelected?: boolean;
-	selectMode?: boolean;
-}>(), {
-	isSelected: false,
-	selectMode: false,
-});
+const props = withDefaults(
+	defineProps<{
+		folder: Misskey.entities.DriveFolder;
+		isSelected?: boolean;
+		selectMode?: boolean;
+	}>(),
+	{
+		isSelected: false,
+		selectMode: false,
+	},
+);
 
 const emit = defineEmits<{
-	(ev: 'chosen', v: Misskey.entities.DriveFolder): void;
-	(ev: 'unchose', v: Misskey.entities.DriveFolder): void;
-	(ev: 'move', v: Misskey.entities.DriveFolder): void;
-	(ev: 'upload', file: File, folder: Misskey.entities.DriveFolder);
-	(ev: 'removeFile', v: Misskey.entities.DriveFile['id']): void;
-	(ev: 'removeFolder', v: Misskey.entities.DriveFolder['id']): void;
-	(ev: 'dragstart'): void;
-	(ev: 'dragend'): void;
+	(ev: "chosen", v: Misskey.entities.DriveFolder): void;
+	(ev: "unchose", v: Misskey.entities.DriveFolder): void;
+	(ev: "move", v: Misskey.entities.DriveFolder): void;
+	(ev: "upload", file: File, folder: Misskey.entities.DriveFolder);
+	(ev: "removeFile", v: Misskey.entities.DriveFile["id"]): void;
+	(ev: "removeFolder", v: Misskey.entities.DriveFolder["id"]): void;
+	(ev: "dragstart"): void;
+	(ev: "dragend"): void;
 }>();
 
 const hover = ref(false);
@@ -72,14 +84,14 @@ const title = computed(() => props.folder.name);
 
 function checkboxClicked() {
 	if (props.isSelected) {
-		emit('unchose', props.folder);
+		emit("unchose", props.folder);
 	} else {
-		emit('chosen', props.folder);
+		emit("chosen", props.folder);
 	}
 }
 
 function onClick() {
-	emit('move', props.folder);
+	emit("move", props.folder);
 }
 
 function onMouseover() {
@@ -96,33 +108,34 @@ function onDragover(ev: DragEvent) {
 	// 自分自身がドラッグされている場合
 	if (isDragging.value) {
 		// 自分自身にはドロップさせない
-		ev.dataTransfer.dropEffect = 'none';
+		ev.dataTransfer.dropEffect = "none";
 		return;
 	}
 
-	const isFile = ev.dataTransfer.items[0].kind === 'file';
+	const isFile = ev.dataTransfer.items[0].kind === "file";
 	const isDriveFile = ev.dataTransfer.types[0] === _DATA_TRANSFER_DRIVE_FILE_;
-	const isDriveFolder = ev.dataTransfer.types[0] === _DATA_TRANSFER_DRIVE_FOLDER_;
+	const isDriveFolder =
+		ev.dataTransfer.types[0] === _DATA_TRANSFER_DRIVE_FOLDER_;
 
 	if (isFile || isDriveFile || isDriveFolder) {
 		switch (ev.dataTransfer.effectAllowed) {
-			case 'all':
-			case 'uninitialized':
-			case 'copy':
-			case 'copyLink':
-			case 'copyMove':
-				ev.dataTransfer.dropEffect = 'copy';
+			case "all":
+			case "uninitialized":
+			case "copy":
+			case "copyLink":
+			case "copyMove":
+				ev.dataTransfer.dropEffect = "copy";
 				break;
-			case 'linkMove':
-			case 'move':
-				ev.dataTransfer.dropEffect = 'move';
+			case "linkMove":
+			case "move":
+				ev.dataTransfer.dropEffect = "move";
 				break;
 			default:
-				ev.dataTransfer.dropEffect = 'none';
+				ev.dataTransfer.dropEffect = "none";
 				break;
 		}
 	} else {
-		ev.dataTransfer.dropEffect = 'none';
+		ev.dataTransfer.dropEffect = "none";
 	}
 }
 
@@ -142,17 +155,17 @@ function onDrop(ev: DragEvent) {
 	// ファイルだったら
 	if (ev.dataTransfer.files.length > 0) {
 		for (const file of Array.from(ev.dataTransfer.files)) {
-			emit('upload', file, props.folder);
+			emit("upload", file, props.folder);
 		}
 		return;
 	}
 
 	//#region ドライブのファイル
 	const driveFile = ev.dataTransfer.getData(_DATA_TRANSFER_DRIVE_FILE_);
-	if (driveFile != null && driveFile !== '') {
+	if (driveFile != null && driveFile !== "") {
 		const file = JSON.parse(driveFile);
-		emit('removeFile', file.id);
-		misskeyApi('drive/files/update', {
+		emit("removeFile", file.id);
+		misskeyApi("drive/files/update", {
 			fileId: file.id,
 			folderId: props.folder.id,
 		});
@@ -161,35 +174,37 @@ function onDrop(ev: DragEvent) {
 
 	//#region ドライブのフォルダ
 	const driveFolder = ev.dataTransfer.getData(_DATA_TRANSFER_DRIVE_FOLDER_);
-	if (driveFolder != null && driveFolder !== '') {
+	if (driveFolder != null && driveFolder !== "") {
 		const folder = JSON.parse(driveFolder);
 
 		// 移動先が自分自身ならreject
 		if (folder.id === props.folder.id) return;
 
-		emit('removeFolder', folder.id);
-		misskeyApi('drive/folders/update', {
+		emit("removeFolder", folder.id);
+		misskeyApi("drive/folders/update", {
 			folderId: folder.id,
 			parentId: props.folder.id,
-		}).then(() => {
-			// noop
-		}).catch(err => {
-			switch (err.code) {
-				case 'RECURSIVE_NESTING':
-					claimAchievement('driveFolderCircularReference');
-					os.alert({
-						type: 'error',
-						title: i18n.ts.unableToProcess,
-						text: i18n.ts.circularReferenceFolder,
-					});
-					break;
-				default:
-					os.alert({
-						type: 'error',
-						text: i18n.ts.somethingHappened,
-					});
-			}
-		});
+		})
+			.then(() => {
+				// noop
+			})
+			.catch((err) => {
+				switch (err.code) {
+					case "RECURSIVE_NESTING":
+						claimAchievement("driveFolderCircularReference");
+						os.alert({
+							type: "error",
+							title: i18n.ts.unableToProcess,
+							text: i18n.ts.circularReferenceFolder,
+						});
+						break;
+					default:
+						os.alert({
+							type: "error",
+							text: i18n.ts.somethingHappened,
+						});
+				}
+			});
 	}
 	//#endregion
 }
@@ -197,22 +212,25 @@ function onDrop(ev: DragEvent) {
 function onDragstart(ev: DragEvent) {
 	if (!ev.dataTransfer) return;
 
-	ev.dataTransfer.effectAllowed = 'move';
-	ev.dataTransfer.setData(_DATA_TRANSFER_DRIVE_FOLDER_, JSON.stringify(props.folder));
+	ev.dataTransfer.effectAllowed = "move";
+	ev.dataTransfer.setData(
+		_DATA_TRANSFER_DRIVE_FOLDER_,
+		JSON.stringify(props.folder),
+	);
 	isDragging.value = true;
 
 	// 親ブラウザに対して、ドラッグが開始されたフラグを立てる
 	// (=あなたの子供が、ドラッグを開始しましたよ)
-	emit('dragstart');
+	emit("dragstart");
 }
 
 function onDragend() {
 	isDragging.value = false;
-	emit('dragend');
+	emit("dragend");
 }
 
 function go() {
-	emit('move', props.folder);
+	emit("move", props.folder);
 }
 
 function rename() {
@@ -222,7 +240,7 @@ function rename() {
 		default: props.folder.name,
 	}).then(({ canceled, result: name }) => {
 		if (canceled) return;
-		misskeyApi('drive/folders/update', {
+		misskeyApi("drive/folders/update", {
 			folderId: props.folder.id,
 			name: name,
 		});
@@ -230,10 +248,10 @@ function rename() {
 }
 
 function move() {
-	os.selectDriveFolder(false).then(folder => {
+	os.selectDriveFolder(false).then((folder) => {
 		if (folder[0] && folder[0].id === props.folder.id) return;
 
-		misskeyApi('drive/folders/update', {
+		misskeyApi("drive/folders/update", {
 			folderId: props.folder.id,
 			parentId: folder[0] ? folder[0].id : null,
 		});
@@ -241,68 +259,84 @@ function move() {
 }
 
 function deleteFolder() {
-	misskeyApi('drive/folders/delete', {
+	misskeyApi("drive/folders/delete", {
 		folderId: props.folder.id,
-	}).then(() => {
-		if (prefer.s.uploadFolder === props.folder.id) {
-			prefer.commit('uploadFolder', null);
-		}
-	}).catch(err => {
-		switch (err.id) {
-			case 'b0fc8a17-963c-405d-bfbc-859a487295e1':
-				os.alert({
-					type: 'error',
-					title: i18n.ts.unableToDelete,
-					text: i18n.ts.hasChildFilesOrFolders,
-				});
-				break;
-			default:
-				os.alert({
-					type: 'error',
-					text: i18n.ts.unableToDelete,
-				});
-		}
-	});
+	})
+		.then(() => {
+			if (prefer.s.uploadFolder === props.folder.id) {
+				prefer.commit("uploadFolder", null);
+			}
+		})
+		.catch((err) => {
+			switch (err.id) {
+				case "b0fc8a17-963c-405d-bfbc-859a487295e1":
+					os.alert({
+						type: "error",
+						title: i18n.ts.unableToDelete,
+						text: i18n.ts.hasChildFilesOrFolders,
+					});
+					break;
+				default:
+					os.alert({
+						type: "error",
+						text: i18n.ts.unableToDelete,
+					});
+			}
+		});
 }
 
 function setAsUploadFolder() {
-	prefer.commit('uploadFolder', props.folder.id);
+	prefer.commit("uploadFolder", props.folder.id);
 }
 
 function onContextmenu(ev: MouseEvent) {
 	let menu: MenuItem[];
-	menu = [{
-		text: i18n.ts.openInWindow,
-		icon: 'ti ti-app-window',
-		action: () => {
-			const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkDriveWindow.vue')), {
-				initialFolder: props.folder,
-			}, {
-				closed: () => dispose(),
-			});
-		},
-	}, { type: 'divider' }, {
-		text: i18n.ts.rename,
-		icon: 'ti ti-forms',
-		action: rename,
-	}, {
-		text: i18n.ts.move,
-		icon: 'ti ti ti-folder-symlink',
-		action: move,
-	}, { type: 'divider' }, {
-		text: i18n.ts.delete,
-		icon: 'ti ti-trash',
-		danger: true,
-		action: deleteFolder,
-	}];
-	if (prefer.s.devMode) {
-		menu = menu.concat([{ type: 'divider' }, {
-			icon: 'ti ti-hash',
-			text: i18n.ts.copyFolderId,
+	menu = [
+		{
+			text: i18n.ts.openInWindow,
+			icon: "ti ti-app-window",
 			action: () => {
-				copyToClipboard(props.folder.id);
+				const { dispose } = os.popup(
+					defineAsyncComponent(() => import("@/components/MkDriveWindow.vue")),
+					{
+						initialFolder: props.folder,
+					},
+					{
+						closed: () => dispose(),
+					},
+				);
 			},
-		}]);
+		},
+		{ type: "divider" },
+		{
+			text: i18n.ts.rename,
+			icon: "ti ti-forms",
+			action: rename,
+		},
+		{
+			text: i18n.ts.move,
+			icon: "ti ti ti-folder-symlink",
+			action: move,
+		},
+		{ type: "divider" },
+		{
+			text: i18n.ts.delete,
+			icon: "ti ti-trash",
+			danger: true,
+			action: deleteFolder,
+		},
+	];
+	if (prefer.s.devMode) {
+		menu = menu.concat([
+			{ type: "divider" },
+			{
+				icon: "ti ti-hash",
+				text: i18n.ts.copyFolderId,
+				action: () => {
+					copyToClipboard(props.folder.id);
+				},
+			},
+		]);
 	}
 	os.contextMenu(menu, ev);
 }
@@ -355,7 +389,7 @@ function onContextmenu(ev: MouseEvent) {
 
 			&::after {
 				content: "\ea5e";
-				font-family: 'tabler-icons';
+				font-family: "tabler-icons";
 				position: absolute;
 				top: 50%;
 				left: 50%;

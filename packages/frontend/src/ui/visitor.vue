@@ -4,40 +4,52 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root">
-	<div v-if="!narrow && !isRoot" :class="$style.side">
-		<div :class="$style.banner" :style="{ backgroundImage: instance.backgroundImageUrl ? `url(${ instance.backgroundImageUrl })` : 'none' }"></div>
-		<div :class="$style.dashboard">
-			<MkVisitorDashboard/>
+	<div :class="$style.root">
+		<div v-if="!narrow && !isRoot" :class="$style.side">
+			<div
+				:class="$style.banner"
+				:style="{
+					backgroundImage: instance.backgroundImageUrl
+						? `url(${instance.backgroundImageUrl})`
+						: 'none',
+				}"
+			></div>
+			<div :class="$style.dashboard">
+				<MkVisitorDashboard />
+			</div>
 		</div>
-	</div>
 
-	<div :class="$style.main">
-		<button v-if="!isRoot" :class="$style.homeButton" class="_button" @click="goHome">
-			<i class="ti ti-home"></i>
-		</button>
-		<div :class="$style.content">
-			<RouterView/>
+		<div :class="$style.main">
+			<button
+				v-if="!isRoot"
+				:class="$style.homeButton"
+				class="_button"
+				@click="goHome"
+			>
+				<i class="ti ti-home"></i>
+			</button>
+			<div :class="$style.content">
+				<RouterView />
+			</div>
 		</div>
 	</div>
-</div>
-<XCommon/>
+	<XCommon />
 </template>
 
 <script lang="ts" setup>
-import { onMounted, provide, ref, computed } from 'vue';
-import { instanceName } from '@@/js/config.js';
-import XCommon from './_common_/common.vue';
-import type { PageMetadata } from '@/page.js';
-import * as os from '@/os.js';
-import { instance } from '@/instance.js';
-import { provideMetadataReceiver, provideReactiveMetadata } from '@/page.js';
-import { i18n } from '@/i18n.js';
-import MkVisitorDashboard from '@/components/MkVisitorDashboard.vue';
-import { mainRouter } from '@/router.js';
-import { DI } from '@/di.js';
+import { onMounted, provide, ref, computed } from "vue";
+import { instanceName } from "@@/js/config.js";
+import XCommon from "./_common_/common.vue";
+import type { PageMetadata } from "@/page.js";
+import * as os from "@/os.js";
+import { instance } from "@/instance.js";
+import { provideMetadataReceiver, provideReactiveMetadata } from "@/page.js";
+import { i18n } from "@/i18n.js";
+import MkVisitorDashboard from "@/components/MkVisitorDashboard.vue";
+import { mainRouter } from "@/router.js";
+import { DI } from "@/di.js";
 
-const isRoot = computed(() => mainRouter.currentRoute.value.name === 'index');
+const isRoot = computed(() => mainRouter.currentRoute.value.name === "index");
 
 const DESKTOP_THRESHOLD = 1100;
 
@@ -61,20 +73,48 @@ const isDesktop = ref(window.innerWidth >= DESKTOP_THRESHOLD);
 const narrow = ref(window.innerWidth < 1280);
 
 function goHome() {
-	mainRouter.push('/');
+	mainRouter.push("/");
 }
 
 onMounted(() => {
 	if (!isDesktop.value) {
-		window.addEventListener('resize', () => {
-			if (window.innerWidth >= DESKTOP_THRESHOLD) isDesktop.value = true;
-		}, { passive: true });
+		window.addEventListener(
+			"resize",
+			() => {
+				if (window.innerWidth >= DESKTOP_THRESHOLD) isDesktop.value = true;
+			},
+			{ passive: true },
+		);
 	}
 });
 </script>
 
 <style>
-.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}
+.github-corner:hover .octo-arm {
+	animation: octocat-wave 560ms ease-in-out;
+}
+@keyframes octocat-wave {
+	0%,
+	100% {
+		transform: rotate(0);
+	}
+	20%,
+	60% {
+		transform: rotate(-25deg);
+	}
+	40%,
+	80% {
+		transform: rotate(10deg);
+	}
+}
+@media (max-width: 500px) {
+	.github-corner:hover .octo-arm {
+		animation: none;
+	}
+	.github-corner .octo-arm {
+		animation: octocat-wave 560ms ease-in-out;
+	}
+}
 </style>
 
 <style lang="scss" module>
@@ -123,8 +163,8 @@ onMounted(() => {
 	aspect-ratio: 1.5;
 	background-position: center;
 	background-size: cover;
-	-webkit-mask-image: linear-gradient(rgba(0, 0, 0, 1.0), transparent);
-	mask-image: linear-gradient(rgba(0, 0, 0, 1.0), transparent);
+	-webkit-mask-image: linear-gradient(rgba(0, 0, 0, 1), transparent);
+	mask-image: linear-gradient(rgba(0, 0, 0, 1), transparent);
 }
 
 .dashboard {

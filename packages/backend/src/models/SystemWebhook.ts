@@ -3,25 +3,25 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Column, Entity, Index, PrimaryColumn } from 'typeorm';
-import { Serialized } from '@/types.js';
-import { id } from './util/id.js';
+import { Column, Entity, Index, PrimaryColumn } from "typeorm";
+import { Serialized } from "@/types.js";
+import { id } from "./util/id.js";
 
 export const systemWebhookEventTypes = [
 	// ユーザからの通報を受けたとき
-	'abuseReport',
+	"abuseReport",
 	// 通報を処理したとき
-	'abuseReportResolved',
+	"abuseReportResolved",
 	// ユーザが作成された時
-	'userCreated',
+	"userCreated",
 	// モデレータが一定期間不在である警告
-	'inactiveModeratorsWarning',
+	"inactiveModeratorsWarning",
 	// モデレータが一定期間不在のためシステムにより招待制へと変更された
-	'inactiveModeratorsInvitationOnlyChanged',
+	"inactiveModeratorsInvitationOnlyChanged",
 ] as const;
-export type SystemWebhookEventType = typeof systemWebhookEventTypes[number];
+export type SystemWebhookEventType = (typeof systemWebhookEventTypes)[number];
 
-@Entity('system_webhook')
+@Entity("system_webhook")
 export class MiSystemWebhook {
 	@PrimaryColumn(id())
 	public id: string;
@@ -29,8 +29,8 @@ export class MiSystemWebhook {
 	/**
 	 * 有効かどうか.
 	 */
-	@Index('IDX_system_webhook_isActive', { synchronize: false })
-	@Column('boolean', {
+	@Index("IDX_system_webhook_isActive", { synchronize: false })
+	@Column("boolean", {
 		default: true,
 	})
 	public isActive: boolean;
@@ -38,15 +38,15 @@ export class MiSystemWebhook {
 	/**
 	 * 更新日時.
 	 */
-	@Column('timestamp with time zone', {
-		default: () => 'CURRENT_TIMESTAMP',
+	@Column("timestamp with time zone", {
+		default: () => "CURRENT_TIMESTAMP",
 	})
 	public updatedAt: Date;
 
 	/**
 	 * 最後に送信された日時.
 	 */
-	@Column('timestamp with time zone', {
+	@Column("timestamp with time zone", {
 		nullable: true,
 	})
 	public latestSentAt: Date | null;
@@ -54,7 +54,7 @@ export class MiSystemWebhook {
 	/**
 	 * 最後に送信されたステータスコード
 	 */
-	@Column('integer', {
+	@Column("integer", {
 		nullable: true,
 	})
 	public latestStatus: number | null;
@@ -62,7 +62,7 @@ export class MiSystemWebhook {
 	/**
 	 * 通知設定名.
 	 */
-	@Column('varchar', {
+	@Column("varchar", {
 		length: 255,
 	})
 	public name: string;
@@ -70,18 +70,18 @@ export class MiSystemWebhook {
 	/**
 	 * イベント種別.
 	 */
-	@Index('IDX_system_webhook_on', { synchronize: false })
-	@Column('varchar', {
+	@Index("IDX_system_webhook_on", { synchronize: false })
+	@Column("varchar", {
 		length: 128,
 		array: true,
-		default: '{}',
+		default: "{}",
 	})
 	public on: SystemWebhookEventType[];
 
 	/**
 	 * Webhook送信先のURL.
 	 */
-	@Column('varchar', {
+	@Column("varchar", {
 		length: 1024,
 	})
 	public url: string;
@@ -89,7 +89,7 @@ export class MiSystemWebhook {
 	/**
 	 * Webhook検証用の値.
 	 */
-	@Column('varchar', {
+	@Column("varchar", {
 		length: 1024,
 	})
 	public secret: string;

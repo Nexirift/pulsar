@@ -5,9 +5,9 @@
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable import/no-default-export */
-import { action } from '@storybook/addon-actions';
-import type { StoryObj } from '@storybook/vue3';
-import MkButton from './MkButton.vue';
+import { action } from "@storybook/addon-actions";
+import type { StoryObj } from "@storybook/vue3";
+import MkButton from "./MkButton.vue";
 export const Default = {
 	render(args) {
 		return {
@@ -27,17 +27,16 @@ export const Default = {
 				},
 				events() {
 					return {
-						click: action('click'),
+						click: action("click"),
 					};
 				},
 			},
 			template: '<MkButton v-bind="props" v-on="events">Text</MkButton>',
 		};
 	},
-	args: {
-	},
+	args: {},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkButton>;
 export const Primary = {

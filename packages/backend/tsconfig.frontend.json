@@ -1,7 +1,7 @@
 {
 	"extends": "../shared/tsconfig.web.jsonc",
 	"compilerOptions": {
-		"noEmit": true,
+		"noEmit": true
 	},
 	"include": [
 		"./assets/**/*.js",

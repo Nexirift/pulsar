@@ -3,13 +3,16 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { Directive } from 'vue';
+import type { Directive } from "vue";
 
-const mountings = new Map<Element, {
-	resize: ResizeObserver;
-	intersection?: IntersectionObserver;
-	fn: (w: number, h: number) => void;
-}>();
+const mountings = new Map<
+	Element,
+	{
+		resize: ResizeObserver;
+		intersection?: IntersectionObserver;
+		fn: (w: number, h: number) => void;
+	}
+>();
 
 function calc(src: Element) {
 	const info = mountings.get(src);
@@ -22,8 +25,8 @@ function calc(src: Element) {
 	if (!height) {
 		// IntersectionObserverで表示検出する
 		if (!info.intersection) {
-			info.intersection = new IntersectionObserver(entries => {
-				if (entries.some(entry => entry.isIntersecting)) calc(src);
+			info.intersection = new IntersectionObserver((entries) => {
+				if (entries.some((entry) => entry.isIntersecting)) calc(src);
 			});
 		}
 		info.intersection.observe(src);

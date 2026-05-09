@@ -4,60 +4,72 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader :actions="headerActions" :tabs="headerTabs">
-	<div class="_spacer" style="--MI_SPACER-w: 600px; --MI_SPACER-min: 16px;">
-		<div class="_gaps_m">
-			<FormSplit>
-				<MkKeyValue>
-					<template #key>{{ i18n.ts._registry.domain }}</template>
-					<template #value>{{ props.domain === '@' ? i18n.ts.system : props.domain.toUpperCase() }}</template>
-				</MkKeyValue>
-				<MkKeyValue>
-					<template #key>{{ i18n.ts._registry.scope }}</template>
-					<template #value>{{ scope.join('/') }}</template>
-				</MkKeyValue>
-			</FormSplit>
+	<PageWithHeader :actions="headerActions" :tabs="headerTabs">
+		<div class="_spacer" style="--MI_SPACER-w: 600px; --MI_SPACER-min: 16px">
+			<div class="_gaps_m">
+				<FormSplit>
+					<MkKeyValue>
+						<template #key>{{ i18n.ts._registry.domain }}</template>
+						<template #value>{{
+							props.domain === "@" ? i18n.ts.system : props.domain.toUpperCase()
+						}}</template>
+					</MkKeyValue>
+					<MkKeyValue>
+						<template #key>{{ i18n.ts._registry.scope }}</template>
+						<template #value>{{ scope.join("/") }}</template>
+					</MkKeyValue>
+				</FormSplit>
 
-			<MkButton primary @click="createKey">{{ i18n.ts._registry.createKey }}</MkButton>
+				<MkButton primary @click="createKey">{{
+					i18n.ts._registry.createKey
+				}}</MkButton>
 
-			<FormSection v-if="keys">
-				<template #label>{{ i18n.ts._registry.keys }}</template>
-				<div class="_gaps_s">
-					<FormLink v-for="key in keys" :to="`/registry/value/${props.domain}/${scope.join('/')}/${key[0]}`" class="_monospace">{{ key[0] }}<template #suffix>{{ key[1].toUpperCase() }}</template></FormLink>
-				</div>
-			</FormSection>
+				<FormSection v-if="keys">
+					<template #label>{{ i18n.ts._registry.keys }}</template>
+					<div class="_gaps_s">
+						<FormLink
+							v-for="key in keys"
+							:to="`/registry/value/${props.domain}/${scope.join('/')}/${key[0]}`"
+							class="_monospace"
+							>{{ key[0]
+							}}<template #suffix>{{
+								key[1].toUpperCase()
+							}}</template></FormLink
+						>
+					</div>
+				</FormSection>
+			</div>
 		</div>
-	</div>
-</PageWithHeader>
+	</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { watch, computed, ref } from 'vue';
-import JSON5 from 'json5';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { i18n } from '@/i18n.js';
-import { definePage } from '@/page.js';
-import FormLink from '@/components/form/link.vue';
-import FormSection from '@/components/form/section.vue';
-import MkButton from '@/components/MkButton.vue';
-import MkKeyValue from '@/components/MkKeyValue.vue';
-import FormSplit from '@/components/form/split.vue';
+import { watch, computed, ref } from "vue";
+import JSON5 from "json5";
+import * as os from "@/os.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { i18n } from "@/i18n.js";
+import { definePage } from "@/page.js";
+import FormLink from "@/components/form/link.vue";
+import FormSection from "@/components/form/section.vue";
+import MkButton from "@/components/MkButton.vue";
+import MkKeyValue from "@/components/MkKeyValue.vue";
+import FormSplit from "@/components/form/split.vue";
 
 const props = defineProps<{
 	path: string;
 	domain: string;
 }>();
 
-const scope = computed(() => props.path ? props.path.split('/') : []);
+const scope = computed(() => (props.path ? props.path.split("/") : []));
 
 const keys = ref<[string, string][]>([]);
 
 function fetchKeys() {
-	misskeyApi('i/registry/keys-with-type', {
+	misskeyApi("i/registry/keys-with-type", {
 		scope: scope.value,
-		domain: props.domain === '@' ? null : props.domain,
-	}).then(res => {
+		domain: props.domain === "@" ? null : props.domain,
+	}).then((res) => {
 		keys.value = Object.entries(res).sort((a, b) => a[0].localeCompare(b[0]));
 	});
 }
@@ -65,23 +77,23 @@ function fetchKeys() {
 async function createKey() {
 	const { canceled, result } = await os.form(i18n.ts._registry.createKey, {
 		key: {
-			type: 'string',
+			type: "string",
 			label: i18n.ts._registry.key,
 		},
 		value: {
-			type: 'string',
+			type: "string",
 			multiline: true,
 			label: i18n.ts.value,
 		},
 		scope: {
-			type: 'string',
+			type: "string",
 			label: i18n.ts._registry.scope,
-			default: scope.value.join('/'),
+			default: scope.value.join("/"),
 		},
 	});
 	if (canceled) return;
-	os.apiWithDialog('i/registry/set', {
-		scope: result.scope.split('/'),
+	os.apiWithDialog("i/registry/set", {
+		scope: result.scope.split("/"),
 		key: result.key,
 		value: JSON5.parse(result.value),
 	}).then(() => {
@@ -97,6 +109,6 @@ const headerTabs = computed(() => []);
 
 definePage(() => ({
 	title: i18n.ts.registry,
-	icon: 'ti ti-adjustments',
+	icon: "ti ti-adjustments",
 }));
 </script>

@@ -4,31 +4,38 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkContainer :showHeader="widgetProps.showHeader" class="mkw-chat">
-	<template #icon><i class="ti ti-users"></i></template>
-	<template #header>{{ i18n.ts._widgets.chat }}</template>
-	<template #func="{ buttonStyleClass }"><button class="_button" :class="buttonStyleClass" @click="configure()"><i class="ti ti-settings"></i></button></template>
+	<MkContainer :showHeader="widgetProps.showHeader" class="mkw-chat">
+		<template #icon><i class="ti ti-users"></i></template>
+		<template #header>{{ i18n.ts._widgets.chat }}</template>
+		<template #func="{ buttonStyleClass }"
+			><button class="_button" :class="buttonStyleClass" @click="configure()">
+				<i class="ti ti-settings"></i></button
+		></template>
 
-	<div>
-		<MkChatHistories/>
-	</div>
-</MkContainer>
+		<div>
+			<MkChatHistories />
+		</div>
+	</MkContainer>
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
-import { useWidgetPropsManager } from './widget.js';
-import type { WidgetComponentEmits, WidgetComponentExpose, WidgetComponentProps } from './widget.js';
-import type { GetFormResultType } from '@/utility/form.js';
-import MkContainer from '@/components/MkContainer.vue';
-import { i18n } from '@/i18n.js';
-import MkChatHistories from '@/components/MkChatHistories.vue';
+import {} from "vue";
+import { useWidgetPropsManager } from "./widget.js";
+import type {
+	WidgetComponentEmits,
+	WidgetComponentExpose,
+	WidgetComponentProps,
+} from "./widget.js";
+import type { GetFormResultType } from "@/utility/form.js";
+import MkContainer from "@/components/MkContainer.vue";
+import { i18n } from "@/i18n.js";
+import MkChatHistories from "@/components/MkChatHistories.vue";
 
-const name = 'chat';
+const name = "chat";
 
 const widgetPropsDef = {
 	showHeader: {
-		type: 'boolean' as const,
+		type: "boolean" as const,
 		default: true,
 	},
 };
@@ -38,7 +45,8 @@ type WidgetProps = GetFormResultType<typeof widgetPropsDef>;
 const props = defineProps<WidgetComponentProps<WidgetProps>>();
 const emit = defineEmits<WidgetComponentEmits<WidgetProps>>();
 
-const { widgetProps, configure, save } = useWidgetPropsManager(name,
+const { widgetProps, configure, save } = useWidgetPropsManager(
+	name,
 	widgetPropsDef,
 	props,
 	emit,

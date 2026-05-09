@@ -4,7 +4,7 @@
 	"codename": "galaxy",
 	"repository": {
 		"type": "git",
-		"url": "https://code.nexirift.com/Nexirift/pulsar.git"
+		"url": "https://git.codeguilds.org/Nexirift/pulsar.git"
 	},
 	"packageManager": "pnpm@10.27.0",
 	"workspaces": [

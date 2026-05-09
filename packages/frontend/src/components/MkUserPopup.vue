@@ -4,85 +4,171 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<Transition
-	:enterActiveClass="prefer.s.animation ? $style.transition_popup_enterActive : ''"
-	:leaveActiveClass="prefer.s.animation ? $style.transition_popup_leaveActive : ''"
-	:enterFromClass="prefer.s.animation ? $style.transition_popup_enterFrom : ''"
-	:leaveToClass="prefer.s.animation ? $style.transition_popup_leaveTo : ''"
-	appear @afterLeave="emit('closed')"
->
-	<div v-if="showing" :class="$style.root" class="_popup _shadow" :style="{ zIndex, top: top + 'px', left: left + 'px' }" @pointerover="(event) => { emit('pointerover', event); }" @mouseleave="() => { emit('mouseleave'); }">
-		<MkError v-if="error" @retry="fetchUser()"/>
-		<div v-else-if="user != null">
-			<div :class="$style.banner" :style="user.bannerUrl ? { backgroundImage: `url(${prefer.s.disableShowingAnimatedImages ? getStaticImageUrl(user.bannerUrl) : user.bannerUrl})` } : ''">
-				<span v-if="$i && $i.id != user.id && user.isFollowed && user.isFollowing" :class="$style.followed">{{ i18n.ts.mutuals }}</span>
-				<span v-else-if="$i && $i.id != user.id && user.isFollowed" :class="$style.followed">{{ i18n.ts.followsYou }}</span>
-				<span v-else-if="$i && $i.id != user.id && user.isFollowing" :class="$style.followed">{{ i18n.ts.following }}</span>
-				<span v-if="user.isLocked && $i && $i.id != user.id && !user.isFollowing" :title="i18n.ts.isLocked" :class="$style.locked"><i class="ph-lock ph-bold ph-lg"></i></span>
-			</div>
-			<svg viewBox="0 0 128 128" :class="$style.avatarBack">
-				<g transform="matrix(1.6,0,0,1.6,-38.4,-51.2)">
-					<path d="M64,32C81.661,32 96,46.339 96,64C95.891,72.184 104,72 104,72C104,72 74.096,80 64,80C52.755,80 24,72 24,72C24,72 31.854,72.018 32,64C32,46.339 46.339,32 64,32Z" style="fill: var(--MI_THEME-popup);"/>
-				</g>
-			</svg>
-			<MkAvatar :class="$style.avatar" :user="user" indicator/>
-			<div :class="$style.title">
-				<MkA :class="$style.name" :to="userPage(user)"><MkUserName :user="user" :nowrap="false"/></MkA>
-				<div :class="$style.username"><MkAcct :user="user"/></div>
-			</div>
-			<div :class="$style.description">
-				<Mfm v-if="user.description" :nyaize="false" :class="$style.mfm" :text="user.description" :isBlock="true" :author="user"/>
-				<div v-else style="opacity: 0.7;">{{ i18n.ts.noAccountDescription }}</div>
-			</div>
-			<div v-if="user.fields.length > 0" :class="$style.fields">
-				<dl v-for="(field, i) in user.fields" :key="i" :class="$style.field">
-					<dt :class="$style.fieldname">
-						<Mfm :text="field.name" :nyaize="false" :plain="true" :colored="false"/>
-					</dt>
-					<dd :class="$style.fieldvalue">
-						<Mfm :text="field.value" :nyaize="false" :author="user" :colored="false"/>
-						<i v-if="user.verifiedLinks.includes(field.value)" v-tooltip:dialog="i18n.ts.verifiedLink" class="ph-seal-check ph-bold ph-lg"></i>
-					</dd>
-				</dl>
-			</div>
-			<div :class="$style.status">
-				<div :class="$style.statusItem">
-					<div :class="$style.statusItemLabel">{{ i18n.ts.notes }}</div>
-					<div>{{ number(user.notesCount) }}</div>
+	<Transition
+		:enterActiveClass="
+			prefer.s.animation ? $style.transition_popup_enterActive : ''
+		"
+		:leaveActiveClass="
+			prefer.s.animation ? $style.transition_popup_leaveActive : ''
+		"
+		:enterFromClass="
+			prefer.s.animation ? $style.transition_popup_enterFrom : ''
+		"
+		:leaveToClass="prefer.s.animation ? $style.transition_popup_leaveTo : ''"
+		appear
+		@afterLeave="emit('closed')"
+	>
+		<div
+			v-if="showing"
+			:class="$style.root"
+			class="_popup _shadow"
+			:style="{ zIndex, top: top + 'px', left: left + 'px' }"
+			@pointerover="
+				(event) => {
+					emit('pointerover', event);
+				}
+			"
+			@mouseleave="
+				() => {
+					emit('mouseleave');
+				}
+			"
+		>
+			<MkError v-if="error" @retry="fetchUser()" />
+			<div v-else-if="user != null">
+				<div
+					:class="$style.banner"
+					:style="
+						user.bannerUrl
+							? {
+									backgroundImage: `url(${prefer.s.disableShowingAnimatedImages ? getStaticImageUrl(user.bannerUrl) : user.bannerUrl})`,
+								}
+							: ''
+					"
+				>
+					<span
+						v-if="$i && $i.id != user.id && user.isFollowed && user.isFollowing"
+						:class="$style.followed"
+						>{{ i18n.ts.mutuals }}</span
+					>
+					<span
+						v-else-if="$i && $i.id != user.id && user.isFollowed"
+						:class="$style.followed"
+						>{{ i18n.ts.followsYou }}</span
+					>
+					<span
+						v-else-if="$i && $i.id != user.id && user.isFollowing"
+						:class="$style.followed"
+						>{{ i18n.ts.following }}</span
+					>
+					<span
+						v-if="user.isLocked && $i && $i.id != user.id && !user.isFollowing"
+						:title="i18n.ts.isLocked"
+						:class="$style.locked"
+						><i class="ph-lock ph-bold ph-lg"></i
+					></span>
 				</div>
-				<div v-if="isFollowingVisibleForMe(user)" :class="$style.statusItem">
-					<div :class="$style.statusItemLabel">{{ i18n.ts.following }}</div>
-					<div>{{ number(user.followingCount) }}</div>
+				<svg viewBox="0 0 128 128" :class="$style.avatarBack">
+					<g transform="matrix(1.6,0,0,1.6,-38.4,-51.2)">
+						<path
+							d="M64,32C81.661,32 96,46.339 96,64C95.891,72.184 104,72 104,72C104,72 74.096,80 64,80C52.755,80 24,72 24,72C24,72 31.854,72.018 32,64C32,46.339 46.339,32 64,32Z"
+							style="fill: var(--MI_THEME-popup)"
+						/>
+					</g>
+				</svg>
+				<MkAvatar :class="$style.avatar" :user="user" indicator />
+				<div :class="$style.title">
+					<MkA :class="$style.name" :to="userPage(user)"
+						><MkUserName :user="user" :nowrap="false"
+					/></MkA>
+					<div :class="$style.username"><MkAcct :user="user" /></div>
 				</div>
-				<div v-if="isFollowersVisibleForMe(user)" :class="$style.statusItem">
-					<div :class="$style.statusItemLabel">{{ i18n.ts.followers }}</div>
-					<div>{{ number(user.followersCount) }}</div>
+				<div :class="$style.description">
+					<Mfm
+						v-if="user.description"
+						:nyaize="false"
+						:class="$style.mfm"
+						:text="user.description"
+						:isBlock="true"
+						:author="user"
+					/>
+					<div v-else style="opacity: 0.7">
+						{{ i18n.ts.noAccountDescription }}
+					</div>
 				</div>
+				<div v-if="user.fields.length > 0" :class="$style.fields">
+					<dl v-for="(field, i) in user.fields" :key="i" :class="$style.field">
+						<dt :class="$style.fieldname">
+							<Mfm
+								:text="field.name"
+								:nyaize="false"
+								:plain="true"
+								:colored="false"
+							/>
+						</dt>
+						<dd :class="$style.fieldvalue">
+							<Mfm
+								:text="field.value"
+								:nyaize="false"
+								:author="user"
+								:colored="false"
+							/>
+							<i
+								v-if="user.verifiedLinks.includes(field.value)"
+								v-tooltip:dialog="i18n.ts.verifiedLink"
+								class="ph-seal-check ph-bold ph-lg"
+							></i>
+						</dd>
+					</dl>
+				</div>
+				<div :class="$style.status">
+					<div :class="$style.statusItem">
+						<div :class="$style.statusItemLabel">{{ i18n.ts.notes }}</div>
+						<div>{{ number(user.notesCount) }}</div>
+					</div>
+					<div v-if="isFollowingVisibleForMe(user)" :class="$style.statusItem">
+						<div :class="$style.statusItemLabel">{{ i18n.ts.following }}</div>
+						<div>{{ number(user.followingCount) }}</div>
+					</div>
+					<div v-if="isFollowersVisibleForMe(user)" :class="$style.statusItem">
+						<div :class="$style.statusItemLabel">{{ i18n.ts.followers }}</div>
+						<div>{{ number(user.followersCount) }}</div>
+					</div>
+				</div>
+				<button class="_button" :class="$style.menu" @click="showMenu">
+					<i class="ti ti-dots"></i>
+				</button>
+				<MkFollowButton
+					v-if="$i && user.id != $i.id"
+					v-model:user="user"
+					:class="$style.follow"
+					mini
+				/>
 			</div>
-			<button class="_button" :class="$style.menu" @click="showMenu"><i class="ti ti-dots"></i></button>
-			<MkFollowButton v-if="$i && user.id != $i.id" v-model:user="user" :class="$style.follow" mini/>
+			<div v-else>
+				<MkLoading />
+			</div>
 		</div>
-		<div v-else>
-			<MkLoading/>
-		</div>
-	</div>
-</Transition>
+	</Transition>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import MkFollowButton from '@/components/MkFollowButton.vue';
-import { userPage } from '@/filters/user.js';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { getUserMenu } from '@/utility/get-user-menu.js';
-import number from '@/filters/number.js';
-import { i18n } from '@/i18n.js';
-import { prefer } from '@/preferences.js';
-import { $i } from '@/i.js';
-import { isFollowingVisibleForMe, isFollowersVisibleForMe } from '@/utility/isFfVisibleForMe.js';
-import { getStaticImageUrl } from '@/utility/media-proxy.js';
+import { onMounted, ref } from "vue";
+import * as Misskey from "misskey-js";
+import MkFollowButton from "@/components/MkFollowButton.vue";
+import { userPage } from "@/filters/user.js";
+import * as os from "@/os.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { getUserMenu } from "@/utility/get-user-menu.js";
+import number from "@/filters/number.js";
+import { i18n } from "@/i18n.js";
+import { prefer } from "@/preferences.js";
+import { $i } from "@/i.js";
+import {
+	isFollowingVisibleForMe,
+	isFollowersVisibleForMe,
+} from "@/utility/isFfVisibleForMe.js";
+import { getStaticImageUrl } from "@/utility/media-proxy.js";
 
 const props = defineProps<{
 	showing: boolean;
@@ -91,12 +177,12 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'closed'): void;
-	(ev: 'pointerover', event: PointerEvent): void;
-	(ev: 'mouseleave'): void;
+	(ev: "closed"): void;
+	(ev: "pointerover", event: PointerEvent): void;
+	(ev: "mouseleave"): void;
 }>();
 
-const zIndex = os.claimZIndex('middle');
+const zIndex = os.claimZIndex("middle");
 const user = ref<Misskey.entities.UserDetailed | null>(null);
 const top = ref(0);
 const left = ref(0);
@@ -109,21 +195,25 @@ function showMenu(ev: MouseEvent) {
 }
 
 async function fetchUser() {
-	if (typeof props.q === 'object') {
+	if (typeof props.q === "object") {
 		user.value = props.q;
 		error.value = false;
 	} else {
-		const query: Omit<Misskey.entities.UsersShowRequest, 'userIds'> = props.q.startsWith('@') ?
-			Misskey.acct.parse(props.q.substring(1)) :
-			{ userId: props.q };
+		const query: Omit<Misskey.entities.UsersShowRequest, "userIds"> =
+			props.q.startsWith("@")
+				? Misskey.acct.parse(props.q.substring(1))
+				: { userId: props.q };
 
-		misskeyApi('users/show', query).then(res => {
-			if (!props.showing) return;
-			user.value = res;
-			error.value = false;
-		}, () => {
-			error.value = true;
-		});
+		misskeyApi("users/show", query).then(
+			(res) => {
+				if (!props.showing) return;
+				user.value = res;
+				error.value = false;
+			},
+			() => {
+				error.value = true;
+			},
+		);
 	}
 }
 
@@ -131,7 +221,10 @@ onMounted(() => {
 	fetchUser();
 
 	const rect = props.source.getBoundingClientRect();
-	const x = Math.max(1, ((rect.left + (props.source.offsetWidth / 2)) - (300 / 2)) + window.scrollX);
+	const x = Math.max(
+		1,
+		rect.left + props.source.offsetWidth / 2 - 300 / 2 + window.scrollX,
+	);
 	const y = rect.top + props.source.offsetHeight + window.scrollY;
 
 	top.value = y;
@@ -142,7 +235,9 @@ onMounted(() => {
 <style lang="scss" module>
 .transition_popup_enterActive,
 .transition_popup_leaveActive {
-	transition: opacity 0.15s, transform 0.15s !important;
+	transition:
+		opacity 0.15s,
+		transform 0.15s !important;
 }
 .transition_popup_enterFrom,
 .transition_popup_leaveTo {

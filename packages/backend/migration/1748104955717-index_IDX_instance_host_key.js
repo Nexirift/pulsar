@@ -4,10 +4,12 @@
  */
 
 export class IndexIDXInstanceHostKey1748104955717 {
-	name = 'IndexIDXInstanceHostKey1748104955717'
+	name = "IndexIDXInstanceHostKey1748104955717";
 
 	async up(queryRunner) {
-		await queryRunner.query(`CREATE UNIQUE INDEX "IDX_instance_host_key" ON "instance" (((lower(reverse("host")) || '.')::text) text_pattern_ops)`);
+		await queryRunner.query(
+			`CREATE UNIQUE INDEX "IDX_instance_host_key" ON "instance" (((lower(reverse("host")) || '.')::text) text_pattern_ops)`,
+		);
 	}
 
 	async down(queryRunner) {

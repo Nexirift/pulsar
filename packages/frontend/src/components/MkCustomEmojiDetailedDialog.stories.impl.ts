@@ -5,9 +5,9 @@
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable import/no-default-export */
-import type { StoryObj } from '@storybook/vue3';
-import { emojiDetailed } from '../../.storybook/fakes.js';
-import MkCustomEmojiDetailedDialog from './MkCustomEmojiDetailedDialog.vue';
+import type { StoryObj } from "@storybook/vue3";
+import { emojiDetailed } from "../../.storybook/fakes.js";
+import MkCustomEmojiDetailedDialog from "./MkCustomEmojiDetailedDialog.vue";
 export const Default = {
 	render(args) {
 		return {
@@ -33,6 +33,6 @@ export const Default = {
 		emoji: emojiDetailed(),
 	},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkCustomEmojiDetailedDialog>;

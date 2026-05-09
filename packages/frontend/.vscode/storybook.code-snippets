@@ -34,8 +34,8 @@
 			"\t\tlayout: 'centered',",
 			"\t},",
 			"} satisfies StoryObj<typeof $1>;",
-			""
-		]
+			"",
+		],
 	},
 	"Storybook Story Impl File (w/ events)": {
 		"scope": "typescript",
@@ -78,7 +78,7 @@
 			"\t\tlayout: 'centered',",
 			"\t},",
 			"} satisfies StoryObj<typeof $1>;",
-			""
-		]
-	}
+			"",
+		],
+	},
 }

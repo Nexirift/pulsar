@@ -4,235 +4,476 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div class="_spacer" :style="{ '--MI_SPACER-w': narrow ? '800px' : '1100px', ...background }">
-	<div ref="rootEl" class="ftskorzw" :class="{ wide: !narrow }" style="container-type: inline-size;">
-		<div class="main _gaps">
-			<MkInfo v-if="user.isSuspended" :warn="true">{{ i18n.ts.userSuspended }}</MkInfo>
-			<MkInfo v-if="user.isSilenced" :warn="true">{{ i18n.ts.userSilenced }}</MkInfo>
+	<div
+		class="_spacer"
+		:style="{ '--MI_SPACER-w': narrow ? '800px' : '1100px', ...background }"
+	>
+		<div
+			ref="rootEl"
+			class="ftskorzw"
+			:class="{ wide: !narrow }"
+			style="container-type: inline-size"
+		>
+			<div class="main _gaps">
+				<MkInfo v-if="user.isSuspended" :warn="true">{{
+					i18n.ts.userSuspended
+				}}</MkInfo>
+				<MkInfo v-if="user.isSilenced" :warn="true">{{
+					i18n.ts.userSilenced
+				}}</MkInfo>
 
-			<div class="profile _gaps">
-				<MkAccountMoved v-if="user.movedToUri" :movedTo="user.movedTo" :movedToUri="user.movedToUri"/>
-				<MkRemoteCaution v-if="user.host != null" :href="user.url ?? user.uri!"/>
-				<MkInfo v-if="user.host == null && user.username.includes('.')">{{ i18n.ts.isSystemAccount }}</MkInfo>
+				<div class="profile _gaps">
+					<MkAccountMoved
+						v-if="user.movedToUri"
+						:movedTo="user.movedTo"
+						:movedToUri="user.movedToUri"
+					/>
+					<MkRemoteCaution
+						v-if="user.host != null"
+						:href="user.url ?? user.uri!"
+					/>
+					<MkInfo v-if="user.host == null && user.username.includes('.')">{{
+						i18n.ts.isSystemAccount
+					}}</MkInfo>
 
-				<div :key="user.id" class="main _panel">
-					<div class="banner-container" :class="{ [$style.bannerContainerTall]: useTallBanner }">
-						<div ref="bannerEl" class="banner" :style="style"></div>
-						<div class="fade"></div>
-						<div class="title">
-							<MkUserName class="name" :user="user" :nowrap="true"/>
-							<div class="bottom">
-								<span class="username"><MkAcct :user="user" :detail="true"/></span>
-								<span v-if="user.isAdultsOnly" :title="i18n.ts.nsfw" style="user-select: none;">🔞</span>
-								<span v-if="user.isAdmin" :title="i18n.ts.isAdmin" style="color: var(--MI_THEME-badge);"><i class="ti ti-shield"></i></span>
-								<span v-if="user.isLocked" :title="i18n.ts.isLocked"><i class="ti ti-lock"></i></span>
-								<span v-if="user.isBot" :title="i18n.ts.isBot"><i class="ti ti-robot"></i></span>
-								<button v-if="$i && !isEditingMemo && !memoDraft" class="_button add-note-button" @click="showMemoTextarea">
-									<i class="ti ti-edit"/> {{ i18n.ts.addMemo }}
+					<div :key="user.id" class="main _panel">
+						<div
+							class="banner-container"
+							:class="{ [$style.bannerContainerTall]: useTallBanner }"
+						>
+							<div ref="bannerEl" class="banner" :style="style"></div>
+							<div class="fade"></div>
+							<div class="title">
+								<MkUserName class="name" :user="user" :nowrap="true" />
+								<div class="bottom">
+									<span class="username"
+										><MkAcct :user="user" :detail="true"
+									/></span>
+									<span
+										v-if="user.isAdultsOnly"
+										:title="i18n.ts.nsfw"
+										style="user-select: none"
+										>🔞</span
+									>
+									<span
+										v-if="user.isAdmin"
+										:title="i18n.ts.isAdmin"
+										style="color: var(--MI_THEME-badge)"
+										><i class="ti ti-shield"></i
+									></span>
+									<span v-if="user.isLocked" :title="i18n.ts.isLocked"
+										><i class="ti ti-lock"></i
+									></span>
+									<span v-if="user.isBot" :title="i18n.ts.isBot"
+										><i class="ti ti-robot"></i
+									></span>
+									<button
+										v-if="$i && !isEditingMemo && !memoDraft"
+										class="_button add-note-button"
+										@click="showMemoTextarea"
+									>
+										<i class="ti ti-edit" /> {{ i18n.ts.addMemo }}
+									</button>
+								</div>
+							</div>
+							<ul v-if="$i && $i.id != user.id" :class="$style.infoBadges">
+								<li v-if="user.isFollowed && user.isFollowing">
+									{{ i18n.ts.mutuals }}
+								</li>
+								<li v-else-if="user.isFollowing">{{ i18n.ts.following }}</li>
+								<li v-else-if="user.isFollowed">{{ i18n.ts.followsYou }}</li>
+								<li v-if="user.isMuted">{{ i18n.ts.muted }}</li>
+								<li v-if="user.isRenoteMuted">{{ i18n.ts.renoteMuted }}</li>
+								<li v-if="user.isBlocking">{{ i18n.ts.blocked }}</li>
+								<li v-if="user.isBlocked && $i.isModerator">
+									{{ i18n.ts.blockingYou }}
+								</li>
+							</ul>
+							<div :class="$style.actions" class="actions">
+								<button
+									:class="$style.actionsMenu"
+									class="menu _button"
+									@click="menu"
+								>
+									<i class="ti ti-dots"></i>
 								</button>
+								<MkFollowButton
+									v-if="$i?.id != user.id"
+									v-model:user="user"
+									:class="$style.actionsFollow"
+									:disabled="disableFollowControls"
+									:inline="true"
+									:transparent="false"
+									:full="true"
+									class="koudoku"
+									@update:wait="onFollowButtonDisabledChanged"
+								/>
+								<div v-if="hasFollowRequest" :class="$style.actionsBanner">
+									{{ i18n.ts.receiveFollowRequest }}
+								</div>
+								<MkButton
+									v-if="hasFollowRequest"
+									:class="$style.actionsAccept"
+									:disabled="disableFollowControls"
+									:inline="true"
+									:transparent="false"
+									:full="true"
+									rounded
+									primary
+									@click="acceptFollowRequest"
+									><i class="ti ti-check" /> {{ i18n.ts.accept }}</MkButton
+								>
+								<MkButton
+									v-if="hasFollowRequest"
+									:class="$style.actionsReject"
+									:disabled="disableFollowControls"
+									:inline="true"
+									:transparent="false"
+									:full="true"
+									rounded
+									danger
+									@click="rejectFollowRequest"
+									><i class="ti ti-x" /> {{ i18n.ts.reject }}</MkButton
+								>
 							</div>
 						</div>
-						<ul v-if="$i && $i.id != user.id" :class="$style.infoBadges">
-							<li v-if="user.isFollowed && user.isFollowing">{{ i18n.ts.mutuals }}</li>
-							<li v-else-if="user.isFollowing">{{ i18n.ts.following }}</li>
-							<li v-else-if="user.isFollowed">{{ i18n.ts.followsYou }}</li>
-							<li v-if="user.isMuted">{{ i18n.ts.muted }}</li>
-							<li v-if="user.isRenoteMuted">{{ i18n.ts.renoteMuted }}</li>
-							<li v-if="user.isBlocking">{{ i18n.ts.blocked }}</li>
-							<li v-if="user.isBlocked && $i.isModerator">{{ i18n.ts.blockingYou }}</li>
-						</ul>
-						<div :class="$style.actions" class="actions">
-							<button :class="$style.actionsMenu" class="menu _button" @click="menu"><i class="ti ti-dots"></i></button>
-							<MkFollowButton v-if="$i?.id != user.id" v-model:user="user" :class="$style.actionsFollow" :disabled="disableFollowControls" :inline="true" :transparent="false" :full="true" class="koudoku" @update:wait="onFollowButtonDisabledChanged"/>
-							<div v-if="hasFollowRequest" :class="$style.actionsBanner">{{ i18n.ts.receiveFollowRequest }}</div>
-							<MkButton v-if="hasFollowRequest" :class="$style.actionsAccept" :disabled="disableFollowControls" :inline="true" :transparent="false" :full="true" rounded primary @click="acceptFollowRequest"><i class="ti ti-check"/> {{ i18n.ts.accept }}</MkButton>
-							<MkButton v-if="hasFollowRequest" :class="$style.actionsReject" :disabled="disableFollowControls" :inline="true" :transparent="false" :full="true" rounded danger @click="rejectFollowRequest"><i class="ti ti-x"/> {{ i18n.ts.reject }}</MkButton>
-						</div>
-					</div>
-					<MkAvatar class="avatar" :class="{ [$style.avatarTall]: useTallBanner }" :user="user" indicator/>
-					<div class="title">
-						<MkUserName :user="user" :nowrap="false" class="name"/>
-						<div class="bottom">
-							<span class="username"><MkAcct :user="user" :detail="true"/></span>
-							<span v-if="user.isAdmin" :title="i18n.ts.isAdmin" style="color: var(--MI_THEME-badge);"><i class="ti ti-shield"></i></span>
-							<span v-if="user.isLocked" :title="i18n.ts.isLocked"><i class="ti ti-lock"></i></span>
-							<span v-if="user.isAdultsOnly" :title="i18n.ts.nsfw" style="user-select: none;">🔞</span>
-						</div>
-					</div>
-					<div v-if="user.followedMessage != null" class="followedMessage">
-						<MkFukidashi class="fukidashi" :tail="narrow ? 'none' : 'left'" negativeMargin>
-							<div class="messageHeader">{{ i18n.ts.messageToFollower }}</div>
-							<div><MkSparkle><Mfm :plain="true" :text="user.followedMessage" :author="user" class="_selectable"/></MkSparkle></div>
-						</MkFukidashi>
-					</div>
-					<div v-if="user.roles.length > 0" class="roles">
-						<span v-for="role in user.roles" :key="role.id" v-tooltip="role.description" class="role" :style="{ '--color': role.color }">
-							<MkA v-adaptive-bg :to="`/roles/${role.id}`">
-								<img v-if="role.iconUrl" style="height: 1.3em; vertical-align: -22%;" :src="role.iconUrl"/>
-								{{ role.name }}
-							</MkA>
-						</span>
-					</div>
-					<div v-if="iAmModerator" class="moderationNote">
-						<MkTextarea v-if="editModerationNote || (moderationNote != null && moderationNote !== '')" v-model="moderationNote" manualSave>
-							<template #label>{{ i18n.ts.moderationNote }}</template>
-							<template #caption>{{ i18n.ts.moderationNoteDescription }}</template>
-						</MkTextarea>
-						<div v-else>
-							<MkButton small @click="editModerationNote = true">{{ i18n.ts.addModerationNote }}</MkButton>
-						</div>
-					</div>
-					<div v-if="isEditingMemo || memoDraft" class="memo" :class="{'no-memo': !memoDraft}">
-						<div class="heading" v-text="i18n.ts.memo"/>
-						<textarea
-							ref="memoTextareaEl"
-							v-model="memoDraft"
-							rows="1"
-							@focus="isEditingMemo = true"
-							@blur="updateMemo"
-							@input="adjustMemoTextarea"
+						<MkAvatar
+							class="avatar"
+							:class="{ [$style.avatarTall]: useTallBanner }"
+							:user="user"
+							indicator
 						/>
-					</div>
-					<div class="description">
-						<MkOmit>
-							<Mfm v-if="user.description" :text="user.description" :isBlock="true" :isNote="false" :author="user" class="_selectable"/>
-							<p v-else class="empty">{{ i18n.ts.noAccountDescription }}</p>
-						</MkOmit>
-					</div>
-					<div class="fields system">
-						<dl v-if="user.location" class="field">
-							<dt class="name"><i class="ti ti-map-pin ti-fw"></i> {{ i18n.ts.location }}</dt>
-							<dd class="value">{{ user.location }}</dd>
-						</dl>
-						<dl v-if="user.birthday" class="field">
-							<dt class="name"><i class="ti ti-cake ti-fw"></i> {{ i18n.ts.birthday }}</dt>
-							<dd class="value">{{ user.birthday.replace('-', '/').replace('-', '/') }} ({{ i18n.tsx.yearsOld({ age }) }})</dd>
-						</dl>
-						<dl class="field">
-							<dt class="name"><i class="ti ti-calendar ti-fw"></i> {{ i18n.ts.registeredDate }}</dt>
-							<dd class="value">{{ dateString(user.createdAt) }} (<MkTime :time="user.createdAt"/>)</dd>
-						</dl>
-					</div>
-					<div v-if="user.fields.length > 0" class="fields">
-						<dl v-for="(field, i) in user.fields" :key="i" class="field">
-							<dt class="name">
-								<Mfm :text="field.name" :author="user" :plain="true" :colored="false" class="_selectable"/>
-							</dt>
-							<dd class="value">
-								<Mfm :text="field.value" :author="user" :colored="false" class="_selectable"/>
-								<i v-if="user.verifiedLinks.includes(field.value)" v-tooltip:dialog="i18n.ts.verifiedLink" class="ti ti-circle-check" :class="$style.verifiedLink"></i>
-							</dd>
-						</dl>
-					</div>
-					<div class="status">
-						<MkA :to="userPage(user)">
-							<b>{{ number(user.notesCount) }}</b>
-							<span>{{ i18n.ts.notes }}</span>
-						</MkA>
-						<MkA v-if="isFollowingVisibleForMe(user)" :to="userPage(user, 'following')">
-							<b>{{ number(user.followingCount) }}</b>
-							<span>{{ i18n.ts.following }}</span>
-						</MkA>
-						<MkA v-if="isFollowersVisibleForMe(user)" :to="userPage(user, 'followers')">
-							<b>{{ number(user.followersCount) }}</b>
-							<span>{{ i18n.ts.followers }}</span>
-						</MkA>
+						<div class="title">
+							<MkUserName :user="user" :nowrap="false" class="name" />
+							<div class="bottom">
+								<span class="username"
+									><MkAcct :user="user" :detail="true"
+								/></span>
+								<span
+									v-if="user.isAdmin"
+									:title="i18n.ts.isAdmin"
+									style="color: var(--MI_THEME-badge)"
+									><i class="ti ti-shield"></i
+								></span>
+								<span v-if="user.isLocked" :title="i18n.ts.isLocked"
+									><i class="ti ti-lock"></i
+								></span>
+								<span
+									v-if="user.isAdultsOnly"
+									:title="i18n.ts.nsfw"
+									style="user-select: none"
+									>🔞</span
+								>
+							</div>
+						</div>
+						<div v-if="user.followedMessage != null" class="followedMessage">
+							<MkFukidashi
+								class="fukidashi"
+								:tail="narrow ? 'none' : 'left'"
+								negativeMargin
+							>
+								<div class="messageHeader">{{ i18n.ts.messageToFollower }}</div>
+								<div>
+									<MkSparkle
+										><Mfm
+											:plain="true"
+											:text="user.followedMessage"
+											:author="user"
+											class="_selectable"
+									/></MkSparkle>
+								</div>
+							</MkFukidashi>
+						</div>
+						<div v-if="user.roles.length > 0" class="roles">
+							<span
+								v-for="role in user.roles"
+								:key="role.id"
+								v-tooltip="role.description"
+								class="role"
+								:style="{ '--color': role.color }"
+							>
+								<MkA v-adaptive-bg :to="`/roles/${role.id}`">
+									<img
+										v-if="role.iconUrl"
+										style="height: 1.3em; vertical-align: -22%"
+										:src="role.iconUrl"
+									/>
+									{{ role.name }}
+								</MkA>
+							</span>
+						</div>
+						<div v-if="iAmModerator" class="moderationNote">
+							<MkTextarea
+								v-if="
+									editModerationNote ||
+									(moderationNote != null && moderationNote !== '')
+								"
+								v-model="moderationNote"
+								manualSave
+							>
+								<template #label>{{ i18n.ts.moderationNote }}</template>
+								<template #caption>{{
+									i18n.ts.moderationNoteDescription
+								}}</template>
+							</MkTextarea>
+							<div v-else>
+								<MkButton small @click="editModerationNote = true">{{
+									i18n.ts.addModerationNote
+								}}</MkButton>
+							</div>
+						</div>
+						<div
+							v-if="isEditingMemo || memoDraft"
+							class="memo"
+							:class="{ 'no-memo': !memoDraft }"
+						>
+							<div class="heading" v-text="i18n.ts.memo" />
+							<textarea
+								ref="memoTextareaEl"
+								v-model="memoDraft"
+								rows="1"
+								@focus="isEditingMemo = true"
+								@blur="updateMemo"
+								@input="adjustMemoTextarea"
+							/>
+						</div>
+						<div class="description">
+							<MkOmit>
+								<Mfm
+									v-if="user.description"
+									:text="user.description"
+									:isBlock="true"
+									:isNote="false"
+									:author="user"
+									class="_selectable"
+								/>
+								<p v-else class="empty">{{ i18n.ts.noAccountDescription }}</p>
+							</MkOmit>
+						</div>
+						<div class="fields system">
+							<dl v-if="user.location" class="field">
+								<dt class="name">
+									<i class="ti ti-map-pin ti-fw"></i> {{ i18n.ts.location }}
+								</dt>
+								<dd class="value">{{ user.location }}</dd>
+							</dl>
+							<dl v-if="user.birthday" class="field">
+								<dt class="name">
+									<i class="ti ti-cake ti-fw"></i> {{ i18n.ts.birthday }}
+								</dt>
+								<dd class="value">
+									{{ user.birthday.replace("-", "/").replace("-", "/") }} ({{
+										i18n.tsx.yearsOld({ age })
+									}})
+								</dd>
+							</dl>
+							<dl class="field">
+								<dt class="name">
+									<i class="ti ti-calendar ti-fw"></i>
+									{{ i18n.ts.registeredDate }}
+								</dt>
+								<dd class="value">
+									{{ dateString(user.createdAt) }} (<MkTime
+										:time="user.createdAt"
+									/>)
+								</dd>
+							</dl>
+						</div>
+						<div v-if="user.fields.length > 0" class="fields">
+							<dl v-for="(field, i) in user.fields" :key="i" class="field">
+								<dt class="name">
+									<Mfm
+										:text="field.name"
+										:author="user"
+										:plain="true"
+										:colored="false"
+										class="_selectable"
+									/>
+								</dt>
+								<dd class="value">
+									<Mfm
+										:text="field.value"
+										:author="user"
+										:colored="false"
+										class="_selectable"
+									/>
+									<i
+										v-if="user.verifiedLinks.includes(field.value)"
+										v-tooltip:dialog="i18n.ts.verifiedLink"
+										class="ti ti-circle-check"
+										:class="$style.verifiedLink"
+									></i>
+								</dd>
+							</dl>
+						</div>
+						<div class="status">
+							<MkA :to="userPage(user)">
+								<b>{{ number(user.notesCount) }}</b>
+								<span>{{ i18n.ts.notes }}</span>
+							</MkA>
+							<MkA
+								v-if="isFollowingVisibleForMe(user)"
+								:to="userPage(user, 'following')"
+							>
+								<b>{{ number(user.followingCount) }}</b>
+								<span>{{ i18n.ts.following }}</span>
+							</MkA>
+							<MkA
+								v-if="isFollowersVisibleForMe(user)"
+								:to="userPage(user, 'followers')"
+							>
+								<b>{{ number(user.followersCount) }}</b>
+								<span>{{ i18n.ts.followers }}</span>
+							</MkA>
+						</div>
 					</div>
 				</div>
-			</div>
 
-			<div class="contents _gaps">
-				<MkInfo v-if="user.pinnedNotes.length === 0 && $i?.id === user.id">{{ i18n.ts.userPagePinTip }}</MkInfo>
-				<template v-if="narrow">
-					<MkLazy>
-						<XFiles :key="user.id" :user="user" :collapsed="true" @unfold="emit('unfoldFiles')"/>
-					</MkLazy>
-					<MkLazy>
-						<XActivity :key="user.id" :user="user" :collapsed="true"/>
-					</MkLazy>
-					<MkLazy v-if="user.listenbrainz && listenbrainzdata">
-						<XListenBrainz :key="user.id" :user="user" :collapsed="true"/>
-					</MkLazy>
-				</template>
-				<!-- <div v-if="!disableNotes">
+				<div class="contents _gaps">
+					<MkInfo v-if="user.pinnedNotes.length === 0 && $i?.id === user.id">{{
+						i18n.ts.userPagePinTip
+					}}</MkInfo>
+					<template v-if="narrow">
+						<MkLazy>
+							<XFiles
+								:key="user.id"
+								:user="user"
+								:collapsed="true"
+								@unfold="emit('unfoldFiles')"
+							/>
+						</MkLazy>
+						<MkLazy>
+							<XActivity :key="user.id" :user="user" :collapsed="true" />
+						</MkLazy>
+						<MkLazy v-if="user.listenbrainz && listenbrainzdata">
+							<XListenBrainz :key="user.id" :user="user" :collapsed="true" />
+						</MkLazy>
+					</template>
+					<!-- <div v-if="!disableNotes">
 					<MkLazy>
 						<XTimeline :user="user"/>
 					</MkLazy>
 				</div> -->
-				<MkStickyContainer>
-					<template #header>
-						<!-- You can't use v-if on these, as MkTab first *deletes* and replaces all children with native HTML elements. -->
-						<!-- Instead, we add a "no notes" placeholder and default to null (all notes) if there's nothing pinned. -->
-						<!-- It also converts all comments into text! -->
-						<MkTab v-model="noteview" :class="$style.tab">
-							<option value="combined">{{ i18n.ts.combined }}</option>
-							<option value="pinned">{{ i18n.ts.pinnedOnly }}</option>
-							<option :value="null">{{ i18n.ts.notes }}</option>
-							<option value="all">{{ i18n.ts.all }}</option>
-							<option value="files">{{ i18n.ts.withFiles }}</option>
-						</MkTab>
-					</template>
-					<MkLazy>
-						<div v-if="noteview === 'combined'" class="_gaps">
-							<div v-if="user.pinnedNotes.length > 0" class="_panel" style="margin-bottom: 8px;">
-								<DynamicNote v-for="note of user.pinnedNotes" :key="note.id" class="note" :class="$style.pinnedNote" :note="note" :pinned="true" @expandMute="n => onExpandMute(n)"/>
+					<MkStickyContainer>
+						<template #header>
+							<!-- You can't use v-if on these, as MkTab first *deletes* and replaces all children with native HTML elements. -->
+							<!-- Instead, we add a "no notes" placeholder and default to null (all notes) if there's nothing pinned. -->
+							<!-- It also converts all comments into text! -->
+							<MkTab v-model="noteview" :class="$style.tab">
+								<option value="combined">{{ i18n.ts.combined }}</option>
+								<option value="pinned">{{ i18n.ts.pinnedOnly }}</option>
+								<option :value="null">{{ i18n.ts.notes }}</option>
+								<option value="all">{{ i18n.ts.all }}</option>
+								<option value="files">{{ i18n.ts.withFiles }}</option>
+							</MkTab>
+						</template>
+						<MkLazy>
+							<div v-if="noteview === 'combined'" class="_gaps">
+								<div
+									v-if="user.pinnedNotes.length > 0"
+									class="_panel"
+									style="margin-bottom: 8px"
+								>
+									<DynamicNote
+										v-for="note of user.pinnedNotes"
+										:key="note.id"
+										class="note"
+										:class="$style.pinnedNote"
+										:note="note"
+										:pinned="true"
+										@expandMute="(n) => onExpandMute(n)"
+									/>
+								</div>
+								<MkNotes
+									:class="$style.tl"
+									:noGap="true"
+									:pagination="AllPagination"
+									@expandMute="(n) => onExpandMute(n)"
+								/>
 							</div>
-							<MkNotes :class="$style.tl" :noGap="true" :pagination="AllPagination" @expandMute="n => onExpandMute(n)"/>
-						</div>
-						<div v-else-if="noteview === 'pinned'" class="_gaps">
-							<div v-if="user.pinnedNotes.length < 1" class="_fullinfo">
-								<MkResult type="empty" :text="i18n.ts.noNotes"/>
+							<div v-else-if="noteview === 'pinned'" class="_gaps">
+								<div v-if="user.pinnedNotes.length < 1" class="_fullinfo">
+									<MkResult type="empty" :text="i18n.ts.noNotes" />
+								</div>
+								<div v-else class="_panel">
+									<DynamicNote
+										v-for="note of user.pinnedNotes"
+										:key="note.id"
+										class="note"
+										:class="$style.pinnedNote"
+										:note="note"
+										:pinned="true"
+										@expandMute="(n) => onExpandMute(n)"
+									/>
+								</div>
 							</div>
-							<div v-else class="_panel">
-								<DynamicNote v-for="note of user.pinnedNotes" :key="note.id" class="note" :class="$style.pinnedNote" :note="note" :pinned="true" @expandMute="n => onExpandMute(n)"/>
-							</div>
-						</div>
-						<MkNotes v-else :class="$style.tl" :noGap="true" :pagination="AllPagination" @expandMute="n => onExpandMute(n)"/>
-					</MkLazy>
-				</MkStickyContainer>
+							<MkNotes
+								v-else
+								:class="$style.tl"
+								:noGap="true"
+								:pagination="AllPagination"
+								@expandMute="(n) => onExpandMute(n)"
+							/>
+						</MkLazy>
+					</MkStickyContainer>
+				</div>
+			</div>
+			<div v-if="!narrow" class="sub _gaps" style="container-type: inline-size">
+				<XFiles :key="user.id" :user="user" @unfold="emit('unfoldFiles')" />
+				<XActivity :key="user.id" :user="user" />
+				<XListenBrainz
+					v-if="user.listenbrainz && listenbrainzdata"
+					:key="user.id"
+					:user="user"
+				/>
 			</div>
 		</div>
-		<div v-if="!narrow" class="sub _gaps" style="container-type: inline-size;">
-			<XFiles :key="user.id" :user="user" @unfold="emit('unfoldFiles')"/>
-			<XActivity :key="user.id" :user="user"/>
-			<XListenBrainz v-if="user.listenbrainz && listenbrainzdata" :key="user.id" :user="user"/>
-		</div>
+		<div class="background"></div>
 	</div>
-	<div class="background"></div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, computed, onMounted, onUnmounted, nextTick, watch, ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import { getScrollPosition } from '@@/js/scroll.js';
-import { useMuteOverrides } from '@/utility/check-word-mute.js';
-import MkTab from '@/components/MkTab.vue';
-import MkNotes from '@/components/MkNotes.vue';
-import MkFollowButton from '@/components/MkFollowButton.vue';
-import MkAccountMoved from '@/components/MkAccountMoved.vue';
-import MkFukidashi from '@/components/MkFukidashi.vue';
-import MkRemoteCaution from '@/components/MkRemoteCaution.vue';
-import MkTextarea from '@/components/MkTextarea.vue';
-import MkInfo from '@/components/MkInfo.vue';
-import MkButton from '@/components/MkButton.vue';
-import { getUserMenu } from '@/utility/get-user-menu.js';
-import number from '@/filters/number.js';
-import { userPage } from '@/filters/user.js';
-import * as os from '@/os.js';
-import { i18n } from '@/i18n.js';
-import { $i, iAmModerator } from '@/i.js';
-import { dateString } from '@/filters/date.js';
-import { confetti } from '@/utility/confetti.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { isFollowingVisibleForMe, isFollowersVisibleForMe } from '@/utility/isFfVisibleForMe.js';
-import { useRouter } from '@/router.js';
-import { getStaticImageUrl } from '@/utility/media-proxy.js';
-import MkSparkle from '@/components/MkSparkle.vue';
-import { prefer } from '@/preferences.js';
-import DynamicNote from '@/components/DynamicNote.vue';
-import MkOmit from '@/components/MkOmit.vue';
-import { deepAssign } from '@/utility/merge';
+import {
+	defineAsyncComponent,
+	computed,
+	onMounted,
+	onUnmounted,
+	nextTick,
+	watch,
+	ref,
+} from "vue";
+import * as Misskey from "misskey-js";
+import { getScrollPosition } from "@@/js/scroll.js";
+import { useMuteOverrides } from "@/utility/check-word-mute.js";
+import MkTab from "@/components/MkTab.vue";
+import MkNotes from "@/components/MkNotes.vue";
+import MkFollowButton from "@/components/MkFollowButton.vue";
+import MkAccountMoved from "@/components/MkAccountMoved.vue";
+import MkFukidashi from "@/components/MkFukidashi.vue";
+import MkRemoteCaution from "@/components/MkRemoteCaution.vue";
+import MkTextarea from "@/components/MkTextarea.vue";
+import MkInfo from "@/components/MkInfo.vue";
+import MkButton from "@/components/MkButton.vue";
+import { getUserMenu } from "@/utility/get-user-menu.js";
+import number from "@/filters/number.js";
+import { userPage } from "@/filters/user.js";
+import * as os from "@/os.js";
+import { i18n } from "@/i18n.js";
+import { $i, iAmModerator } from "@/i.js";
+import { dateString } from "@/filters/date.js";
+import { confetti } from "@/utility/confetti.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import {
+	isFollowingVisibleForMe,
+	isFollowersVisibleForMe,
+} from "@/utility/isFfVisibleForMe.js";
+import { useRouter } from "@/router.js";
+import { getStaticImageUrl } from "@/utility/media-proxy.js";
+import MkSparkle from "@/components/MkSparkle.vue";
+import { prefer } from "@/preferences.js";
+import DynamicNote from "@/components/DynamicNote.vue";
+import MkOmit from "@/components/MkOmit.vue";
+import { deepAssign } from "@/utility/merge";
 
 function calcAge(birthdate: string): number {
 	const date = new Date(birthdate);
@@ -249,20 +490,25 @@ function calcAge(birthdate: string): number {
 	return yearDiff;
 }
 
-const XFiles = defineAsyncComponent(() => import('./index.files.vue'));
-const XActivity = defineAsyncComponent(() => import('./index.activity.vue'));
-const XListenBrainz = defineAsyncComponent(() => import('./index.listenbrainz.vue'));
+const XFiles = defineAsyncComponent(() => import("./index.files.vue"));
+const XActivity = defineAsyncComponent(() => import("./index.activity.vue"));
+const XListenBrainz = defineAsyncComponent(
+	() => import("./index.listenbrainz.vue"),
+);
 
-const props = withDefaults(defineProps<{
-	user: Misskey.entities.UserDetailed;
-	/** Test only; MkNotes currently causes problems in vitest */
-	disableNotes?: boolean;
-}>(), {
-	disableNotes: false,
-});
+const props = withDefaults(
+	defineProps<{
+		user: Misskey.entities.UserDetailed;
+		/** Test only; MkNotes currently causes problems in vitest */
+		disableNotes?: boolean;
+	}>(),
+	{
+		disableNotes: false,
+	},
+);
 
 const emit = defineEmits<{
-	(ev: 'unfoldFiles'): void;
+	(ev: "unfoldFiles"): void;
 }>();
 
 const muteOverrides = useMuteOverrides();
@@ -277,7 +523,7 @@ function onExpandMute(note: Misskey.entities.Note) {
 					userSilenced: false,
 				},
 				instance: {
-					[props.user.host ?? '']: {
+					[props.user.host ?? ""]: {
 						instanceMandatoryCW: null,
 						instanceSilenced: false,
 					},
@@ -299,18 +545,21 @@ const memoDraft = ref(props.user.memo);
 const isEditingMemo = ref(false);
 const moderationNote = ref(props.user.moderationNote);
 const editModerationNote = ref(false);
-const noteview = ref<string | null>('combined');
+const noteview = ref<string | null>("combined");
 
 const listenbrainzdata = ref(false);
 if (props.user.listenbrainz) {
-	(async function() {
+	(async function () {
 		try {
-			const response = await window.fetch(`https://api.listenbrainz.org/1/user/${props.user.listenbrainz}/playing-now`, {
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
+			const response = await window.fetch(
+				`https://api.listenbrainz.org/1/user/${props.user.listenbrainz}/playing-now`,
+				{
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+					},
 				},
-			});
+			);
 			const data = await response.json();
 			if (data.payload.listens && data.payload.listens.length !== 0) {
 				listenbrainzdata.value = true;
@@ -325,21 +574,24 @@ const background = computed(() => {
 	if (props.user.backgroundUrl == null) return {};
 	if (prefer.s.disableShowingAnimatedImages) {
 		return {
-			'--backgroundImageStatic': `url('${getStaticImageUrl(props.user.backgroundUrl)}')`,
+			"--backgroundImageStatic": `url('${getStaticImageUrl(props.user.backgroundUrl)}')`,
 		};
 	} else {
 		return {
-			'--backgroundImageStatic': `url('${props.user.backgroundUrl}')`,
+			"--backgroundImageStatic": `url('${props.user.backgroundUrl}')`,
 		};
 	}
 });
 
 watch(moderationNote, async () => {
-	await misskeyApi('admin/update-user-note', { userId: props.user.id, text: moderationNote.value });
+	await misskeyApi("admin/update-user-note", {
+		userId: props.user.id,
+		text: moderationNote.value,
+	});
 });
 
 const pagination = {
-	endpoint: 'users/featured-notes' as const,
+	endpoint: "users/featured-notes" as const,
 	limit: 10,
 	params: computed(() => ({
 		userId: props.user.id,
@@ -347,14 +599,14 @@ const pagination = {
 };
 
 const AllPagination = {
-	endpoint: 'users/notes' as const,
+	endpoint: "users/notes" as const,
 	limit: 10,
 	params: computed(() => ({
 		userId: props.user.id,
-		withRenotes: noteview.value === 'all' || noteview.value === 'combined',
-		withReplies: noteview.value === 'all',
-		withChannelNotes: noteview.value === 'all' || noteview.value === 'combined',
-		withFiles: noteview.value === 'files',
+		withRenotes: noteview.value === "all" || noteview.value === "combined",
+		withReplies: noteview.value === "all",
+		withChannelNotes: noteview.value === "all" || noteview.value === "combined",
+		withFiles: noteview.value === "files",
 	})),
 };
 
@@ -362,11 +614,11 @@ const style = computed(() => {
 	if (props.user.bannerUrl == null) return {};
 	if (prefer.s.disableShowingAnimatedImages) {
 		return {
-			backgroundImage: `url(${ getStaticImageUrl(props.user.bannerUrl) })`,
+			backgroundImage: `url(${getStaticImageUrl(props.user.bannerUrl)})`,
 		};
 	} else {
 		return {
-			backgroundImage: `url(${ props.user.bannerUrl })`,
+			backgroundImage: `url(${props.user.bannerUrl})`,
 		};
 	}
 });
@@ -407,12 +659,12 @@ function showMemoTextarea() {
 
 function adjustMemoTextarea() {
 	if (!memoTextareaEl.value) return;
-	memoTextareaEl.value.style.height = '0px';
+	memoTextareaEl.value.style.height = "0px";
 	memoTextareaEl.value.style.height = `${memoTextareaEl.value.scrollHeight}px`;
 }
 
 async function updateMemo() {
-	await misskeyApi('users/update-memo', {
+	await misskeyApi("users/update-memo", {
 		memo: memoDraft.value,
 		userId: props.user.id,
 	});
@@ -421,14 +673,18 @@ async function updateMemo() {
 
 // Set true to disable the follow / follow request controls
 const disableFollowControls = ref(false);
-const hasFollowRequest = computed(() => user.value.hasPendingFollowRequestToYou);
+const hasFollowRequest = computed(
+	() => user.value.hasPendingFollowRequestToYou,
+);
 const useTallBanner = computed(() => hasFollowRequest.value && narrow.value);
 
 async function onFollowButtonDisabledChanged(disabled: boolean) {
 	try {
 		// Refresh the UI after MkFollowButton changes the follow relation
 		if (!disabled) {
-			user.value = await os.apiWithDialog('users/show', { userId: user.value.id });
+			user.value = await os.apiWithDialog("users/show", {
+				userId: user.value.id,
+			});
 		}
 	} finally {
 		disableFollowControls.value = disabled;
@@ -438,8 +694,12 @@ async function onFollowButtonDisabledChanged(disabled: boolean) {
 async function acceptFollowRequest() {
 	try {
 		disableFollowControls.value = true;
-		await os.apiWithDialog('following/requests/accept', { userId: user.value.id });
-		user.value = await os.apiWithDialog('users/show', { userId: user.value.id });
+		await os.apiWithDialog("following/requests/accept", {
+			userId: user.value.id,
+		});
+		user.value = await os.apiWithDialog("users/show", {
+			userId: user.value.id,
+		});
 	} finally {
 		disableFollowControls.value = false;
 	}
@@ -448,8 +708,12 @@ async function acceptFollowRequest() {
 async function rejectFollowRequest() {
 	try {
 		disableFollowControls.value = true;
-		await os.apiWithDialog('following/requests/reject', { userId: user.value.id });
-		user.value = await os.apiWithDialog('users/show', { userId: user.value.id });
+		await os.apiWithDialog("following/requests/reject", {
+			userId: user.value.id,
+		});
+		user.value = await os.apiWithDialog("users/show", {
+			userId: user.value.id,
+		});
 	} finally {
 		disableFollowControls.value = false;
 	}
@@ -466,8 +730,8 @@ onMounted(() => {
 	if (props.user.birthday) {
 		const m = new Date().getMonth() + 1;
 		const d = new Date().getDate();
-		const bm = parseInt(props.user.birthday.split('-')[1]);
-		const bd = parseInt(props.user.birthday.split('-')[2]);
+		const bm = parseInt(props.user.birthday.split("-")[1]);
+		const bd = parseInt(props.user.birthday.split("-")[2]);
 		if (m === bm && d === bd) {
 			confetti({
 				duration: 1000 * 4,
@@ -487,7 +751,7 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.background{
+.background {
 	position: fixed;
 	z-index: -1;
 	background: var(--backgroundImageStatic);
@@ -504,16 +768,13 @@ onUnmounted(() => {
 }
 
 .ftskorzw {
-
 	> .main {
-
 		> .punished {
 			font-size: 0.8em;
 			padding: 16px;
 		}
 
 		> .profile {
-
 			> .main {
 				position: relative;
 				overflow: clip;
@@ -645,7 +906,11 @@ onUnmounted(() => {
 
 					> .fukidashi {
 						display: block;
-						--fukidashi-bg: color-mix(in srgb, var(--MI_THEME-accent), var(--MI_THEME-panel) 85%);
+						--fukidashi-bg: color-mix(
+							in srgb,
+							var(--MI_THEME-accent),
+							var(--MI_THEME-panel) 85%
+						);
 						--fukidashi-radius: 16px;
 						font-size: 0.9em;
 

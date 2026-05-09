@@ -3,37 +3,38 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as argon2 from 'argon2';
-import { Inject, Injectable } from '@nestjs/common';
-import ms from 'ms';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { UsersRepository, UserProfilesRepository } from '@/models/_.js';
-import { generateNativeUserToken } from '@/misc/token.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { DI } from '@/di-symbols.js';
+import * as argon2 from "argon2";
+import { Inject, Injectable } from "@nestjs/common";
+import ms from "ms";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { UsersRepository, UserProfilesRepository } from "@/models/_.js";
+import { generateNativeUserToken } from "@/misc/token.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { DI } from "@/di-symbols.js";
 
 export const meta = {
 	requireCredential: true,
 
 	limit: {
-		duration: ms('1hour'),
+		duration: ms("1hour"),
 		max: 10,
-		minInterval: ms('1sec'),
+		minInterval: ms("1sec"),
 	},
 
 	secure: true,
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		password: { type: 'string' },
+		password: { type: "string" },
 	},
-	required: ['password'],
+	required: ["password"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.usersRepository)
 		private usersRepository: UsersRepository,
@@ -44,16 +45,20 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private globalEventService: GlobalEventService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const freshUser = await this.usersRepository.findOneByOrFail({ id: me.id });
+			const freshUser = await this.usersRepository.findOneByOrFail({
+				id: me.id,
+			});
 			const oldToken = freshUser.token!;
 
-			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });
+			const profile = await this.userProfilesRepository.findOneByOrFail({
+				userId: me.id,
+			});
 
 			// Compare password
 			const same = await argon2.verify(profile.password!, ps.password);
 
 			if (!same) {
-				throw new Error('incorrect password');
+				throw new Error("incorrect password");
 			}
 
 			const newToken = generateNativeUserToken();
@@ -63,8 +68,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			});
 
 			// Publish event
-			this.globalEventService.publishInternalEvent('userTokenRegenerated', { id: me.id, oldToken, newToken });
-			this.globalEventService.publishMainStream(me.id, 'myTokenRegenerated');
+			this.globalEventService.publishInternalEvent("userTokenRegenerated", {
+				id: me.id,
+				oldToken,
+				newToken,
+			});
+			this.globalEventService.publishMainStream(me.id, "myTokenRegenerated");
 		});
 	}
 }

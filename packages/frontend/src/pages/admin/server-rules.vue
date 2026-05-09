@@ -4,54 +4,69 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader :tabs="headerTabs">
-	<div class="_spacer" style="--MI_SPACER-w: 700px; --MI_SPACER-min: 16px; --MI_SPACER-max: 32px;">
-		<div class="_gaps_m">
-			<div>{{ i18n.ts._serverRules.description }}</div>
-			<Sortable
-				v-model="serverRules"
-				class="_gaps_m"
-				:itemKey="(_, i) => i"
-				:animation="150"
-				:handle="'.' + $style.itemHandle"
-				@start="e => e.item.classList.add('active')"
-				@end="e => e.item.classList.remove('active')"
-			>
-				<template #item="{element,index}">
-					<div :class="$style.item">
-						<div :class="$style.itemHeader">
-							<div :class="$style.itemNumber" v-text="String(index + 1)"/>
-							<span :class="$style.itemHandle"><i class="ti ti-menu"/></span>
-							<button class="_button" :class="$style.itemRemove" @click="remove(index)"><i class="ti ti-x"></i></button>
+	<PageWithHeader :tabs="headerTabs">
+		<div
+			class="_spacer"
+			style="--MI_SPACER-w: 700px; --MI_SPACER-min: 16px; --MI_SPACER-max: 32px"
+		>
+			<div class="_gaps_m">
+				<div>{{ i18n.ts._serverRules.description }}</div>
+				<Sortable
+					v-model="serverRules"
+					class="_gaps_m"
+					:itemKey="(_, i) => i"
+					:animation="150"
+					:handle="'.' + $style.itemHandle"
+					@start="(e) => e.item.classList.add('active')"
+					@end="(e) => e.item.classList.remove('active')"
+				>
+					<template #item="{ element, index }">
+						<div :class="$style.item">
+							<div :class="$style.itemHeader">
+								<div :class="$style.itemNumber" v-text="String(index + 1)" />
+								<span :class="$style.itemHandle"><i class="ti ti-menu" /></span>
+								<button
+									class="_button"
+									:class="$style.itemRemove"
+									@click="remove(index)"
+								>
+									<i class="ti ti-x"></i>
+								</button>
+							</div>
+							<MkInput v-model="serverRules[index]" />
 						</div>
-						<MkInput v-model="serverRules[index]"/>
-					</div>
-				</template>
-			</Sortable>
-			<div :class="$style.commands">
-				<MkButton rounded @click="serverRules.push('')"><i class="ti ti-plus"></i> {{ i18n.ts.add }}</MkButton>
-				<MkButton primary rounded @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
+					</template>
+				</Sortable>
+				<div :class="$style.commands">
+					<MkButton rounded @click="serverRules.push('')"
+						><i class="ti ti-plus"></i> {{ i18n.ts.add }}</MkButton
+					>
+					<MkButton primary rounded @click="save"
+						><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton
+					>
+				</div>
 			</div>
 		</div>
-	</div>
-</PageWithHeader>
+	</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, ref, computed } from 'vue';
-import * as os from '@/os.js';
-import { fetchInstance, instance } from '@/instance.js';
-import { i18n } from '@/i18n.js';
-import { definePage } from '@/page.js';
-import MkButton from '@/components/MkButton.vue';
-import MkInput from '@/components/MkInput.vue';
+import { defineAsyncComponent, ref, computed } from "vue";
+import * as os from "@/os.js";
+import { fetchInstance, instance } from "@/instance.js";
+import { i18n } from "@/i18n.js";
+import { definePage } from "@/page.js";
+import MkButton from "@/components/MkButton.vue";
+import MkInput from "@/components/MkInput.vue";
 
-const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
+const Sortable = defineAsyncComponent(() =>
+	import("vuedraggable").then((x) => x.default),
+);
 
 const serverRules = ref<string[]>(instance.serverRules);
 
 const save = async () => {
-	await os.apiWithDialog('admin/update-meta', {
+	await os.apiWithDialog("admin/update-meta", {
 		serverRules: serverRules.value,
 	});
 	fetchInstance(true);
@@ -65,7 +80,7 @@ const headerTabs = computed(() => []);
 
 definePage(() => ({
 	title: i18n.ts.serverRules,
-	icon: 'ti ti-checkbox',
+	icon: "ti ti-checkbox",
 }));
 </script>
 

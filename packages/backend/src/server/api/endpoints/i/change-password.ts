@@ -3,38 +3,39 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as argon2 from 'argon2';
-import { Inject, Injectable } from '@nestjs/common';
-import ms from 'ms';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { UserProfilesRepository } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
-import { UserAuthService } from '@/core/UserAuthService.js';
+import * as argon2 from "argon2";
+import { Inject, Injectable } from "@nestjs/common";
+import ms from "ms";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { UserProfilesRepository } from "@/models/_.js";
+import { DI } from "@/di-symbols.js";
+import { UserAuthService } from "@/core/UserAuthService.js";
 
 export const meta = {
 	requireCredential: true,
 
 	limit: {
-		duration: ms('1hour'),
+		duration: ms("1hour"),
 		max: 10,
-		minInterval: ms('1sec'),
+		minInterval: ms("1sec"),
 	},
 
 	secure: true,
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		currentPassword: { type: 'string' },
-		newPassword: { type: 'string', minLength: 1 },
-		token: { type: 'string', nullable: true },
+		currentPassword: { type: "string" },
+		newPassword: { type: "string", minLength: 1 },
+		token: { type: "string", nullable: true },
 	},
-	required: ['currentPassword', 'newPassword'],
+	required: ["currentPassword", "newPassword"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
@@ -43,24 +44,29 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			const token = ps.token;
-			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });
+			const profile = await this.userProfilesRepository.findOneByOrFail({
+				userId: me.id,
+			});
 
 			if (profile.twoFactorEnabled) {
 				if (token == null) {
-					throw new Error('authentication failed');
+					throw new Error("authentication failed");
 				}
 
 				try {
 					await this.userAuthService.twoFactorAuthenticate(profile, token);
 				} catch (e) {
-					throw new Error('authentication failed');
+					throw new Error("authentication failed");
 				}
 			}
 
-			const passwordMatched = await argon2.verify(profile.password!, ps.currentPassword);
+			const passwordMatched = await argon2.verify(
+				profile.password!,
+				ps.currentPassword,
+			);
 
 			if (!passwordMatched) {
-				throw new Error('incorrect password');
+				throw new Error("incorrect password");
 			}
 
 			// Generate hash of password

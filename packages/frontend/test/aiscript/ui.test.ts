@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { errors, Interpreter, Parser, values } from '@syuilo/aiscript';
-import { describe, expect, test } from 'vitest';
-import { ref } from 'vue';
-import type { Ref } from 'vue';
+import { errors, Interpreter, Parser, values } from "@syuilo/aiscript";
+import { describe, expect, test } from "vitest";
+import { ref } from "vue";
+import type { Ref } from "vue";
 import type {
 	AsUiButton,
 	AsUiButtons,
@@ -19,8 +19,8 @@ import type {
 	AsUiText,
 	AsUiTextarea,
 	AsUiTextInput,
-} from '@/aiscript/ui.js';
-import { registerAsUiLib } from '@/aiscript/ui.js';
+} from "@/aiscript/ui.js";
+import { registerAsUiLib } from "@/aiscript/ui.js";
 
 type ExeResult = {
 	root: AsUiRoot;
@@ -48,13 +48,13 @@ async function exe(script: string): Promise<ExeResult> {
 
 	const root = rootRef.value;
 	if (root === undefined) {
-		expect.unreachable('root must not be undefined');
+		expect.unreachable("root must not be undefined");
 	}
 	const components = componentRefs.value.map(
 		(componentRef) => componentRef.value,
 	);
 	expect(root).toBe(components[0]);
-	expect(root.type).toBe('root');
+	expect(root.type).toBe("root");
 	const get = (id: string) => {
 		const component = componentRefs.value.find(
 			(componentRef) => componentRef.value.id === id,
@@ -67,26 +67,26 @@ async function exe(script: string): Promise<ExeResult> {
 	return { root, get, outputs };
 }
 
-describe('AiScript UI API', () => {
-	test.concurrent('root', async () => {
-		const { root } = await exe('');
+describe("AiScript UI API", () => {
+	test.concurrent("root", async () => {
+		const { root } = await exe("");
 		expect(root.children).toStrictEqual([]);
 	});
 
-	describe('get', () => {
-		test.concurrent('some', async () => {
+	describe("get", () => {
+		test.concurrent("some", async () => {
 			const { outputs } = await exe(`
 				Ui:C:text({}, 'id')
 				<: Ui:get('id')
 			`);
 			const output = outputs[0] as values.VObj;
-			expect(output.type).toBe('obj');
+			expect(output.type).toBe("obj");
 			expect(output.value.size).toBe(2);
-			expect(output.value.get('id')).toStrictEqual(values.STR('id'));
-			expect(output.value.get('update')!.type).toBe('fn');
+			expect(output.value.get("id")).toStrictEqual(values.STR("id"));
+			expect(output.value.get("update")!.type).toBe("fn");
 		});
 
-		test.concurrent('none', async () => {
+		test.concurrent("none", async () => {
 			const { outputs } = await exe(`
 				<: Ui:get('id')
 			`);
@@ -94,17 +94,17 @@ describe('AiScript UI API', () => {
 		});
 	});
 
-	describe('update', () => {
-		test.concurrent('normal', async () => {
+	describe("update", () => {
+		test.concurrent("normal", async () => {
 			const { get } = await exe(`
 				let text = Ui:C:text({ text: 'a' }, 'id')
 				text.update({ text: 'b' })
 			`);
-			const text = get('id') as AsUiText;
-			expect(text.text).toBe('b');
+			const text = get("id") as AsUiText;
+			expect(text.text).toBe("b");
 		});
 
-		test.concurrent('skip unknown key', async () => {
+		test.concurrent("skip unknown key", async () => {
 			const { get } = await exe(`
 				let text = Ui:C:text({ text: 'a' }, 'id')
 				text.update({
@@ -112,14 +112,14 @@ describe('AiScript UI API', () => {
 					unknown: null
 				})
 			`);
-			const text = get('id') as AsUiText;
-			expect(text.text).toBe('b');
-			expect('unknown' in text).toBeFalsy();
+			const text = get("id") as AsUiText;
+			expect(text.text).toBe("b");
+			expect("unknown" in text).toBeFalsy();
 		});
 	});
 
-	describe('container', () => {
-		test.concurrent('all options', async () => {
+	describe("container", () => {
+		test.concurrent("all options", async () => {
 			const { root, get } = await exe(`
 				let text = Ui:C:text({
 					text: 'text'
@@ -140,18 +140,18 @@ describe('AiScript UI API', () => {
 				}, 'id2')
 				Ui:render([container])
 			`);
-			expect(root.children).toStrictEqual(['id2']);
-			expect(get('id2')).toStrictEqual({
-				type: 'container',
-				id: 'id2',
-				children: ['id1'],
-				align: 'left',
-				bgColor: '#fff',
-				fgColor: '#000',
-				font: 'sans-serif',
-				borderColor: '#f00',
+			expect(root.children).toStrictEqual(["id2"]);
+			expect(get("id2")).toStrictEqual({
+				type: "container",
+				id: "id2",
+				children: ["id1"],
+				align: "left",
+				bgColor: "#fff",
+				fgColor: "#000",
+				font: "sans-serif",
+				borderColor: "#f00",
 				borderWidth: 1,
-				borderStyle: 'hidden',
+				borderStyle: "hidden",
 				borderRadius: 2,
 				padding: 3,
 				rounded: true,
@@ -159,13 +159,13 @@ describe('AiScript UI API', () => {
 			});
 		});
 
-		test.concurrent('minimum options', async () => {
+		test.concurrent("minimum options", async () => {
 			const { get } = await exe(`
 				Ui:C:container({}, 'id')
 			`);
-			expect(get('id')).toStrictEqual({
-				type: 'container',
-				id: 'id',
+			expect(get("id")).toStrictEqual({
+				type: "container",
+				id: "id",
 				children: [],
 				align: undefined,
 				fgColor: undefined,
@@ -181,41 +181,49 @@ describe('AiScript UI API', () => {
 			});
 		});
 
-		test.concurrent('invalid children', async () => {
-			await expect(() => exe(`
+		test.concurrent("invalid children", async () => {
+			await expect(() =>
+				exe(`
 				Ui:C:container({
 					children: 0
 				})
-			`)).rejects.toBeInstanceOf(errors.AiScriptRuntimeError);
+			`),
+			).rejects.toBeInstanceOf(errors.AiScriptRuntimeError);
 		});
 
-		test.concurrent('invalid align', async () => {
-			await expect(() => exe(`
+		test.concurrent("invalid align", async () => {
+			await expect(() =>
+				exe(`
 				Ui:C:container({
 					align: 'invalid'
 				})
-			`)).rejects.toBeInstanceOf(errors.AiScriptRuntimeError);
+			`),
+			).rejects.toBeInstanceOf(errors.AiScriptRuntimeError);
 		});
 
-		test.concurrent('invalid font', async () => {
-			await expect(() => exe(`
+		test.concurrent("invalid font", async () => {
+			await expect(() =>
+				exe(`
 				Ui:C:container({
 					font: 'invalid'
 				})
-			`)).rejects.toBeInstanceOf(errors.AiScriptRuntimeError);
+			`),
+			).rejects.toBeInstanceOf(errors.AiScriptRuntimeError);
 		});
 
-		test.concurrent('invalid borderStyle', async () => {
-			await expect(() => exe(`
+		test.concurrent("invalid borderStyle", async () => {
+			await expect(() =>
+				exe(`
 				Ui:C:container({
 					borderStyle: 'invalid'
 				})
-			`)).rejects.toBeInstanceOf(errors.AiScriptRuntimeError);
+			`),
+			).rejects.toBeInstanceOf(errors.AiScriptRuntimeError);
 		});
 	});
 
-	describe('text', () => {
-		test.concurrent('all options', async () => {
+	describe("text", () => {
+		test.concurrent("all options", async () => {
 			const { root, get } = await exe(`
 				let text = Ui:C:text({
 					text: 'a'
@@ -226,25 +234,25 @@ describe('AiScript UI API', () => {
 				}, 'id')
 				Ui:render([text])
 			`);
-			expect(root.children).toStrictEqual(['id']);
-			expect(get('id')).toStrictEqual({
-				type: 'text',
-				id: 'id',
-				text: 'a',
+			expect(root.children).toStrictEqual(["id"]);
+			expect(get("id")).toStrictEqual({
+				type: "text",
+				id: "id",
+				text: "a",
 				size: 1,
 				bold: true,
-				color: '#000',
-				font: 'sans-serif',
+				color: "#000",
+				font: "sans-serif",
 			});
 		});
 
-		test.concurrent('minimum options', async () => {
+		test.concurrent("minimum options", async () => {
 			const { get } = await exe(`
 				Ui:C:text({}, 'id')
 			`);
-			expect(get('id')).toStrictEqual({
-				type: 'text',
-				id: 'id',
+			expect(get("id")).toStrictEqual({
+				type: "text",
+				id: "id",
 				text: undefined,
 				size: undefined,
 				bold: undefined,
@@ -253,17 +261,19 @@ describe('AiScript UI API', () => {
 			});
 		});
 
-		test.concurrent('invalid font', async () => {
-			await expect(() => exe(`
+		test.concurrent("invalid font", async () => {
+			await expect(() =>
+				exe(`
 				Ui:C:text({
 					font: 'invalid'
 				})
-			`)).rejects.toBeInstanceOf(errors.AiScriptRuntimeError);
+			`),
+			).rejects.toBeInstanceOf(errors.AiScriptRuntimeError);
 		});
 	});
 
-	describe('mfm', () => {
-		test.concurrent('all options', async () => {
+	describe("mfm", () => {
+		test.concurrent("all options", async () => {
 			const { root, get, outputs } = await exe(`
 				let mfm = Ui:C:mfm({
 					text: 'text'
@@ -275,30 +285,30 @@ describe('AiScript UI API', () => {
 				}, 'id')
 				Ui:render([mfm])
 			`);
-			expect(root.children).toStrictEqual(['id']);
-			const { onClickEv, ...mfm } = get('id') as AsUiMfm;
+			expect(root.children).toStrictEqual(["id"]);
+			const { onClickEv, ...mfm } = get("id") as AsUiMfm;
 			expect(mfm).toStrictEqual({
-				type: 'mfm',
-				id: 'id',
-				text: 'text',
+				type: "mfm",
+				id: "id",
+				text: "text",
 				size: 1,
 				bold: true,
-				color: '#000',
-				font: 'sans-serif',
+				color: "#000",
+				font: "sans-serif",
 			});
-			await onClickEv!('a');
-			expect(outputs).toStrictEqual([values.STR('a')]);
+			await onClickEv!("a");
+			expect(outputs).toStrictEqual([values.STR("a")]);
 		});
 
-		test.concurrent('minimum options', async () => {
+		test.concurrent("minimum options", async () => {
 			const { get } = await exe(`
 				Ui:C:mfm({}, 'id')
 			`);
-			const { onClickEv, ...mfm } = get('id') as AsUiMfm;
-			expect(onClickEv).toBeTypeOf('function');
+			const { onClickEv, ...mfm } = get("id") as AsUiMfm;
+			expect(onClickEv).toBeTypeOf("function");
 			expect(mfm).toStrictEqual({
-				type: 'mfm',
-				id: 'id',
+				type: "mfm",
+				id: "id",
 				text: undefined,
 				size: undefined,
 				bold: undefined,
@@ -307,17 +317,19 @@ describe('AiScript UI API', () => {
 			});
 		});
 
-		test.concurrent('invalid font', async () => {
-			await expect(() => exe(`
+		test.concurrent("invalid font", async () => {
+			await expect(() =>
+				exe(`
 				Ui:C:mfm({
 					font: 'invalid'
 				})
-			`)).rejects.toBeInstanceOf(errors.AiScriptRuntimeError);
+			`),
+			).rejects.toBeInstanceOf(errors.AiScriptRuntimeError);
 		});
 	});
 
-	describe('textInput', () => {
-		test.concurrent('all options', async () => {
+	describe("textInput", () => {
+		test.concurrent("all options", async () => {
 			const { root, get, outputs } = await exe(`
 				let text_input = Ui:C:textInput({
 					onInput: print
@@ -327,28 +339,28 @@ describe('AiScript UI API', () => {
 				}, 'id')
 				Ui:render([text_input])
 			`);
-			expect(root.children).toStrictEqual(['id']);
-			const { onInput, ...textInput } = get('id') as AsUiTextInput;
+			expect(root.children).toStrictEqual(["id"]);
+			const { onInput, ...textInput } = get("id") as AsUiTextInput;
 			expect(textInput).toStrictEqual({
-				type: 'textInput',
-				id: 'id',
-				default: 'a',
-				label: 'b',
-				caption: 'c',
+				type: "textInput",
+				id: "id",
+				default: "a",
+				label: "b",
+				caption: "c",
 			});
-			await onInput!('d');
-			expect(outputs).toStrictEqual([values.STR('d')]);
+			await onInput!("d");
+			expect(outputs).toStrictEqual([values.STR("d")]);
 		});
 
-		test.concurrent('minimum options', async () => {
+		test.concurrent("minimum options", async () => {
 			const { get } = await exe(`
 				Ui:C:textInput({}, 'id')
 			`);
-			const { onInput, ...textInput } = get('id') as AsUiTextInput;
-			expect(onInput).toBeTypeOf('function');
+			const { onInput, ...textInput } = get("id") as AsUiTextInput;
+			expect(onInput).toBeTypeOf("function");
 			expect(textInput).toStrictEqual({
-				type: 'textInput',
-				id: 'id',
+				type: "textInput",
+				id: "id",
 				default: undefined,
 				label: undefined,
 				caption: undefined,
@@ -356,8 +368,8 @@ describe('AiScript UI API', () => {
 		});
 	});
 
-	describe('textarea', () => {
-		test.concurrent('all options', async () => {
+	describe("textarea", () => {
+		test.concurrent("all options", async () => {
 			const { root, get, outputs } = await exe(`
 				let textarea = Ui:C:textarea({
 					onInput: print
@@ -367,28 +379,28 @@ describe('AiScript UI API', () => {
 				}, 'id')
 				Ui:render([textarea])
 			`);
-			expect(root.children).toStrictEqual(['id']);
-			const { onInput, ...textarea } = get('id') as AsUiTextarea;
+			expect(root.children).toStrictEqual(["id"]);
+			const { onInput, ...textarea } = get("id") as AsUiTextarea;
 			expect(textarea).toStrictEqual({
-				type: 'textarea',
-				id: 'id',
-				default: 'a',
-				label: 'b',
-				caption: 'c',
+				type: "textarea",
+				id: "id",
+				default: "a",
+				label: "b",
+				caption: "c",
 			});
-			await onInput!('d');
-			expect(outputs).toStrictEqual([values.STR('d')]);
+			await onInput!("d");
+			expect(outputs).toStrictEqual([values.STR("d")]);
 		});
 
-		test.concurrent('minimum options', async () => {
+		test.concurrent("minimum options", async () => {
 			const { get } = await exe(`
 				Ui:C:textarea({}, 'id')
 			`);
-			const { onInput, ...textarea } = get('id') as AsUiTextarea;
-			expect(onInput).toBeTypeOf('function');
+			const { onInput, ...textarea } = get("id") as AsUiTextarea;
+			expect(onInput).toBeTypeOf("function");
 			expect(textarea).toStrictEqual({
-				type: 'textarea',
-				id: 'id',
+				type: "textarea",
+				id: "id",
 				default: undefined,
 				label: undefined,
 				caption: undefined,
@@ -396,8 +408,8 @@ describe('AiScript UI API', () => {
 		});
 	});
 
-	describe('numberInput', () => {
-		test.concurrent('all options', async () => {
+	describe("numberInput", () => {
+		test.concurrent("all options", async () => {
 			const { root, get, outputs } = await exe(`
 				let number_input = Ui:C:numberInput({
 					onInput: print
@@ -407,28 +419,28 @@ describe('AiScript UI API', () => {
 				}, 'id')
 				Ui:render([number_input])
 			`);
-			expect(root.children).toStrictEqual(['id']);
-			const { onInput, ...numberInput } = get('id') as AsUiNumberInput;
+			expect(root.children).toStrictEqual(["id"]);
+			const { onInput, ...numberInput } = get("id") as AsUiNumberInput;
 			expect(numberInput).toStrictEqual({
-				type: 'numberInput',
-				id: 'id',
+				type: "numberInput",
+				id: "id",
 				default: 1,
-				label: 'a',
-				caption: 'b',
+				label: "a",
+				caption: "b",
 			});
 			await onInput!(2);
 			expect(outputs).toStrictEqual([values.NUM(2)]);
 		});
 
-		test.concurrent('minimum options', async () => {
+		test.concurrent("minimum options", async () => {
 			const { get } = await exe(`
 				Ui:C:numberInput({}, 'id')
 			`);
-			const { onInput, ...numberInput } = get('id') as AsUiNumberInput;
-			expect(onInput).toBeTypeOf('function');
+			const { onInput, ...numberInput } = get("id") as AsUiNumberInput;
+			expect(onInput).toBeTypeOf("function");
 			expect(numberInput).toStrictEqual({
-				type: 'numberInput',
-				id: 'id',
+				type: "numberInput",
+				id: "id",
 				default: undefined,
 				label: undefined,
 				caption: undefined,
@@ -436,8 +448,8 @@ describe('AiScript UI API', () => {
 		});
 	});
 
-	describe('button', () => {
-		test.concurrent('all options', async () => {
+	describe("button", () => {
+		test.concurrent("all options", async () => {
 			const { root, get, outputs } = await exe(`
 				let button = Ui:C:button({
 					text: 'a'
@@ -448,29 +460,29 @@ describe('AiScript UI API', () => {
 				}, 'id')
 				Ui:render([button])
 			`);
-			expect(root.children).toStrictEqual(['id']);
-			const { onClick, ...button } = get('id') as AsUiButton;
+			expect(root.children).toStrictEqual(["id"]);
+			const { onClick, ...button } = get("id") as AsUiButton;
 			expect(button).toStrictEqual({
-				type: 'button',
-				id: 'id',
-				text: 'a',
+				type: "button",
+				id: "id",
+				text: "a",
 				primary: true,
 				rounded: false,
 				disabled: false,
 			});
 			await onClick!();
-			expect(outputs).toStrictEqual([values.STR('clicked')]);
+			expect(outputs).toStrictEqual([values.STR("clicked")]);
 		});
 
-		test.concurrent('minimum options', async () => {
+		test.concurrent("minimum options", async () => {
 			const { get } = await exe(`
 				Ui:C:button({}, 'id')
 			`);
-			const { onClick, ...button } = get('id') as AsUiButton;
-			expect(onClick).toBeTypeOf('function');
+			const { onClick, ...button } = get("id") as AsUiButton;
+			expect(onClick).toBeTypeOf("function");
 			expect(button).toStrictEqual({
-				type: 'button',
-				id: 'id',
+				type: "button",
+				id: "id",
 				text: undefined,
 				primary: undefined,
 				rounded: undefined,
@@ -479,34 +491,34 @@ describe('AiScript UI API', () => {
 		});
 	});
 
-	describe('buttons', () => {
-		test.concurrent('all options', async () => {
+	describe("buttons", () => {
+		test.concurrent("all options", async () => {
 			const { root, get } = await exe(`
 				let buttons = Ui:C:buttons({
 					buttons: []
 				}, 'id')
 				Ui:render([buttons])
 			`);
-			expect(root.children).toStrictEqual(['id']);
-			expect(get('id')).toStrictEqual({
-				type: 'buttons',
-				id: 'id',
+			expect(root.children).toStrictEqual(["id"]);
+			expect(get("id")).toStrictEqual({
+				type: "buttons",
+				id: "id",
 				buttons: [],
 			});
 		});
 
-		test.concurrent('minimum options', async () => {
+		test.concurrent("minimum options", async () => {
 			const { get } = await exe(`
 				Ui:C:buttons({}, 'id')
 			`);
-			expect(get('id')).toStrictEqual({
-				type: 'buttons',
-				id: 'id',
+			expect(get("id")).toStrictEqual({
+				type: "buttons",
+				id: "id",
 				buttons: [],
 			});
 		});
 
-		test.concurrent('some buttons', async () => {
+		test.concurrent("some buttons", async () => {
 			const { root, get, outputs } = await exe(`
 				let buttons = Ui:C:buttons({
 					buttons: [
@@ -528,37 +540,38 @@ describe('AiScript UI API', () => {
 				}, 'id')
 				Ui:render([buttons])
 			`);
-			expect(root.children).toStrictEqual(['id']);
-			const { buttons, ...buttonsOptions } = get('id') as AsUiButtons;
+			expect(root.children).toStrictEqual(["id"]);
+			const { buttons, ...buttonsOptions } = get("id") as AsUiButtons;
 			expect(buttonsOptions).toStrictEqual({
-				type: 'buttons',
-				id: 'id',
+				type: "buttons",
+				id: "id",
 			});
 			expect(buttons!.length).toBe(2);
 			const { onClick: onClickA, ...buttonA } = buttons![0];
 			expect(buttonA).toStrictEqual({
-				text: 'a',
+				text: "a",
 				primary: true,
 				rounded: false,
 				disabled: false,
 			});
 			const { onClick: onClickB, ...buttonB } = buttons![1];
 			expect(buttonB).toStrictEqual({
-				text: 'b',
+				text: "b",
 				primary: true,
 				rounded: false,
 				disabled: false,
 			});
 			await onClickA!();
 			await onClickB!();
-			expect(outputs).toStrictEqual(
-				[values.STR('clicked a'), values.STR('clicked b')]
-			);
+			expect(outputs).toStrictEqual([
+				values.STR("clicked a"),
+				values.STR("clicked b"),
+			]);
 		});
 	});
 
-	describe('switch', () => {
-		test.concurrent('all options', async () => {
+	describe("switch", () => {
+		test.concurrent("all options", async () => {
 			const { root, get, outputs } = await exe(`
 				let switch = Ui:C:switch({
 					onChange: print
@@ -568,28 +581,28 @@ describe('AiScript UI API', () => {
 				}, 'id')
 				Ui:render([switch])
 			`);
-			expect(root.children).toStrictEqual(['id']);
-			const { onChange, ...switchOptions } = get('id') as AsUiSwitch;
+			expect(root.children).toStrictEqual(["id"]);
+			const { onChange, ...switchOptions } = get("id") as AsUiSwitch;
 			expect(switchOptions).toStrictEqual({
-				type: 'switch',
-				id: 'id',
+				type: "switch",
+				id: "id",
 				default: false,
-				label: 'a',
-				caption: 'b',
+				label: "a",
+				caption: "b",
 			});
 			await onChange!(true);
 			expect(outputs).toStrictEqual([values.TRUE]);
 		});
 
-		test.concurrent('minimum options', async () => {
+		test.concurrent("minimum options", async () => {
 			const { get } = await exe(`
 				Ui:C:switch({}, 'id')
 			`);
-			const { onChange, ...switchOptions } = get('id') as AsUiSwitch;
-			expect(onChange).toBeTypeOf('function');
+			const { onChange, ...switchOptions } = get("id") as AsUiSwitch;
+			expect(onChange).toBeTypeOf("function");
 			expect(switchOptions).toStrictEqual({
-				type: 'switch',
-				id: 'id',
+				type: "switch",
+				id: "id",
 				default: undefined,
 				label: undefined,
 				caption: undefined,
@@ -597,8 +610,8 @@ describe('AiScript UI API', () => {
 		});
 	});
 
-	describe('select', () => {
-		test.concurrent('all options', async () => {
+	describe("select", () => {
+		test.concurrent("all options", async () => {
 			const { root, get, outputs } = await exe(`
 				let select = Ui:C:select({
 					items: [
@@ -612,32 +625,32 @@ describe('AiScript UI API', () => {
 				}, 'id')
 				Ui:render([select])
 			`);
-			expect(root.children).toStrictEqual(['id']);
-			const { onChange, ...select } = get('id') as AsUiSelect;
+			expect(root.children).toStrictEqual(["id"]);
+			const { onChange, ...select } = get("id") as AsUiSelect;
 			expect(select).toStrictEqual({
-				type: 'select',
-				id: 'id',
+				type: "select",
+				id: "id",
 				items: [
-					{ text: 'A', value: 'a' },
-					{ text: 'B', value: 'b' },
+					{ text: "A", value: "a" },
+					{ text: "B", value: "b" },
 				],
-				default: 'a',
-				label: 'c',
-				caption: 'd',
+				default: "a",
+				label: "c",
+				caption: "d",
 			});
-			await onChange!('b');
-			expect(outputs).toStrictEqual([values.STR('b')]);
+			await onChange!("b");
+			expect(outputs).toStrictEqual([values.STR("b")]);
 		});
 
-		test.concurrent('minimum options', async () => {
+		test.concurrent("minimum options", async () => {
 			const { get } = await exe(`
 				Ui:C:select({}, 'id')
 			`);
-			const { onChange, ...select } = get('id') as AsUiSelect;
-			expect(onChange).toBeTypeOf('function');
+			const { onChange, ...select } = get("id") as AsUiSelect;
+			expect(onChange).toBeTypeOf("function");
 			expect(select).toStrictEqual({
-				type: 'select',
-				id: 'id',
+				type: "select",
+				id: "id",
 				items: [],
 				default: undefined,
 				label: undefined,
@@ -645,7 +658,7 @@ describe('AiScript UI API', () => {
 			});
 		});
 
-		test.concurrent('omit item values', async () => {
+		test.concurrent("omit item values", async () => {
 			const { get } = await exe(`
 				let select = Ui:C:select({
 					items: [
@@ -654,14 +667,14 @@ describe('AiScript UI API', () => {
 					]
 				}, 'id')
 			`);
-			const { onChange, ...select } = get('id') as AsUiSelect;
-			expect(onChange).toBeTypeOf('function');
+			const { onChange, ...select } = get("id") as AsUiSelect;
+			expect(onChange).toBeTypeOf("function");
 			expect(select).toStrictEqual({
-				type: 'select',
-				id: 'id',
+				type: "select",
+				id: "id",
 				items: [
-					{ text: 'A', value: 'A' },
-					{ text: 'B', value: 'B' },
+					{ text: "A", value: "A" },
+					{ text: "B", value: "B" },
 				],
 				default: undefined,
 				label: undefined,
@@ -670,8 +683,8 @@ describe('AiScript UI API', () => {
 		});
 	});
 
-	describe('folder', () => {
-		test.concurrent('all options', async () => {
+	describe("folder", () => {
+		test.concurrent("all options", async () => {
 			const { root, get } = await exe(`
 				let folder = Ui:C:folder({
 					children: []
@@ -680,30 +693,30 @@ describe('AiScript UI API', () => {
 				}, 'id')
 				Ui:render([folder])
 			`);
-			expect(root.children).toStrictEqual(['id']);
-			expect(get('id')).toStrictEqual({
-				type: 'folder',
-				id: 'id',
+			expect(root.children).toStrictEqual(["id"]);
+			expect(get("id")).toStrictEqual({
+				type: "folder",
+				id: "id",
 				children: [],
-				title: 'a',
+				title: "a",
 				opened: true,
 			});
 		});
 
-		test.concurrent('minimum options', async () => {
+		test.concurrent("minimum options", async () => {
 			const { get } = await exe(`
 				Ui:C:folder({}, 'id')
 			`);
-			expect(get('id')).toStrictEqual({
-				type: 'folder',
-				id: 'id',
+			expect(get("id")).toStrictEqual({
+				type: "folder",
+				id: "id",
 				children: [],
-				title: '',
+				title: "",
 				opened: true,
 			});
 		});
 
-		test.concurrent('some children', async () => {
+		test.concurrent("some children", async () => {
 			const { get } = await exe(`
 				let text = Ui:C:text({
 					text: 'text'
@@ -712,18 +725,18 @@ describe('AiScript UI API', () => {
 					children: [text]
 				}, 'id2')
 			`);
-			expect(get('id2')).toStrictEqual({
-				type: 'folder',
-				id: 'id2',
-				children: ['id1'],
-				title: '',
+			expect(get("id2")).toStrictEqual({
+				type: "folder",
+				id: "id2",
+				children: ["id1"],
+				title: "",
 				opened: true,
 			});
 		});
 	});
 
-	describe('postFormButton', () => {
-		test.concurrent('all options', async () => {
+	describe("postFormButton", () => {
+		test.concurrent("all options", async () => {
 			const { root, get } = await exe(`
 				let post_form_button = Ui:C:postFormButton({
 					text: 'a'
@@ -738,39 +751,39 @@ describe('AiScript UI API', () => {
 				}, 'id')
 				Ui:render([post_form_button])
 			`);
-			expect(root.children).toStrictEqual(['id']);
-			expect(get('id')).toStrictEqual({
-				type: 'postFormButton',
-				id: 'id',
-				text: 'a',
+			expect(root.children).toStrictEqual(["id"]);
+			expect(get("id")).toStrictEqual({
+				type: "postFormButton",
+				id: "id",
+				text: "a",
 				primary: true,
 				rounded: false,
 				form: {
-					text: 'b',
-					cw: 'c',
-					visibility: 'public',
+					text: "b",
+					cw: "c",
+					visibility: "public",
 					localOnly: true,
 				},
 			});
 		});
 
-		test.concurrent('minimum options', async () => {
+		test.concurrent("minimum options", async () => {
 			const { get } = await exe(`
 				Ui:C:postFormButton({}, 'id')
 			`);
-			expect(get('id')).toStrictEqual({
-				type: 'postFormButton',
-				id: 'id',
+			expect(get("id")).toStrictEqual({
+				type: "postFormButton",
+				id: "id",
 				text: undefined,
 				primary: undefined,
 				rounded: undefined,
-				form: { text: '' },
+				form: { text: "" },
 			});
 		});
 	});
 
-	describe('postForm', () => {
-		test.concurrent('all options', async () => {
+	describe("postForm", () => {
+		test.concurrent("all options", async () => {
 			const { root, get } = await exe(`
 				let post_form = Ui:C:postForm({
 					form: {
@@ -782,41 +795,41 @@ describe('AiScript UI API', () => {
 				}, 'id')
 				Ui:render([post_form])
 			`);
-			expect(root.children).toStrictEqual(['id']);
-			expect(get('id')).toStrictEqual({
-				type: 'postForm',
-				id: 'id',
+			expect(root.children).toStrictEqual(["id"]);
+			expect(get("id")).toStrictEqual({
+				type: "postForm",
+				id: "id",
 				form: {
-					text: 'a',
-					cw: 'b',
-					visibility: 'public',
+					text: "a",
+					cw: "b",
+					visibility: "public",
 					localOnly: true,
 				},
 			});
 		});
 
-		test.concurrent('minimum options', async () => {
+		test.concurrent("minimum options", async () => {
 			const { get } = await exe(`
 				Ui:C:postForm({}, 'id')
 			`);
-			expect(get('id')).toStrictEqual({
-				type: 'postForm',
-				id: 'id',
-				form: { text: '' },
+			expect(get("id")).toStrictEqual({
+				type: "postForm",
+				id: "id",
+				form: { text: "" },
 			});
 		});
 
-		test.concurrent('minimum options for form', async () => {
+		test.concurrent("minimum options for form", async () => {
 			const { get } = await exe(`
 				Ui:C:postForm({
 					form: { text: '' }
 				}, 'id')
 			`);
-			expect(get('id')).toStrictEqual({
-				type: 'postForm',
-				id: 'id',
+			expect(get("id")).toStrictEqual({
+				type: "postForm",
+				id: "id",
 				form: {
-					text: '',
+					text: "",
 					cw: undefined,
 					visibility: undefined,
 					localOnly: undefined,

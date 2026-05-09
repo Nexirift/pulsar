@@ -20,9 +20,7 @@
 		"removeComments": false,
 		"outDir": "./built"
 	},
-	"include": [
-		"./src/**/*.ts"
-	],
+	"include": ["./src/**/*.ts"],
 	"exclude": [
 		"node_modules",
 		"**/built/",

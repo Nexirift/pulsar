@@ -4,23 +4,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader>
-	<div class="_spacer" style="--MI_SPACER-w: 500px;">
-		<div class="_gaps">
-			<MkAd v-for="ad in instance.ads" :key="ad.id" :specify="ad"/>
+	<PageWithHeader>
+		<div class="_spacer" style="--MI_SPACER-w: 500px">
+			<div class="_gaps">
+				<MkAd v-for="ad in instance.ads" :key="ad.id" :specify="ad" />
+			</div>
 		</div>
-	</div>
-</PageWithHeader>
+	</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { definePage } from '@/page.js';
-import { i18n } from '@/i18n.js';
-import { instance } from '@/instance.js';
+import { definePage } from "@/page.js";
+import { i18n } from "@/i18n.js";
+import { instance } from "@/instance.js";
 
 definePage(() => ({
 	title: i18n.ts.ads,
-	icon: 'ti ti-ad',
+	icon: "ti ti-ad",
 }));
 </script>
-

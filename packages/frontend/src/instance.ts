@@ -3,24 +3,34 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { computed, nextTick, reactive } from 'vue';
-import * as Misskey from 'misskey-js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { miLocalStorage } from '@/local-storage.js';
-import { $i } from '@/i';
+import { computed, nextTick, reactive } from "vue";
+import * as Misskey from "misskey-js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { miLocalStorage } from "@/local-storage.js";
+import { $i } from "@/i";
 
 // TODO: 他のタブと永続化されたstateを同期
 
 //#region loader
-const providedMetaEl = window.document.getElementById('misskey_meta');
+const providedMetaEl = window.document.getElementById("misskey_meta");
 
-let cachedMeta = miLocalStorage.getItem('instance') ? JSON.parse(miLocalStorage.getItem('instance')!) : null;
-let cachedAt = miLocalStorage.getItem('instanceCachedAt') ? parseInt(miLocalStorage.getItem('instanceCachedAt')!) : 0;
-const providedMeta = providedMetaEl && providedMetaEl.textContent ? JSON.parse(providedMetaEl.textContent) : null;
-const providedAt = providedMetaEl && providedMetaEl.dataset.generatedAt ? parseInt(providedMetaEl.dataset.generatedAt) : 0;
+let cachedMeta = miLocalStorage.getItem("instance")
+	? JSON.parse(miLocalStorage.getItem("instance")!)
+	: null;
+let cachedAt = miLocalStorage.getItem("instanceCachedAt")
+	? parseInt(miLocalStorage.getItem("instanceCachedAt")!)
+	: 0;
+const providedMeta =
+	providedMetaEl && providedMetaEl.textContent
+		? JSON.parse(providedMetaEl.textContent)
+		: null;
+const providedAt =
+	providedMetaEl && providedMetaEl.dataset.generatedAt
+		? parseInt(providedMetaEl.dataset.generatedAt)
+		: 0;
 if (providedAt > cachedAt) {
-	miLocalStorage.setItem('instance', JSON.stringify(providedMeta));
-	miLocalStorage.setItem('instanceCachedAt', providedAt.toString());
+	miLocalStorage.setItem("instance", JSON.stringify(providedMeta));
+	miLocalStorage.setItem("instanceCachedAt", providedAt.toString());
 	cachedMeta = providedMeta;
 	cachedAt = providedAt;
 }
@@ -28,22 +38,32 @@ if (providedAt > cachedAt) {
 
 // TODO: instanceをリアクティブにするかは再考の余地あり
 
-export const instance: Misskey.entities.MetaDetailed = reactive(cachedMeta ?? {});
+export const instance: Misskey.entities.MetaDetailed = reactive(
+	cachedMeta ?? {},
+);
 
-export const isEnabledUrlPreview = computed(() => instance.enableUrlPreview ?? true);
+export const isEnabledUrlPreview = computed(
+	() => instance.enableUrlPreview ?? true,
+);
 
-export const policies = computed<Misskey.entities.RolePolicies>(() => $i?.policies ?? instance.policies);
+export const policies = computed<Misskey.entities.RolePolicies>(
+	() => $i?.policies ?? instance.policies,
+);
 
-export async function fetchInstance(force = false): Promise<Misskey.entities.MetaDetailed> {
+export async function fetchInstance(
+	force = false,
+): Promise<Misskey.entities.MetaDetailed> {
 	if (!force) {
-		const cachedAt = miLocalStorage.getItem('instanceCachedAt') ? parseInt(miLocalStorage.getItem('instanceCachedAt')!) : 0;
+		const cachedAt = miLocalStorage.getItem("instanceCachedAt")
+			? parseInt(miLocalStorage.getItem("instanceCachedAt")!)
+			: 0;
 
 		if (Date.now() - cachedAt < 1000 * 60 * 60) {
 			return instance;
 		}
 	}
 
-	const meta = await misskeyApi('meta', {
+	const meta = await misskeyApi("meta", {
 		detail: true,
 	});
 
@@ -51,13 +71,13 @@ export async function fetchInstance(force = false): Promise<Misskey.entities.Met
 		instance[k] = v;
 	}
 
-	miLocalStorage.setItem('instance', JSON.stringify(instance));
-	miLocalStorage.setItem('instanceCachedAt', Date.now().toString());
+	miLocalStorage.setItem("instance", JSON.stringify(instance));
+	miLocalStorage.setItem("instanceCachedAt", Date.now().toString());
 
 	return instance;
 }
 
 // instance export can be empty sometimes, which causes problems.
-await fetchInstance().catch(err => {
-	console.warn('Initial meta fetch failed:', err);
+await fetchInstance().catch((err) => {
+	console.warn("Initial meta fetch failed:", err);
 });

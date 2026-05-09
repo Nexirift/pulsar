@@ -4,28 +4,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div>
-	<MkLoading v-if="fetching"/>
-	<div v-show="!fetching" :class="$style.root" class="_panel">
-		<canvas ref="chartEl"></canvas>
-		<MkChartLegend ref="legendEl" style="margin-top: 8px;"/>
+	<div>
+		<MkLoading v-if="fetching" />
+		<div v-show="!fetching" :class="$style.root" class="_panel">
+			<canvas ref="chartEl"></canvas>
+			<MkChartLegend ref="legendEl" style="margin-top: 8px" />
+		</div>
 	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, useTemplateRef, ref } from 'vue';
-import { Chart } from 'chart.js';
-import * as Misskey from 'misskey-js';
-import gradient from 'chartjs-plugin-gradient';
-import type { ChartDataset } from 'chart.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { store } from '@/store.js';
-import { useChartTooltip } from '@/use/use-chart-tooltip.js';
-import { chartVLine } from '@/utility/chart-vline.js';
-import { initChart } from '@/utility/init-chart.js';
-import { chartLegend } from '@/utility/chart-legend.js';
-import MkChartLegend from '@/components/MkChartLegend.vue';
+import { onMounted, useTemplateRef, ref } from "vue";
+import { Chart } from "chart.js";
+import * as Misskey from "misskey-js";
+import gradient from "chartjs-plugin-gradient";
+import type { ChartDataset } from "chart.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { store } from "@/store.js";
+import { useChartTooltip } from "@/use/use-chart-tooltip.js";
+import { chartVLine } from "@/utility/chart-vline.js";
+import { initChart } from "@/utility/init-chart.js";
+import { chartLegend } from "@/utility/chart-legend.js";
+import MkChartLegend from "@/components/MkChartLegend.vue";
 
 initChart();
 
@@ -33,8 +33,8 @@ const props = defineProps<{
 	user: Misskey.entities.User;
 }>();
 
-const chartEl = useTemplateRef('chartEl');
-const legendEl = useTemplateRef('legendEl');
+const chartEl = useTemplateRef("chartEl");
+const legendEl = useTemplateRef("legendEl");
 const now = new Date();
 let chartInstance: Chart = null;
 const chartLimit = 50;
@@ -62,40 +62,61 @@ async function renderChart() {
 		}));
 	};
 
-	const raw = await misskeyApi('charts/user/notes', { userId: props.user.id, limit: chartLimit, span: 'day' });
+	const raw = await misskeyApi("charts/user/notes", {
+		userId: props.user.id,
+		limit: chartLimit,
+		span: "day",
+	});
 
-	const vLineColor = store.s.darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
+	const vLineColor = store.s.darkMode
+		? "rgba(255, 255, 255, 0.2)"
+		: "rgba(0, 0, 0, 0.2)";
 
-	const colorNormal = '#008FFB';
-	const colorReply = '#FEB019';
-	const colorRenote = '#00E396';
-	const colorFile = '#e300db';
+	const colorNormal = "#008FFB";
+	const colorReply = "#FEB019";
+	const colorRenote = "#00E396";
+	const colorFile = "#e300db";
 
-	function makeDataset(label: string, data: ChartDataset['data'], extra: Partial<ChartDataset> = {}): ChartDataset {
-		return Object.assign({
-			label: label,
-			data: data,
-			parsing: false,
-			pointRadius: 0,
-			borderWidth: 0,
-			borderJoinStyle: 'round',
-			borderRadius: 4,
-			barPercentage: 0.9,
-			fill: true,
-		/* @see <https://github.com/misskey-dev/misskey/pull/10365#discussion_r1155511107>
+	function makeDataset(
+		label: string,
+		data: ChartDataset["data"],
+		extra: Partial<ChartDataset> = {},
+	): ChartDataset {
+		return Object.assign(
+			{
+				label: label,
+				data: data,
+				parsing: false,
+				pointRadius: 0,
+				borderWidth: 0,
+				borderJoinStyle: "round",
+				borderRadius: 4,
+				barPercentage: 0.9,
+				fill: true,
+				/* @see <https://github.com/misskey-dev/misskey/pull/10365#discussion_r1155511107>
 		} satisfies ChartData, extra);
 		 */
-		}, extra);
+			},
+			extra,
+		);
 	}
 
 	chartInstance = new Chart(chartEl.value, {
-		type: 'bar',
+		type: "bar",
 		data: {
 			datasets: [
-				makeDataset('File', format(raw.diffs.withFile).slice().reverse(), { backgroundColor: colorFile }),
-				makeDataset('Renote', format(raw.diffs.renote).slice().reverse(), { backgroundColor: colorRenote }),
-				makeDataset('Reply', format(raw.diffs.reply).slice().reverse(), { backgroundColor: colorReply }),
-				makeDataset('Normal', format(raw.diffs.normal).slice().reverse(), { backgroundColor: colorNormal }),
+				makeDataset("File", format(raw.diffs.withFile).slice().reverse(), {
+					backgroundColor: colorFile,
+				}),
+				makeDataset("Renote", format(raw.diffs.renote).slice().reverse(), {
+					backgroundColor: colorRenote,
+				}),
+				makeDataset("Reply", format(raw.diffs.reply).slice().reverse(), {
+					backgroundColor: colorReply,
+				}),
+				makeDataset("Normal", format(raw.diffs.normal).slice().reverse(), {
+					backgroundColor: colorNormal,
+				}),
 			],
 		},
 		options: {
@@ -110,15 +131,15 @@ async function renderChart() {
 			},
 			scales: {
 				x: {
-					type: 'time',
+					type: "time",
 					offset: true,
 					stacked: true,
 					time: {
 						stepSize: 1,
-						unit: 'day',
+						unit: "day",
 						displayFormats: {
-							day: 'M/d',
-							month: 'Y/M',
+							day: "M/d",
+							month: "Y/M",
 						},
 					},
 					grid: {
@@ -131,7 +152,7 @@ async function renderChart() {
 					},
 				},
 				y: {
-					position: 'left',
+					position: "left",
 					stacked: true,
 					suggestedMax: 10,
 					grid: {
@@ -145,7 +166,7 @@ async function renderChart() {
 			},
 			interaction: {
 				intersect: false,
-				mode: 'index',
+				mode: "index",
 			},
 			plugins: {
 				legend: {
@@ -153,7 +174,7 @@ async function renderChart() {
 				},
 				tooltip: {
 					enabled: false,
-					mode: 'index',
+					mode: "index",
 					animation: {
 						duration: 0,
 					},

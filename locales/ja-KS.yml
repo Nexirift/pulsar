@@ -1306,7 +1306,7 @@ acknowledgeNotesAndEnable: "注意事項をわかった上でオンにする。"
 federationSpecified: "このサーバーはホワイトリスト連合で運用されてるで。管理者が指定したサーバー以外とはやり取りできひんで。"
 federationDisabled: "このサーバーは連合が無効化されてるで。他のサーバーのユーザーとやり取りすることはできひんで。"
 confirmOnReact: "ツッコむときに確認とる"
-reactAreYouSure: "\" {emoji} \" でツッコむ？"
+reactAreYouSure: '" {emoji} " でツッコむ？'
 postForm: "投稿フォーム"
 information: "情報"
 _chat:
@@ -1654,7 +1654,7 @@ _achievements:
       description: "実績一覧を3分以上眺め続けた"
     _iLoveMisskey:
       title: "Misskey好きやねん"
-      description: "\"I ❤ #Misskey\"を投稿した"
+      description: '"I ❤ #Misskey"を投稿した'
       flavor: "Misskeyを使ってくれておおきにな～　by 開発チーム"
     _foundTreasure:
       title: "なんでも鑑定団"
@@ -2782,8 +2782,8 @@ _customEmojisManager:
     _register:
       uploadSettingTitle: "アップロード設定"
       uploadSettingDescription: "この画面で絵文字アップロードするときの動きを設定できるで。"
-      directoryToCategoryLabel: "ディレクトリ名を\"category\"に入力する"
-      directoryToCategoryCaption: "ディレクトリをドラッグ・ドロップした時に、ディレクトリ名を\"category\"に入力します。"
+      directoryToCategoryLabel: 'ディレクトリ名を"category"に入力する'
+      directoryToCategoryCaption: 'ディレクトリをドラッグ・ドロップした時に、ディレクトリ名を"category"に入力します。'
       emojiInputAreaCaption: "どれかの方法で登録する絵文字を選択して。"
       emojiInputAreaList1: "この枠に画像ファイルかディレクトリをドラッグ&ドロップ"
       emojiInputAreaList2: "このリンクをクリックしてPCから選択する"

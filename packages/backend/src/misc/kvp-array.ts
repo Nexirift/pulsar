@@ -11,15 +11,18 @@ export type KVPArray<T, K = string> = KVPs<T, K> & {
 	/**
 	 * Lazy-loaded array of all keys in the array, matching the order of the pairs.
 	 */
-	readonly keys: readonly K[],
+	readonly keys: readonly K[];
 
 	/**
 	 * Lazy-loaded array of all values in the array, matching the order of the pairs.
 	 */
-	readonly values: readonly T[],
+	readonly values: readonly T[];
 };
 
-type KVPs<V, K = string> = Omit<readonly KVP<V, K>[], 'keys' | 'values' | 'entries'>;
+type KVPs<V, K = string> = Omit<
+	readonly KVP<V, K>[],
+	"keys" | "values" | "entries"
+>;
 type KVP<T, K = string> = readonly [key: K, value: T];
 
 /**
@@ -32,13 +35,13 @@ export function makeKVPArray<T, K = string>(pairs: KVPs<T, K>): KVPArray<T, K> {
 	Object.defineProperties(pairs, {
 		keys: {
 			get() {
-				return keys ??= pairs.map(pair => pair[0]);
+				return (keys ??= pairs.map((pair) => pair[0]));
 			},
 			enumerable: false,
 		},
 		values: {
 			get() {
-				return values ??= pairs.map(pair => pair[1]);
+				return (values ??= pairs.map((pair) => pair[1]));
 			},
 			enumerable: false,
 		},

@@ -5,10 +5,14 @@
 
 export class UserDescriptionText1750541176036 {
 	async up(queryRunner) {
-		await queryRunner.query(`ALTER TABLE "user_profile" ALTER COLUMN "description" TYPE TEXT`);
+		await queryRunner.query(
+			`ALTER TABLE "user_profile" ALTER COLUMN "description" TYPE TEXT`,
+		);
 	}
 
 	async down(queryRunner) {
-		await queryRunner.query(`ALTER TABLE "user_profile" ALTER COLUMN "description" TYPE character varying(2048)`);
+		await queryRunner.query(
+			`ALTER TABLE "user_profile" ALTER COLUMN "description" TYPE character varying(2048)`,
+		);
 	}
 }

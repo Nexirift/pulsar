@@ -1,4 +1,4 @@
-import { QuantumCacheError } from '@/misc/errors/QuantumCacheError.js';
+import { QuantumCacheError } from "@/misc/errors/QuantumCacheError.js";
 
 /**
  * Thrown when a fetch failed for any reason.
@@ -19,13 +19,14 @@ export class FetchFailedError extends QuantumCacheError {
 		message?: string,
 		options?: ErrorOptions,
 	) {
-		const actualMessage = typeof (keyNames) === 'string'
-			? message
-				? `Fetch failed for key "${keyNames}": ${message}`
-				: `Fetch failed for key "${keyNames}".`
-			: message
-				? `Fetch failed for ${keyNames.length} keys: ${message}`
-				: `Fetch failed for ${keyNames.length} keys.`;
+		const actualMessage =
+			typeof keyNames === "string"
+				? message
+					? `Fetch failed for key "${keyNames}": ${message}`
+					: `Fetch failed for key "${keyNames}".`
+				: message
+					? `Fetch failed for ${keyNames.length} keys: ${message}`
+					: `Fetch failed for ${keyNames.length} keys.`;
 		super(cacheName, actualMessage, options);
 
 		this.keyNames = keyNames;

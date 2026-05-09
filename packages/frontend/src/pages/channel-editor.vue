@@ -4,86 +4,111 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader :actions="headerActions" :tabs="headerTabs">
-	<div class="_spacer" style="--MI_SPACER-w: 700px;">
-		<div v-if="channelId == null || channel != null" class="_gaps_m">
-			<MkInput v-model="name">
-				<template #label>{{ i18n.ts.name }}</template>
-			</MkInput>
+	<PageWithHeader :actions="headerActions" :tabs="headerTabs">
+		<div class="_spacer" style="--MI_SPACER-w: 700px">
+			<div v-if="channelId == null || channel != null" class="_gaps_m">
+				<MkInput v-model="name">
+					<template #label>{{ i18n.ts.name }}</template>
+				</MkInput>
 
-			<MkTextarea v-model="description" mfmAutocomplete :mfmPreview="true">
-				<template #label>{{ i18n.ts.description }}</template>
-			</MkTextarea>
+				<MkTextarea v-model="description" mfmAutocomplete :mfmPreview="true">
+					<template #label>{{ i18n.ts.description }}</template>
+				</MkTextarea>
 
-			<MkColorInput v-model="color">
-				<template #label>{{ i18n.ts.color }}</template>
-			</MkColorInput>
+				<MkColorInput v-model="color">
+					<template #label>{{ i18n.ts.color }}</template>
+				</MkColorInput>
 
-			<MkSwitch v-model="isSensitive">
-				<template #label>{{ i18n.ts.sensitive }}</template>
-			</MkSwitch>
+				<MkSwitch v-model="isSensitive">
+					<template #label>{{ i18n.ts.sensitive }}</template>
+				</MkSwitch>
 
-			<MkSwitch v-model="allowRenoteToExternal">
-				<template #label>{{ i18n.ts._channel.allowRenoteToExternal }}</template>
-			</MkSwitch>
+				<MkSwitch v-model="allowRenoteToExternal">
+					<template #label>{{
+						i18n.ts._channel.allowRenoteToExternal
+					}}</template>
+				</MkSwitch>
 
-			<div>
-				<MkButton v-if="bannerId == null" @click="setBannerImage"><i class="ti ti-plus"></i> {{ i18n.ts._channel.setBanner }}</MkButton>
-				<div v-else-if="bannerUrl">
-					<img :src="bannerUrl" style="width: 100%;"/>
-					<MkButton @click="removeBannerImage()"><i class="ti ti-trash"></i> {{ i18n.ts._channel.removeBanner }}</MkButton>
-				</div>
-			</div>
-
-			<MkFolder :defaultOpen="true">
-				<template #label>{{ i18n.ts.pinnedNotes }}</template>
-
-				<div class="_gaps">
-					<MkButton primary rounded @click="addPinnedNote()"><i class="ti ti-plus"></i></MkButton>
-
-					<Sortable
-						v-model="pinnedNotes"
-						itemKey="id"
-						:handle="'.' + $style.pinnedNoteHandle"
-						:animation="150"
+				<div>
+					<MkButton v-if="bannerId == null" @click="setBannerImage"
+						><i class="ti ti-plus"></i>
+						{{ i18n.ts._channel.setBanner }}</MkButton
 					>
-						<template #item="{element,index}">
-							<div :class="$style.pinnedNote">
-								<button class="_button" :class="$style.pinnedNoteHandle"><i class="ti ti-menu"></i></button>
-								{{ element.id }}
-								<button class="_button" :class="$style.pinnedNoteRemove" @click="removePinnedNote(index)"><i class="ti ti-x"></i></button>
-							</div>
-						</template>
-					</Sortable>
+					<div v-else-if="bannerUrl">
+						<img :src="bannerUrl" style="width: 100%" />
+						<MkButton @click="removeBannerImage()"
+							><i class="ti ti-trash"></i>
+							{{ i18n.ts._channel.removeBanner }}</MkButton
+						>
+					</div>
 				</div>
-			</MkFolder>
 
-			<div class="_buttons">
-				<MkButton primary @click="save()"><i class="ti ti-device-floppy"></i> {{ channelId ? i18n.ts.save : i18n.ts.create }}</MkButton>
-				<MkButton v-if="channelId" danger @click="archive()"><i class="ti ti-trash"></i> {{ i18n.ts.archive }}</MkButton>
+				<MkFolder :defaultOpen="true">
+					<template #label>{{ i18n.ts.pinnedNotes }}</template>
+
+					<div class="_gaps">
+						<MkButton primary rounded @click="addPinnedNote()"
+							><i class="ti ti-plus"></i
+						></MkButton>
+
+						<Sortable
+							v-model="pinnedNotes"
+							itemKey="id"
+							:handle="'.' + $style.pinnedNoteHandle"
+							:animation="150"
+						>
+							<template #item="{ element, index }">
+								<div :class="$style.pinnedNote">
+									<button class="_button" :class="$style.pinnedNoteHandle">
+										<i class="ti ti-menu"></i>
+									</button>
+									{{ element.id }}
+									<button
+										class="_button"
+										:class="$style.pinnedNoteRemove"
+										@click="removePinnedNote(index)"
+									>
+										<i class="ti ti-x"></i>
+									</button>
+								</div>
+							</template>
+						</Sortable>
+					</div>
+				</MkFolder>
+
+				<div class="_buttons">
+					<MkButton primary @click="save()"
+						><i class="ti ti-device-floppy"></i>
+						{{ channelId ? i18n.ts.save : i18n.ts.create }}</MkButton
+					>
+					<MkButton v-if="channelId" danger @click="archive()"
+						><i class="ti ti-trash"></i> {{ i18n.ts.archive }}</MkButton
+					>
+				</div>
 			</div>
 		</div>
-	</div>
-</PageWithHeader>
+	</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch, defineAsyncComponent } from 'vue';
-import * as Misskey from 'misskey-js';
-import MkButton from '@/components/MkButton.vue';
-import MkInput from '@/components/MkInput.vue';
-import MkColorInput from '@/components/MkColorInput.vue';
-import { selectFile } from '@/utility/select-file.js';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { definePage } from '@/page.js';
-import { i18n } from '@/i18n.js';
-import MkFolder from '@/components/MkFolder.vue';
-import MkSwitch from '@/components/MkSwitch.vue';
-import MkTextarea from '@/components/MkTextarea.vue';
-import { useRouter } from '@/router.js';
+import { computed, ref, watch, defineAsyncComponent } from "vue";
+import * as Misskey from "misskey-js";
+import MkButton from "@/components/MkButton.vue";
+import MkInput from "@/components/MkInput.vue";
+import MkColorInput from "@/components/MkColorInput.vue";
+import { selectFile } from "@/utility/select-file.js";
+import * as os from "@/os.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { definePage } from "@/page.js";
+import { i18n } from "@/i18n.js";
+import MkFolder from "@/components/MkFolder.vue";
+import MkSwitch from "@/components/MkSwitch.vue";
+import MkTextarea from "@/components/MkTextarea.vue";
+import { useRouter } from "@/router.js";
 
-const Sortable = defineAsyncComponent(() => import('vuedraggable').then(x => x.default));
+const Sortable = defineAsyncComponent(() =>
+	import("vuedraggable").then((x) => x.default),
+);
 
 const router = useRouter();
 
@@ -96,25 +121,30 @@ const name = ref<string | null>(null);
 const description = ref<string | null>(null);
 const bannerUrl = ref<string | null>(null);
 const bannerId = ref<string | null>(null);
-const color = ref('#000');
+const color = ref("#000");
 const isSensitive = ref(false);
 const allowRenoteToExternal = ref(true);
-const pinnedNotes = ref<{ id: Misskey.entities.Note['id'] }[]>([]);
+const pinnedNotes = ref<{ id: Misskey.entities.Note["id"] }[]>([]);
 
-watch(() => bannerId.value, async () => {
-	if (bannerId.value == null) {
-		bannerUrl.value = null;
-	} else {
-		bannerUrl.value = (await misskeyApi('drive/files/show', {
-			fileId: bannerId.value,
-		})).url;
-	}
-});
+watch(
+	() => bannerId.value,
+	async () => {
+		if (bannerId.value == null) {
+			bannerUrl.value = null;
+		} else {
+			bannerUrl.value = (
+				await misskeyApi("drive/files/show", {
+					fileId: bannerId.value,
+				})
+			).url;
+		}
+	},
+);
 
 async function fetchChannel() {
 	if (props.channelId == null) return;
 
-	channel.value = await misskeyApi('channels/show', {
+	channel.value = await misskeyApi("channels/show", {
 		channelId: props.channelId,
 	});
 
@@ -123,7 +153,7 @@ async function fetchChannel() {
 	bannerId.value = channel.value.bannerId;
 	bannerUrl.value = channel.value.bannerUrl;
 	isSensitive.value = channel.value.isSensitive;
-	pinnedNotes.value = channel.value.pinnedNoteIds.map(id => ({
+	pinnedNotes.value = channel.value.pinnedNoteIds.map((id) => ({
 		id,
 	}));
 	color.value = channel.value.color;
@@ -137,12 +167,15 @@ async function addPinnedNote() {
 		title: i18n.ts.noteIdOrUrl,
 	});
 	if (canceled) return;
-	const note = await os.apiWithDialog('notes/show', {
-		noteId: value.includes('/') ? value.split('/').pop() : value,
+	const note = await os.apiWithDialog("notes/show", {
+		noteId: value.includes("/") ? value.split("/").pop() : value,
 	});
-	pinnedNotes.value = [{
-		id: note.id,
-	}, ...pinnedNotes.value];
+	pinnedNotes.value = [
+		{
+			id: note.id,
+		},
+		...pinnedNotes.value,
+	];
 }
 
 function removePinnedNote(index: number) {
@@ -154,7 +187,7 @@ function save() {
 		name: name.value,
 		description: description.value,
 		bannerId: bannerId.value,
-		pinnedNoteIds: pinnedNotes.value.map(x => x.id),
+		pinnedNoteIds: pinnedNotes.value.map((x) => x.id),
 		color: color.value,
 		isSensitive: isSensitive.value,
 		allowRenoteToExternal: allowRenoteToExternal.value,
@@ -162,9 +195,9 @@ function save() {
 
 	if (props.channelId) {
 		params.channelId = props.channelId;
-		os.apiWithDialog('channels/update', params);
+		os.apiWithDialog("channels/update", params);
 	} else {
-		os.apiWithDialog('channels/create', params).then(created => {
+		os.apiWithDialog("channels/create", params).then((created) => {
 			router.push(`/channels/${created.id}`);
 		});
 	}
@@ -172,14 +205,14 @@ function save() {
 
 async function archive() {
 	const { canceled } = await os.confirm({
-		type: 'warning',
+		type: "warning",
 		title: i18n.tsx.channelArchiveConfirmTitle({ name: name.value }),
 		text: i18n.ts.channelArchiveConfirmDescription,
 	});
 
 	if (canceled) return;
 
-	misskeyApi('channels/update', {
+	misskeyApi("channels/update", {
 		channelId: props.channelId,
 		isArchived: true,
 	}).then(() => {
@@ -188,7 +221,7 @@ async function archive() {
 }
 
 function setBannerImage(evt) {
-	selectFile(evt.currentTarget ?? evt.target, null).then(file => {
+	selectFile(evt.currentTarget ?? evt.target, null).then((file) => {
 		bannerId.value = file.id;
 	});
 }
@@ -203,7 +236,7 @@ const headerTabs = computed(() => []);
 
 definePage(() => ({
 	title: props.channelId ? i18n.ts._channel.edit : i18n.ts._channel.create,
-	icon: 'ti ti-device-tv',
+	icon: "ti ti-device-tv",
 }));
 </script>
 

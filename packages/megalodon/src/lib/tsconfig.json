@@ -3,9 +3,7 @@
 	"extends": "../../../shared/tsconfig.lib.jsonc",
 	"compilerOptions": {
 		"outDir": "../../built/lib",
-		"rootDir": "./",
+		"rootDir": "./"
 	},
-	"include": [
-		"**/*.ts",
-	]
+	"include": ["**/*.ts"]
 }

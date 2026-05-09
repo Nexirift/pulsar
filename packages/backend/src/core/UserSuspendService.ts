@@ -3,21 +3,25 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Not, IsNull, DataSource } from 'typeorm';
-import type { FollowingsRepository, FollowRequestsRepository, UsersRepository } from '@/models/_.js';
-import { MiUser } from '@/models/User.js';
-import { QueueService } from '@/core/QueueService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { DI } from '@/di-symbols.js';
-import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { bindThis } from '@/decorators.js';
-import { RelationshipJobData } from '@/queue/types.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { isSystemAccount } from '@/misc/is-system-account.js';
-import { CacheService } from '@/core/CacheService.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Not, IsNull, DataSource } from "typeorm";
+import type {
+	FollowingsRepository,
+	FollowRequestsRepository,
+	UsersRepository,
+} from "@/models/_.js";
+import { MiUser } from "@/models/User.js";
+import { QueueService } from "@/core/QueueService.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { DI } from "@/di-symbols.js";
+import { ApRendererService } from "@/core/activitypub/ApRendererService.js";
+import { UserEntityService } from "@/core/entities/UserEntityService.js";
+import { bindThis } from "@/decorators.js";
+import { RelationshipJobData } from "@/queue/types.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
+import { isSystemAccount } from "@/misc/is-system-account.js";
+import { CacheService } from "@/core/CacheService.js";
+import { InternalEventService } from "@/global/InternalEventService.js";
 
 @Injectable()
 export class UserSuspendService {
@@ -45,15 +49,19 @@ export class UserSuspendService {
 
 	@bindThis
 	public async suspend(user: MiUser, moderator: MiUser): Promise<void> {
-		if (isSystemAccount(user)) throw new Error('cannot suspend a system account');
+		if (isSystemAccount(user))
+			throw new Error("cannot suspend a system account");
 
 		await this.usersRepository.update(user.id, {
 			isSuspended: true,
 		});
 
-		await this.internalEventService.emit(user.host == null ? 'localUserUpdated' : 'remoteUserUpdated', { id: user.id });
+		await this.internalEventService.emit(
+			user.host == null ? "localUserUpdated" : "remoteUserUpdated",
+			{ id: user.id },
+		);
 
-		await this.moderationLogService.log(moderator, 'suspend', {
+		await this.moderationLogService.log(moderator, "suspend", {
 			userId: user.id,
 			userUsername: user.username,
 			userHost: user.host,
@@ -68,9 +76,12 @@ export class UserSuspendService {
 			isSuspended: false,
 		});
 
-		await this.internalEventService.emit(user.host == null ? 'localUserUpdated' : 'remoteUserUpdated', { id: user.id });
+		await this.internalEventService.emit(
+			user.host == null ? "localUserUpdated" : "remoteUserUpdated",
+			{ id: user.id },
+		);
 
-		await this.moderationLogService.log(moderator, 'unsuspend', {
+		await this.moderationLogService.log(moderator, "unsuspend", {
 			userId: user.id,
 			userUsername: user.username,
 			userHost: user.host,
@@ -81,7 +92,10 @@ export class UserSuspendService {
 
 	@bindThis
 	public async postSuspend(user: MiUser): Promise<void> {
-		this.globalEventService.publishInternalEvent('userChangeSuspendedState', { id: user.id, isSuspended: true });
+		this.globalEventService.publishInternalEvent("userChangeSuspendedState", {
+			id: user.id,
+			isSuspended: true,
+		});
 
 		/*
 		this.followRequestsRepository.delete({
@@ -94,7 +108,12 @@ export class UserSuspendService {
 
 		if (this.userEntityService.isLocalUser(user)) {
 			// 知り得る全SharedInboxにDelete配信
-			const content = this.apRendererService.addContext(this.apRendererService.renderDelete(this.userEntityService.genLocalUserUri(user.id), user));
+			const content = this.apRendererService.addContext(
+				this.apRendererService.renderDelete(
+					this.userEntityService.genLocalUserUri(user.id),
+					user,
+				),
+			);
 
 			const queue = new Map<string, boolean>();
 
@@ -103,10 +122,12 @@ export class UserSuspendService {
 					{ followerSharedInbox: Not(IsNull()) },
 					{ followeeSharedInbox: Not(IsNull()) },
 				],
-				select: ['followerSharedInbox', 'followeeSharedInbox'],
+				select: ["followerSharedInbox", "followeeSharedInbox"],
 			});
 
-			const inboxes = followings.map(x => x.followerSharedInbox ?? x.followeeSharedInbox);
+			const inboxes = followings.map(
+				(x) => x.followerSharedInbox ?? x.followeeSharedInbox,
+			);
 
 			for (const inbox of inboxes) {
 				if (inbox != null) {
@@ -122,11 +143,22 @@ export class UserSuspendService {
 
 	@bindThis
 	public async postUnsuspend(user: MiUser): Promise<void> {
-		this.globalEventService.publishInternalEvent('userChangeSuspendedState', { id: user.id, isSuspended: false });
+		this.globalEventService.publishInternalEvent("userChangeSuspendedState", {
+			id: user.id,
+			isSuspended: false,
+		});
 
 		if (this.userEntityService.isLocalUser(user)) {
 			// 知り得る全SharedInboxにUndo Delete配信
-			const content = this.apRendererService.addContext(this.apRendererService.renderUndo(this.apRendererService.renderDelete(this.userEntityService.genLocalUserUri(user.id), user), user));
+			const content = this.apRendererService.addContext(
+				this.apRendererService.renderUndo(
+					this.apRendererService.renderDelete(
+						this.userEntityService.genLocalUserUri(user.id),
+						user,
+					),
+					user,
+				),
+			);
 
 			const queue = new Map<string, boolean>();
 
@@ -135,10 +167,12 @@ export class UserSuspendService {
 					{ followerSharedInbox: Not(IsNull()) },
 					{ followeeSharedInbox: Not(IsNull()) },
 				],
-				select: ['followerSharedInbox', 'followeeSharedInbox'],
+				select: ["followerSharedInbox", "followeeSharedInbox"],
 			});
 
-			const inboxes = followings.map(x => x.followerSharedInbox ?? x.followeeSharedInbox);
+			const inboxes = followings.map(
+				(x) => x.followerSharedInbox ?? x.followeeSharedInbox,
+			);
 
 			for (const inbox of inboxes) {
 				if (inbox != null) {
@@ -154,8 +188,11 @@ export class UserSuspendService {
 
 	@bindThis
 	private async unFollowAll(follower: MiUser) {
-		const followings = await this.cacheService.userFollowingsCache.fetch(follower.id)
-			.then(fs => Array.from(fs.values()).filter(f => f.followeeHost != null));
+		const followings = await this.cacheService.userFollowingsCache
+			.fetch(follower.id)
+			.then((fs) =>
+				Array.from(fs.values()).filter((f) => f.followeeHost != null),
+			);
 
 		const jobs: RelationshipJobData[] = [];
 		for (const following of followings) {
@@ -174,7 +211,7 @@ export class UserSuspendService {
 	private async freezeAll(user: MiUser): Promise<void> {
 		// Freeze follow relations with all remote users
 		await this.followingsRepository
-			.createQueryBuilder('following')
+			.createQueryBuilder("following")
 			.update({
 				isFollowerHibernated: true,
 			})
@@ -190,7 +227,8 @@ export class UserSuspendService {
 		// Restore follow relations with all remote users
 
 		// TypeORM does not support UPDATE with JOIN: https://github.com/typeorm/typeorm/issues/564#issuecomment-310331468
-		await this.db.query(`
+		await this.db.query(
+			`
 			UPDATE "following"
 				SET "isFollowerHibernated" = false
 			FROM "user"
@@ -198,6 +236,8 @@ export class UserSuspendService {
 				AND "user"."isHibernated" = false -- Don't unfreeze if the follower is *actually* frozen
 				AND "followeeId" = $1
 				AND "followeeHost" IS NOT NULL
-		`, [user.id]);
+		`,
+			[user.id],
+		);
 	}
 }

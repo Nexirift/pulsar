@@ -3,23 +3,23 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { afterEach, beforeAll, describe, test } from '@jest/globals';
-import { Test, TestingModule } from '@nestjs/testing';
-import { DataSource } from 'typeorm';
-import { CustomEmojiService } from '@/core/CustomEmojiService.js';
-import { EmojiEntityService } from '@/core/entities/EmojiEntityService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { IdService } from '@/core/IdService.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import { DI } from '@/di-symbols.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import { EmojisRepository } from '@/models/_.js';
-import { MiEmoji } from '@/models/Emoji.js';
-import { CoreModule } from '@/core/CoreModule.js';
-import { DriveService } from '@/core//DriveService.js';
+import { afterEach, beforeAll, describe, test } from "@jest/globals";
+import { Test, TestingModule } from "@nestjs/testing";
+import { DataSource } from "typeorm";
+import { CustomEmojiService } from "@/core/CustomEmojiService.js";
+import { EmojiEntityService } from "@/core/entities/EmojiEntityService.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { IdService } from "@/core/IdService.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
+import { UtilityService } from "@/core/UtilityService.js";
+import { DI } from "@/di-symbols.js";
+import { GlobalModule } from "@/GlobalModule.js";
+import { EmojisRepository } from "@/models/_.js";
+import { MiEmoji } from "@/models/Emoji.js";
+import { CoreModule } from "@/core/CoreModule.js";
+import { DriveService } from "@/core//DriveService.js";
 
-describe('CustomEmojiService', () => {
+describe("CustomEmojiService", () => {
 	let app: TestingModule;
 	let service: CustomEmojiService;
 
@@ -27,14 +27,9 @@ describe('CustomEmojiService', () => {
 	let idService: IdService;
 
 	beforeAll(async () => {
-		app = await Test
-			.createTestingModule({
-				imports: [
-					GlobalModule,
-					CoreModule,
-				],
-			})
-			.compile();
+		app = await Test.createTestingModule({
+			imports: [GlobalModule, CoreModule],
+		}).compile();
 
 		await app.init();
 		app.enableShutdownHooks();
@@ -42,14 +37,14 @@ describe('CustomEmojiService', () => {
 		service = app.get<CustomEmojiService>(CustomEmojiService);
 		emojisRepository = app.get<EmojisRepository>(DI.emojisRepository);
 		idService = app.get<IdService>(IdService);
-		await app.get<DataSource>(DI.db).query('set session time zone \'UTC\'');
+		await app.get<DataSource>(DI.db).query("set session time zone 'UTC'");
 	});
 
 	afterAll(async () => {
 		await app.close();
 	});
 
-	describe('fetchEmojis', () => {
+	describe("fetchEmojis", () => {
 		async function insert(data: Partial<MiEmoji>[]) {
 			for (const d of data) {
 				const id = idService.gen();
@@ -61,26 +56,26 @@ describe('CustomEmojiService', () => {
 			}
 		}
 
-		function call(params: Parameters<CustomEmojiService['fetchEmojis']>['0']) {
-			return service.fetchEmojis(
-				params,
-				{
-					// テスト向けに
-					sortKeys: ['+id'],
-				},
-			);
+		function call(params: Parameters<CustomEmojiService["fetchEmojis"]>["0"]) {
+			return service.fetchEmojis(params, {
+				// テスト向けに
+				sortKeys: ["+id"],
+			});
 		}
 
-		function defaultData(suffix: string, override?: Partial<MiEmoji>): Partial<MiEmoji> {
+		function defaultData(
+			suffix: string,
+			override?: Partial<MiEmoji>,
+		): Partial<MiEmoji> {
 			return {
 				name: `emoji${suffix}`,
 				host: null,
-				category: 'default',
+				category: "default",
 				originalUrl: `https://example.com/emoji${suffix}.png`,
 				publicUrl: `https://example.com/emoji${suffix}.png`,
-				type: 'image/png',
+				type: "image/png",
 				aliases: [`emoji${suffix}`],
-				license: 'CC0',
+				license: "CC0",
 				isSensitive: false,
 				localOnly: false,
 				roleIdsThatCanBeUsedThisEmojiAsReaction: [],
@@ -92,103 +87,107 @@ describe('CustomEmojiService', () => {
 			await emojisRepository.deleteAll();
 		});
 
-		describe('単独', () => {
-			test('updatedAtFrom', async () => {
+		describe("単独", () => {
+			test("updatedAtFrom", async () => {
 				await insert([
-					defaultData('001', { updatedAt: new Date('2021-01-01T00:00:00.000Z') }),
-					defaultData('002', { updatedAt: new Date('2021-01-02T00:00:00.000Z') }),
-					defaultData('003', { updatedAt: new Date('2021-01-03T00:00:00.000Z') }),
+					defaultData("001", {
+						updatedAt: new Date("2021-01-01T00:00:00.000Z"),
+					}),
+					defaultData("002", {
+						updatedAt: new Date("2021-01-02T00:00:00.000Z"),
+					}),
+					defaultData("003", {
+						updatedAt: new Date("2021-01-03T00:00:00.000Z"),
+					}),
 				]);
 
 				const actual = await call({
 					query: {
-						updatedAtFrom: '2021-01-02T00:00:00.000Z',
+						updatedAtFrom: "2021-01-02T00:00:00.000Z",
 					},
 				});
 
 				expect(actual.allCount).toBe(2);
-				expect(actual.emojis[0].name).toBe('emoji002');
-				expect(actual.emojis[1].name).toBe('emoji003');
+				expect(actual.emojis[0].name).toBe("emoji002");
+				expect(actual.emojis[1].name).toBe("emoji003");
 			});
 
-			test('updatedAtTo', async () => {
+			test("updatedAtTo", async () => {
 				await insert([
-					defaultData('001', { updatedAt: new Date('2021-01-01T00:00:00.000Z') }),
-					defaultData('002', { updatedAt: new Date('2021-01-02T00:00:00.000Z') }),
-					defaultData('003', { updatedAt: new Date('2021-01-03T00:00:00.000Z') }),
+					defaultData("001", {
+						updatedAt: new Date("2021-01-01T00:00:00.000Z"),
+					}),
+					defaultData("002", {
+						updatedAt: new Date("2021-01-02T00:00:00.000Z"),
+					}),
+					defaultData("003", {
+						updatedAt: new Date("2021-01-03T00:00:00.000Z"),
+					}),
 				]);
 
 				const actual = await call({
 					query: {
-						updatedAtTo: '2021-01-02T00:00:00.000Z',
+						updatedAtTo: "2021-01-02T00:00:00.000Z",
 					},
 				});
 
 				expect(actual.allCount).toBe(2);
-				expect(actual.emojis[0].name).toBe('emoji001');
-				expect(actual.emojis[1].name).toBe('emoji002');
+				expect(actual.emojis[0].name).toBe("emoji001");
+				expect(actual.emojis[1].name).toBe("emoji002");
 			});
 
-			describe('name', () => {
-				test('single', async () => {
-					await insert([
-						defaultData('001'),
-						defaultData('002'),
-					]);
+			describe("name", () => {
+				test("single", async () => {
+					await insert([defaultData("001"), defaultData("002")]);
 
 					const actual = await call({
 						query: {
-							name: 'emoji001',
+							name: "emoji001",
 						},
 					});
 
 					expect(actual.allCount).toBe(1);
-					expect(actual.emojis[0].name).toBe('emoji001');
+					expect(actual.emojis[0].name).toBe("emoji001");
 				});
 
-				test('multi', async () => {
-					await insert([
-						defaultData('001'),
-						defaultData('002'),
-					]);
+				test("multi", async () => {
+					await insert([defaultData("001"), defaultData("002")]);
 
 					const actual = await call({
 						query: {
-							name: 'emoji001 emoji002',
+							name: "emoji001 emoji002",
 						},
 					});
 
 					expect(actual.allCount).toBe(2);
-					expect(actual.emojis[0].name).toBe('emoji001');
-					expect(actual.emojis[1].name).toBe('emoji002');
+					expect(actual.emojis[0].name).toBe("emoji001");
+					expect(actual.emojis[1].name).toBe("emoji002");
 				});
 
-				test('keyword', async () => {
+				test("keyword", async () => {
 					await insert([
-						defaultData('001'),
-						defaultData('002'),
-						defaultData('003', { name: 'em003' }),
+						defaultData("001"),
+						defaultData("002"),
+						defaultData("003", { name: "em003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							name: 'oji',
+							name: "oji",
 						},
 					});
 
 					expect(actual.allCount).toBe(2);
-					expect(actual.emojis[0].name).toBe('emoji001');
-					expect(actual.emojis[1].name).toBe('emoji002');
+					expect(actual.emojis[0].name).toBe("emoji001");
+					expect(actual.emojis[1].name).toBe("emoji002");
 				});
 
-				test('escape', async () => {
-					await insert([
-						defaultData('001'),
-					]);
+				test("escape", async () => {
+					await insert([defaultData("001")]);
 
 					const actual = await call({
 						query: {
-							name: '%',
+							name: "%",
 						},
 					});
 
@@ -196,72 +195,70 @@ describe('CustomEmojiService', () => {
 				});
 			});
 
-			describe('host', () => {
-				test('single', async () => {
+			describe("host", () => {
+				test("single", async () => {
 					await insert([
-						defaultData('001', { host: 'example.com' }),
-						defaultData('002', { host: 'example.com' }),
-						defaultData('003', { host: '1.example.com' }),
-						defaultData('004', { host: '2.example.com' }),
+						defaultData("001", { host: "example.com" }),
+						defaultData("002", { host: "example.com" }),
+						defaultData("003", { host: "1.example.com" }),
+						defaultData("004", { host: "2.example.com" }),
 					]);
 
 					const actual = await call({
 						query: {
-							host: 'example.com',
-							hostType: 'remote',
+							host: "example.com",
+							hostType: "remote",
 						},
 					});
 
 					expect(actual.allCount).toBe(4);
 				});
 
-				test('multi', async () => {
+				test("multi", async () => {
 					await insert([
-						defaultData('001', { host: 'example.com' }),
-						defaultData('002', { host: 'example.com' }),
-						defaultData('003', { host: '1.example.com' }),
-						defaultData('004', { host: '2.example.com' }),
+						defaultData("001", { host: "example.com" }),
+						defaultData("002", { host: "example.com" }),
+						defaultData("003", { host: "1.example.com" }),
+						defaultData("004", { host: "2.example.com" }),
 					]);
 
 					const actual = await call({
 						query: {
-							host: '1.example.com 2.example.com',
-							hostType: 'remote',
+							host: "1.example.com 2.example.com",
+							hostType: "remote",
 						},
 					});
 
 					expect(actual.allCount).toBe(2);
-					expect(actual.emojis[0].name).toBe('emoji003');
-					expect(actual.emojis[1].name).toBe('emoji004');
+					expect(actual.emojis[0].name).toBe("emoji003");
+					expect(actual.emojis[1].name).toBe("emoji004");
 				});
 
-				test('keyword', async () => {
+				test("keyword", async () => {
 					await insert([
-						defaultData('001', { host: 'example.com' }),
-						defaultData('002', { host: 'example.com' }),
-						defaultData('003', { host: '1.example.com' }),
-						defaultData('004', { host: '2.example.com' }),
+						defaultData("001", { host: "example.com" }),
+						defaultData("002", { host: "example.com" }),
+						defaultData("003", { host: "1.example.com" }),
+						defaultData("004", { host: "2.example.com" }),
 					]);
 
 					const actual = await call({
 						query: {
-							host: 'example',
-							hostType: 'remote',
+							host: "example",
+							hostType: "remote",
 						},
 					});
 
 					expect(actual.allCount).toBe(4);
 				});
 
-				test('escape', async () => {
-					await insert([
-						defaultData('001', { host: 'example.com' }),
-					]);
+				test("escape", async () => {
+					await insert([defaultData("001", { host: "example.com" })]);
 
 					const actual = await call({
 						query: {
-							host: '%',
-							hostType: 'remote',
+							host: "%",
+							hostType: "remote",
 						},
 					});
 
@@ -269,66 +266,64 @@ describe('CustomEmojiService', () => {
 				});
 			});
 
-			describe('uri', () => {
-				test('single', async () => {
+			describe("uri", () => {
+				test("single", async () => {
 					await insert([
-						defaultData('001', { uri: 'uri001' }),
-						defaultData('002', { uri: 'uri002' }),
-						defaultData('003', { uri: 'uri003' }),
+						defaultData("001", { uri: "uri001" }),
+						defaultData("002", { uri: "uri002" }),
+						defaultData("003", { uri: "uri003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							uri: 'uri002',
+							uri: "uri002",
 						},
 					});
 
 					expect(actual.allCount).toBe(1);
-					expect(actual.emojis[0].name).toBe('emoji002');
+					expect(actual.emojis[0].name).toBe("emoji002");
 				});
 
-				test('multi', async () => {
+				test("multi", async () => {
 					await insert([
-						defaultData('001', { uri: 'uri001' }),
-						defaultData('002', { uri: 'uri002' }),
-						defaultData('003', { uri: 'uri003' }),
+						defaultData("001", { uri: "uri001" }),
+						defaultData("002", { uri: "uri002" }),
+						defaultData("003", { uri: "uri003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							uri: 'uri001 uri003',
+							uri: "uri001 uri003",
 						},
 					});
 
 					expect(actual.allCount).toBe(2);
-					expect(actual.emojis[0].name).toBe('emoji001');
-					expect(actual.emojis[1].name).toBe('emoji003');
+					expect(actual.emojis[0].name).toBe("emoji001");
+					expect(actual.emojis[1].name).toBe("emoji003");
 				});
 
-				test('keyword', async () => {
+				test("keyword", async () => {
 					await insert([
-						defaultData('001', { uri: 'uri001' }),
-						defaultData('002', { uri: 'uri002' }),
-						defaultData('003', { uri: 'uri003' }),
+						defaultData("001", { uri: "uri001" }),
+						defaultData("002", { uri: "uri002" }),
+						defaultData("003", { uri: "uri003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							uri: 'ri',
+							uri: "ri",
 						},
 					});
 
 					expect(actual.allCount).toBe(3);
 				});
 
-				test('escape', async () => {
-					await insert([
-						defaultData('001', { uri: 'uri001' }),
-					]);
+				test("escape", async () => {
+					await insert([defaultData("001", { uri: "uri001" })]);
 
 					const actual = await call({
 						query: {
-							uri: '%',
+							uri: "%",
 						},
 					});
 
@@ -336,66 +331,64 @@ describe('CustomEmojiService', () => {
 				});
 			});
 
-			describe('publicUrl', () => {
-				test('single', async () => {
+			describe("publicUrl", () => {
+				test("single", async () => {
 					await insert([
-						defaultData('001', { publicUrl: 'publicUrl001' }),
-						defaultData('002', { publicUrl: 'publicUrl002' }),
-						defaultData('003', { publicUrl: 'publicUrl003' }),
+						defaultData("001", { publicUrl: "publicUrl001" }),
+						defaultData("002", { publicUrl: "publicUrl002" }),
+						defaultData("003", { publicUrl: "publicUrl003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							publicUrl: 'publicUrl002',
+							publicUrl: "publicUrl002",
 						},
 					});
 
 					expect(actual.allCount).toBe(1);
-					expect(actual.emojis[0].name).toBe('emoji002');
+					expect(actual.emojis[0].name).toBe("emoji002");
 				});
 
-				test('multi', async () => {
+				test("multi", async () => {
 					await insert([
-						defaultData('001', { publicUrl: 'publicUrl001' }),
-						defaultData('002', { publicUrl: 'publicUrl002' }),
-						defaultData('003', { publicUrl: 'publicUrl003' }),
+						defaultData("001", { publicUrl: "publicUrl001" }),
+						defaultData("002", { publicUrl: "publicUrl002" }),
+						defaultData("003", { publicUrl: "publicUrl003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							publicUrl: 'publicUrl001 publicUrl003',
+							publicUrl: "publicUrl001 publicUrl003",
 						},
 					});
 
 					expect(actual.allCount).toBe(2);
-					expect(actual.emojis[0].name).toBe('emoji001');
-					expect(actual.emojis[1].name).toBe('emoji003');
+					expect(actual.emojis[0].name).toBe("emoji001");
+					expect(actual.emojis[1].name).toBe("emoji003");
 				});
 
-				test('keyword', async () => {
+				test("keyword", async () => {
 					await insert([
-						defaultData('001', { publicUrl: 'publicUrl001' }),
-						defaultData('002', { publicUrl: 'publicUrl002' }),
-						defaultData('003', { publicUrl: 'publicUrl003' }),
+						defaultData("001", { publicUrl: "publicUrl001" }),
+						defaultData("002", { publicUrl: "publicUrl002" }),
+						defaultData("003", { publicUrl: "publicUrl003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							publicUrl: 'Url',
+							publicUrl: "Url",
 						},
 					});
 
 					expect(actual.allCount).toBe(3);
 				});
 
-				test('escape', async () => {
-					await insert([
-						defaultData('001', { publicUrl: 'publicUrl001' }),
-					]);
+				test("escape", async () => {
+					await insert([defaultData("001", { publicUrl: "publicUrl001" })]);
 
 					const actual = await call({
 						query: {
-							publicUrl: '%',
+							publicUrl: "%",
 						},
 					});
 
@@ -403,66 +396,64 @@ describe('CustomEmojiService', () => {
 				});
 			});
 
-			describe('type', () => {
-				test('single', async () => {
+			describe("type", () => {
+				test("single", async () => {
 					await insert([
-						defaultData('001', { type: 'type001' }),
-						defaultData('002', { type: 'type002' }),
-						defaultData('003', { type: 'type003' }),
+						defaultData("001", { type: "type001" }),
+						defaultData("002", { type: "type002" }),
+						defaultData("003", { type: "type003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							type: 'type002',
+							type: "type002",
 						},
 					});
 
 					expect(actual.allCount).toBe(1);
-					expect(actual.emojis[0].name).toBe('emoji002');
+					expect(actual.emojis[0].name).toBe("emoji002");
 				});
 
-				test('multi', async () => {
+				test("multi", async () => {
 					await insert([
-						defaultData('001', { type: 'type001' }),
-						defaultData('002', { type: 'type002' }),
-						defaultData('003', { type: 'type003' }),
+						defaultData("001", { type: "type001" }),
+						defaultData("002", { type: "type002" }),
+						defaultData("003", { type: "type003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							type: 'type001 type003',
+							type: "type001 type003",
 						},
 					});
 
 					expect(actual.allCount).toBe(2);
-					expect(actual.emojis[0].name).toBe('emoji001');
-					expect(actual.emojis[1].name).toBe('emoji003');
+					expect(actual.emojis[0].name).toBe("emoji001");
+					expect(actual.emojis[1].name).toBe("emoji003");
 				});
 
-				test('keyword', async () => {
+				test("keyword", async () => {
 					await insert([
-						defaultData('001', { type: 'type001' }),
-						defaultData('002', { type: 'type002' }),
-						defaultData('003', { type: 'type003' }),
+						defaultData("001", { type: "type001" }),
+						defaultData("002", { type: "type002" }),
+						defaultData("003", { type: "type003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							type: 'pe',
+							type: "pe",
 						},
 					});
 
 					expect(actual.allCount).toBe(3);
 				});
 
-				test('escape', async () => {
-					await insert([
-						defaultData('001', { type: 'type001' }),
-					]);
+				test("escape", async () => {
+					await insert([defaultData("001", { type: "type001" })]);
 
 					const actual = await call({
 						query: {
-							type: '%',
+							type: "%",
 						},
 					});
 
@@ -470,70 +461,70 @@ describe('CustomEmojiService', () => {
 				});
 			});
 
-			describe('aliases', () => {
-				test('single', async () => {
+			describe("aliases", () => {
+				test("single", async () => {
 					await insert([
-						defaultData('001', { aliases: ['alias001', 'alias002'] }),
-						defaultData('002', { aliases: ['alias002'] }),
-						defaultData('003', { aliases: ['alias003'] }),
+						defaultData("001", { aliases: ["alias001", "alias002"] }),
+						defaultData("002", { aliases: ["alias002"] }),
+						defaultData("003", { aliases: ["alias003"] }),
 					]);
 
 					const actual = await call({
 						query: {
-							aliases: 'alias002',
+							aliases: "alias002",
 						},
 					});
 
 					expect(actual.allCount).toBe(2);
-					expect(actual.emojis[0].name).toBe('emoji001');
-					expect(actual.emojis[1].name).toBe('emoji002');
+					expect(actual.emojis[0].name).toBe("emoji001");
+					expect(actual.emojis[1].name).toBe("emoji002");
 				});
 
-				test('multi', async () => {
+				test("multi", async () => {
 					await insert([
-						defaultData('001', { aliases: ['alias001', 'alias002'] }),
-						defaultData('002', { aliases: ['alias002', 'alias004'] }),
-						defaultData('003', { aliases: ['alias003'] }),
-						defaultData('004', { aliases: ['alias004'] }),
+						defaultData("001", { aliases: ["alias001", "alias002"] }),
+						defaultData("002", { aliases: ["alias002", "alias004"] }),
+						defaultData("003", { aliases: ["alias003"] }),
+						defaultData("004", { aliases: ["alias004"] }),
 					]);
 
 					const actual = await call({
 						query: {
-							aliases: 'alias001 alias004',
+							aliases: "alias001 alias004",
 						},
 					});
 
 					expect(actual.allCount).toBe(3);
-					expect(actual.emojis[0].name).toBe('emoji001');
-					expect(actual.emojis[1].name).toBe('emoji002');
-					expect(actual.emojis[2].name).toBe('emoji004');
+					expect(actual.emojis[0].name).toBe("emoji001");
+					expect(actual.emojis[1].name).toBe("emoji002");
+					expect(actual.emojis[2].name).toBe("emoji004");
 				});
 
-				test('keyword', async () => {
+				test("keyword", async () => {
 					await insert([
-						defaultData('001', { aliases: ['alias001', 'alias002'] }),
-						defaultData('002', { aliases: ['alias002', 'alias004'] }),
-						defaultData('003', { aliases: ['alias003'] }),
-						defaultData('004', { aliases: ['alias004'] }),
+						defaultData("001", { aliases: ["alias001", "alias002"] }),
+						defaultData("002", { aliases: ["alias002", "alias004"] }),
+						defaultData("003", { aliases: ["alias003"] }),
+						defaultData("004", { aliases: ["alias004"] }),
 					]);
 
 					const actual = await call({
 						query: {
-							aliases: 'ias',
+							aliases: "ias",
 						},
 					});
 
 					expect(actual.allCount).toBe(4);
 				});
 
-				test('escape', async () => {
+				test("escape", async () => {
 					await insert([
-						defaultData('001', { aliases: ['alias001', 'alias002'] }),
+						defaultData("001", { aliases: ["alias001", "alias002"] }),
 					]);
 
 					const actual = await call({
 						query: {
-							aliases: '%',
+							aliases: "%",
 						},
 					});
 
@@ -541,66 +532,64 @@ describe('CustomEmojiService', () => {
 				});
 			});
 
-			describe('category', () => {
-				test('single', async () => {
+			describe("category", () => {
+				test("single", async () => {
 					await insert([
-						defaultData('001', { category: 'category001' }),
-						defaultData('002', { category: 'category002' }),
-						defaultData('003', { category: 'category003' }),
+						defaultData("001", { category: "category001" }),
+						defaultData("002", { category: "category002" }),
+						defaultData("003", { category: "category003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							category: 'category002',
+							category: "category002",
 						},
 					});
 
 					expect(actual.allCount).toBe(1);
-					expect(actual.emojis[0].name).toBe('emoji002');
+					expect(actual.emojis[0].name).toBe("emoji002");
 				});
 
-				test('multi', async () => {
+				test("multi", async () => {
 					await insert([
-						defaultData('001', { category: 'category001' }),
-						defaultData('002', { category: 'category002' }),
-						defaultData('003', { category: 'category003' }),
+						defaultData("001", { category: "category001" }),
+						defaultData("002", { category: "category002" }),
+						defaultData("003", { category: "category003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							category: 'category001 category003',
+							category: "category001 category003",
 						},
 					});
 
 					expect(actual.allCount).toBe(2);
-					expect(actual.emojis[0].name).toBe('emoji001');
-					expect(actual.emojis[1].name).toBe('emoji003');
+					expect(actual.emojis[0].name).toBe("emoji001");
+					expect(actual.emojis[1].name).toBe("emoji003");
 				});
 
-				test('keyword', async () => {
+				test("keyword", async () => {
 					await insert([
-						defaultData('001', { category: 'category001' }),
-						defaultData('002', { category: 'category002' }),
-						defaultData('003', { category: 'category003' }),
+						defaultData("001", { category: "category001" }),
+						defaultData("002", { category: "category002" }),
+						defaultData("003", { category: "category003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							category: 'egory',
+							category: "egory",
 						},
 					});
 
 					expect(actual.allCount).toBe(3);
 				});
 
-				test('escape', async () => {
-					await insert([
-						defaultData('001', { category: 'category001' }),
-					]);
+				test("escape", async () => {
+					await insert([defaultData("001", { category: "category001" })]);
 
 					const actual = await call({
 						query: {
-							category: '%',
+							category: "%",
 						},
 					});
 
@@ -608,66 +597,64 @@ describe('CustomEmojiService', () => {
 				});
 			});
 
-			describe('license', () => {
-				test('single', async () => {
+			describe("license", () => {
+				test("single", async () => {
 					await insert([
-						defaultData('001', { license: 'license001' }),
-						defaultData('002', { license: 'license002' }),
-						defaultData('003', { license: 'license003' }),
+						defaultData("001", { license: "license001" }),
+						defaultData("002", { license: "license002" }),
+						defaultData("003", { license: "license003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							license: 'license002',
+							license: "license002",
 						},
 					});
 
 					expect(actual.allCount).toBe(1);
-					expect(actual.emojis[0].name).toBe('emoji002');
+					expect(actual.emojis[0].name).toBe("emoji002");
 				});
 
-				test('multi', async () => {
+				test("multi", async () => {
 					await insert([
-						defaultData('001', { license: 'license001' }),
-						defaultData('002', { license: 'license002' }),
-						defaultData('003', { license: 'license003' }),
+						defaultData("001", { license: "license001" }),
+						defaultData("002", { license: "license002" }),
+						defaultData("003", { license: "license003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							license: 'license001 license003',
+							license: "license001 license003",
 						},
 					});
 
 					expect(actual.allCount).toBe(2);
-					expect(actual.emojis[0].name).toBe('emoji001');
-					expect(actual.emojis[1].name).toBe('emoji003');
+					expect(actual.emojis[0].name).toBe("emoji001");
+					expect(actual.emojis[1].name).toBe("emoji003");
 				});
 
-				test('keyword', async () => {
+				test("keyword", async () => {
 					await insert([
-						defaultData('001', { license: 'license001' }),
-						defaultData('002', { license: 'license002' }),
-						defaultData('003', { license: 'license003' }),
+						defaultData("001", { license: "license001" }),
+						defaultData("002", { license: "license002" }),
+						defaultData("003", { license: "license003" }),
 					]);
 
 					const actual = await call({
 						query: {
-							license: 'cense',
+							license: "cense",
 						},
 					});
 
 					expect(actual.allCount).toBe(3);
 				});
 
-				test('escape', async () => {
-					await insert([
-						defaultData('001', { license: 'license001' }),
-					]);
+				test("escape", async () => {
+					await insert([defaultData("001", { license: "license001" })]);
 
 					const actual = await call({
 						query: {
-							license: '%',
+							license: "%",
 						},
 					});
 
@@ -675,12 +662,12 @@ describe('CustomEmojiService', () => {
 				});
 			});
 
-			describe('isSensitive', () => {
-				test('true', async () => {
+			describe("isSensitive", () => {
+				test("true", async () => {
 					await insert([
-						defaultData('001', { isSensitive: true }),
-						defaultData('002', { isSensitive: false }),
-						defaultData('003', { isSensitive: true }),
+						defaultData("001", { isSensitive: true }),
+						defaultData("002", { isSensitive: false }),
+						defaultData("003", { isSensitive: true }),
 					]);
 
 					const actual = await call({
@@ -690,15 +677,15 @@ describe('CustomEmojiService', () => {
 					});
 
 					expect(actual.allCount).toBe(2);
-					expect(actual.emojis[0].name).toBe('emoji001');
-					expect(actual.emojis[1].name).toBe('emoji003');
+					expect(actual.emojis[0].name).toBe("emoji001");
+					expect(actual.emojis[1].name).toBe("emoji003");
 				});
 
-				test('false', async () => {
+				test("false", async () => {
 					await insert([
-						defaultData('001', { isSensitive: true }),
-						defaultData('002', { isSensitive: false }),
-						defaultData('003', { isSensitive: true }),
+						defaultData("001", { isSensitive: true }),
+						defaultData("002", { isSensitive: false }),
+						defaultData("003", { isSensitive: true }),
 					]);
 
 					const actual = await call({
@@ -708,14 +695,14 @@ describe('CustomEmojiService', () => {
 					});
 
 					expect(actual.allCount).toBe(1);
-					expect(actual.emojis[0].name).toBe('emoji002');
+					expect(actual.emojis[0].name).toBe("emoji002");
 				});
 
-				test('null', async () => {
+				test("null", async () => {
 					await insert([
-						defaultData('001', { isSensitive: true }),
-						defaultData('002', { isSensitive: false }),
-						defaultData('003', { isSensitive: true }),
+						defaultData("001", { isSensitive: true }),
+						defaultData("002", { isSensitive: false }),
+						defaultData("003", { isSensitive: true }),
 					]);
 
 					const actual = await call({
@@ -726,12 +713,12 @@ describe('CustomEmojiService', () => {
 				});
 			});
 
-			describe('localOnly', () => {
-				test('true', async () => {
+			describe("localOnly", () => {
+				test("true", async () => {
 					await insert([
-						defaultData('001', { localOnly: true }),
-						defaultData('002', { localOnly: false }),
-						defaultData('003', { localOnly: true }),
+						defaultData("001", { localOnly: true }),
+						defaultData("002", { localOnly: false }),
+						defaultData("003", { localOnly: true }),
 					]);
 
 					const actual = await call({
@@ -741,15 +728,15 @@ describe('CustomEmojiService', () => {
 					});
 
 					expect(actual.allCount).toBe(2);
-					expect(actual.emojis[0].name).toBe('emoji001');
-					expect(actual.emojis[1].name).toBe('emoji003');
+					expect(actual.emojis[0].name).toBe("emoji001");
+					expect(actual.emojis[1].name).toBe("emoji003");
 				});
 
-				test('false', async () => {
+				test("false", async () => {
 					await insert([
-						defaultData('001', { localOnly: true }),
-						defaultData('002', { localOnly: false }),
-						defaultData('003', { localOnly: true }),
+						defaultData("001", { localOnly: true }),
+						defaultData("002", { localOnly: false }),
+						defaultData("003", { localOnly: true }),
 					]);
 
 					const actual = await call({
@@ -759,14 +746,14 @@ describe('CustomEmojiService', () => {
 					});
 
 					expect(actual.allCount).toBe(1);
-					expect(actual.emojis[0].name).toBe('emoji002');
+					expect(actual.emojis[0].name).toBe("emoji002");
 				});
 
-				test('null', async () => {
+				test("null", async () => {
 					await insert([
-						defaultData('001', { localOnly: true }),
-						defaultData('002', { localOnly: false }),
-						defaultData('003', { localOnly: true }),
+						defaultData("001", { localOnly: true }),
+						defaultData("002", { localOnly: false }),
+						defaultData("003", { localOnly: true }),
 					]);
 
 					const actual = await call({
@@ -777,42 +764,56 @@ describe('CustomEmojiService', () => {
 				});
 			});
 
-			describe('roleId', () => {
-				test('single', async () => {
+			describe("roleId", () => {
+				test("single", async () => {
 					await insert([
-						defaultData('001', { roleIdsThatCanBeUsedThisEmojiAsReaction: ['role001'] }),
-						defaultData('002', { roleIdsThatCanBeUsedThisEmojiAsReaction: ['role002'] }),
-						defaultData('003', { roleIdsThatCanBeUsedThisEmojiAsReaction: ['role003'] }),
+						defaultData("001", {
+							roleIdsThatCanBeUsedThisEmojiAsReaction: ["role001"],
+						}),
+						defaultData("002", {
+							roleIdsThatCanBeUsedThisEmojiAsReaction: ["role002"],
+						}),
+						defaultData("003", {
+							roleIdsThatCanBeUsedThisEmojiAsReaction: ["role003"],
+						}),
 					]);
 
 					const actual = await call({
 						query: {
-							roleIds: ['role002'],
+							roleIds: ["role002"],
 						},
 					});
 
 					expect(actual.allCount).toBe(1);
-					expect(actual.emojis[0].name).toBe('emoji002');
+					expect(actual.emojis[0].name).toBe("emoji002");
 				});
 
-				test('multi', async () => {
+				test("multi", async () => {
 					await insert([
-						defaultData('001', { roleIdsThatCanBeUsedThisEmojiAsReaction: ['role001'] }),
-						defaultData('002', { roleIdsThatCanBeUsedThisEmojiAsReaction: ['role002', 'role003'] }),
-						defaultData('003', { roleIdsThatCanBeUsedThisEmojiAsReaction: ['role003'] }),
-						defaultData('004', { roleIdsThatCanBeUsedThisEmojiAsReaction: ['role004'] }),
+						defaultData("001", {
+							roleIdsThatCanBeUsedThisEmojiAsReaction: ["role001"],
+						}),
+						defaultData("002", {
+							roleIdsThatCanBeUsedThisEmojiAsReaction: ["role002", "role003"],
+						}),
+						defaultData("003", {
+							roleIdsThatCanBeUsedThisEmojiAsReaction: ["role003"],
+						}),
+						defaultData("004", {
+							roleIdsThatCanBeUsedThisEmojiAsReaction: ["role004"],
+						}),
 					]);
 
 					const actual = await call({
 						query: {
-							roleIds: ['role001', 'role003'],
+							roleIds: ["role001", "role003"],
 						},
 					});
 
 					expect(actual.allCount).toBe(3);
-					expect(actual.emojis[0].name).toBe('emoji001');
-					expect(actual.emojis[1].name).toBe('emoji002');
-					expect(actual.emojis[2].name).toBe('emoji003');
+					expect(actual.emojis[0].name).toBe("emoji001");
+					expect(actual.emojis[1].name).toBe("emoji002");
+					expect(actual.emojis[2].name).toBe("emoji003");
 				});
 			});
 		});

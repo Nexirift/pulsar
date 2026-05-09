@@ -3,7 +3,7 @@
  *
  * @module
  */
-export type * from './flash.d.ts';
-export type * from './player-element.d.ts';
-export type * from './movie-metadata.d.ts';
-export type * from './legacy.d.ts';
+export type * from "./flash.d.ts";
+export type * from "./player-element.d.ts";
+export type * from "./movie-metadata.d.ts";
+export type * from "./legacy.d.ts";

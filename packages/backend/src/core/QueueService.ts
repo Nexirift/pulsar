@@ -3,24 +3,27 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { randomUUID } from 'node:crypto';
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { MetricsTime, type JobType } from 'bullmq';
-import { parse as parseRedisInfo } from 'redis-info';
-import type { IActivity } from '@/core/activitypub/type.js';
-import type { MiDriveFile } from '@/models/DriveFile.js';
-import type { MiWebhook, WebhookEventTypes } from '@/models/Webhook.js';
-import type { MiSystemWebhook, SystemWebhookEventType } from '@/models/SystemWebhook.js';
-import type { Config } from '@/config.js';
-import { DI } from '@/di-symbols.js';
-import { bindThis } from '@/decorators.js';
-import type { Antenna } from '@/server/api/endpoints/i/import-antennas.js';
-import { ApRequestCreator } from '@/core/activitypub/ApRequestService.js';
-import { TimeService } from '@/global/TimeService.js';
-import type { SystemWebhookPayload } from '@/core/SystemWebhookService.js';
-import type { MiNote } from '@/models/Note.js';
-import type { MinimalNote } from '@/misc/is-renote.js';
-import { type UserWebhookPayload } from './UserWebhookService.js';
+import { randomUUID } from "node:crypto";
+import { Inject, Injectable, OnModuleInit } from "@nestjs/common";
+import { MetricsTime, type JobType } from "bullmq";
+import { parse as parseRedisInfo } from "redis-info";
+import type { IActivity } from "@/core/activitypub/type.js";
+import type { MiDriveFile } from "@/models/DriveFile.js";
+import type { MiWebhook, WebhookEventTypes } from "@/models/Webhook.js";
+import type {
+	MiSystemWebhook,
+	SystemWebhookEventType,
+} from "@/models/SystemWebhook.js";
+import type { Config } from "@/config.js";
+import { DI } from "@/di-symbols.js";
+import { bindThis } from "@/decorators.js";
+import type { Antenna } from "@/server/api/endpoints/i/import-antennas.js";
+import { ApRequestCreator } from "@/core/activitypub/ApRequestService.js";
+import { TimeService } from "@/global/TimeService.js";
+import type { SystemWebhookPayload } from "@/core/SystemWebhookService.js";
+import type { MiNote } from "@/models/Note.js";
+import type { MinimalNote } from "@/misc/is-renote.js";
+import { type UserWebhookPayload } from "./UserWebhookService.js";
 import type {
 	BackgroundTaskJobData,
 	DbJobData,
@@ -29,7 +32,7 @@ import type {
 	SystemWebhookDeliverJobData,
 	ThinUser,
 	UserWebhookDeliverJobData,
-} from '../queue/types.js';
+} from "../queue/types.js";
 import type {
 	DbQueue,
 	DeliverQueue,
@@ -42,22 +45,22 @@ import type {
 	UserWebhookDeliverQueue,
 	ScheduleNotePostQueue,
 	BackgroundTaskQueue,
-} from './QueueModule.js';
-import type httpSignature from '@peertube/http-signature';
-import type * as Bull from 'bullmq';
+} from "./QueueModule.js";
+import type httpSignature from "@peertube/http-signature";
+import type * as Bull from "bullmq";
 
 export const QUEUE_TYPES = [
-	'system',
-	'endedPollNotification',
-	'deliver',
-	'inbox',
-	'db',
-	'relationship',
-	'objectStorage',
-	'userWebhookDeliver',
-	'systemWebhookDeliver',
-	'scheduleNotePost',
-	'backgroundTask',
+	"system",
+	"endedPollNotification",
+	"deliver",
+	"inbox",
+	"db",
+	"relationship",
+	"objectStorage",
+	"userWebhookDeliver",
+	"systemWebhookDeliver",
+	"scheduleNotePost",
+	"backgroundTask",
 ] as const;
 
 @Injectable()
@@ -66,17 +69,23 @@ export class QueueService implements OnModuleInit {
 		@Inject(DI.config)
 		private config: Config,
 
-		@Inject('queue:system') public systemQueue: SystemQueue,
-		@Inject('queue:endedPollNotification') public endedPollNotificationQueue: EndedPollNotificationQueue,
-		@Inject('queue:deliver') public deliverQueue: DeliverQueue,
-		@Inject('queue:inbox') public inboxQueue: InboxQueue,
-		@Inject('queue:db') public dbQueue: DbQueue,
-		@Inject('queue:relationship') public relationshipQueue: RelationshipQueue,
-		@Inject('queue:objectStorage') public objectStorageQueue: ObjectStorageQueue,
-		@Inject('queue:userWebhookDeliver') public userWebhookDeliverQueue: UserWebhookDeliverQueue,
-		@Inject('queue:systemWebhookDeliver') public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
-		@Inject('queue:scheduleNotePost') public ScheduleNotePostQueue: ScheduleNotePostQueue,
-		@Inject('queue:backgroundTask') public readonly backgroundTaskQueue: BackgroundTaskQueue,
+		@Inject("queue:system") public systemQueue: SystemQueue,
+		@Inject("queue:endedPollNotification")
+		public endedPollNotificationQueue: EndedPollNotificationQueue,
+		@Inject("queue:deliver") public deliverQueue: DeliverQueue,
+		@Inject("queue:inbox") public inboxQueue: InboxQueue,
+		@Inject("queue:db") public dbQueue: DbQueue,
+		@Inject("queue:relationship") public relationshipQueue: RelationshipQueue,
+		@Inject("queue:objectStorage")
+		public objectStorageQueue: ObjectStorageQueue,
+		@Inject("queue:userWebhookDeliver")
+		public userWebhookDeliverQueue: UserWebhookDeliverQueue,
+		@Inject("queue:systemWebhookDeliver")
+		public systemWebhookDeliverQueue: SystemWebhookDeliverQueue,
+		@Inject("queue:scheduleNotePost")
+		public ScheduleNotePostQueue: ScheduleNotePostQueue,
+		@Inject("queue:backgroundTask")
+		public readonly backgroundTaskQueue: BackgroundTaskQueue,
 
 		private readonly timeService: TimeService,
 	) {}
@@ -84,122 +93,137 @@ export class QueueService implements OnModuleInit {
 	@bindThis
 	public async onModuleInit() {
 		await this.systemQueue.upsertJobScheduler(
-			'tickCharts-scheduler',
-			{ pattern: '0 * * * *' }, // every hour at :00
+			"tickCharts-scheduler",
+			{ pattern: "0 * * * *" }, // every hour at :00
 			{
-				name: 'tickCharts',
+				name: "tickCharts",
 				opts: {
 					removeOnComplete: 10,
 					removeOnFail: 30,
 				},
-			});
+			},
+		);
 
 		await this.systemQueue.upsertJobScheduler(
-			'resyncCharts-scheduler',
-			{ pattern: '20 0 * * *' }, // every day at 00:20 (wait for tickCharts)
+			"resyncCharts-scheduler",
+			{ pattern: "20 0 * * *" }, // every day at 00:20 (wait for tickCharts)
 			{
-				name: 'resyncCharts',
+				name: "resyncCharts",
 				opts: {
 					removeOnComplete: 10,
 					removeOnFail: 30,
 				},
-			});
+			},
+		);
 
 		await this.systemQueue.upsertJobScheduler(
-			'cleanCharts-scheduler',
-			{ pattern: '40 0 * * *' }, // every day at 00:40 (wait for resyncCharts)
+			"cleanCharts-scheduler",
+			{ pattern: "40 0 * * *" }, // every day at 00:40 (wait for resyncCharts)
 			{
-				name: 'cleanCharts',
+				name: "cleanCharts",
 				opts: {
 					removeOnComplete: 10,
 					removeOnFail: 30,
 				},
-			});
+			},
+		);
 
 		await this.systemQueue.upsertJobScheduler(
-			'aggregateRetention-scheduler',
-			{ pattern: '0 1 * * *' }, // every day at 01:00
+			"aggregateRetention-scheduler",
+			{ pattern: "0 1 * * *" }, // every day at 01:00
 			{
-				name: 'aggregateRetention',
+				name: "aggregateRetention",
 				opts: {
 					removeOnComplete: 10,
 					removeOnFail: 30,
 				},
-			});
+			},
+		);
 
 		await this.systemQueue.upsertJobScheduler(
-			'clean-scheduler',
-			{ pattern: '10 1 * * *' }, // every day at 01:10 (wait for aggregateRetention)
+			"clean-scheduler",
+			{ pattern: "10 1 * * *" }, // every day at 01:10 (wait for aggregateRetention)
 			{
-				name: 'clean',
+				name: "clean",
 				opts: {
 					removeOnComplete: 10,
 					removeOnFail: 30,
 				},
-			});
+			},
+		);
 
 		await this.systemQueue.upsertJobScheduler(
-			'checkExpiredMutings-scheduler',
-			{ pattern: '*/5 * * * *' }, // every 5 minutes
+			"checkExpiredMutings-scheduler",
+			{ pattern: "*/5 * * * *" }, // every 5 minutes
 			{
-				name: 'checkExpiredMutings',
+				name: "checkExpiredMutings",
 				opts: {
 					removeOnComplete: 10,
 					removeOnFail: 30,
 				},
-			});
+			},
+		);
 
 		await this.systemQueue.upsertJobScheduler(
-			'bakeBufferedReactions-scheduler',
-			{ pattern: '20 1 * * *' }, // every day at 01:40 (wait for clean)
+			"bakeBufferedReactions-scheduler",
+			{ pattern: "20 1 * * *" }, // every day at 01:40 (wait for clean)
 			{
-				name: 'bakeBufferedReactions',
+				name: "bakeBufferedReactions",
 				opts: {
 					removeOnComplete: 10,
 					removeOnFail: 30,
 				},
-			});
+			},
+		);
 
 		await this.systemQueue.upsertJobScheduler(
-			'checkModeratorsActivity-scheduler',
+			"checkModeratorsActivity-scheduler",
 			// 毎時30分に起動
-			{ pattern: '30 * * * *' }, // every hour at :30
+			{ pattern: "30 * * * *" }, // every hour at :30
 			{
-				name: 'checkModeratorsActivity',
+				name: "checkModeratorsActivity",
 				opts: {
 					removeOnComplete: 10,
 					removeOnFail: 30,
 				},
-			});
+			},
+		);
 
 		await this.systemQueue.upsertJobScheduler(
-			'cleanupApLogs-scheduler',
-			{ pattern: '*/10 * * *' }, // every 10 minutes
+			"cleanupApLogs-scheduler",
+			{ pattern: "*/10 * * *" }, // every 10 minutes
 			{
-				name: 'cleanupApLogs',
+				name: "cleanupApLogs",
 				opts: {
 					removeOnComplete: 10,
 					removeOnFail: 30,
 				},
-			});
+			},
+		);
 
 		await this.systemQueue.upsertJobScheduler(
-			'hibernateUsers-scheduler',
-			{ pattern: '30 1 * * *' }, // every day at 01:30 (avoid bakeBufferedReactions)
+			"hibernateUsers-scheduler",
+			{ pattern: "30 1 * * *" }, // every day at 01:30 (avoid bakeBufferedReactions)
 			{
-				name: 'hibernateUsers',
+				name: "hibernateUsers",
 				opts: {
 					removeOnComplete: 10,
 					removeOnFail: 30,
 				},
-			});
+			},
+		);
 
 		// Slot '40 1 * * *' is available for future work
 		// Slot '50 1 * * *' is available for future work
 	}
 
 	@bindThis
-	public deliver(user: ThinUser, content: IActivity | null, to: string | null, isSharedInbox: boolean) {
+	public deliver(
+		user: ThinUser,
+		content: IActivity | null,
+		to: string | null,
+		isSharedInbox: boolean,
+	) {
 		if (content == null) return null;
 		if (to == null) return null;
 
@@ -216,12 +240,12 @@ export class QueueService implements OnModuleInit {
 			isSharedInbox,
 		};
 
-		const label = to.replace('https://', '').replace('/inbox', '');
+		const label = to.replace("https://", "").replace("/inbox", "");
 
 		return this.deliverQueue.add(label, data, {
 			attempts: this.config.deliverJobMaxAttempts ?? 12,
 			backoff: {
-				type: 'custom',
+				type: "custom",
 			},
 			removeOnComplete: {
 				age: 3600 * 24 * 7, // keep up to 7 days
@@ -242,7 +266,11 @@ export class QueueService implements OnModuleInit {
 	 * @returns void
 	 */
 	@bindThis
-	public async deliverMany(user: ThinUser, content: IActivity | null, inboxes: Map<string, boolean>) {
+	public async deliverMany(
+		user: ThinUser,
+		content: IActivity | null,
+		inboxes: Map<string, boolean>,
+	) {
 		if (content == null) return null;
 		const contentBody = JSON.stringify(content);
 		const digest = ApRequestCreator.createDigest(contentBody);
@@ -250,7 +278,7 @@ export class QueueService implements OnModuleInit {
 		const opts = {
 			attempts: this.config.deliverJobMaxAttempts ?? 12,
 			backoff: {
-				type: 'custom',
+				type: "custom",
 			},
 			removeOnComplete: {
 				age: 3600 * 24 * 7, // keep up to 7 days
@@ -262,17 +290,19 @@ export class QueueService implements OnModuleInit {
 			},
 		};
 
-		await this.deliverQueue.addBulk(Array.from(inboxes.entries(), d => ({
-			name: d[0].replace('https://', '').replace('/inbox', ''),
-			data: {
-				user,
-				content: contentBody,
-				digest,
-				to: d[0],
-				isSharedInbox: d[1],
-			} as DeliverJobData,
-			opts,
-		})));
+		await this.deliverQueue.addBulk(
+			Array.from(inboxes.entries(), (d) => ({
+				name: d[0].replace("https://", "").replace("/inbox", ""),
+				data: {
+					user,
+					content: contentBody,
+					digest,
+					to: d[0],
+					isSharedInbox: d[1],
+				} as DeliverJobData,
+				opts,
+			})),
+		);
 
 		return;
 	}
@@ -284,12 +314,14 @@ export class QueueService implements OnModuleInit {
 			signature,
 		};
 
-		const label = (activity.id ?? '').replace('https://', '').replace('/activity', '');
+		const label = (activity.id ?? "")
+			.replace("https://", "")
+			.replace("/activity", "");
 
 		return this.inboxQueue.add(label, data, {
 			attempts: this.config.inboxJobMaxAttempts ?? 8,
 			backoff: {
-				type: 'custom',
+				type: "custom",
 			},
 			removeOnComplete: {
 				age: 3600 * 24 * 7, // keep up to 7 days
@@ -299,346 +331,478 @@ export class QueueService implements OnModuleInit {
 				age: 3600 * 24 * 7, // keep up to 7 days
 				count: 100,
 			},
-			deduplication: activity.id ? {
-				id: activity.id,
-			} : undefined,
+			deduplication: activity.id
+				? {
+						id: activity.id,
+					}
+				: undefined,
 		});
 	}
 
 	@bindThis
 	public createDeleteDriveFilesJob(user: ThinUser) {
-		return this.dbQueue.add('deleteDriveFiles', {
-			user: { id: user.id },
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+		return this.dbQueue.add(
+			"deleteDriveFiles",
+			{
+				user: { id: user.id },
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: user.id,
+				},
 			},
-			deduplication: {
-				id: user.id,
-			},
-		});
+		);
 	}
 
 	@bindThis
 	public createExportCustomEmojisJob(user: ThinUser) {
-		return this.dbQueue.add('exportCustomEmojis', {
-			user: { id: user.id },
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+		return this.dbQueue.add(
+			"exportCustomEmojis",
+			{
+				user: { id: user.id },
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: user.id,
+				},
 			},
-			deduplication: {
-				id: user.id,
-			},
-		});
+		);
 	}
 
 	@bindThis
 	public createExportAccountDataJob(user: ThinUser) {
-		return this.dbQueue.add('exportAccountData', {
-			user: { id: user.id },
-		}, {
-			removeOnComplete: true,
-			removeOnFail: true,
-			deduplication: {
-				id: user.id,
+		return this.dbQueue.add(
+			"exportAccountData",
+			{
+				user: { id: user.id },
 			},
-		});
+			{
+				removeOnComplete: true,
+				removeOnFail: true,
+				deduplication: {
+					id: user.id,
+				},
+			},
+		);
 	}
 
 	@bindThis
 	public createExportNotesJob(user: ThinUser) {
-		return this.dbQueue.add('exportNotes', {
-			user: { id: user.id },
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+		return this.dbQueue.add(
+			"exportNotes",
+			{
+				user: { id: user.id },
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: user.id,
+				},
 			},
-			deduplication: {
-				id: user.id,
-			},
-		});
+		);
 	}
 
 	@bindThis
 	public createExportClipsJob(user: ThinUser) {
-		return this.dbQueue.add('exportClips', {
-			user: { id: user.id },
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+		return this.dbQueue.add(
+			"exportClips",
+			{
+				user: { id: user.id },
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: user.id,
+				},
 			},
-			deduplication: {
-				id: user.id,
-			},
-		});
+		);
 	}
 
 	@bindThis
 	public createExportFavoritesJob(user: ThinUser) {
-		return this.dbQueue.add('exportFavorites', {
-			user: { id: user.id },
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+		return this.dbQueue.add(
+			"exportFavorites",
+			{
+				user: { id: user.id },
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: user.id,
+				},
 			},
-			deduplication: {
-				id: user.id,
-			},
-		});
+		);
 	}
 
 	@bindThis
-	public createExportFollowingJob(user: ThinUser, excludeMuting = false, excludeInactive = false) {
-		return this.dbQueue.add('exportFollowing', {
-			user: { id: user.id },
-			excludeMuting,
-			excludeInactive,
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+	public createExportFollowingJob(
+		user: ThinUser,
+		excludeMuting = false,
+		excludeInactive = false,
+	) {
+		return this.dbQueue.add(
+			"exportFollowing",
+			{
+				user: { id: user.id },
+				excludeMuting,
+				excludeInactive,
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: user.id,
+				},
 			},
-			deduplication: {
-				id: user.id,
-			},
-		});
+		);
 	}
 
 	@bindThis
 	public createExportMuteJob(user: ThinUser) {
-		return this.dbQueue.add('exportMuting', {
-			user: { id: user.id },
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+		return this.dbQueue.add(
+			"exportMuting",
+			{
+				user: { id: user.id },
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: user.id,
+				},
 			},
-			deduplication: {
-				id: user.id,
-			},
-		});
+		);
 	}
 
 	@bindThis
 	public createExportBlockingJob(user: ThinUser) {
-		return this.dbQueue.add('exportBlocking', {
-			user: { id: user.id },
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+		return this.dbQueue.add(
+			"exportBlocking",
+			{
+				user: { id: user.id },
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: user.id,
+				},
 			},
-			deduplication: {
-				id: user.id,
-			},
-		});
+		);
 	}
 
 	@bindThis
 	public createExportUserListsJob(user: ThinUser) {
-		return this.dbQueue.add('exportUserLists', {
-			user: { id: user.id },
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+		return this.dbQueue.add(
+			"exportUserLists",
+			{
+				user: { id: user.id },
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: user.id,
+				},
 			},
-			deduplication: {
-				id: user.id,
-			},
-		});
+		);
 	}
 
 	@bindThis
 	public createExportAntennasJob(user: ThinUser) {
-		return this.dbQueue.add('exportAntennas', {
-			user: { id: user.id },
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+		return this.dbQueue.add(
+			"exportAntennas",
+			{
+				user: { id: user.id },
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: user.id,
+				},
 			},
-			deduplication: {
-				id: user.id,
-			},
-		});
+		);
 	}
 
 	@bindThis
-	public createImportFollowingJob(user: ThinUser, fileId: MiDriveFile['id'], withReplies?: boolean) {
-		return this.dbQueue.add('importFollowing', {
-			user: { id: user.id },
-			fileId: fileId,
-			withReplies,
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+	public createImportFollowingJob(
+		user: ThinUser,
+		fileId: MiDriveFile["id"],
+		withReplies?: boolean,
+	) {
+		return this.dbQueue.add(
+			"importFollowing",
+			{
+				user: { id: user.id },
+				fileId: fileId,
+				withReplies,
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: `${user.id}_${fileId}_${withReplies ?? false}`,
+				},
 			},
-			deduplication: {
-				id: `${user.id}_${fileId}_${withReplies ?? false}`,
-			},
-		});
+		);
 	}
 
 	@bindThis
-	public createImportNotesJob(user: ThinUser, fileId: MiDriveFile['id'], type: string | null | undefined) {
-		return this.dbQueue.add('importNotes', {
-			user: { id: user.id },
-			fileId: fileId,
-			type: type,
-		}, {
-			removeOnComplete: true,
-			removeOnFail: true,
-			deduplication: {
-				id: `${user.id}_${fileId}_${type ?? null}`,
+	public createImportNotesJob(
+		user: ThinUser,
+		fileId: MiDriveFile["id"],
+		type: string | null | undefined,
+	) {
+		return this.dbQueue.add(
+			"importNotes",
+			{
+				user: { id: user.id },
+				fileId: fileId,
+				type: type,
 			},
-		});
+			{
+				removeOnComplete: true,
+				removeOnFail: true,
+				deduplication: {
+					id: `${user.id}_${fileId}_${type ?? null}`,
+				},
+			},
+		);
 	}
 
 	@bindThis
-	public createImportTweetsToDbJob(user: ThinUser, targets: string[], note: MiNote['id'] | null) {
-		const jobs = targets.map(rel => this.generateToDbJobData('importTweetsToDb', { user, target: rel, note }));
+	public createImportTweetsToDbJob(
+		user: ThinUser,
+		targets: string[],
+		note: MiNote["id"] | null,
+	) {
+		const jobs = targets.map((rel) =>
+			this.generateToDbJobData("importTweetsToDb", { user, target: rel, note }),
+		);
 		return this.dbQueue.addBulk(jobs);
 	}
 
 	@bindThis
-	public createImportMastoToDbJob(user: ThinUser, targets: string[], note: MiNote['id'] | null) {
-		const jobs = targets.map(rel => this.generateToDbJobData('importMastoToDb', { user, target: rel, note }));
+	public createImportMastoToDbJob(
+		user: ThinUser,
+		targets: string[],
+		note: MiNote["id"] | null,
+	) {
+		const jobs = targets.map((rel) =>
+			this.generateToDbJobData("importMastoToDb", { user, target: rel, note }),
+		);
 		return this.dbQueue.addBulk(jobs);
 	}
 
 	@bindThis
-	public createImportPleroToDbJob(user: ThinUser, targets: string[], note: MiNote['id'] | null) {
-		const jobs = targets.map(rel => this.generateToDbJobData('importPleroToDb', { user, target: rel, note }));
+	public createImportPleroToDbJob(
+		user: ThinUser,
+		targets: string[],
+		note: MiNote["id"] | null,
+	) {
+		const jobs = targets.map((rel) =>
+			this.generateToDbJobData("importPleroToDb", { user, target: rel, note }),
+		);
 		return this.dbQueue.addBulk(jobs);
 	}
 
 	@bindThis
-	public createImportKeyNotesToDbJob(user: ThinUser, targets: string[], note: MiNote['id'] | null) {
-		const jobs = targets.map(rel => this.generateToDbJobData('importKeyNotesToDb', { user, target: rel, note }));
+	public createImportKeyNotesToDbJob(
+		user: ThinUser,
+		targets: string[],
+		note: MiNote["id"] | null,
+	) {
+		const jobs = targets.map((rel) =>
+			this.generateToDbJobData("importKeyNotesToDb", {
+				user,
+				target: rel,
+				note,
+			}),
+		);
 		return this.dbQueue.addBulk(jobs);
 	}
 
 	@bindThis
 	public createImportIGToDbJob(user: ThinUser, targets: string[]) {
-		const jobs = targets.map(rel => this.generateToDbJobData('importIGToDb', { user, target: rel }));
+		const jobs = targets.map((rel) =>
+			this.generateToDbJobData("importIGToDb", { user, target: rel }),
+		);
 		return this.dbQueue.addBulk(jobs);
 	}
 
 	@bindThis
 	public createImportFBToDbJob(user: ThinUser, targets: string[]) {
-		const jobs = targets.map(rel => this.generateToDbJobData('importFBToDb', { user, target: rel }));
+		const jobs = targets.map((rel) =>
+			this.generateToDbJobData("importFBToDb", { user, target: rel }),
+		);
 		return this.dbQueue.addBulk(jobs);
 	}
 
 	@bindThis
-	public createImportFollowingToDbJob(user: ThinUser, targets: string[], withReplies?: boolean) {
-		const jobs = targets.map(rel => this.generateToDbJobData('importFollowingToDb', { user, target: rel, withReplies }));
+	public createImportFollowingToDbJob(
+		user: ThinUser,
+		targets: string[],
+		withReplies?: boolean,
+	) {
+		const jobs = targets.map((rel) =>
+			this.generateToDbJobData("importFollowingToDb", {
+				user,
+				target: rel,
+				withReplies,
+			}),
+		);
 		return this.dbQueue.addBulk(jobs);
 	}
 
 	@bindThis
-	public createImportMutingJob(user: ThinUser, fileId: MiDriveFile['id']) {
-		return this.dbQueue.add('importMuting', {
-			user: { id: user.id },
-			fileId: fileId,
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+	public createImportMutingJob(user: ThinUser, fileId: MiDriveFile["id"]) {
+		return this.dbQueue.add(
+			"importMuting",
+			{
+				user: { id: user.id },
+				fileId: fileId,
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: `${user.id}_${fileId}`,
+				},
 			},
-			deduplication: {
-				id: `${user.id}_${fileId}`,
-			},
-		});
+		);
 	}
 
 	@bindThis
-	public createImportBlockingJob(user: ThinUser, fileId: MiDriveFile['id']) {
-		return this.dbQueue.add('importBlocking', {
-			user: { id: user.id },
-			fileId: fileId,
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+	public createImportBlockingJob(user: ThinUser, fileId: MiDriveFile["id"]) {
+		return this.dbQueue.add(
+			"importBlocking",
+			{
+				user: { id: user.id },
+				fileId: fileId,
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: `${user.id}_${fileId}`,
+				},
 			},
-			deduplication: {
-				id: `${user.id}_${fileId}`,
-			},
-		});
+		);
 	}
 
 	@bindThis
 	public createImportBlockingToDbJob(user: ThinUser, targets: string[]) {
-		const jobs = targets.map(rel => this.generateToDbJobData('importBlockingToDb', { user, target: rel }));
+		const jobs = targets.map((rel) =>
+			this.generateToDbJobData("importBlockingToDb", { user, target: rel }),
+		);
 		return this.dbQueue.addBulk(jobs);
 	}
 
 	@bindThis
-	private generateToDbJobData<T extends 'importFollowingToDb' | 'importBlockingToDb' | 'importTweetsToDb' | 'importIGToDb' | 'importFBToDb' | 'importMastoToDb' | 'importPleroToDb' | 'importKeyNotesToDb', D extends DbJobData<T>>(name: T, data: D): {
-		name: string,
+	private generateToDbJobData<
+		T extends
+			| "importFollowingToDb"
+			| "importBlockingToDb"
+			| "importTweetsToDb"
+			| "importIGToDb"
+			| "importFBToDb"
+			| "importMastoToDb"
+			| "importPleroToDb"
+			| "importKeyNotesToDb",
+		D extends DbJobData<T>,
+	>(
+		name: T,
 		data: D,
-		opts: Bull.JobsOptions,
+	): {
+		name: string;
+		data: D;
+		opts: Bull.JobsOptions;
 	} {
 		return {
 			name,
@@ -657,127 +821,181 @@ export class QueueService implements OnModuleInit {
 	}
 
 	@bindThis
-	public createImportUserListsJob(user: ThinUser, fileId: MiDriveFile['id']) {
-		return this.dbQueue.add('importUserLists', {
-			user: { id: user.id },
-			fileId: fileId,
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+	public createImportUserListsJob(user: ThinUser, fileId: MiDriveFile["id"]) {
+		return this.dbQueue.add(
+			"importUserLists",
+			{
+				user: { id: user.id },
+				fileId: fileId,
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: `${user.id}_${fileId}`,
+				},
 			},
-			deduplication: {
-				id: `${user.id}_${fileId}`,
-			},
-		});
+		);
 	}
 
 	@bindThis
-	public createImportCustomEmojisJob(user: ThinUser, fileId: MiDriveFile['id']) {
-		return this.dbQueue.add('importCustomEmojis', {
-			user: { id: user.id },
-			fileId: fileId,
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+	public createImportCustomEmojisJob(
+		user: ThinUser,
+		fileId: MiDriveFile["id"],
+	) {
+		return this.dbQueue.add(
+			"importCustomEmojis",
+			{
+				user: { id: user.id },
+				fileId: fileId,
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: `${user.id}_${fileId}`,
+				},
 			},
-			deduplication: {
-				id: `${user.id}_${fileId}`,
-			},
-		});
+		);
 	}
 
 	@bindThis
-	public createImportAntennasJob(user: ThinUser, antenna: Antenna, fileId: MiDriveFile['id']) {
-		return this.dbQueue.add('importAntennas', {
-			user: { id: user.id },
-			antenna,
-			fileId,
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+	public createImportAntennasJob(
+		user: ThinUser,
+		antenna: Antenna,
+		fileId: MiDriveFile["id"],
+	) {
+		return this.dbQueue.add(
+			"importAntennas",
+			{
+				user: { id: user.id },
+				antenna,
+				fileId,
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: `${user.id}_${fileId}`,
+				},
 			},
-			deduplication: {
-				id: `${user.id}_${fileId}`,
-			},
-		});
+		);
 	}
 
 	@bindThis
-	public createDeleteAccountJob(user: ThinUser, opts: { soft?: boolean; } = {}) {
-		return this.dbQueue.add('deleteAccount', {
-			user: { id: user.id },
-			soft: opts.soft,
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+	public createDeleteAccountJob(user: ThinUser, opts: { soft?: boolean } = {}) {
+		return this.dbQueue.add(
+			"deleteAccount",
+			{
+				user: { id: user.id },
+				soft: opts.soft,
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: user.id,
+				},
 			},
-			deduplication: {
-				id: user.id,
-			},
-		});
+		);
 	}
 
 	@bindThis
-	public createFollowJob(followings: { from: ThinUser, to: ThinUser, requestId?: string, silent?: boolean, withReplies?: boolean }[]) {
-		const jobs = followings.map(rel => this.generateRelationshipJobData('follow', rel));
+	public createFollowJob(
+		followings: {
+			from: ThinUser;
+			to: ThinUser;
+			requestId?: string;
+			silent?: boolean;
+			withReplies?: boolean;
+		}[],
+	) {
+		const jobs = followings.map((rel) =>
+			this.generateRelationshipJobData("follow", rel),
+		);
 		return this.relationshipQueue.addBulk(jobs);
 	}
 
 	@bindThis
-	public createUnfollowJob(followings: { from: ThinUser, to: ThinUser, requestId?: string }[]) {
-		const jobs = followings.map(rel => this.generateRelationshipJobData('unfollow', rel));
+	public createUnfollowJob(
+		followings: { from: ThinUser; to: ThinUser; requestId?: string }[],
+	) {
+		const jobs = followings.map((rel) =>
+			this.generateRelationshipJobData("unfollow", rel),
+		);
 		return this.relationshipQueue.addBulk(jobs);
 	}
 
 	@bindThis
-	public createDelayedUnfollowJob(followings: { from: ThinUser, to: ThinUser, requestId?: string }[], delay: number) {
-		const jobs = followings.map(rel => this.generateRelationshipJobData('unfollow', rel, { delay }));
+	public createDelayedUnfollowJob(
+		followings: { from: ThinUser; to: ThinUser; requestId?: string }[],
+		delay: number,
+	) {
+		const jobs = followings.map((rel) =>
+			this.generateRelationshipJobData("unfollow", rel, { delay }),
+		);
 		return this.relationshipQueue.addBulk(jobs);
 	}
 
 	@bindThis
-	public createBlockJob(blockings: { from: ThinUser, to: ThinUser, silent?: boolean }[]) {
-		const jobs = blockings.map(rel => this.generateRelationshipJobData('block', rel));
+	public createBlockJob(
+		blockings: { from: ThinUser; to: ThinUser; silent?: boolean }[],
+	) {
+		const jobs = blockings.map((rel) =>
+			this.generateRelationshipJobData("block", rel),
+		);
 		return this.relationshipQueue.addBulk(jobs);
 	}
 
 	@bindThis
-	public createUnblockJob(blockings: { from: ThinUser, to: ThinUser, silent?: boolean }[]) {
-		const jobs = blockings.map(rel => this.generateRelationshipJobData('unblock', rel));
+	public createUnblockJob(
+		blockings: { from: ThinUser; to: ThinUser; silent?: boolean }[],
+	) {
+		const jobs = blockings.map((rel) =>
+			this.generateRelationshipJobData("unblock", rel),
+		);
 		return this.relationshipQueue.addBulk(jobs);
 	}
 
 	@bindThis
 	public createMoveJob(from: ThinUser, to: ThinUser) {
-		const job = this.generateRelationshipJobData('move', { from, to });
+		const job = this.generateRelationshipJobData("move", { from, to });
 		return this.relationshipQueue.add(job.name, job.data, job.opts);
 	}
 
 	@bindThis
-	private generateRelationshipJobData(name: 'follow' | 'unfollow' | 'block' | 'unblock' | 'move', data: RelationshipJobData, opts: Bull.JobsOptions = {}): {
-		name: string,
+	private generateRelationshipJobData(
+		name: "follow" | "unfollow" | "block" | "unblock" | "move",
 		data: RelationshipJobData,
-		opts: Bull.JobsOptions,
+		opts: Bull.JobsOptions = {},
+	): {
+		name: string;
+		data: RelationshipJobData;
+		opts: Bull.JobsOptions;
 	} {
 		return {
 			name,
@@ -799,7 +1017,7 @@ export class QueueService implements OnModuleInit {
 				},
 				...opts,
 				deduplication: {
-					id: `${data.from.id}_${data.to.id}_${data.requestId ?? ''}_${data.silent ?? false}_${data.withReplies ?? false}`,
+					id: `${data.from.id}_${data.to.id}_${data.requestId ?? ""}_${data.silent ?? false}_${data.withReplies ?? false}`,
 				},
 			},
 		};
@@ -807,89 +1025,136 @@ export class QueueService implements OnModuleInit {
 
 	@bindThis
 	public createDeleteObjectStorageFileJob(key: string) {
-		return this.objectStorageQueue.add('deleteFile', {
-			key: key,
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+		return this.objectStorageQueue.add(
+			"deleteFile",
+			{
+				key: key,
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: key,
+				},
 			},
-			deduplication: {
-				id: key,
-			},
-		});
+		);
 	}
 
 	@bindThis
-	public createCleanRemoteFilesJob(olderThanSeconds: number = 0, keepFilesInUse: boolean = false) {
-		return this.objectStorageQueue.add('cleanRemoteFiles', {
-			keepFilesInUse,
-			olderThanSeconds,
-		}, {
-			removeOnComplete: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 30,
+	public createCleanRemoteFilesJob(
+		olderThanSeconds: number = 0,
+		keepFilesInUse: boolean = false,
+	) {
+		return this.objectStorageQueue.add(
+			"cleanRemoteFiles",
+			{
+				keepFilesInUse,
+				olderThanSeconds,
 			},
-			removeOnFail: {
-				age: 3600 * 24 * 7, // keep up to 7 days
-				count: 100,
+			{
+				removeOnComplete: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 30,
+				},
+				removeOnFail: {
+					age: 3600 * 24 * 7, // keep up to 7 days
+					count: 100,
+				},
+				deduplication: {
+					id: `${olderThanSeconds}_${keepFilesInUse}`,
+				},
 			},
-			deduplication: {
-				id: `${olderThanSeconds}_${keepFilesInUse}`,
-			},
-		});
+		);
 	}
 
 	@bindThis
 	public async createUpdateUserJob(userId: string) {
-		return await this.createBackgroundTask({ type: 'update-user', userId }, userId);
+		return await this.createBackgroundTask(
+			{ type: "update-user", userId },
+			userId,
+		);
 	}
 
 	@bindThis
 	public async createUpdateFeaturedJob(userId: string) {
-		return await this.createBackgroundTask({ type: 'update-featured', userId }, userId);
+		return await this.createBackgroundTask(
+			{ type: "update-featured", userId },
+			userId,
+		);
 	}
 
 	@bindThis
 	public async createUpdateInstanceJob(host: string) {
-		return await this.createBackgroundTask({ type: 'update-instance', host }, host);
+		return await this.createBackgroundTask(
+			{ type: "update-instance", host },
+			host,
+		);
 	}
 
 	@bindThis
-	public async createPostDeliverJob(host: string, result: 'success' | 'temp-fail' | 'perm-fail') {
-		return await this.createBackgroundTask({ type: 'post-deliver', host, result });
+	public async createPostDeliverJob(
+		host: string,
+		result: "success" | "temp-fail" | "perm-fail",
+	) {
+		return await this.createBackgroundTask({
+			type: "post-deliver",
+			host,
+			result,
+		});
 	}
 
 	@bindThis
 	public async createPostInboxJob(host: string) {
-		return await this.createBackgroundTask({ type: 'post-inbox', host });
+		return await this.createBackgroundTask({ type: "post-inbox", host });
 	}
 
 	@bindThis
-	public async createPostNoteJob(noteId: string, silent: boolean, type: 'create' | 'edit') {
-		const edit = type === 'edit';
+	public async createPostNoteJob(
+		noteId: string,
+		silent: boolean,
+		type: "create" | "edit",
+	) {
+		const edit = type === "edit";
 		const duplication = `${noteId}_${type}`;
 
-		return await this.createBackgroundTask({ type: 'post-note', noteId, silent, edit }, duplication);
+		return await this.createBackgroundTask(
+			{ type: "post-note", noteId, silent, edit },
+			duplication,
+		);
 	}
 
 	@bindThis
 	public async createUpdateUserTagsJob(userId: string) {
-		return await this.createBackgroundTask({ type: 'update-user-tags', userId }, userId);
+		return await this.createBackgroundTask(
+			{ type: "update-user-tags", userId },
+			userId,
+		);
 	}
 
 	@bindThis
 	public async createUpdateNoteTagsJob(noteId: string) {
-		return await this.createBackgroundTask({ type: 'update-note-tags', noteId }, noteId);
+		return await this.createBackgroundTask(
+			{ type: "update-note-tags", noteId },
+			noteId,
+		);
 	}
 
 	@bindThis
-	public async createDeleteFileJob(fileId: string, isExpired?: boolean, deleterId?: string) {
-		return await this.createBackgroundTask({ type: 'delete-file', fileId, isExpired, deleterId }, fileId);
+	public async createDeleteFileJob(
+		fileId: string,
+		isExpired?: boolean,
+		deleterId?: string,
+	) {
+		return await this.createBackgroundTask(
+			{ type: "delete-file", fileId, isExpired, deleterId },
+			fileId,
+		);
 	}
 
 	@bindThis
@@ -902,48 +1167,64 @@ export class QueueService implements OnModuleInit {
 			replyId: note.replyId,
 			renoteId: note.renoteId,
 			hasPoll: note.hasPoll,
-			text: note.text ? '1' : null,
-			cw: note.text ? '1' : null,
-			fileIds: note.fileIds.length > 0 ? ['1'] : [],
+			text: note.text ? "1" : null,
+			cw: note.text ? "1" : null,
+			fileIds: note.fileIds.length > 0 ? ["1"] : [],
 		};
 
-		return await this.createBackgroundTask({ type: 'update-latest-note', note: minimizedNote }, note.id);
+		return await this.createBackgroundTask(
+			{ type: "update-latest-note", note: minimizedNote },
+			note.id,
+		);
 	}
 
 	@bindThis
 	public async createPostSuspendJob(userId: string) {
-		return await this.createBackgroundTask({ type: 'post-suspend', userId }, userId);
+		return await this.createBackgroundTask(
+			{ type: "post-suspend", userId },
+			userId,
+		);
 	}
 
 	@bindThis
 	public async createPostUnsuspendJob(userId: string) {
-		return await this.createBackgroundTask({ type: 'post-unsuspend', userId }, userId);
+		return await this.createBackgroundTask(
+			{ type: "post-unsuspend", userId },
+			userId,
+		);
 	}
 
 	@bindThis
-	public async createDeleteApLogsJob(dataType: 'inbox' | 'object', data: string | string[]) {
-		return await this.createBackgroundTask({ type: 'delete-ap-logs', dataType, data });
+	public async createDeleteApLogsJob(
+		dataType: "inbox" | "object",
+		data: string | string[],
+	) {
+		return await this.createBackgroundTask({
+			type: "delete-ap-logs",
+			dataType,
+			data,
+		});
 	}
 
-	private async createBackgroundTask<T extends BackgroundTaskJobData>(data: T, duplication?: string | { id: string, ttl?: number }) {
-		return await this.backgroundTaskQueue.add(
-			data.type,
-			data,
-			{
-				// https://docs.bullmq.io/guide/retrying-failing-jobs#custom-back-off-strategies
-				attempts: this.config.backgroundJobMaxAttempts ?? 8,
-				backoff: {
-					// Resolves to QueueProcessorService::HttpRelatedBackoff()
-					type: 'custom',
-				},
+	private async createBackgroundTask<T extends BackgroundTaskJobData>(
+		data: T,
+		duplication?: string | { id: string; ttl?: number },
+	) {
+		return await this.backgroundTaskQueue.add(data.type, data, {
+			// https://docs.bullmq.io/guide/retrying-failing-jobs#custom-back-off-strategies
+			attempts: this.config.backgroundJobMaxAttempts ?? 8,
+			backoff: {
+				// Resolves to QueueProcessorService::HttpRelatedBackoff()
+				type: "custom",
+			},
 
-				// https://docs.bullmq.io/guide/jobs/deduplication
-				deduplication: typeof(duplication) === 'string'
+			// https://docs.bullmq.io/guide/jobs/deduplication
+			deduplication:
+				typeof duplication === "string"
 					? { id: `${data.type}_${duplication}` }
 					: duplication,
-			},
-		);
-	};
+		});
+	}
 
 	/**
 	 * @see UserWebhookDeliverJobData
@@ -970,7 +1251,7 @@ export class QueueService implements OnModuleInit {
 		return this.userWebhookDeliverQueue.add(webhook.id, data, {
 			attempts: opts?.attempts ?? 4,
 			backoff: {
-				type: 'custom',
+				type: "custom",
 			},
 			removeOnComplete: {
 				age: 3600 * 24 * 7, // keep up to 7 days
@@ -1007,7 +1288,7 @@ export class QueueService implements OnModuleInit {
 		return this.systemWebhookDeliverQueue.add(webhook.id, data, {
 			attempts: opts?.attempts ?? 4,
 			backoff: {
-				type: 'custom',
+				type: "custom",
 			},
 			removeOnComplete: {
 				age: 3600 * 24 * 7, // keep up to 7 days
@@ -1021,36 +1302,59 @@ export class QueueService implements OnModuleInit {
 	}
 
 	@bindThis
-	private getQueue(type: typeof QUEUE_TYPES[number]): Bull.Queue {
+	private getQueue(type: (typeof QUEUE_TYPES)[number]): Bull.Queue {
 		switch (type) {
-			case 'system': return this.systemQueue;
-			case 'endedPollNotification': return this.endedPollNotificationQueue;
-			case 'deliver': return this.deliverQueue;
-			case 'inbox': return this.inboxQueue;
-			case 'db': return this.dbQueue;
-			case 'relationship': return this.relationshipQueue;
-			case 'objectStorage': return this.objectStorageQueue;
-			case 'userWebhookDeliver': return this.userWebhookDeliverQueue;
-			case 'systemWebhookDeliver': return this.systemWebhookDeliverQueue;
-			case 'scheduleNotePost': return this.ScheduleNotePostQueue;
-			case 'backgroundTask': return this.backgroundTaskQueue;
-			default: throw new Error(`Unrecognized queue type: ${type}`);
+			case "system":
+				return this.systemQueue;
+			case "endedPollNotification":
+				return this.endedPollNotificationQueue;
+			case "deliver":
+				return this.deliverQueue;
+			case "inbox":
+				return this.inboxQueue;
+			case "db":
+				return this.dbQueue;
+			case "relationship":
+				return this.relationshipQueue;
+			case "objectStorage":
+				return this.objectStorageQueue;
+			case "userWebhookDeliver":
+				return this.userWebhookDeliverQueue;
+			case "systemWebhookDeliver":
+				return this.systemWebhookDeliverQueue;
+			case "scheduleNotePost":
+				return this.ScheduleNotePostQueue;
+			case "backgroundTask":
+				return this.backgroundTaskQueue;
+			default:
+				throw new Error(`Unrecognized queue type: ${type}`);
 		}
 	}
 
 	@bindThis
-	public async queueClear(queueType: typeof QUEUE_TYPES[number], state: '*' | 'completed' | 'wait' | 'active' | 'paused' | 'prioritized' | 'delayed' | 'failed') {
+	public async queueClear(
+		queueType: (typeof QUEUE_TYPES)[number],
+		state:
+			| "*"
+			| "completed"
+			| "wait"
+			| "active"
+			| "paused"
+			| "prioritized"
+			| "delayed"
+			| "failed",
+	) {
 		const queue = this.getQueue(queueType);
 
-		if (state === '*') {
+		if (state === "*") {
 			await Promise.all([
-				queue.clean(0, 0, 'completed'),
-				queue.clean(0, 0, 'wait'),
-				queue.clean(0, 0, 'active'),
-				queue.clean(0, 0, 'paused'),
-				queue.clean(0, 0, 'prioritized'),
-				queue.clean(0, 0, 'delayed'),
-				queue.clean(0, 0, 'failed'),
+				queue.clean(0, 0, "completed"),
+				queue.clean(0, 0, "wait"),
+				queue.clean(0, 0, "active"),
+				queue.clean(0, 0, "paused"),
+				queue.clean(0, 0, "prioritized"),
+				queue.clean(0, 0, "delayed"),
+				queue.clean(0, 0, "failed"),
 			]);
 		} else {
 			await queue.clean(0, 0, state);
@@ -1058,13 +1362,16 @@ export class QueueService implements OnModuleInit {
 	}
 
 	@bindThis
-	public async queuePromoteJobs(queueType: typeof QUEUE_TYPES[number]) {
+	public async queuePromoteJobs(queueType: (typeof QUEUE_TYPES)[number]) {
 		const queue = this.getQueue(queueType);
 		await queue.promoteJobs();
 	}
 
 	@bindThis
-	public async queueRetryJob(queueType: typeof QUEUE_TYPES[number], jobId: string) {
+	public async queueRetryJob(
+		queueType: (typeof QUEUE_TYPES)[number],
+		jobId: string,
+	) {
 		const queue = this.getQueue(queueType);
 		const job: Bull.Job | undefined = await queue.getJob(jobId);
 		if (job) {
@@ -1077,7 +1384,10 @@ export class QueueService implements OnModuleInit {
 	}
 
 	@bindThis
-	public async queueRemoveJob(queueType: typeof QUEUE_TYPES[number], jobId: string) {
+	public async queueRemoveJob(
+		queueType: (typeof QUEUE_TYPES)[number],
+		jobId: string,
+	) {
 		const queue = this.getQueue(queueType);
 		const job: Bull.Job | undefined = await queue.getJob(jobId);
 		if (job) {
@@ -1106,12 +1416,17 @@ export class QueueService implements OnModuleInit {
 			failedReason: job.failedReason,
 			stacktrace: stacktrace,
 			returnValue: job.returnvalue,
-			isFailed: !!job.failedReason || (Array.isArray(stacktrace) && stacktrace.length > 0),
+			isFailed:
+				!!job.failedReason ||
+				(Array.isArray(stacktrace) && stacktrace.length > 0),
 		};
 	}
 
 	@bindThis
-	public async queueGetJob(queueType: typeof QUEUE_TYPES[number], jobId: string) {
+	public async queueGetJob(
+		queueType: (typeof QUEUE_TYPES)[number],
+		jobId: string,
+	) {
 		const queue = this.getQueue(queueType);
 		const job: Bull.Job | undefined = await queue.getJob(jobId);
 		if (job) {
@@ -1122,7 +1437,11 @@ export class QueueService implements OnModuleInit {
 	}
 
 	@bindThis
-	public async queueGetJobs(queueType: typeof QUEUE_TYPES[number], jobTypes: JobType[], search?: string) {
+	public async queueGetJobs(
+		queueType: (typeof QUEUE_TYPES)[number],
+		jobTypes: JobType[],
+		search?: string,
+	) {
 		const RETURN_LIMIT = 100;
 		const queue = this.getQueue(queueType);
 		let jobs: (Bull.Job | null)[];
@@ -1130,11 +1449,14 @@ export class QueueService implements OnModuleInit {
 		if (search) {
 			jobs = await queue.getJobs(jobTypes, 0, 1000);
 
-			jobs = jobs.filter(job => {
+			jobs = jobs.filter((job) => {
 				const jobString = JSON.stringify(job).toLowerCase();
-				return search.toLowerCase().split(' ').every(term => {
-					return jobString.includes(term);
-				});
+				return search
+					.toLowerCase()
+					.split(" ")
+					.every((term) => {
+						return jobString.includes(term);
+					});
 			});
 
 			jobs = jobs.slice(0, RETURN_LIMIT);
@@ -1143,19 +1465,27 @@ export class QueueService implements OnModuleInit {
 		}
 
 		return jobs
-			.filter(job => job != null) // not sure how this happens, but it does
-			.map(job => this.packJobData(job));
+			.filter((job) => job != null) // not sure how this happens, but it does
+			.map((job) => this.packJobData(job));
 	}
 
 	@bindThis
 	public async queueGetQueues() {
-		const fetchings = QUEUE_TYPES.map(async type => {
+		const fetchings = QUEUE_TYPES.map(async (type) => {
 			const queue = this.getQueue(type);
 
 			const counts = await queue.getJobCounts();
 			const isPaused = await queue.isPaused();
-			const metrics_completed = await queue.getMetrics('completed', 0, MetricsTime.ONE_WEEK);
-			const metrics_failed = await queue.getMetrics('failed', 0, MetricsTime.ONE_WEEK);
+			const metrics_completed = await queue.getMetrics(
+				"completed",
+				0,
+				MetricsTime.ONE_WEEK,
+			);
+			const metrics_failed = await queue.getMetrics(
+				"failed",
+				0,
+				MetricsTime.ONE_WEEK,
+			);
 
 			return {
 				name: type,
@@ -1172,12 +1502,20 @@ export class QueueService implements OnModuleInit {
 	}
 
 	@bindThis
-	public async queueGetQueue(queueType: typeof QUEUE_TYPES[number]) {
+	public async queueGetQueue(queueType: (typeof QUEUE_TYPES)[number]) {
 		const queue = this.getQueue(queueType);
 		const counts = await queue.getJobCounts();
 		const isPaused = await queue.isPaused();
-		const metrics_completed = await queue.getMetrics('completed', 0, MetricsTime.ONE_WEEK);
-		const metrics_failed = await queue.getMetrics('failed', 0, MetricsTime.ONE_WEEK);
+		const metrics_completed = await queue.getMetrics(
+			"completed",
+			0,
+			MetricsTime.ONE_WEEK,
+		);
+		const metrics_failed = await queue.getMetrics(
+			"failed",
+			0,
+			MetricsTime.ONE_WEEK,
+		);
 		const db = parseRedisInfo(await (await queue.client).info());
 
 		return {

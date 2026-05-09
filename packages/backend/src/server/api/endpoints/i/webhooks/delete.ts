@@ -3,25 +3,25 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { WebhooksRepository } from '@/models/_.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { DI } from '@/di-symbols.js';
-import { ApiError } from '../../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { WebhooksRepository } from "@/models/_.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { DI } from "@/di-symbols.js";
+import { ApiError } from "../../../error.js";
 
 export const meta = {
-	tags: ['webhooks'],
+	tags: ["webhooks"],
 
 	requireCredential: true,
 
-	kind: 'write:account',
+	kind: "write:account",
 
 	errors: {
 		noSuchWebhook: {
-			message: 'No such webhook.',
-			code: 'NO_SUCH_WEBHOOK',
-			id: 'bae73e5a-5522-4965-ae19-3a8688e71d82',
+			message: "No such webhook.",
+			code: "NO_SUCH_WEBHOOK",
+			id: "bae73e5a-5522-4965-ae19-3a8688e71d82",
 		},
 	},
 
@@ -33,17 +33,18 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		webhookId: { type: 'string', format: 'misskey:id' },
+		webhookId: { type: "string", format: "misskey:id" },
 	},
-	required: ['webhookId'],
+	required: ["webhookId"],
 } as const;
 
 // TODO: ロジックをサービスに切り出す
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.webhooksRepository)
 		private webhooksRepository: WebhooksRepository,
@@ -62,7 +63,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			await this.webhooksRepository.delete(webhook.id);
 
-			this.globalEventService.publishInternalEvent('webhookDeleted', webhook);
+			this.globalEventService.publishInternalEvent("webhookDeleted", webhook);
 		});
 	}
 }

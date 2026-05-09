@@ -1,7 +1,7 @@
-import type { Account } from './account.js';
-import type { Emoji } from './emoji.js';
-import type { Attachment } from './attachment.js';
-import type { Poll } from './poll.js';
+import type { Account } from "./account.js";
+import type { Emoji } from "./emoji.js";
+import type { Attachment } from "./attachment.js";
+import type { Poll } from "./poll.js";
 
 export interface StatusEdit {
 	account: Account;

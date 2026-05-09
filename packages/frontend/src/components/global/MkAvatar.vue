@@ -4,159 +4,278 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<component :is="link ? MkA : 'span'" v-user-preview="preview ? user.id : undefined" v-bind="bound" class="_noSelect" :class="[$style.root, { [$style.animation]: animation, [$style.cat]: user.isCat, [$style.square]: squareAvatars }]" :style="{ color }" :title="acct(user)" @click="onClick">
-	<MkImgWithBlurhash :class="$style.inner" :src="url" :hash="user.avatarBlurhash" :cover="true" :onlyAvgColor="true"/>
-	<MkUserOnlineIndicator v-if="indicator" :class="$style.indicator" :user="user"/>
-	<div v-if="user.isCat" :class="[$style.ears]">
-		<div :class="$style.earLeft">
-			<div v-if="false" :class="$style.layer">
-				<div :class="$style.plot" :style="{ backgroundImage: `url(${JSON.stringify(url)})` }"/>
-				<div :class="$style.plot" :style="{ backgroundImage: `url(${JSON.stringify(url)})` }"/>
-				<div :class="$style.plot" :style="{ backgroundImage: `url(${JSON.stringify(url)})` }"/>
+	<component
+		:is="link ? MkA : 'span'"
+		v-user-preview="preview ? user.id : undefined"
+		v-bind="bound"
+		class="_noSelect"
+		:class="[
+			$style.root,
+			{
+				[$style.animation]: animation,
+				[$style.cat]: user.isCat,
+				[$style.square]: squareAvatars,
+			},
+		]"
+		:style="{ color }"
+		:title="acct(user)"
+		@click="onClick"
+	>
+		<MkImgWithBlurhash
+			:class="$style.inner"
+			:src="url"
+			:hash="user.avatarBlurhash"
+			:cover="true"
+			:onlyAvgColor="true"
+		/>
+		<MkUserOnlineIndicator
+			v-if="indicator"
+			:class="$style.indicator"
+			:user="user"
+		/>
+		<div v-if="user.isCat" :class="[$style.ears]">
+			<div :class="$style.earLeft">
+				<div v-if="false" :class="$style.layer">
+					<div
+						:class="$style.plot"
+						:style="{ backgroundImage: `url(${JSON.stringify(url)})` }"
+					/>
+					<div
+						:class="$style.plot"
+						:style="{ backgroundImage: `url(${JSON.stringify(url)})` }"
+					/>
+					<div
+						:class="$style.plot"
+						:style="{ backgroundImage: `url(${JSON.stringify(url)})` }"
+					/>
+				</div>
+			</div>
+			<div :class="$style.earRight">
+				<div v-if="false" :class="$style.layer">
+					<div
+						:class="$style.plot"
+						:style="{ backgroundImage: `url(${JSON.stringify(url)})` }"
+					/>
+					<div
+						:class="$style.plot"
+						:style="{ backgroundImage: `url(${JSON.stringify(url)})` }"
+					/>
+					<div
+						:class="$style.plot"
+						:style="{ backgroundImage: `url(${JSON.stringify(url)})` }"
+					/>
+				</div>
 			</div>
 		</div>
-		<div :class="$style.earRight">
-			<div v-if="false" :class="$style.layer">
-				<div :class="$style.plot" :style="{ backgroundImage: `url(${JSON.stringify(url)})` }"/>
-				<div :class="$style.plot" :style="{ backgroundImage: `url(${JSON.stringify(url)})` }"/>
-				<div :class="$style.plot" :style="{ backgroundImage: `url(${JSON.stringify(url)})` }"/>
-			</div>
-		</div>
-	</div>
-	<template v-if="showDecoration">
-		<img
-			v-for="decoration in decorations ?? user.avatarDecorations"
-			:class="[$style.decoration, { [$style.decorationBlink]: decoration.blink }]"
-			:src="getDecorationUrl(decoration)"
-			:style="{
-				rotate: getDecorationAngle(decoration),
-				scale: getDecorationScale(decoration),
-				translate: getDecorationOffset(decoration),
-				zIndex: getDecorationZIndex(decoration),
-			}"
-			alt=""
-			draggable="false"
-			style="-webkit-user-drag: none;"
-		>
-	</template>
-</component>
+		<template v-if="showDecoration">
+			<img
+				v-for="decoration in decorations ?? user.avatarDecorations"
+				:class="[
+					$style.decoration,
+					{ [$style.decorationBlink]: decoration.blink },
+				]"
+				:src="getDecorationUrl(decoration)"
+				:style="{
+					rotate: getDecorationAngle(decoration),
+					scale: getDecorationScale(decoration),
+					translate: getDecorationOffset(decoration),
+					zIndex: getDecorationZIndex(decoration),
+				}"
+				alt=""
+				draggable="false"
+				style="-webkit-user-drag: none"
+			/>
+		</template>
+	</component>
 </template>
 
 <script lang="ts" setup>
-import { watch, ref, computed } from 'vue';
-import * as Misskey from 'misskey-js';
-import { extractAvgColorFromBlurhash } from '@@/js/extract-avg-color-from-blurhash.js';
-import MkImgWithBlurhash from '../MkImgWithBlurhash.vue';
-import MkA from './MkA.vue';
-import { getStaticImageUrl } from '@/utility/media-proxy.js';
-import { acct, userPage } from '@/filters/user.js';
-import MkUserOnlineIndicator from '@/components/MkUserOnlineIndicator.vue';
-import { prefer } from '@/preferences.js';
+import { watch, ref, computed } from "vue";
+import * as Misskey from "misskey-js";
+import { extractAvgColorFromBlurhash } from "@@/js/extract-avg-color-from-blurhash.js";
+import MkImgWithBlurhash from "../MkImgWithBlurhash.vue";
+import MkA from "./MkA.vue";
+import { getStaticImageUrl } from "@/utility/media-proxy.js";
+import { acct, userPage } from "@/filters/user.js";
+import MkUserOnlineIndicator from "@/components/MkUserOnlineIndicator.vue";
+import { prefer } from "@/preferences.js";
 
 const animation = ref(prefer.s.animation);
 const squareAvatars = ref(prefer.s.squareAvatars);
 
-const props = withDefaults(defineProps<{
-	user: Misskey.entities.User;
-	target?: string | null;
-	link?: boolean;
-	preview?: boolean;
-	indicator?: boolean;
-	decorations?: (Omit<Misskey.entities.UserDetailed['avatarDecorations'][number], 'id'> & { blink?: boolean; })[];
-	forceShowDecoration?: boolean;
-}>(), {
-	target: null,
-	link: false,
-	preview: false,
-	indicator: false,
-	decorations: undefined,
-	forceShowDecoration: false,
-});
+const props = withDefaults(
+	defineProps<{
+		user: Misskey.entities.User;
+		target?: string | null;
+		link?: boolean;
+		preview?: boolean;
+		indicator?: boolean;
+		decorations?: (Omit<
+			Misskey.entities.UserDetailed["avatarDecorations"][number],
+			"id"
+		> & { blink?: boolean })[];
+		forceShowDecoration?: boolean;
+	}>(),
+	{
+		target: null,
+		link: false,
+		preview: false,
+		indicator: false,
+		decorations: undefined,
+		forceShowDecoration: false,
+	},
+);
 
 const emit = defineEmits<{
-	(ev: 'click', v: MouseEvent): void;
+	(ev: "click", v: MouseEvent): void;
 }>();
 
-const showDecoration = props.forceShowDecoration || prefer.s.showAvatarDecorations;
+const showDecoration =
+	props.forceShowDecoration || prefer.s.showAvatarDecorations;
 
-const bound = computed(() => props.link
-	? { to: userPage(props.user), target: props.target }
-	: {});
+const bound = computed(() =>
+	props.link ? { to: userPage(props.user), target: props.target } : {},
+);
 
 const url = computed(() => {
 	if (props.user.avatarUrl == null) return null;
-	if (prefer.s.disableShowingAnimatedImages || prefer.s.dataSaver.avatar) return getStaticImageUrl(props.user.avatarUrl);
+	if (prefer.s.disableShowingAnimatedImages || prefer.s.dataSaver.avatar)
+		return getStaticImageUrl(props.user.avatarUrl);
 	return props.user.avatarUrl;
 });
 
 function onClick(ev: MouseEvent): void {
 	if (props.link) return;
-	emit('click', ev);
+	emit("click", ev);
 }
 
-function getDecorationUrl(decoration: Omit<Misskey.entities.UserDetailed['avatarDecorations'][number], 'id'>) {
-	if (prefer.s.disableShowingAnimatedImages || prefer.s.dataSaver.avatar) return getStaticImageUrl(decoration.url);
+function getDecorationUrl(
+	decoration: Omit<
+		Misskey.entities.UserDetailed["avatarDecorations"][number],
+		"id"
+	>,
+) {
+	if (prefer.s.disableShowingAnimatedImages || prefer.s.dataSaver.avatar)
+		return getStaticImageUrl(decoration.url);
 	return decoration.url;
 }
 
-function getDecorationAngle(decoration: Omit<Misskey.entities.UserDetailed['avatarDecorations'][number], 'id'>) {
+function getDecorationAngle(
+	decoration: Omit<
+		Misskey.entities.UserDetailed["avatarDecorations"][number],
+		"id"
+	>,
+) {
 	const angle = decoration.angle ?? 0;
 	return angle === 0 ? undefined : `${angle * 360}deg`;
 }
 
-function getDecorationScale(decoration: Omit<Misskey.entities.UserDetailed['avatarDecorations'][number], 'id'>) {
+function getDecorationScale(
+	decoration: Omit<
+		Misskey.entities.UserDetailed["avatarDecorations"][number],
+		"id"
+	>,
+) {
 	const scaleX = decoration.flipH ? -1 : 1;
 	const scaleY = decoration.flipV ? -1 : 1;
 	return scaleX === 1 && scaleY === 1 ? undefined : `${scaleX} ${scaleY}`;
 }
 
-function getDecorationOffset(decoration: Omit<Misskey.entities.UserDetailed['avatarDecorations'][number], 'id'>) {
+function getDecorationOffset(
+	decoration: Omit<
+		Misskey.entities.UserDetailed["avatarDecorations"][number],
+		"id"
+	>,
+) {
 	const offsetX = decoration.offsetX ?? 0;
 	const offsetY = decoration.offsetY ?? 0;
-	return offsetX === 0 && offsetY === 0 ? undefined : `${offsetX * 100}% ${offsetY * 100}%`;
+	return offsetX === 0 && offsetY === 0
+		? undefined
+		: `${offsetX * 100}% ${offsetY * 100}%`;
 }
 
-function getDecorationZIndex(decoration: Omit<Misskey.entities.UserDetailed['avatarDecorations'][number], 'id'>) {
-	return decoration.showBelow ? '-1' : undefined;
+function getDecorationZIndex(
+	decoration: Omit<
+		Misskey.entities.UserDetailed["avatarDecorations"][number],
+		"id"
+	>,
+) {
+	return decoration.showBelow ? "-1" : undefined;
 }
 
 const color = ref<string | undefined>();
 
-watch(() => props.user.avatarBlurhash, () => {
-	if (props.user.avatarBlurhash == null) return;
-	color.value = extractAvgColorFromBlurhash(props.user.avatarBlurhash);
-}, {
-	immediate: true,
-});
+watch(
+	() => props.user.avatarBlurhash,
+	() => {
+		if (props.user.avatarBlurhash == null) return;
+		color.value = extractAvgColorFromBlurhash(props.user.avatarBlurhash);
+	},
+	{
+		immediate: true,
+	},
+);
 </script>
 
 <style lang="scss" module>
 @keyframes earwiggleleft {
-	from { transform: rotate(37.6deg) skew(30deg); }
-	25% { transform: rotate(10deg) skew(30deg); }
-	50% { transform: rotate(20deg) skew(30deg); }
-	75% { transform: rotate(0deg) skew(30deg); }
-	to { transform: rotate(37.6deg) skew(30deg); }
+	from {
+		transform: rotate(37.6deg) skew(30deg);
+	}
+	25% {
+		transform: rotate(10deg) skew(30deg);
+	}
+	50% {
+		transform: rotate(20deg) skew(30deg);
+	}
+	75% {
+		transform: rotate(0deg) skew(30deg);
+	}
+	to {
+		transform: rotate(37.6deg) skew(30deg);
+	}
 }
 
 @keyframes earwiggleright {
-	from { transform: rotate(-37.6deg) skew(-30deg); }
-	30% { transform: rotate(-10deg) skew(-30deg); }
-	55% { transform: rotate(-20deg) skew(-30deg); }
-	75% { transform: rotate(0deg) skew(-30deg); }
-	to { transform: rotate(-37.6deg) skew(-30deg); }
+	from {
+		transform: rotate(-37.6deg) skew(-30deg);
+	}
+	30% {
+		transform: rotate(-10deg) skew(-30deg);
+	}
+	55% {
+		transform: rotate(-20deg) skew(-30deg);
+	}
+	75% {
+		transform: rotate(0deg) skew(-30deg);
+	}
+	to {
+		transform: rotate(-37.6deg) skew(-30deg);
+	}
 }
 
 @keyframes eartightleft {
-	from { transform: rotate(37.6deg) skew(30deg); }
-	50% { transform: rotate(37.4deg) skew(30deg); }
-	to { transform: rotate(37.6deg) skew(30deg); }
+	from {
+		transform: rotate(37.6deg) skew(30deg);
+	}
+	50% {
+		transform: rotate(37.4deg) skew(30deg);
+	}
+	to {
+		transform: rotate(37.6deg) skew(30deg);
+	}
 }
 
 @keyframes eartightright {
-	from { transform: rotate(-37.6deg) skew(-30deg); }
-	50% { transform: rotate(-37.4deg) skew(-30deg); }
-	to { transform: rotate(-37.6deg) skew(-30deg); }
+	from {
+		transform: rotate(-37.6deg) skew(-30deg);
+	}
+	50% {
+		transform: rotate(-37.4deg) skew(-30deg);
+	}
+	to {
+		transform: rotate(-37.6deg) skew(-30deg);
+	}
 }
 
 .root {
@@ -221,7 +340,7 @@ watch(() => props.user.avatarBlurhash, () => {
 
 			&::after {
 				contain: strict;
-				content: '';
+				content: "";
 				display: block;
 				width: 60%;
 				height: 60%;
@@ -241,7 +360,7 @@ watch(() => props.user.avatarBlurhash, () => {
 					position: absolute;
 					width: 100%;
 					height: 100%;
-					clip-path: path('M0 0H1V1H0z');
+					clip-path: path("M0 0H1V1H0z");
 					transform: scale(32767);
 					transform-origin: 0 0;
 					opacity: 0.5;
@@ -260,17 +379,15 @@ watch(() => props.user.avatarBlurhash, () => {
 		> .earLeft {
 			transform: rotate(37.5deg) skew(30deg);
 
-			&, &::after {
+			&,
+			&::after {
 				border-radius: 25% 75% 75%;
 			}
 
 			> .layer {
 				left: 0;
-				transform:
-					skew(-30deg)
-					rotate(-37.5deg)
-					translate(-2.82842712475%, /* -2 * sqrt(2) */
-										-38.5857864376%); /* 40 - 2 * sqrt(2) */
+				transform: skew(-30deg) rotate(-37.5deg)
+					translate(-2.82842712475%, /* -2 * sqrt(2) */ -38.5857864376%); /* 40 - 2 * sqrt(2) */
 
 				> .plot {
 					background-position: 20% 10%; /* ~= 37.5deg */
@@ -289,17 +406,15 @@ watch(() => props.user.avatarBlurhash, () => {
 		> .earRight {
 			transform: rotate(-37.5deg) skew(-30deg);
 
-			&, &::after {
+			&,
+			&::after {
 				border-radius: 75% 25% 75% 75%;
 			}
 
 			> .layer {
 				right: 0;
-				transform:
-					skew(30deg)
-					rotate(37.5deg)
-					translate(2.82842712475%, /* 2 * sqrt(2) */
-										-38.5857864376%); /* 40 - 2 * sqrt(2) */
+				transform: skew(30deg) rotate(37.5deg)
+					translate(2.82842712475%, /* 2 * sqrt(2) */ -38.5857864376%); /* 40 - 2 * sqrt(2) */
 
 				> .plot {
 					position: absolute;
@@ -344,7 +459,8 @@ watch(() => props.user.avatarBlurhash, () => {
 }
 
 @keyframes blink {
-	0%, 100% {
+	0%,
+	100% {
 		filter: brightness(2);
 	}
 	50% {

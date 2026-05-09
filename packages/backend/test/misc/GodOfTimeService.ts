@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { TimeService, type Timer } from '@/global/TimeService.js';
-import { addPatch, type DatePatch } from '@/misc/patch-date.js';
+import { Injectable } from "@nestjs/common";
+import { TimeService, type Timer } from "@/global/TimeService.js";
+import { addPatch, type DatePatch } from "@/misc/patch-date.js";
 
 /**
  * Fake implementation of TimeService that allows manual control of time.
@@ -37,7 +37,7 @@ export class GodOfTimeService extends TimeService<GodsOwnTimer> {
 				// Fire all expiring timers in chronological order.
 				const expiringTimers = this.timers
 					.values()
-					.filter(t => t.expiresAt <= value)
+					.filter((t) => t.expiresAt <= value)
 					.toArray()
 					.sort((a, b) => a.expiresAt - b.expiresAt);
 
@@ -88,7 +88,7 @@ export class GodOfTimeService extends TimeService<GodsOwnTimer> {
 	 * Ticks can be a raw number of milliseconds, or an inline object containing time and/or date increments.
 	 */
 	public tick(tick: number | DatePatch) {
-		if (typeof(tick) === 'number') {
+		if (typeof tick === "number") {
 			this.now += tick;
 		} else {
 			this.date = addPatch(this.date, tick);
@@ -116,7 +116,12 @@ export class GodOfTimeService extends TimeService<GodsOwnTimer> {
 		this.now = to;
 	}
 
-	protected startNativeTimer(timerId: symbol, repeating: boolean, callback: () => void, delay: number): GodsOwnTimer {
+	protected startNativeTimer(
+		timerId: symbol,
+		repeating: boolean,
+		callback: () => void,
+		delay: number,
+	): GodsOwnTimer {
 		const expiresAt = this.now + delay;
 		return { timerId, repeating, delay, expiresAt, callback };
 	}

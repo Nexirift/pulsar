@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as Misskey from 'misskey-js';
-import { ref } from 'vue';
-import { apiUrl } from '@@/js/config.js';
+import * as Misskey from "misskey-js";
+import { ref } from "vue";
+import { apiUrl } from "@@/js/config.js";
 
 export const pendingApiRequestsCount = ref(0);
 
@@ -13,14 +13,10 @@ export const pendingApiRequestsCount = ref(0);
 export function misskeyApi<
 	ResT = void,
 	E extends keyof Misskey.Endpoints = keyof Misskey.Endpoints,
-	P extends Misskey.Endpoints[E]['req'] = Misskey.Endpoints[E]['req'],
+	P extends Misskey.Endpoints[E]["req"] = Misskey.Endpoints[E]["req"],
 	_ResT = ResT extends void ? Misskey.api.SwitchCaseResponseType<E, P> : ResT,
->(
-	endpoint: E,
-	data: P = {} as any,
-	signal?: AbortSignal,
-): Promise<_ResT> {
-	if (endpoint.includes('://')) throw new Error('invalid endpoint');
+>(endpoint: E, data: P = {} as any, signal?: AbortSignal): Promise<_ResT> {
+	if (endpoint.includes("://")) throw new Error("invalid endpoint");
 	pendingApiRequestsCount.value++;
 
 	const onFinally = () => {
@@ -29,26 +25,29 @@ export function misskeyApi<
 
 	const promise = new Promise<_ResT>((resolve, reject) => {
 		// Send request
-		window.fetch(`${apiUrl}/${endpoint}`, {
-			method: 'POST',
-			body: JSON.stringify(data),
-			credentials: 'omit',
-			cache: 'no-cache',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			signal,
-		}).then(async (res) => {
-			const body = res.status === 204 ? null : await res.json();
+		window
+			.fetch(`${apiUrl}/${endpoint}`, {
+				method: "POST",
+				body: JSON.stringify(data),
+				credentials: "omit",
+				cache: "no-cache",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				signal,
+			})
+			.then(async (res) => {
+				const body = res.status === 204 ? null : await res.json();
 
-			if (res.status === 200) {
-				resolve(body);
-			} else if (res.status === 204) {
-				resolve(undefined as _ResT); // void -> undefined
-			} else {
-				reject(body.error);
-			}
-		}).catch(reject);
+				if (res.status === 200) {
+					resolve(body);
+				} else if (res.status === 204) {
+					resolve(undefined as _ResT); // void -> undefined
+				} else {
+					reject(body.error);
+				}
+			})
+			.catch(reject);
 	});
 
 	promise.then(onFinally, onFinally);
@@ -60,12 +59,9 @@ export function misskeyApi<
 export function misskeyApiGet<
 	ResT = void,
 	E extends keyof Misskey.Endpoints = keyof Misskey.Endpoints,
-	P extends Misskey.Endpoints[E]['req'] = Misskey.Endpoints[E]['req'],
+	P extends Misskey.Endpoints[E]["req"] = Misskey.Endpoints[E]["req"],
 	_ResT = ResT extends void ? Misskey.api.SwitchCaseResponseType<E, P> : ResT,
->(
-	endpoint: E,
-	data: P = {} as any,
-): Promise<_ResT> {
+>(endpoint: E, data: P = {} as any): Promise<_ResT> {
 	pendingApiRequestsCount.value++;
 
 	const onFinally = () => {
@@ -76,21 +72,24 @@ export function misskeyApiGet<
 
 	const promise = new Promise<_ResT>((resolve, reject) => {
 		// Send request
-		window.fetch(`${apiUrl}/${endpoint}?${query}`, {
-			method: 'GET',
-			credentials: 'omit',
-			cache: 'default',
-		}).then(async (res) => {
-			const body = res.status === 204 ? null : await res.json();
+		window
+			.fetch(`${apiUrl}/${endpoint}?${query}`, {
+				method: "GET",
+				credentials: "omit",
+				cache: "default",
+			})
+			.then(async (res) => {
+				const body = res.status === 204 ? null : await res.json();
 
-			if (res.status === 200) {
-				resolve(body);
-			} else if (res.status === 204) {
-				resolve(undefined as _ResT); // void -> undefined
-			} else {
-				reject(body.error);
-			}
-		}).catch(reject);
+				if (res.status === 200) {
+					resolve(body);
+				} else if (res.status === 204) {
+					resolve(undefined as _ResT); // void -> undefined
+				} else {
+					reject(body.error);
+				}
+			})
+			.catch(reject);
 	});
 
 	promise.then(onFinally, onFinally);

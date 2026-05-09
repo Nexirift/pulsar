@@ -3,19 +3,19 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as fs from 'node:fs';
-import * as crypto from 'node:crypto';
-import * as stream from 'node:stream/promises';
-import { Injectable } from '@nestjs/common';
-import * as fileType from 'file-type';
-import FFmpeg from 'fluent-ffmpeg';
-import isSvg from 'is-svg';
-import probeImageSize from 'probe-image-size';
-import { sharpBmp } from '@misskey-dev/sharp-read-bmp';
-import * as blurhash from 'blurhash';
-import { LoggerService } from '@/core/LoggerService.js';
-import type Logger from '@/logger.js';
-import { bindThis } from '@/decorators.js';
+import * as fs from "node:fs";
+import * as crypto from "node:crypto";
+import * as stream from "node:stream/promises";
+import { Injectable } from "@nestjs/common";
+import * as fileType from "file-type";
+import FFmpeg from "fluent-ffmpeg";
+import isSvg from "is-svg";
+import probeImageSize from "probe-image-size";
+import { sharpBmp } from "@misskey-dev/sharp-read-bmp";
+import * as blurhash from "blurhash";
+import { LoggerService } from "@/core/LoggerService.js";
+import type Logger from "@/logger.js";
+import { bindThis } from "@/decorators.js";
 
 export type FileInfo = {
 	size: number;
@@ -34,13 +34,13 @@ export type FileInfo = {
 };
 
 const TYPE_OCTET_STREAM = {
-	mime: 'application/octet-stream',
+	mime: "application/octet-stream",
 	ext: null,
 };
 
 const TYPE_SVG = {
-	mime: 'image/svg+xml',
-	ext: 'svg',
+	mime: "image/svg+xml",
+	ext: "svg",
 };
 
 @Injectable()
@@ -48,11 +48,9 @@ export class FileInfoService {
 	private logger: Logger;
 	private ffprobeLogger: Logger;
 
-	constructor(
-		private loggerService: LoggerService,
-	) {
-		this.logger = this.loggerService.getLogger('file-info');
-		this.ffprobeLogger = this.logger.createSubLogger('ffprobe');
+	constructor(private loggerService: LoggerService) {
+		this.logger = this.loggerService.getLogger("file-info");
+		this.ffprobeLogger = this.logger.createSubLogger("ffprobe");
 	}
 
 	/**
@@ -72,35 +70,37 @@ export class FileInfoService {
 		let height: number | undefined;
 		let orientation: number | undefined;
 
-		if ([
-			'image/png',
-			'image/gif',
-			'image/jpeg',
-			'image/webp',
-			'image/avif',
-			'image/apng',
-			'image/bmp',
-			'image/tiff',
-			'image/svg+xml',
-			'image/vnd.adobe.photoshop',
-		].includes(type.mime)) {
-			const imageSize = await this.detectImageSize(path).catch(e => {
+		if (
+			[
+				"image/png",
+				"image/gif",
+				"image/jpeg",
+				"image/webp",
+				"image/avif",
+				"image/apng",
+				"image/bmp",
+				"image/tiff",
+				"image/svg+xml",
+				"image/vnd.adobe.photoshop",
+			].includes(type.mime)
+		) {
+			const imageSize = await this.detectImageSize(path).catch((e) => {
 				warnings.push(`detectImageSize failed: ${e}`);
 				return undefined;
 			});
 
 			// うまく判定できない画像は octet-stream にする
 			if (!imageSize) {
-				warnings.push('cannot detect image dimensions');
+				warnings.push("cannot detect image dimensions");
 				type = TYPE_OCTET_STREAM;
-			} else if (imageSize.wUnits === 'px') {
+			} else if (imageSize.wUnits === "px") {
 				width = imageSize.width;
 				height = imageSize.height;
 				orientation = imageSize.orientation;
 
 				// 制限を超えている画像は octet-stream にする
 				if (imageSize.width > 16383 || imageSize.height > 16383) {
-					warnings.push('image dimensions exceeds limits');
+					warnings.push("image dimensions exceeds limits");
 					type = TYPE_OCTET_STREAM;
 				}
 			} else {
@@ -110,16 +110,18 @@ export class FileInfoService {
 
 		let blurhash: string | undefined;
 
-		if ([
-			'image/jpeg',
-			'image/gif',
-			'image/png',
-			'image/apng',
-			'image/webp',
-			'image/avif',
-			'image/svg+xml',
-		].includes(type.mime)) {
-			blurhash = await this.getBlurhash(path, type.mime).catch(e => {
+		if (
+			[
+				"image/jpeg",
+				"image/gif",
+				"image/png",
+				"image/apng",
+				"image/webp",
+				"image/avif",
+				"image/svg+xml",
+			].includes(type.mime)
+		) {
+			blurhash = await this.getBlurhash(path, type.mime).catch((e) => {
 				warnings.push(`getBlurhash failed: ${e}`);
 				return undefined;
 			});
@@ -145,11 +147,11 @@ export class FileInfoService {
 	@bindThis
 	public fixMime(mime: string): string {
 		// see https://github.com/misskey-dev/misskey/pull/10686
-		if (mime === 'audio/x-flac') {
-			return 'audio/flac';
+		if (mime === "audio/x-flac") {
+			return "audio/flac";
 		}
-		if (mime === 'audio/vnd.wave') {
-			return 'audio/wav';
+		if (mime === "audio/vnd.wave") {
+			return "audio/wav";
 		}
 
 		return mime;
@@ -169,14 +171,22 @@ export class FileInfoService {
 			try {
 				FFmpeg.ffprobe(path, (err, metadata) => {
 					if (err) {
-						this.ffprobeLogger.warn(`Could not check the video file. Returns true. File path: ${path}`, err);
+						this.ffprobeLogger.warn(
+							`Could not check the video file. Returns true. File path: ${path}`,
+							err,
+						);
 						resolve(true);
 						return;
 					}
-					resolve(metadata.streams.some((stream) => stream.codec_type === 'video'));
+					resolve(
+						metadata.streams.some((stream) => stream.codec_type === "video"),
+					);
 				});
 			} catch (err) {
-				this.ffprobeLogger.warn(`Could not check the video file. Returns true. File path: ${path}`, err as Error);
+				this.ffprobeLogger.warn(
+					`Could not check the video file. Returns true. File path: ${path}`,
+					err as Error,
+				);
 				resolve(true);
 			}
 		});
@@ -190,7 +200,7 @@ export class FileInfoService {
 		mime: string;
 		ext: string | null;
 	}> {
-	// Check 0 byte
+		// Check 0 byte
 		const fileSize = await this.getFileSize(path);
 		if (fileSize === 0) {
 			return TYPE_OCTET_STREAM;
@@ -199,17 +209,20 @@ export class FileInfoService {
 		const type = await fileType.fileTypeFromFile(path);
 
 		if (type) {
-		// XMLはSVGかもしれない
-			if (type.mime === 'application/xml' && await this.checkSvg(path)) {
+			// XMLはSVGかもしれない
+			if (type.mime === "application/xml" && (await this.checkSvg(path))) {
 				return TYPE_SVG;
 			}
 
-			if ((type.mime.startsWith('video') || type.mime === 'application/ogg') && !(await this.hasVideoTrackOnVideoFile(path))) {
-				const newMime = `audio/${type.mime.split('/')[1]}`;
-				if (newMime === 'audio/mp4') {
+			if (
+				(type.mime.startsWith("video") || type.mime === "application/ogg") &&
+				!(await this.hasVideoTrackOnVideoFile(path))
+			) {
+				const newMime = `audio/${type.mime.split("/")[1]}`;
+				if (newMime === "audio/mp4") {
 					return {
-						mime: 'audio/mp4',
-						ext: 'm4a',
+						mime: "audio/mp4",
+						ext: "m4a",
 					};
 				}
 				return {
@@ -261,7 +274,7 @@ export class FileInfoService {
 	 */
 	@bindThis
 	private async calcHash(path: string): Promise<string> {
-		const hash = crypto.createHash('md5').setEncoding('hex');
+		const hash = crypto.createHash("md5").setEncoding("hex");
 		await stream.pipeline(fs.createReadStream(path), hash);
 		return hash.read();
 	}
@@ -271,12 +284,12 @@ export class FileInfoService {
 	 */
 	@bindThis
 	private async detectImageSize(path: string): Promise<{
-	width: number;
-	height: number;
-	wUnits: string;
-	hUnits: string;
-	orientation?: number;
-}> {
+		width: number;
+		height: number;
+		wUnits: string;
+		hUnits: string;
+		orientation?: number;
+	}> {
 		const readable = fs.createReadStream(path);
 		const imageSize = await probeImageSize(readable);
 		readable.destroy();
@@ -292,14 +305,20 @@ export class FileInfoService {
 			(await sharpBmp(path, type))
 				.raw()
 				.ensureAlpha()
-				.resize(64, 64, { fit: 'inside' })
+				.resize(64, 64, { fit: "inside" })
 				.toBuffer((err, buffer, info) => {
 					if (err) return reject(err);
 
 					let hash;
 
 					try {
-						hash = blurhash.encode(new Uint8ClampedArray(buffer), info.width, info.height, 5, 5);
+						hash = blurhash.encode(
+							new Uint8ClampedArray(buffer),
+							info.width,
+							info.height,
+							5,
+							5,
+						);
 					} catch (e) {
 						return reject(e);
 					}

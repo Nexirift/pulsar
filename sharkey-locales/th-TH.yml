@@ -21,10 +21,10 @@ thisPostIsMissingAltTextCancel: "ยกเลิก"
 thisPostIsMissingAltTextIgnore: "โพสต์ต่อไป"
 thisPostIsMissingAltText: "ไฟล์หนึ่งที่แนบไปกับโพสต์นี้ไม่มีข้อความอื่น โปรดตรวจสอบให้แน่ใจว่าไฟล์แนบทั้งหมดมีข้อความอื่น"
 _timelineDescription:
-    bubble: "ในไทม์ไลน์ฟองคุณสามารถดูบันทึกจากเซิร์ฟเวอร์ที่เชื่อมต่อซึ่งผู้ดูแลระบบของคุณเลือก"
+  bubble: "ในไทม์ไลน์ฟองคุณสามารถดูบันทึกจากเซิร์ฟเวอร์ที่เชื่อมต่อซึ่งผู้ดูแลระบบของคุณเลือก"
 
 _timelines:
-    bubble: "ฟอง"
+  bubble: "ฟอง"
 
 scheduleNoteFailed: "การกำหนดเวลาเผยแพร่โพสต์ล้มเหลว"
 
@@ -36,9 +36,9 @@ postOn: "โพสต์เมื่อ"
 ScheduledNotes: "การโพสต์ตามกำหนดเวลา"
 
 _externalNavigationWarning:
-    title: "นำทางไปยังไซต์ภายนอก"
-    description: "ออกจาก {host} และไปยังไซต์ภายนอก"
-    trustThisDomain: "วางใจโดเมนนี้บนอุปกรณ์นี้ในอนาคต"
+  title: "นำทางไปยังไซต์ภายนอก"
+  description: "ออกจาก {host} และไปยังไซต์ภายนอก"
+  trustThisDomain: "วางใจโดเมนนี้บนอุปกรณ์นี้ในอนาคต"
 
 mutuals: "ติดตามกันและกัน"
 

@@ -4,13 +4,13 @@
  */
 
 // TODO replace all direct imports w/ the symbol
-import { AbortError, FetchError } from 'node-fetch';
-import { UnrecoverableError } from 'bullmq';
-import { StatusError } from '@/misc/status-error.js';
-import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { CaptchaError, captchaErrorCodes } from '@/misc/captcha-error.js';
-import { FastifyReplyError } from '@/misc/fastify-reply-error.js';
-import { ConflictError } from '@/misc/errors/ConflictError.js';
+import { AbortError, FetchError } from "node-fetch";
+import { UnrecoverableError } from "bullmq";
+import { StatusError } from "@/misc/status-error.js";
+import { IdentifiableError } from "@/misc/identifiable-error.js";
+import { CaptchaError, captchaErrorCodes } from "@/misc/captcha-error.js";
+import { FastifyReplyError } from "@/misc/fastify-reply-error.js";
+import { ConflictError } from "@/misc/errors/ConflictError.js";
 
 /**
  * Returns false if the provided value represents a "permanent" error that cannot be retried.
@@ -22,7 +22,8 @@ export function isRetryableError(e: unknown): boolean {
 		return e[isRetryableSymbol];
 	}
 
-	if (e instanceof AggregateError) return e.errors.every(inner => isRetryableError(inner));
+	if (e instanceof AggregateError)
+		return e.errors.every((inner) => isRetryableError(inner));
 	if (e instanceof StatusError) return e.isRetryable;
 	if (e instanceof IdentifiableError) return e.isRetryable;
 	if (e instanceof CaptchaError) {
@@ -38,7 +39,7 @@ export function isRetryableError(e: unknown): boolean {
 	if (e instanceof FetchError) return true; // TODO check status code?
 	if (e instanceof SyntaxError) return false;
 	if (e instanceof Error) {
-		if (e.name === 'AbortError') return true;
+		if (e.name === "AbortError") return true;
 		if (e.cause != null) return isRetryableError(e.cause);
 	}
 
@@ -53,11 +54,15 @@ export function isRetryableError(e: unknown): boolean {
  * If the property resolves to a boolean, then that value will be used.
  * Returning any other value will fall back on the usual logic.
  */
-export const isRetryableSymbol = Symbol('isRetryable');
+export const isRetryableSymbol = Symbol("isRetryable");
 
-function hasRetryableSymbol(obj: unknown): obj is { [isRetryableSymbol]: boolean } {
-	return obj != null
-		&& typeof(obj) === 'object'
-		&& isRetryableSymbol in obj
-		&& typeof(obj[isRetryableSymbol]) === 'boolean';
+function hasRetryableSymbol(
+	obj: unknown,
+): obj is { [isRetryableSymbol]: boolean } {
+	return (
+		obj != null &&
+		typeof obj === "object" &&
+		isRetryableSymbol in obj &&
+		typeof obj[isRetryableSymbol] === "boolean"
+	);
 }

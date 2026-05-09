@@ -4,11 +4,11 @@
  */
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { expect, userEvent, waitFor, within } from '@storybook/test';
-import type { StoryObj } from '@storybook/vue3';
-import { HttpResponse, http } from 'msw';
-import { commonHandlers } from '../../../.storybook/mocks.js';
-import MkUrl from './MkUrl.vue';
+import { expect, userEvent, waitFor, within } from "@storybook/test";
+import type { StoryObj } from "@storybook/vue3";
+import { HttpResponse, http } from "msw";
+import { commonHandlers } from "../../../.storybook/mocks.js";
+import MkUrl from "./MkUrl.vue";
 export const Default = {
 	render(args) {
 		return {
@@ -32,8 +32,8 @@ export const Default = {
 	},
 	async play({ canvasElement }) {
 		const canvas = within(canvasElement);
-		const a = canvas.getByRole<HTMLAnchorElement>('link');
-		await expect(a).toHaveAttribute('href', 'https://misskey-hub.net/');
+		const a = canvas.getByRole<HTMLAnchorElement>("link");
+		await expect(a).toHaveAttribute("href", "https://misskey-hub.net/");
 		await waitFor(() => userEvent.hover(a));
 		/*
 		await tick(); // FIXME: wait for network request
@@ -51,18 +51,19 @@ export const Default = {
 		await waitFor(() => userEvent.unhover(a));
 	},
 	args: {
-		url: 'https://misskey-hub.net/',
+		url: "https://misskey-hub.net/",
 	},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 		msw: {
 			handlers: [
 				...commonHandlers,
-				http.get('/url', () => {
+				http.get("/url", () => {
 					return HttpResponse.json({
-						title: 'Misskey Hub',
-						icon: 'https://misskey-hub.net/favicon.ico',
-						description: 'Misskeyはオープンソースの分散型ソーシャルネットワーキングプラットフォームです。',
+						title: "Misskey Hub",
+						icon: "https://misskey-hub.net/favicon.ico",
+						description:
+							"Misskeyはオープンソースの分散型ソーシャルネットワーキングプラットフォームです。",
 						thumbnail: null,
 						player: {
 							url: null,
@@ -70,9 +71,9 @@ export const Default = {
 							height: null,
 							allow: [],
 						},
-						sitename: 'misskey-hub.net',
+						sitename: "misskey-hub.net",
 						sensitive: false,
-						url: 'https://misskey-hub.net/',
+						url: "https://misskey-hub.net/",
 					});
 				}),
 			],

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, type OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable, type OnApplicationShutdown } from "@nestjs/common";
 import {
 	MemoryKVCache,
 	MemorySingleCache,
@@ -14,18 +14,18 @@ import {
 	type MemoryCacheServices,
 	type RedisCacheServices,
 	type MemoryCacheOpts,
-} from '@/misc/cache.js';
+} from "@/misc/cache.js";
 import {
 	QuantumKVCache,
 	type QuantumKVOpts,
 	type QuantumCacheServices,
-} from '@/misc/QuantumKVCache.js';
-import { bindThis } from '@/decorators.js';
-import { DI } from '@/di-symbols.js';
-import { TimeService, type TimerHandle } from '@/global/TimeService.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
-import { callAllOn, callAllOnAsync } from '@/misc/call-all.js';
-import type * as Redis from 'ioredis';
+} from "@/misc/QuantumKVCache.js";
+import { bindThis } from "@/decorators.js";
+import { DI } from "@/di-symbols.js";
+import { TimeService, type TimerHandle } from "@/global/TimeService.js";
+import { InternalEventService } from "@/global/InternalEventService.js";
+import { callAllOn, callAllOnAsync } from "@/misc/call-all.js";
+import type * as Redis from "ioredis";
 
 // This is the one place that's *supposed* to new() up caches.
 /* eslint-disable no-restricted-syntax */
@@ -36,10 +36,16 @@ export type ManagedRedisKVCache<T> = Managed<RedisKVCache<T>>;
 export type ManagedRedisSingleCache<T> = Managed<RedisSingleCache<T>>;
 export type ManagedQuantumKVCache<T> = Managed<QuantumKVCache<T>>;
 
-export type Managed<T> = Omit<T, 'dispose' | 'onApplicationShutdown' | 'gc'>;
-export type Manager = { dispose(): Promise<void> | void, clear(): void, gc(): void };
+export type Managed<T> = Omit<T, "dispose" | "onApplicationShutdown" | "gc">;
+export type Manager = {
+	dispose(): Promise<void> | void;
+	clear(): void;
+	gc(): void;
+};
 
-type CacheServices = MemoryCacheServices & RedisCacheServices & QuantumCacheServices;
+type CacheServices = MemoryCacheServices &
+	RedisCacheServices &
+	QuantumCacheServices;
 
 export const GC_INTERVAL = 1000 * 60 * 3; // 3m
 
@@ -69,30 +75,66 @@ export class CacheManagementService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public createMemoryKVCache<T>(name: string, optsOrLifetime: MemoryCacheOpts | number): ManagedMemoryKVCache<T> {
-		const opts = typeof(optsOrLifetime) === 'number' ? { lifetime: optsOrLifetime } : optsOrLifetime;
-		return this.create(name, () => new MemoryKVCache<T>(name, this.cacheServices, opts));
+	public createMemoryKVCache<T>(
+		name: string,
+		optsOrLifetime: MemoryCacheOpts | number,
+	): ManagedMemoryKVCache<T> {
+		const opts =
+			typeof optsOrLifetime === "number"
+				? { lifetime: optsOrLifetime }
+				: optsOrLifetime;
+		return this.create(
+			name,
+			() => new MemoryKVCache<T>(name, this.cacheServices, opts),
+		);
 	}
 
 	@bindThis
-	public createMemorySingleCache<T>(name: string, optsOrLifetime: MemoryCacheOpts | number): ManagedMemorySingleCache<T> {
-		const opts = typeof(optsOrLifetime) === 'number' ? { lifetime: optsOrLifetime } : optsOrLifetime;
-		return this.create(name, () => new MemorySingleCache<T>(name, this.cacheServices, opts));
+	public createMemorySingleCache<T>(
+		name: string,
+		optsOrLifetime: MemoryCacheOpts | number,
+	): ManagedMemorySingleCache<T> {
+		const opts =
+			typeof optsOrLifetime === "number"
+				? { lifetime: optsOrLifetime }
+				: optsOrLifetime;
+		return this.create(
+			name,
+			() => new MemorySingleCache<T>(name, this.cacheServices, opts),
+		);
 	}
 
 	@bindThis
-	public createRedisKVCache<T>(name: string, opts: RedisKVCacheOpts<T>): ManagedRedisKVCache<T> {
-		return this.create(name, () => new RedisKVCache<T>(name, this.cacheServices, opts));
+	public createRedisKVCache<T>(
+		name: string,
+		opts: RedisKVCacheOpts<T>,
+	): ManagedRedisKVCache<T> {
+		return this.create(
+			name,
+			() => new RedisKVCache<T>(name, this.cacheServices, opts),
+		);
 	}
 
 	@bindThis
-	public createRedisSingleCache<T>(name: string, opts: RedisSingleCacheOpts<T>): ManagedRedisSingleCache<T> {
-		return this.create(name, () => new RedisSingleCache<T>(name, this.cacheServices, opts));
+	public createRedisSingleCache<T>(
+		name: string,
+		opts: RedisSingleCacheOpts<T>,
+	): ManagedRedisSingleCache<T> {
+		return this.create(
+			name,
+			() => new RedisSingleCache<T>(name, this.cacheServices, opts),
+		);
 	}
 
 	@bindThis
-	public createQuantumKVCache<T>(name: string, opts: QuantumKVOpts<T>): ManagedQuantumKVCache<T> {
-		return this.create(name, () => new QuantumKVCache<T>(name, this.cacheServices, opts));
+	public createQuantumKVCache<T>(
+		name: string,
+		opts: QuantumKVOpts<T>,
+	): ManagedQuantumKVCache<T> {
+		return this.create(
+			name,
+			() => new QuantumKVCache<T>(name, this.cacheServices, opts),
+		);
 	}
 
 	private create<T extends Manager>(name: string, factory: () => T): T {
@@ -111,14 +153,14 @@ export class CacheManagementService implements OnApplicationShutdown {
 	@bindThis
 	public gc(): void {
 		this.resetGcTimer(() => {
-			callAllOn(this.managedCaches.values(), 'gc');
+			callAllOn(this.managedCaches.values(), "gc");
 		});
 	}
 
 	@bindThis
 	public clear(): void {
 		this.resetGcTimer(() => {
-			callAllOn(this.managedCaches.values(), 'clear');
+			callAllOn(this.managedCaches.values(), "clear");
 		});
 	}
 
@@ -129,7 +171,7 @@ export class CacheManagementService implements OnApplicationShutdown {
 		const toDispose = Array.from(this.managedCaches.values());
 		this.managedCaches.clear();
 
-		await callAllOnAsync(toDispose, 'dispose');
+		await callAllOnAsync(toDispose, "dispose");
 	}
 
 	@bindThis
@@ -140,7 +182,9 @@ export class CacheManagementService implements OnApplicationShutdown {
 	@bindThis
 	private startGcTimer() {
 		// Only start it once, and don't *re* start since this gets called repeatedly.
-		this.gcTimer ??= this.timeService.startTimer(this.gc, GC_INTERVAL, { repeated: true });
+		this.gcTimer ??= this.timeService.startTimer(this.gc, GC_INTERVAL, {
+			repeated: true,
+		});
 	}
 
 	@bindThis

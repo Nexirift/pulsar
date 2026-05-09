@@ -284,8 +284,8 @@ announcements: "Avisos"
 imageUrl: "URL da imagem"
 remove: "Remover"
 removed: "Removido"
-removeAreYouSure: "Deseja excluir \"{x}\"?"
-deleteAreYouSure: "Deseja excluir \"{x}\"?"
+removeAreYouSure: 'Deseja excluir "{x}"?'
+deleteAreYouSure: 'Deseja excluir "{x}"?'
 resetAreYouSure: "Deseja reiniciar?"
 areYouSure: "Tem certeza?"
 saved: "Salvo"
@@ -391,7 +391,7 @@ bannerUrl: "URL da imagem do ‘banner’"
 backgroundImageUrl: "URL da imagem de fundo"
 basicInfo: "Informações básicas"
 pinnedUsers: "Utilizador fixado"
-pinnedUsersDescription: "Descreva os utilizadores que você deseja fixar na página \"Localizar\", etc., separados por quebras de linha."
+pinnedUsersDescription: 'Descreva os utilizadores que você deseja fixar na página "Localizar", etc., separados por quebras de linha.'
 pinnedPages: "Página fixada"
 pinnedPagesDescription: "Descreva o caminho da página que você deseja fixar na página superior da instância, separada por quebras de linha."
 pinnedClipId: "ID do clipe a ser fixado"
@@ -467,7 +467,7 @@ unregister: "Cancelar registro"
 passwordLessLogin: "Entrar sem senha"
 passwordLessLoginDescription: "Faça login apenas com uma chave de segurança / chave de acesso sem utilização de senha"
 resetPassword: "Redefinir senha"
-newPasswordIs: "A nova senha é \"{password}\""
+newPasswordIs: 'A nova senha é "{password}"'
 reduceUiAnimation: "Reduzir a animação da ‘interface’ do utilizador"
 share: "Compartilhar"
 notFound: "Não encontrado"
@@ -692,7 +692,7 @@ regexpError: "Erro na expressão regular"
 regexpErrorDescription: "Ocorreu um erro na expressão regular na linha {line} da palavra mutada {tab}:"
 instanceMute: "Instâncias silenciadas"
 userSaysSomething: "{name} disse algo"
-userSaysSomethingAbout: "{name} disse algo sobre \"{word}\""
+userSaysSomethingAbout: '{name} disse algo sobre "{word}"'
 makeActive: "Ativar"
 display: "Visualizar"
 copy: "Copiar"
@@ -729,7 +729,7 @@ send: "Enviar"
 openInNewTab: "Abrir em nova aba"
 openInSideView: "Abrir em visão lateral"
 defaultNavigationBehaviour: "Navegação padrão"
-editTheseSettingsMayBreakAccount: "Editar essas configurações pode resultar em danos à conta.\""
+editTheseSettingsMayBreakAccount: 'Editar essas configurações pode resultar em danos à conta."'
 instanceTicker: "Informações do servidor das notas"
 waitingFor: "Aguardando por {x}"
 random: "Aleatório"
@@ -741,7 +741,7 @@ createNew: "Criar novo"
 optional: "Opcional"
 createNewClip: "Criar novo clipe"
 unclip: "Remover do clipe"
-confirmToUnclipAlreadyClippedNote: "Esta nota já está incluída no clipe \"{name}\". Você deseja remover a nota deste clipe?"
+confirmToUnclipAlreadyClippedNote: 'Esta nota já está incluída no clipe "{name}". Você deseja remover a nota deste clipe?'
 public: "Público"
 private: "Privado"
 i18nInfo: "Misskey é traduzido para várias línguas por voluntários. Você pode ajudar com as traduções em {link}."
@@ -782,7 +782,7 @@ experimentalFeatures: "Funcionalidades Experimentais"
 experimental: "Experimental"
 thisIsExperimentalFeature: "Este é um recurso experimental. As funções podem mudar ou pode não funcionar corretamente."
 developer: "Programador"
-makeExplorable: "Deixe a sua conta encontrável em \"Explorar\"."
+makeExplorable: 'Deixe a sua conta encontrável em "Explorar".'
 makeExplorableDescription: "Se você desativá-lo, outros usuários não poderão encontrar a sua conta na aba Descoberta."
 showGapBetweenNotesInTimeline: "Mostrar um espaço entre as notas na linha de tempo"
 duplicate: "Duplicar"
@@ -838,7 +838,7 @@ unlikeConfirm: "Deseja realmente deixar de curtir?"
 fullView: "Visão completa"
 quitFullView: "Sair da visualização completa"
 addDescription: "Adicionar descrição"
-userPagePinTip: "Notas podem ser mostradas aqui ao clicar em \"Fixar no Perfil\" no menu de notas individuais."
+userPagePinTip: 'Notas podem ser mostradas aqui ao clicar em "Fixar no Perfil" no menu de notas individuais.'
 notSpecifiedMentionWarning: "Esta nota menciona usuários que não foram incluídos como recipientes."
 info: "Informações"
 userInfo: "Informações do Usuário"
@@ -928,7 +928,7 @@ continueThread: "Ver mais desta conversa"
 deleteAccountConfirm: "Deseja realmente excluir a conta?"
 incorrectPassword: "Senha inválida."
 incorrectTotp: "A senha de uso único está incorreta ou expirou."
-voteConfirm: "Deseja confirmar o seu voto em \"{choice}\"?"
+voteConfirm: 'Deseja confirmar o seu voto em "{choice}"?'
 hide: "Ocultar"
 useDrawerReactionPickerForMobile: "Mostrar em formato de gaveta"
 welcomeBackWithName: "Bem-vindo de volta, {name}"
@@ -1079,7 +1079,7 @@ nonSensitiveOnlyForLocalLikeOnlyForRemote: "Apenas não sensíveis (somente curt
 rolesAssignedToMe: "Cargos atribuídos a mim"
 resetPasswordConfirm: "Deseja realmente mudar a sua senha?"
 sensitiveWords: "Palavras sensíveis"
-sensitiveWordsDescription: "A visibilidade de todas as notas contendo as palavras configuradas será colocadas como \"Início\" automaticamente. Você pode listar várias delas separando-as por linha."
+sensitiveWordsDescription: 'A visibilidade de todas as notas contendo as palavras configuradas será colocadas como "Início" automaticamente. Você pode listar várias delas separando-as por linha.'
 sensitiveWordsDescription2: "Utilizar espaços irá criar expressões aditivas (AND) e cercar palavras-chave com barras irá transformá-las em expressões regulares (RegEx)"
 prohibitedWords: "Palavras proibidas"
 prohibitedWordsDescription: "Habilita um erro ao tentar publicar uma nota contendo as palavras escolhidas. Várias palavras podem ser escolhidas, separando-as por linha."
@@ -1097,7 +1097,7 @@ retryAllQueuesConfirmText: "Isso irá temporariamente aumentar a carga do servid
 enableChartsForRemoteUser: "Gerar gráficos estatísticos de usuários remotos"
 enableChartsForFederatedInstances: "Gerar gráficos estatísticos de instâncias remotas"
 enableStatsForFederatedInstances: "Receber estatísticas de servidores remotos"
-showClipButtonInNoteFooter: "Adicionar \"Clip\" ao menu de ação de notas"
+showClipButtonInNoteFooter: 'Adicionar "Clip" ao menu de ação de notas'
 reactionsDisplaySize: "Tamanho de exibição das reações"
 limitWidthOfReaction: "Limita o comprimento máximo de reações e as exibe em tamanho reduzido"
 noteIdOrUrl: "ID ou URL de nota"
@@ -1181,7 +1181,7 @@ used: "Usado"
 expired: "Expirado"
 doYouAgree: "Concorda?"
 beSureToReadThisAsItIsImportant: "Por favor, leia essa informação importante."
-iHaveReadXCarefullyAndAgree: "Eu li o texto \"{x}\" e concordo."
+iHaveReadXCarefullyAndAgree: 'Eu li o texto "{x}" e concordo.'
 dialog: "Diálogo"
 icon: "Avatar"
 forYou: "Para você"
@@ -1240,7 +1240,7 @@ pullDownToRefresh: "Puxe para baixo para atualizar"
 disableStreamingTimeline: "Desabilitar atualizações em tempo real da linha do tempo"
 useGroupedNotifications: "Agrupar notificações"
 signupPendingError: "Houve um problema ao verificar o endereço de email. O link pode ter expirado."
-cwNotationRequired: "Se \"Esconder conteúdo\" está habilitado, uma descrição deve ser adicionada."
+cwNotationRequired: 'Se "Esconder conteúdo" está habilitado, uma descrição deve ser adicionada.'
 doReaction: "Adicionar reação"
 code: "Código"
 reloadRequiredToApplySettings: "É necessário reiniciar para aplicar as configurações."
@@ -1310,7 +1310,7 @@ acknowledgeNotesAndEnable: "Ative após compreender as precauções."
 federationSpecified: "Esse servidor opera com uma lista branca de federação. Interagir com servidores diferentes daqueles designados pela administração não é permitido."
 federationDisabled: "Federação está desabilitada nesse servidor. Você não pode interagir com usuários de outros servidores."
 confirmOnReact: "Confirmar ao reagir"
-reactAreYouSure: "Você deseja adicionar uma reação \"{emoji}\"?"
+reactAreYouSure: 'Você deseja adicionar uma reação "{emoji}"?'
 markAsSensitiveConfirm: "Você deseja definir essa mídia como sensível?"
 unmarkAsSensitiveConfirm: "Você deseja remover a definição dessa mídia como sensível?"
 preferences: "Preferências"
@@ -1428,7 +1428,7 @@ _settings:
 _preferencesProfile:
   profileName: "Nome do perfil"
   profileNameDescription: "Defina o nome que identifica esse dispositivo."
-  profileNameDescription2: "Exemplo: \"Computador Principal\", \"Celular\""
+  profileNameDescription2: 'Exemplo: "Computador Principal", "Celular"'
 _preferencesBackup:
   autoBackup: "Backup automático"
   restoreFromBackup: "Restaurar backup"
@@ -1486,11 +1486,11 @@ _announcement:
   forExistingUsers: "Apenas aos usuários existente"
   forExistingUsersDescription: "Se habilitado, esse anúncio será exibido apenas para usuários existentes no tempo de publicação. Se desabilitado, novos usuários também o receberão. "
   needConfirmationToRead: "Exigir confirmação de leitura"
-  needConfirmationToReadDescription: "Um lembrete adicional será exibido para confirmar a leitura do anúncio. Esse anúncio também será excluído de qualquer forma de \"Marcar tudo como lido\"."
+  needConfirmationToReadDescription: 'Um lembrete adicional será exibido para confirmar a leitura do anúncio. Esse anúncio também será excluído de qualquer forma de "Marcar tudo como lido".'
   end: "Arquivar anúncio"
   tooManyActiveAnnouncementDescription: "O excesso de anúncios pode atrapalhar a experiência do usuário. Considere arquivar anúncios obsoletos."
   readConfirmTitle: "Marcar como lido?"
-  readConfirmText: "Isso marcará o conteúdo de \"{title}\" como lido."
+  readConfirmText: 'Isso marcará o conteúdo de "{title}" como lido.'
   shouldNotBeUsedToPresentPermanentInfo: "É preferível utilizar anúncios para publicar informações atuais e de curto prazo, e não informações que serão relevantes por muito tempo."
   dialogAnnouncementUxWarn: "O uso de duas ou mais notificações de diálogo simultaneamente pode impactar significativamente a experiência de usuário. Portanto, utilize-as cuidadosamente."
   silence: "Sem notificação"
@@ -1502,7 +1502,7 @@ _initialAccountSetting:
   profileSetting: "Configurações do perfil"
   privacySetting: "Configurações de privacidade"
   theseSettingsCanEditLater: "Você pode alterar estas configurações mais tarde."
-  youCanEditMoreSettingsInSettingsPageLater: "Há mais configurações na página \"Configurações\". Não se esqueça de visitá-la mais tarde."
+  youCanEditMoreSettingsInSettingsPageLater: 'Há mais configurações na página "Configurações". Não se esqueça de visitá-la mais tarde.'
   followUsers: "Siga usuários que lhe interessam para criar a sua linha do tempo."
   pushNotificationDescription: "Habilitar notificações push o possibilitará receber notificações de {name} diretamente no seu dispositivo."
   initialAccountSettingCompleted: "Configuração de perfil completa!"
@@ -1522,17 +1522,17 @@ _initialTutorial:
   _note:
     title: "O que é uma Nota?"
     description: "Publicações no Misskey chamam-se 'Notas'. Notas são organizadas cronologicamente na linha do tempo e atualizam em tempo real."
-    reply: "Clique nesse botão para responder a uma mensagem. Também é possível responder respostas, continuando a conversa como uma \"thread\"."
+    reply: 'Clique nesse botão para responder a uma mensagem. Também é possível responder respostas, continuando a conversa como uma "thread".'
     renote: "Você pode compartilhar essa nota na sua linha do tempo. Você também pode citá-la com os seus comentários."
     reaction: "Você pode adicionar reações à nota. Mais detalhes serão explicados na próxima página."
     menu: "Você pode ver detalhes da nota, copiar links e realizar outras ações."
   _reaction:
     title: "O que são Reações?"
     description: "É possível reagir às notas com diversos emojis. Reações permitem que você expresse sutilezas que não são possíveis apenas com uma curtida."
-    letsTryReacting: "Reações podem ser adicionadas clicando no botão \"+\". Tente reagir à nota de exemplo."
+    letsTryReacting: 'Reações podem ser adicionadas clicando no botão "+". Tente reagir à nota de exemplo.'
     reactToContinue: "Adicione uma reação para continuar."
     reactNotification: "Você receberá notificações em tempo real quando alguém reagir à sua nota."
-    reactDone: "Você pode desfazer uma reação ao selecionar o botão \"-\"."
+    reactDone: 'Você pode desfazer uma reação ao selecionar o botão "-".'
   _timeline:
     title: "O Conceito das Linhas do Tempo"
     description1: "Misskey providencia diversas linhas do tempo baseadas na sua utilidade (algumas podem não estar disponíveis a partir das configurações da instância)."
@@ -1541,7 +1541,7 @@ _initialTutorial:
     social: "Notas da linha do tempo Início e Local serão exibidas."
     global: "Você pode ver notas de todos os servidores conectados."
     description2: "Você pode alterar dentre as linhas do tempo no todo da tela a qualquer momento."
-    description3: "Adicionalmente, há \"listas\" e \"canais\". Para mais informações, acesse {link}."
+    description3: 'Adicionalmente, há "listas" e "canais". Para mais informações, acesse {link}.'
   _postNote:
     title: "Opções de Postagem de Nota"
     description1: "Ao postar uma nota no Misskey, diversas opções estão disponíveis. A ficha de publicação parece com isto: "
@@ -1556,18 +1556,18 @@ _initialTutorial:
       localOnly: "Publicar com essa opção não federará a nota com outros servidores. Usuários desses servidores não poderão ver essas notas diretamente, independente das opções de visibilidade acima. "
     _cw:
       title: "Aviso de Conteúdo"
-      description: "Ao invés do corpo do texto, o conteúdo escrito na caixa \"anotação\" será exibido. Apertar \"Carregar mais\" irá revelar o corpo."
+      description: 'Ao invés do corpo do texto, o conteúdo escrito na caixa "anotação" será exibido. Apertar "Carregar mais" irá revelar o corpo.'
       _exampleNote:
         cw: "Isso irá te esfomear!"
         note: "Acabei de comer um donut coberto de chocolate! 🍩😋"
       useCases: "Isso pode ser usado caso seja exigido, pelas diretrizes do servidor, o cuidado com algum tópico ou ao publicar conteúdo sensível ou spoilers."
   _howToMakeAttachmentsSensitive:
     title: "Como Marcar Anexos como Sensíveis?"
-    description: "Para anexos cujo conteúdo é considerado sensível pelas diretrizes do servidor ou quando pretende-se esconder o seu conteúdo, adicione o sinal \"sensível\"."
+    description: 'Para anexos cujo conteúdo é considerado sensível pelas diretrizes do servidor ou quando pretende-se esconder o seu conteúdo, adicione o sinal "sensível".'
     tryThisFile: "Tente marcar a imagem anexada como sensível!"
     _exampleNote:
       note: "Opa, me atrapalhei abrindo a tampa do natô..."
-    method: "Para marcar um anexo como sensível, clique na sua miniatura, abra o menu e clique \"Marcar como sensível\"."
+    method: 'Para marcar um anexo como sensível, clique na sua miniatura, abra o menu e clique "Marcar como sensível".'
     sensitiveSucceeded: "Ao anexar arquivos, por favor atribua uma sensibilidade coerente com as diretrizes da instância."
     doItToContinue: "Marque o anexo como sensível para prosseguir."
   _done:
@@ -1590,7 +1590,7 @@ _serverSettings:
   shortName: "Abreviação"
   shortNameDescription: "Uma abreviação do nome da instância que pode ser exibido caso o nome oficial completo seja muito longo."
   fanoutTimelineDescription: "Melhora significativamente a performance do retorno da linha do tempo e reduz o impacto no banco de dados quando habilitado. Em contrapartida, o uso de memória do Redis aumentará. Considere desabilitar em casos de baixa disponibilidade de memória ou instabilidade do servidor."
-  fanoutTimelineDbFallback: "\"Fallback\" ao banco de dados"
+  fanoutTimelineDbFallback: '"Fallback" ao banco de dados'
   fanoutTimelineDbFallbackDescription: "Quando habilitado, a linha do tempo irá recuar ao banco de dados caso consultas adicionais sejam feitas e ela não estiver em cache. Quando desabilitado, o impacto no servidor será reduzido ao eliminar o recuo, mas limita a quantidade de linhas do tempo que podem ser recebidas."
   reactionsBufferingDescription: "Quando ativado, o desempenho durante a criação de uma reação será melhorado substancialmente, reduzindo a carga do banco de dados. Porém, a o uso de memória do Redis irá aumentar."
   inquiryUrl: "URL de inquérito"
@@ -1776,7 +1776,7 @@ _achievements:
       description: "Olhe para a sua lista de conquistas por pelo menos 3 minutos"
     _iLoveMisskey:
       title: "Eu Amo Misskey"
-      description: "Poste \"I ❤ #Misskey\""
+      description: 'Poste "I ❤ #Misskey"'
       flavor: "A equipe de desenvolvimento do Misskey aprecia profundamente o seu apoio!"
     _foundTreasure:
       title: "Caça ao Tesouro"
@@ -1809,7 +1809,7 @@ _achievements:
       description: "Veja os infográficos da instância"
     _outputHelloWorldOnScratchpad:
       title: "Olá, Mundo!"
-      description: "Produza \"hello world\" no Scratchpad"
+      description: 'Produza "hello world" no Scratchpad'
     _open3windows:
       title: "Múlti-Janelas"
       description: "Tenha ao mínimo 3 janelas abertas simultaneamente."
@@ -1827,7 +1827,7 @@ _achievements:
       description: "Tem uma chance de ser obtido com uma probabilidade de 0.005% a cada 10 segundos."
     _setNameToSyuilo:
       title: "Complexo de Deus"
-      description: "Colocar seu nome como \"syuilo\""
+      description: 'Colocar seu nome como "syuilo"'
     _passedSinceAccountCreated1:
       title: "Aniversário de Um Ano"
       description: "Um ano passou-se desde a criação da conta"
@@ -1945,7 +1945,7 @@ _role:
     isBot: "Usuários Bot"
     isSuspended: "Usuário suspenso"
     isLocked: "Contas privadas"
-    isExplorable: "Encontrável em \"Explorar\""
+    isExplorable: 'Encontrável em "Explorar"'
     createdLessThan: "Menos de X passados desde a criação da conta"
     createdMoreThan: "Mais de X passados desde a criação da conta"
     followersLessThanOrEq: "Possui X ou menos seguidores"
@@ -2024,12 +2024,12 @@ _preferencesBackups:
   save: "Salvar mudanças"
   inputName: "Insira um nome para esse backup"
   cannotSave: "Não foi possível salvar"
-  nameAlreadyExists: "Um backup chamado \"{name}\" já existe. Por favor, insira outro nome."
+  nameAlreadyExists: 'Um backup chamado "{name}" já existe. Por favor, insira outro nome.'
   applyConfirm: "Deseja aplicar o backup '{name}' ao dispositivo atual? As configurações atuais do dispositivo serão perdidas."
-  saveConfirm: "Salvar backup como \"{name}\"?"
+  saveConfirm: 'Salvar backup como "{name}"?'
   deleteConfirm: "Deseja excluir {name}?"
-  renameConfirm: "Renomear esse backup de \"{old}\" para \"{new}\"?"
-  noBackups: "Não há backups. Você pode configurar suas configurações de cliente nesse servidor ao selecionar \"Criar novo backup\"."
+  renameConfirm: 'Renomear esse backup de "{old}" para "{new}"?'
+  noBackups: 'Não há backups. Você pode configurar suas configurações de cliente nesse servidor ao selecionar "Criar novo backup".'
   createdAt: "Criado em: {date} {time}"
   updatedAt: "Atualizado em: {date} {time}"
   cannotLoad: "Não foi possível carregar"
@@ -2314,7 +2314,7 @@ _permissions:
   "read:chat": "Navegar Conversas"
 _auth:
   shareAccessTitle: "Conceder permissões do aplicativo"
-  shareAccess: "Você gostaria de autorizar \"{name}\" para acessar essa conta?"
+  shareAccess: 'Você gostaria de autorizar "{name}" para acessar essa conta?'
   shareAccessAsk: "Você tem certeza de que gostaria de conceder ao aplicativo o acesso à conta?"
   permission: "{name} solicita as seguintes permissões"
   permissionAsk: "O aplicativo solicita as seguintes permissões"
@@ -2576,7 +2576,7 @@ _notification:
   exportOfXCompleted: "Exportação de {x} foi concluída"
   login: "Alguém entrou na conta"
   createToken: "Uma token de acesso foi criada"
-  createTokenDescription: "Se você não faz ideia, exclua o token de acesso através de \"{text}\"."
+  createTokenDescription: 'Se você não faz ideia, exclua o token de acesso através de "{text}".'
   _types:
     all: "Todas"
     note: "Novas notas"
@@ -2621,9 +2621,9 @@ _deck:
   deleteProfile: "Remover perfil"
   introduction: "Crie a interface perfeita para você arranjando as colunas livremente!"
   introduction2: "Clique no + à direita da tela para adicionar novas colunas quando quiser."
-  widgetsIntroduction: "Por favor, selecione \"Editar widgets\" no menu em coluna e adicione um widget."
+  widgetsIntroduction: 'Por favor, selecione "Editar widgets" no menu em coluna e adicione um widget.'
   useSimpleUiForNonRootPages: "Usar UI simples para páginas navegadas"
-  usedAsMinWidthWhenFlexible: "A largura mínima será usada para isso quando o \"Ajuste automático da largura\" estiver ativado"
+  usedAsMinWidthWhenFlexible: 'A largura mínima será usada para isso quando o "Ajuste automático da largura" estiver ativado'
   flexible: "Ajuste automático da largura"
   enableSyncBetweenDevicesForProfiles: "Habilitar sincronização das informações do perfil entre dispositivos"
   _columns:
@@ -2922,7 +2922,7 @@ _customEmojisManager:
       uploadSettingTitle: "Configurações de envio"
       uploadSettingDescription: "Nessa tela, você pode configurar o comportamento ao enviar Emojis."
       directoryToCategoryLabel: "Transformar as pastas em categorias"
-      directoryToCategoryCaption: "Quando você arrastar um diretório, converter o caminho das pastas no campo \"categoria\"."
+      directoryToCategoryCaption: 'Quando você arrastar um diretório, converter o caminho das pastas no campo "categoria".'
       emojiInputAreaCaption: "Selecione Emojis que você deseja registrar utilizando um dos métodos."
       emojiInputAreaList1: "Arraste arquivos de imagem ou diretórios dentro desse quadro"
       emojiInputAreaList2: "Clique nesse link para abrir a seleção de arquivos"
@@ -2946,7 +2946,7 @@ _embedCodeGen:
   codeGeneratedDescription: "Coloque o código no seu website para incorporar o conteúdo."
 _selfXssPrevention:
   warning: "AVISO"
-  title: "\"Cole algo nessa tela\" é uma fraude"
+  title: '"Cole algo nessa tela" é uma fraude'
   description1: "Se você colar algo aqui, um usuário malicioso pode sabotar a sua conta ou roubar informações pessoais."
   description2: "Se você não entender exatamente o que está colando, %cpare agora e feche essa janela."
   description3: "Para mais informação, clique no link. {link}"

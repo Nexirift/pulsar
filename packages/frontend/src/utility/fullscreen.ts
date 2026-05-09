@@ -5,12 +5,12 @@
 
 type PartiallyPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
-type VideoEl = PartiallyPartial<HTMLVideoElement, 'requestFullscreen'> & {
+type VideoEl = PartiallyPartial<HTMLVideoElement, "requestFullscreen"> & {
 	webkitEnterFullscreen?(): void;
 	webkitExitFullscreen?(): void;
 };
 
-type PlayerEl = PartiallyPartial<HTMLElement, 'requestFullscreen'>;
+type PlayerEl = PartiallyPartial<HTMLElement, "requestFullscreen">;
 
 type RequestFullscreenProps = {
 	readonly videoEl: VideoEl;
@@ -22,7 +22,11 @@ type ExitFullscreenProps = {
 	readonly videoEl: VideoEl;
 };
 
-export const requestFullscreen = ({ videoEl, playerEl, options }: RequestFullscreenProps) => {
+export const requestFullscreen = ({
+	videoEl,
+	playerEl,
+	options,
+}: RequestFullscreenProps) => {
 	if (playerEl.requestFullscreen != null) {
 		playerEl.requestFullscreen(options ?? undefined);
 		return;

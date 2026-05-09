@@ -4,39 +4,42 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<span
-	v-tooltip="checked ? i18n.ts.itsOn : i18n.ts.itsOff"
-	:class="{
-		[$style.button]: true,
-		[$style.buttonChecked]: checked,
-		[$style.buttonDisabled]: props.disabled
-	}"
-	data-cy-switch-toggle
-	@click.prevent.stop="toggle"
->
-	<div :class="{ [$style.knob]: true, [$style.knobChecked]: checked }"></div>
-</span>
+	<span
+		v-tooltip="checked ? i18n.ts.itsOn : i18n.ts.itsOff"
+		:class="{
+			[$style.button]: true,
+			[$style.buttonChecked]: checked,
+			[$style.buttonDisabled]: props.disabled,
+		}"
+		data-cy-switch-toggle
+		@click.prevent.stop="toggle"
+	>
+		<div :class="{ [$style.knob]: true, [$style.knobChecked]: checked }"></div>
+	</span>
 </template>
 
 <script lang="ts" setup>
-import { toRefs } from 'vue';
-import type { Ref } from 'vue';
-import { i18n } from '@/i18n.js';
+import { toRefs } from "vue";
+import type { Ref } from "vue";
+import { i18n } from "@/i18n.js";
 
-const props = withDefaults(defineProps<{
-	checked: boolean | Ref<boolean>;
-	disabled?: boolean | Ref<boolean>;
-}>(), {
-	disabled: false,
-});
+const props = withDefaults(
+	defineProps<{
+		checked: boolean | Ref<boolean>;
+		disabled?: boolean | Ref<boolean>;
+	}>(),
+	{
+		disabled: false,
+	},
+);
 
 const emit = defineEmits<{
-	(ev: 'toggle'): void;
+	(ev: "toggle"): void;
 }>();
 
 const checked = toRefs(props).checked;
 const toggle = () => {
-	emit('toggle');
+	emit("toggle");
 };
 </script>
 

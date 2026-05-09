@@ -687,7 +687,7 @@ regexpError: "เกิดข้อผิดพลาดใน regular expressio
 regexpErrorDescription: "เกิดข้อผิดพลาดใน regular expression บรรทัดที่ {line} ของการปิดเสียงคำ {tab} :"
 instanceMute: "ปิดเสียงเซิร์ฟเวอร์"
 userSaysSomething: "{name} พูดอะไรบางอย่าง"
-userSaysSomethingAbout: "{name} พูดอะไรบางอย่างเกี่ยวกับ \"{word}\""
+userSaysSomethingAbout: '{name} พูดอะไรบางอย่างเกี่ยวกับ "{word}"'
 makeActive: "เปิดใช้งาน"
 display: "แสดงผล"
 copy: "คัดลอก"
@@ -1293,7 +1293,7 @@ prohibitedWordsForNameOfUserDescription: "หากมีสตริงใด�
 yourNameContainsProhibitedWords: "ชื่อของคุณนั้นมีคำที่ต้องห้าม"
 yourNameContainsProhibitedWordsDescription: "ถ้าหากคุณต้องการใช้ชื่อนี้ กรุณาติดต่อผู้ดูแลระบบของเซิร์ฟเวอร์นะค่ะ"
 federationDisabled: "เซิร์ฟเวอร์นี้ปิดการใช้งานการรวมกลุ่ม คุณไม่สามารถโต้ตอบกับผู้ใช้บนเซิร์ฟเวอร์อื่นได้"
-reactAreYouSure: "คุณต้องการที่จะตอบสนองต่อ \" {emoji}\" หรือไม่?"
+reactAreYouSure: 'คุณต้องการที่จะตอบสนองต่อ " {emoji}" หรือไม่?'
 markAsSensitiveConfirm: "คุณต้องการทำเครื่องหมายสื่อนี้ว่าละเอียดอ่อนหรือไม่?"
 unmarkAsSensitiveConfirm: "คุณต้องการลบการกำหนดความไวของสื่อนี้หรือไม่?"
 postForm: "แบบฟอร์มการโพสต์"
@@ -1669,7 +1669,7 @@ _achievements:
       description: "ดูแผนภูมิของเซิร์ฟเวอร์"
     _outputHelloWorldOnScratchpad:
       title: "หวัดดีชาวโลก!"
-      description: "เอาพุต \"hello world\" ใน Scratchpad"
+      description: 'เอาพุต "hello world" ใน Scratchpad'
     _open3windows:
       title: "มัลติวินโดว์"
       description: "มีการเปิดหน้าต่างอย่างน้อย 3 หน้าต่างพร้อมกัน"
@@ -2168,7 +2168,7 @@ _permissions:
   "write:chat": "เขียนหรือลบข้อความแชท"
 _auth:
   shareAccessTitle: "การให้สิทธิ์แอปพลิเคชัน"
-  shareAccess: "คุณต้องการอนุญาตให้ \"{name}\" เข้าถึงบัญชีนี้เลยมั้ย?"
+  shareAccess: 'คุณต้องการอนุญาตให้ "{name}" เข้าถึงบัญชีนี้เลยมั้ย?'
   shareAccessAsk: "ต้องการอนุญาตให้แอปพลิเคชันนี้เข้าถึงบัญชีของคุณใช่ไหม?"
   permission: "{name} ได้ขอสิทธิ์การเข้าถึงดังต่อไปนี้"
   permissionAsk: "แอปพลิเคชันนี้ขอสิทธิ์ดังต่อไปนี้"
@@ -2463,9 +2463,9 @@ _deck:
   deleteProfile: "ลบโปรไฟล์"
   introduction: "สร้างอินเทอร์เฟซที่สมบูรณ์แบบสำหรับคุณโดยจัดเรียงคอลัมน์ได้อย่างอิสระ!"
   introduction2: "คลิกที่เครื่องหมาย + ทางขวาของหน้าจอเพื่อเพิ่มคอลัมน์ใหม่ทุกครั้งที่คุณต้องการ"
-  widgetsIntroduction: "กรุณาเลือก \"แก้ไขวิดเจ็ต\" ในเมนูคอลัมน์และเพิ่มวิดเจ็ต"
+  widgetsIntroduction: 'กรุณาเลือก "แก้ไขวิดเจ็ต" ในเมนูคอลัมน์และเพิ่มวิดเจ็ต'
   useSimpleUiForNonRootPages: "แสดง UI ของ Root Page อย่างง่าย "
-  usedAsMinWidthWhenFlexible: "ความกว้างขั้นต่ำนั้นจะถูกใช้งานสำหรับสิ่งนี้เมื่อเปิดใช้งานตัวเลือก \"ปรับความกว้างอัตโนมัติ\" หากเลือกเปิดใช้งานแล้ว"
+  usedAsMinWidthWhenFlexible: 'ความกว้างขั้นต่ำนั้นจะถูกใช้งานสำหรับสิ่งนี้เมื่อเปิดใช้งานตัวเลือก "ปรับความกว้างอัตโนมัติ" หากเลือกเปิดใช้งานแล้ว'
   flexible: "ปรับความกว้างอัตโนมัติ"
   _columns:
     main: "หลัก"

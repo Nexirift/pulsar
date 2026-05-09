@@ -4,129 +4,161 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<SearchMarker path="/settings/avatar-decoration" :label="i18n.ts.avatarDecorations" :keywords="['avatar', 'icon', 'decoration']" icon="ti ti-sparkles">
-	<div>
-		<div v-if="!loading" class="_gaps">
-			<MkInfo>{{ i18n.tsx._profile.avatarDecorationMax({ max: $i.policies.avatarDecorationLimit }) }} ({{ i18n.tsx.remainingN({ n: $i.policies.avatarDecorationLimit - $i.avatarDecorations.length }) }})</MkInfo>
+	<SearchMarker
+		path="/settings/avatar-decoration"
+		:label="i18n.ts.avatarDecorations"
+		:keywords="['avatar', 'icon', 'decoration']"
+		icon="ti ti-sparkles"
+	>
+		<div>
+			<div v-if="!loading" class="_gaps">
+				<MkInfo
+					>{{
+						i18n.tsx._profile.avatarDecorationMax({
+							max: $i.policies.avatarDecorationLimit,
+						})
+					}}
+					({{
+						i18n.tsx.remainingN({
+							n:
+								$i.policies.avatarDecorationLimit - $i.avatarDecorations.length,
+						})
+					}})</MkInfo
+				>
 
-			<MkAvatar :class="$style.avatar" :user="$i" forceShowDecoration/>
+				<MkAvatar :class="$style.avatar" :user="$i" forceShowDecoration />
 
-			<div v-if="$i.avatarDecorations.length > 0" v-panel :class="$style.current" class="_gaps_s">
-				<div>{{ i18n.ts.inUse }}</div>
+				<div
+					v-if="$i.avatarDecorations.length > 0"
+					v-panel
+					:class="$style.current"
+					class="_gaps_s"
+				>
+					<div>{{ i18n.ts.inUse }}</div>
+
+					<div :class="$style.decorations">
+						<XDecoration
+							v-for="(avatarDecoration, i) in $i.avatarDecorations"
+							:decoration="
+								avatarDecorations.find((d) => d.id === avatarDecoration.id)
+							"
+							:angle="avatarDecoration.angle"
+							:flipH="avatarDecoration.flipH"
+							:flipV="avatarDecoration.flipV"
+							:offsetX="avatarDecoration.offsetX"
+							:offsetY="avatarDecoration.offsetY"
+							:showBelow="avatarDecoration.showBelow"
+							:active="true"
+							@click="openDecoration(avatarDecoration, i)"
+						/>
+					</div>
+
+					<MkButton danger @click="detachAllDecorations">{{
+						i18n.ts.detachAll
+					}}</MkButton>
+				</div>
 
 				<div :class="$style.decorations">
 					<XDecoration
-						v-for="(avatarDecoration, i) in $i.avatarDecorations"
-						:decoration="avatarDecorations.find(d => d.id === avatarDecoration.id)"
-						:angle="avatarDecoration.angle"
-						:flipH="avatarDecoration.flipH"
-						:flipV="avatarDecoration.flipV"
-						:offsetX="avatarDecoration.offsetX"
-						:offsetY="avatarDecoration.offsetY"
-						:showBelow="avatarDecoration.showBelow"
-						:active="true"
-						@click="openDecoration(avatarDecoration, i)"
+						v-for="avatarDecoration in avatarDecorations"
+						:key="avatarDecoration.id"
+						:decoration="avatarDecoration"
+						@click="openDecoration(avatarDecoration)"
 					/>
 				</div>
-
-				<MkButton danger @click="detachAllDecorations">{{ i18n.ts.detachAll }}</MkButton>
 			</div>
-
-			<div :class="$style.decorations">
-				<XDecoration
-					v-for="avatarDecoration in avatarDecorations"
-					:key="avatarDecoration.id"
-					:decoration="avatarDecoration"
-					@click="openDecoration(avatarDecoration)"
-				/>
+			<div v-else>
+				<MkLoading />
 			</div>
 		</div>
-		<div v-else>
-			<MkLoading/>
-		</div>
-	</div>
-</SearchMarker>
+	</SearchMarker>
 </template>
 
 <script lang="ts" setup>
-import { ref, defineAsyncComponent, computed } from 'vue';
-import * as Misskey from 'misskey-js';
-import XDecoration from './avatar-decoration.decoration.vue';
-import MkButton from '@/components/MkButton.vue';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { i18n } from '@/i18n.js';
-import { ensureSignin } from '@/i.js';
-import MkInfo from '@/components/MkInfo.vue';
-import { definePage } from '@/page.js';
+import { ref, defineAsyncComponent, computed } from "vue";
+import * as Misskey from "misskey-js";
+import XDecoration from "./avatar-decoration.decoration.vue";
+import MkButton from "@/components/MkButton.vue";
+import * as os from "@/os.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { i18n } from "@/i18n.js";
+import { ensureSignin } from "@/i.js";
+import MkInfo from "@/components/MkInfo.vue";
+import { definePage } from "@/page.js";
 
 const $i = ensureSignin();
 
 const loading = ref(true);
-const avatarDecorations = ref<Misskey.entities.GetAvatarDecorationsResponse>([]);
+const avatarDecorations = ref<Misskey.entities.GetAvatarDecorationsResponse>(
+	[],
+);
 
-misskeyApi('get-avatar-decorations').then(_avatarDecorations => {
+misskeyApi("get-avatar-decorations").then((_avatarDecorations) => {
 	avatarDecorations.value = _avatarDecorations;
 	loading.value = false;
 });
 
 function openDecoration(avatarDecoration, index?: number) {
-	const { dispose } = os.popup(defineAsyncComponent(() => import('./avatar-decoration.dialog.vue')), {
-		decoration: avatarDecoration,
-		usingIndex: index,
-	}, {
-		'attach': async (payload) => {
-			const decoration = {
-				id: avatarDecoration.id,
-				angle: payload.angle,
-				flipH: payload.flipH,
-				flipV: payload.flipV,
-				offsetX: payload.offsetX,
-				offsetY: payload.offsetY,
-				showBelow: payload.showBelow,
-			};
-			const update = [...$i.avatarDecorations, decoration];
-			await os.apiWithDialog('i/update', {
-				avatarDecorations: update,
-			});
-			$i.avatarDecorations = update;
+	const { dispose } = os.popup(
+		defineAsyncComponent(() => import("./avatar-decoration.dialog.vue")),
+		{
+			decoration: avatarDecoration,
+			usingIndex: index,
 		},
-		'update': async (payload) => {
-			const decoration = {
-				id: avatarDecoration.id,
-				angle: payload.angle,
-				flipH: payload.flipH,
-				flipV: payload.flipV,
-				offsetX: payload.offsetX,
-				offsetY: payload.offsetY,
-				showBelow: payload.showBelow,
-			};
-			const update = [...$i.avatarDecorations];
-			update[index] = decoration;
-			await os.apiWithDialog('i/update', {
-				avatarDecorations: update,
-			});
-			$i.avatarDecorations = update;
+		{
+			attach: async (payload) => {
+				const decoration = {
+					id: avatarDecoration.id,
+					angle: payload.angle,
+					flipH: payload.flipH,
+					flipV: payload.flipV,
+					offsetX: payload.offsetX,
+					offsetY: payload.offsetY,
+					showBelow: payload.showBelow,
+				};
+				const update = [...$i.avatarDecorations, decoration];
+				await os.apiWithDialog("i/update", {
+					avatarDecorations: update,
+				});
+				$i.avatarDecorations = update;
+			},
+			update: async (payload) => {
+				const decoration = {
+					id: avatarDecoration.id,
+					angle: payload.angle,
+					flipH: payload.flipH,
+					flipV: payload.flipV,
+					offsetX: payload.offsetX,
+					offsetY: payload.offsetY,
+					showBelow: payload.showBelow,
+				};
+				const update = [...$i.avatarDecorations];
+				update[index] = decoration;
+				await os.apiWithDialog("i/update", {
+					avatarDecorations: update,
+				});
+				$i.avatarDecorations = update;
+			},
+			detach: async () => {
+				const update = [...$i.avatarDecorations];
+				update.splice(index, 1);
+				await os.apiWithDialog("i/update", {
+					avatarDecorations: update,
+				});
+				$i.avatarDecorations = update;
+			},
+			closed: () => dispose(),
 		},
-		'detach': async () => {
-			const update = [...$i.avatarDecorations];
-			update.splice(index, 1);
-			await os.apiWithDialog('i/update', {
-				avatarDecorations: update,
-			});
-			$i.avatarDecorations = update;
-		},
-		closed: () => dispose(),
-	});
+	);
 }
 
 function detachAllDecorations() {
 	os.confirm({
-		type: 'warning',
+		type: "warning",
 		text: i18n.ts.areYouSure,
 	}).then(async ({ canceled }) => {
 		if (canceled) return;
-		await os.apiWithDialog('i/update', {
+		await os.apiWithDialog("i/update", {
 			avatarDecorations: [],
 		});
 		$i.avatarDecorations = [];
@@ -139,7 +171,7 @@ const headerTabs = computed(() => []);
 
 definePage(() => ({
 	title: i18n.ts.avatarDecorations,
-	icon: 'ti ti-sparkles',
+	icon: "ti ti-sparkles",
 }));
 </script>
 

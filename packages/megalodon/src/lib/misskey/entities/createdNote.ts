@@ -1,5 +1,5 @@
-import type { Note } from './note.js';
+import type { Note } from "./note.js";
 
 export interface CreatedNote {
-	createdNote: Note
+	createdNote: Note;
 }

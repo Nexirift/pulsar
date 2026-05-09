@@ -6,19 +6,19 @@ Horizontal strip that displays a user's badges.
 -->
 
 <template>
-<div :class="$style.badges">
-	<div
-		v-for="badge of badges"
-		:key="badge.key"
-		:class="$style.badge"
-		:style="{
-			'color': color(badge),
-			'border-color': color(badge),
-		}"
-	>
-		{{ badge.label }}
+	<div :class="$style.badges">
+		<div
+			v-for="badge of badges"
+			:key="badge.key"
+			:class="$style.badge"
+			:style="{
+				color: color(badge),
+				'border-color': color(badge),
+			}"
+		>
+			{{ badge.label }}
+		</div>
 	</div>
-</div>
 </template>
 
 <script lang="ts">
@@ -38,22 +38,26 @@ export interface Badge {
 	 * Semantic style of the badge.
 	 * Defaults to "neutral" if unset.
 	 */
-	style?: 'success' | 'neutral' | 'warning' | 'error';
+	style?: "success" | "neutral" | "warning" | "error";
 }
 </script>
 
 <script setup lang="ts">
 defineProps<{
-	badges: Badge[],
+	badges: Badge[];
 }>();
 
 // These can't be classes, or Vite will optimize them away from production builds.
 function color(badge: Badge) {
 	switch (badge.style) {
-		case 'success': return 'var(--MI_THEME-success)';
-		case 'warning': return 'var(--MI_THEME-warn)';
-		case 'error': return 'var(--MI_THEME-error)';
-		default: return 'unset';
+		case "success":
+			return "var(--MI_THEME-success)";
+		case "warning":
+			return "var(--MI_THEME-warn)";
+		case "error":
+			return "var(--MI_THEME-error)";
+		default:
+			return "unset";
 	}
 }
 </script>

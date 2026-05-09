@@ -1,4 +1,4 @@
-import type { PlayerElement } from '../player/index.d.ts';
+import type { PlayerElement } from "../player/index.d.ts";
 /**
  * Represents this particular version of Ruffle.
  *
@@ -8,27 +8,27 @@ import type { PlayerElement } from '../player/index.d.ts';
  * how to control it.
  */
 export interface SourceAPI {
-    /**
-     * The version of this particular API, as a string in a semver compatible format.
-     */
-    version: string;
-    /**
-     * Start up the polyfills.
-     *
-     * Do not run polyfills for more than one Ruffle source at a time.
-     */
-    polyfill(): void;
-    /**
-     * Polyfill the plugin detection.
-     *
-     * This needs to run before any plugin detection script does.
-     */
-    pluginPolyfill(): void;
-    /**
-     * Create a Ruffle player element using this particular version of Ruffle.
-     *
-     * @returns The player element. This is a DOM element that may be inserted
-     * into the current page as you wish.
-     */
-    createPlayer(): PlayerElement;
+	/**
+	 * The version of this particular API, as a string in a semver compatible format.
+	 */
+	version: string;
+	/**
+	 * Start up the polyfills.
+	 *
+	 * Do not run polyfills for more than one Ruffle source at a time.
+	 */
+	polyfill(): void;
+	/**
+	 * Polyfill the plugin detection.
+	 *
+	 * This needs to run before any plugin detection script does.
+	 */
+	pluginPolyfill(): void;
+	/**
+	 * Create a Ruffle player element using this particular version of Ruffle.
+	 *
+	 * @returns The player element. This is a DOM element that may be inserted
+	 * into the current page as you wish.
+	 */
+	createPlayer(): PlayerElement;
 }

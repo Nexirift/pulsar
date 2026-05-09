@@ -3,25 +3,27 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { RolesRepository } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
-import { RoleEntityService } from '@/core/entities/RoleEntityService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { RolesRepository } from "@/models/_.js";
+import { DI } from "@/di-symbols.js";
+import { RoleEntityService } from "@/core/entities/RoleEntityService.js";
 
 export const meta = {
-	tags: ['role'],
+	tags: ["role"],
 
 	requireCredential: true,
-	kind: 'read:account',
+	kind: "read:account",
 
 	res: {
-		type: 'array',
-		optional: false, nullable: false,
+		type: "array",
+		optional: false,
+		nullable: false,
 		items: {
-			type: 'object',
-			optional: false, nullable: false,
-			ref: 'Role',
+			type: "object",
+			optional: false,
+			nullable: false,
+			ref: "Role",
 		},
 	},
 
@@ -33,15 +35,14 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
-	properties: {
-	},
-	required: [
-	],
+	type: "object",
+	properties: {},
+	required: [],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.rolesRepository)
 		private rolesRepository: RolesRepository,

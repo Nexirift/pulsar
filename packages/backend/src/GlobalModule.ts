@@ -3,27 +3,27 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Global, Inject, Module } from '@nestjs/common';
-import * as Redis from 'ioredis';
-import { DataSource } from 'typeorm';
-import { MeiliSearch } from 'meilisearch';
-import { MiMeta } from '@/models/Meta.js';
-import { bindThis } from '@/decorators.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
-import { TimeService, NativeTimeService } from '@/global/TimeService.js';
-import { EnvService } from '@/global/EnvService.js';
-import { CacheManagementService } from '@/global/CacheManagementService.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
-import { DependencyService } from '@/global/DependencyService.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import { DI } from './di-symbols.js';
-import { Config, loadConfig } from './config.js';
-import { createPostgresDataSource } from './postgres.js';
-import { RepositoryModule } from './models/RepositoryModule.js';
-import { allSettled } from './misc/promise-tracker.js';
-import { GlobalEvents } from './core/GlobalEventService.js';
-import Logger from './logger.js';
-import type { Provider, OnApplicationShutdown } from '@nestjs/common';
+import { Global, Inject, Module } from "@nestjs/common";
+import * as Redis from "ioredis";
+import { DataSource } from "typeorm";
+import { MeiliSearch } from "meilisearch";
+import { MiMeta } from "@/models/Meta.js";
+import { bindThis } from "@/decorators.js";
+import { renderInlineError } from "@/misc/render-inline-error.js";
+import { TimeService, NativeTimeService } from "@/global/TimeService.js";
+import { EnvService } from "@/global/EnvService.js";
+import { CacheManagementService } from "@/global/CacheManagementService.js";
+import { InternalEventService } from "@/global/InternalEventService.js";
+import { DependencyService } from "@/global/DependencyService.js";
+import { LoggerService } from "@/core/LoggerService.js";
+import { DI } from "./di-symbols.js";
+import { Config, loadConfig } from "./config.js";
+import { createPostgresDataSource } from "./postgres.js";
+import { RepositoryModule } from "./models/RepositoryModule.js";
+import { allSettled } from "./misc/promise-tracker.js";
+import { GlobalEvents } from "./core/GlobalEventService.js";
+import Logger from "./logger.js";
+import type { Provider, OnApplicationShutdown } from "@nestjs/common";
 
 const $config: Provider = {
 	provide: DI.config,
@@ -43,13 +43,15 @@ const $db: Provider = {
 const $meilisearch: Provider = {
 	provide: DI.meilisearch,
 	useFactory: (config: Config) => {
-		if (config.fulltextSearch?.provider === 'meilisearch') {
+		if (config.fulltextSearch?.provider === "meilisearch") {
 			if (!config.meilisearch) {
-				throw new Error('MeiliSearch is enabled but no configuration is provided');
+				throw new Error(
+					"MeiliSearch is enabled but no configuration is provided",
+				);
 			}
 
 			return new MeiliSearch({
-				host: `${config.meilisearch.ssl ? 'https' : 'http'}://${config.meilisearch.host}:${config.meilisearch.port}`,
+				host: `${config.meilisearch.ssl ? "https" : "http"}://${config.meilisearch.host}:${config.meilisearch.port}`,
 				apiKey: config.meilisearch.apiKey,
 			});
 		} else {
@@ -113,11 +115,11 @@ const $redisForRateLimit: Provider = {
 const $meta: Provider = {
 	provide: DI.meta,
 	useFactory: async (db: DataSource, redisForSub: Redis.Redis) => {
-		const meta = await db.transaction(async transactionalEntityManager => {
+		const meta = await db.transaction(async (transactionalEntityManager) => {
 			// 過去のバグでレコードが複数出来てしまっている可能性があるので新しいIDを優先する
 			const metas = await transactionalEntityManager.find(MiMeta, {
 				order: {
-					id: 'DESC',
+					id: "DESC",
 				},
 			});
 
@@ -131,11 +133,16 @@ const $meta: Provider = {
 					.upsert(
 						MiMeta,
 						{
-							id: 'x',
+							id: "x",
 						},
-						['id'],
+						["id"],
 					)
-					.then((x) => transactionalEntityManager.findOneByOrFail(MiMeta, x.identifiers[0]));
+					.then((x) =>
+						transactionalEntityManager.findOneByOrFail(
+							MiMeta,
+							x.identifiers[0],
+						),
+					);
 
 				return saved;
 			}
@@ -144,10 +151,11 @@ const $meta: Provider = {
 		async function onMessage(_: string, data: string): Promise<void> {
 			const obj = JSON.parse(data);
 
-			if (obj.channel === 'internal') {
-				const { type, body } = obj.message as GlobalEvents['internal']['payload'];
+			if (obj.channel === "internal") {
+				const { type, body } =
+					obj.message as GlobalEvents["internal"]["payload"];
 				switch (type) {
-					case 'metaUpdated': {
+					case "metaUpdated": {
 						for (const key in body.after) {
 							(meta as any)[key] = (body.after as any)[key];
 						}
@@ -160,32 +168,86 @@ const $meta: Provider = {
 			}
 		}
 
-		redisForSub.on('message', onMessage);
+		redisForSub.on("message", onMessage);
 
 		return meta;
 	},
 	inject: [DI.db, DI.redisForSub],
 };
 
-const $CacheManagementService: Provider[] = [CacheManagementService, { provide: 'CacheManagementService', useExisting: CacheManagementService }];
-const $InternalEventService: Provider[] = [InternalEventService, { provide: 'InternalEventService', useExisting: InternalEventService }];
+const $CacheManagementService: Provider[] = [
+	CacheManagementService,
+	{ provide: "CacheManagementService", useExisting: CacheManagementService },
+];
+const $InternalEventService: Provider[] = [
+	InternalEventService,
+	{ provide: "InternalEventService", useExisting: InternalEventService },
+];
 const $TimeService: Provider[] = [
 	{ provide: TimeService, useClass: NativeTimeService },
-	{ provide: 'TimeService', useExisting: TimeService },
+	{ provide: "TimeService", useExisting: TimeService },
 ];
-const $EnvService: Provider[] = [EnvService, { provide: 'EnvService', useExisting: EnvService }];
-const $LoggerService: Provider[] = [LoggerService, { provide: 'LoggerService', useExisting: LoggerService }];
-const $Console: Provider[] = [{ provide: DI.console, useFactory: () => global.console }]; // useValue will break overrideProvider for some reason
-const $DependencyService: Provider[] = [DependencyService, { provide: 'DependencyService', useExisting: DependencyService }];
+const $EnvService: Provider[] = [
+	EnvService,
+	{ provide: "EnvService", useExisting: EnvService },
+];
+const $LoggerService: Provider[] = [
+	LoggerService,
+	{ provide: "LoggerService", useExisting: LoggerService },
+];
+const $Console: Provider[] = [
+	{ provide: DI.console, useFactory: () => global.console },
+]; // useValue will break overrideProvider for some reason
+const $DependencyService: Provider[] = [
+	DependencyService,
+	{ provide: "DependencyService", useExisting: DependencyService },
+];
 
 @Global()
 @Module({
 	imports: [RepositoryModule],
-	providers: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit, $CacheManagementService, $InternalEventService, $TimeService, $EnvService, $LoggerService, $Console, $DependencyService].flat(),
-	exports: [$config, $db, $meta, $meilisearch, $redis, $redisForPub, $redisForSub, $redisForTimelines, $redisForReactions, $redisForRateLimit, $CacheManagementService, $InternalEventService, $TimeService, $EnvService, $LoggerService, RepositoryModule, $Console, $DependencyService].flat(),
+	providers: [
+		$config,
+		$db,
+		$meta,
+		$meilisearch,
+		$redis,
+		$redisForPub,
+		$redisForSub,
+		$redisForTimelines,
+		$redisForReactions,
+		$redisForRateLimit,
+		$CacheManagementService,
+		$InternalEventService,
+		$TimeService,
+		$EnvService,
+		$LoggerService,
+		$Console,
+		$DependencyService,
+	].flat(),
+	exports: [
+		$config,
+		$db,
+		$meta,
+		$meilisearch,
+		$redis,
+		$redisForPub,
+		$redisForSub,
+		$redisForTimelines,
+		$redisForReactions,
+		$redisForRateLimit,
+		$CacheManagementService,
+		$InternalEventService,
+		$TimeService,
+		$EnvService,
+		$LoggerService,
+		RepositoryModule,
+		$Console,
+		$DependencyService,
+	].flat(),
 })
 export class GlobalModule implements OnApplicationShutdown {
-	private readonly logger = new Logger('global');
+	private readonly logger = new Logger("global");
 
 	constructor(
 		@Inject(DI.db) private db: DataSource,
@@ -195,14 +257,14 @@ export class GlobalModule implements OnApplicationShutdown {
 		@Inject(DI.redisForTimelines) private redisForTimelines: Redis.Redis,
 		@Inject(DI.redisForReactions) private redisForReactions: Redis.Redis,
 		@Inject(DI.redisForRateLimit) private redisForRateLimit: Redis.Redis,
-	) { }
+	) {}
 
 	public async dispose(): Promise<void> {
 		// Wait for all potential DB queries
-		this.logger.info('Finalizing active promises...');
+		this.logger.info("Finalizing active promises...");
 		await allSettled();
 		// And then disconnect from DB
-		this.logger.info('Disconnected from data sources...');
+		this.logger.info("Disconnected from data sources...");
 		await this.db.destroy();
 		this.safeDisconnect(this.redisClient);
 		this.safeDisconnect(this.redisForPub);
@@ -210,7 +272,7 @@ export class GlobalModule implements OnApplicationShutdown {
 		this.safeDisconnect(this.redisForTimelines);
 		this.safeDisconnect(this.redisForReactions);
 		this.safeDisconnect(this.redisForRateLimit);
-		this.logger.info('Global module disposed.');
+		this.logger.info("Global module disposed.");
 	}
 
 	@bindThis
@@ -222,7 +284,9 @@ export class GlobalModule implements OnApplicationShutdown {
 		try {
 			redis.disconnect();
 		} catch (err) {
-			this.logger.error(`Unhandled error disconnecting redis: ${renderInlineError(err)}`);
+			this.logger.error(
+				`Unhandled error disconnecting redis: ${renderInlineError(err)}`,
+			);
 		}
 	}
 }

@@ -4,24 +4,28 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div v-if="pending">
-	<MkLoading/>
-</div>
-<div v-else-if="resolved">
-	<slot :result="result"></slot>
-</div>
-<div v-else>
-	<div :class="$style.error">
-		<div><i class="ti ti-alert-triangle"></i> {{ i18n.ts.somethingHappened }}</div>
-		<MkButton inline style="margin-top: 16px;" @click="retry"><i class="ti ti-reload"></i> {{ i18n.ts.retry }}</MkButton>
+	<div v-if="pending">
+		<MkLoading />
 	</div>
-</div>
+	<div v-else-if="resolved">
+		<slot :result="result"></slot>
+	</div>
+	<div v-else>
+		<div :class="$style.error">
+			<div>
+				<i class="ti ti-alert-triangle"></i> {{ i18n.ts.somethingHappened }}
+			</div>
+			<MkButton inline style="margin-top: 16px" @click="retry"
+				><i class="ti ti-reload"></i> {{ i18n.ts.retry }}</MkButton
+			>
+		</div>
+	</div>
 </template>
 
 <script lang="ts" setup generic="T extends unknown">
-import { ref, watch } from 'vue';
-import MkButton from '@/components/MkButton.vue';
-import { i18n } from '@/i18n.js';
+import { ref, watch } from "vue";
+import MkButton from "@/components/MkButton.vue";
+import { i18n } from "@/i18n.js";
 
 const props = defineProps<{
 	p: () => Promise<T>;
@@ -51,11 +55,15 @@ const process = () => {
 	});
 };
 
-watch(() => props.p, () => {
-	process();
-}, {
-	immediate: true,
-});
+watch(
+	() => props.p,
+	() => {
+		process();
+	},
+	{
+		immediate: true,
+	},
+);
 
 const retry = () => {
 	process();

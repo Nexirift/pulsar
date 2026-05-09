@@ -3,162 +3,166 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { getContentByType } from '@/core/activitypub/misc/get-content-by-type.js';
+import { getContentByType } from "@/core/activitypub/misc/get-content-by-type.js";
 
 describe(getContentByType, () => {
-	describe('when permissive', () => {
-		it('should return source.content when it matches', () => {
+	describe("when permissive", () => {
+		it("should return source.content when it matches", () => {
 			const obj = {
 				source: {
-					content: 'source content',
+					content: "source content",
 				},
-				_misskey_content: 'misskey content',
-				content: 'native content',
-				mediaType: 'text/x.misskeYMarkdown, text/markdown',
+				_misskey_content: "misskey content",
+				content: "native content",
+				mediaType: "text/x.misskeYMarkdown, text/markdown",
 			};
 
-			const content = getContentByType(obj, 'text/x.misskeymarkdown', true);
+			const content = getContentByType(obj, "text/x.misskeymarkdown", true);
 
-			expect(content).toBe('source content');
+			expect(content).toBe("source content");
 		});
 
-		it('should return _misskey_content when it matches', () => {
+		it("should return _misskey_content when it matches", () => {
 			const obj = {
 				source: {
-					content: 'source content',
-					mediaType: 'text/plain',
+					content: "source content",
+					mediaType: "text/plain",
 				},
-				_misskey_content: 'misskey content',
-				content: 'native content',
-				mediaType: 'text/x.misskeYMarkdown, text/markdown',
+				_misskey_content: "misskey content",
+				content: "native content",
+				mediaType: "text/x.misskeYMarkdown, text/markdown",
 			};
 
-			const content = getContentByType(obj, 'text/x.misskeymarkdown', true);
+			const content = getContentByType(obj, "text/x.misskeymarkdown", true);
 
-			expect(content).toBe('misskey content');
+			expect(content).toBe("misskey content");
 		});
 
-		it('should return content when it matches', () => {
+		it("should return content when it matches", () => {
 			const obj = {
 				source: {
-					content: 'source content',
-					mediaType: 'text/plain',
+					content: "source content",
+					mediaType: "text/plain",
 				},
 				_misskey_content: null,
-				content: 'native content',
-				mediaType: 'text/x.misskeYMarkdown, text/markdown',
+				content: "native content",
+				mediaType: "text/x.misskeYMarkdown, text/markdown",
 			};
 
-			const content = getContentByType(obj, 'text/x.misskeymarkdown', true);
+			const content = getContentByType(obj, "text/x.misskeymarkdown", true);
 
-			expect(content).toBe('native content');
+			expect(content).toBe("native content");
 		});
 
-		it('should return null when nothing matches', () => {
+		it("should return null when nothing matches", () => {
 			const obj = {
 				source: {
-					content: 'source content',
-					mediaType: 'text/plain',
+					content: "source content",
+					mediaType: "text/plain",
 				},
 				_misskey_content: null,
-				content: 'native content',
-				mediaType: 'text/plain',
+				content: "native content",
+				mediaType: "text/plain",
 			};
 
-			const content = getContentByType(obj, 'text/x.misskeymarkdown', true);
+			const content = getContentByType(obj, "text/x.misskeymarkdown", true);
 
 			expect(content).toBe(null);
 		});
 
-		it('should return null for invalid inputs', () => {
+		it("should return null for invalid inputs", () => {
 			const objects = [
 				{},
-				{ source: 'nope' },
+				{ source: "nope" },
 				{ content: null },
 				{ _misskey_content: 123 },
 			];
 
-			const results = objects.map(c => getContentByType(c, 'text/misskeymarkdown', true));
+			const results = objects.map((c) =>
+				getContentByType(c, "text/misskeymarkdown", true),
+			);
 
 			const expected = objects.map(() => null);
 			expect(results).toEqual(expected);
 		});
 	});
 
-	describe('when not permissive', () => {
-		it('should return source.content when it matches', () => {
+	describe("when not permissive", () => {
+		it("should return source.content when it matches", () => {
 			const obj = {
 				source: {
-					content: 'source content',
-					mediaType: 'text/x.misskeymarkdown',
+					content: "source content",
+					mediaType: "text/x.misskeymarkdown",
 				},
-				_misskey_content: 'misskey content',
-				content: 'native content',
-				mediaType: 'text/x.misskeymarkdown',
+				_misskey_content: "misskey content",
+				content: "native content",
+				mediaType: "text/x.misskeymarkdown",
 			};
 
-			const content = getContentByType(obj, 'text/x.misskeymarkdown');
+			const content = getContentByType(obj, "text/x.misskeymarkdown");
 
-			expect(content).toBe('source content');
+			expect(content).toBe("source content");
 		});
 
-		it('should return _misskey_content when it matches', () => {
+		it("should return _misskey_content when it matches", () => {
 			const obj = {
 				source: {
-					content: 'source content',
-					mediaType: 'text/plain',
+					content: "source content",
+					mediaType: "text/plain",
 				},
-				_misskey_content: 'misskey content',
-				content: 'native content',
-				mediaType: 'text/x.misskeymarkdown',
+				_misskey_content: "misskey content",
+				content: "native content",
+				mediaType: "text/x.misskeymarkdown",
 			};
 
-			const content = getContentByType(obj, 'text/x.misskeymarkdown');
+			const content = getContentByType(obj, "text/x.misskeymarkdown");
 
-			expect(content).toBe('misskey content');
+			expect(content).toBe("misskey content");
 		});
 
-		it('should return content when it matches', () => {
+		it("should return content when it matches", () => {
 			const obj = {
 				source: {
-					content: 'source content',
-					mediaType: 'text/plain',
+					content: "source content",
+					mediaType: "text/plain",
 				},
 				_misskey_content: null,
-				content: 'native content',
-				mediaType: 'text/x.misskeymarkdown',
+				content: "native content",
+				mediaType: "text/x.misskeymarkdown",
 			};
 
-			const content = getContentByType(obj, 'text/x.misskeymarkdown');
+			const content = getContentByType(obj, "text/x.misskeymarkdown");
 
-			expect(content).toBe('native content');
+			expect(content).toBe("native content");
 		});
 
-		it('should return null when nothing matches', () => {
+		it("should return null when nothing matches", () => {
 			const obj = {
 				source: {
-					content: 'source content',
-					mediaType: 'text/plain',
+					content: "source content",
+					mediaType: "text/plain",
 				},
 				_misskey_content: null,
-				content: 'native content',
-				mediaType: 'text/plain',
+				content: "native content",
+				mediaType: "text/plain",
 			};
 
-			const content = getContentByType(obj, 'text/x.misskeymarkdown');
+			const content = getContentByType(obj, "text/x.misskeymarkdown");
 
 			expect(content).toBe(null);
 		});
 
-		it('should return null for invalid inputs', () => {
+		it("should return null for invalid inputs", () => {
 			const objects = [
 				{},
-				{ source: 'nope' },
+				{ source: "nope" },
 				{ content: null },
 				{ _misskey_content: 123 },
 			];
 
-			const results = objects.map(c => getContentByType(c, 'text/misskeymarkdown'));
+			const results = objects.map((c) =>
+				getContentByType(c, "text/misskeymarkdown"),
+			);
 
 			const expected = objects.map(() => null);
 			expect(results).toEqual(expected);

@@ -3,17 +3,23 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { QueryFailedError } from 'typeorm';
-import { DI } from '@/di-symbols.js';
-import type { ClipsRepository, MiNote, MiClip, ClipNotesRepository, NotesRepository } from '@/models/_.js';
-import { bindThis } from '@/decorators.js';
-import { isDuplicateKeyValueError } from '@/misc/is-duplicate-key-value-error.js';
-import { RoleService } from '@/core/RoleService.js';
-import { IdService } from '@/core/IdService.js';
-import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
-import type { MiLocalUser } from '@/models/User.js';
-import { TimeService } from '@/global/TimeService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { QueryFailedError } from "typeorm";
+import { DI } from "@/di-symbols.js";
+import type {
+	ClipsRepository,
+	MiNote,
+	MiClip,
+	ClipNotesRepository,
+	NotesRepository,
+} from "@/models/_.js";
+import { bindThis } from "@/decorators.js";
+import { isDuplicateKeyValueError } from "@/misc/is-duplicate-key-value-error.js";
+import { RoleService } from "@/core/RoleService.js";
+import { IdService } from "@/core/IdService.js";
+import { CollapsedQueueService } from "@/core/CollapsedQueueService.js";
+import type { MiLocalUser } from "@/models/User.js";
+import { TimeService } from "@/global/TimeService.js";
 
 @Injectable()
 export class ClipService {
@@ -37,15 +43,21 @@ export class ClipService {
 		private idService: IdService,
 		private readonly timeService: TimeService,
 		private readonly collapsedQueueService: CollapsedQueueService,
-	) {
-	}
+	) {}
 
 	@bindThis
-	public async create(me: MiLocalUser, name: string, isPublic: boolean, description: string | null): Promise<MiClip> {
+	public async create(
+		me: MiLocalUser,
+		name: string,
+		isPublic: boolean,
+		description: string | null,
+	): Promise<MiClip> {
 		const currentCount = await this.clipsRepository.countBy({
 			userId: me.id,
 		});
-		if (currentCount >= (await this.roleService.getUserPolicies(me.id)).clipLimit) {
+		if (
+			currentCount >= (await this.roleService.getUserPolicies(me.id)).clipLimit
+		) {
 			throw new ClipService.TooManyClipsError();
 		}
 
@@ -61,7 +73,13 @@ export class ClipService {
 	}
 
 	@bindThis
-	public async update(me: MiLocalUser, clipId: MiClip['id'], name: string | undefined, isPublic: boolean | undefined, description: string | null | undefined): Promise<void> {
+	public async update(
+		me: MiLocalUser,
+		clipId: MiClip["id"],
+		name: string | undefined,
+		isPublic: boolean | undefined,
+		description: string | null | undefined,
+	): Promise<void> {
 		const clip = await this.clipsRepository.findOneBy({
 			id: clipId,
 			userId: me.id,
@@ -79,7 +97,7 @@ export class ClipService {
 	}
 
 	@bindThis
-	public async delete(me: MiLocalUser, clipId: MiClip['id']): Promise<void> {
+	public async delete(me: MiLocalUser, clipId: MiClip["id"]): Promise<void> {
 		const clip = await this.clipsRepository.findOneBy({
 			id: clipId,
 			userId: me.id,
@@ -93,7 +111,11 @@ export class ClipService {
 	}
 
 	@bindThis
-	public async addNote(me: MiLocalUser, clipId: MiClip['id'], noteId: MiNote['id']): Promise<void> {
+	public async addNote(
+		me: MiLocalUser,
+		clipId: MiClip["id"],
+		noteId: MiNote["id"],
+	): Promise<void> {
 		const clip = await this.clipsRepository.findOneBy({
 			id: clipId,
 			userId: me.id,
@@ -106,7 +128,10 @@ export class ClipService {
 		const currentCount = await this.clipNotesRepository.countBy({
 			clipId: clip.id,
 		});
-		if (currentCount >= (await this.roleService.getUserPolicies(me.id)).noteEachClipsLimit) {
+		if (
+			currentCount >=
+			(await this.roleService.getUserPolicies(me.id)).noteEachClipsLimit
+		) {
 			throw new ClipService.TooManyClipNotesError();
 		}
 
@@ -120,7 +145,9 @@ export class ClipService {
 			if (e instanceof QueryFailedError) {
 				if (isDuplicateKeyValueError(e)) {
 					throw new ClipService.AlreadyAddedError();
-				} else if (e.driverError.detail.includes('is not present in table "note".')) {
+				} else if (
+					e.driverError.detail.includes('is not present in table "note".')
+				) {
 					throw new ClipService.NoSuchNoteError();
 				}
 			}
@@ -132,11 +159,17 @@ export class ClipService {
 			lastClippedAt: this.timeService.date,
 		});
 
-		await this.collapsedQueueService.updateNoteQueue.enqueue(noteId, { clippedCountDelta: 1 });
+		await this.collapsedQueueService.updateNoteQueue.enqueue(noteId, {
+			clippedCountDelta: 1,
+		});
 	}
 
 	@bindThis
-	public async removeNote(me: MiLocalUser, clipId: MiClip['id'], noteId: MiNote['id']): Promise<void> {
+	public async removeNote(
+		me: MiLocalUser,
+		clipId: MiClip["id"],
+		noteId: MiNote["id"],
+	): Promise<void> {
 		const clip = await this.clipsRepository.findOneBy({
 			id: clipId,
 			userId: me.id,
@@ -157,6 +190,8 @@ export class ClipService {
 			clipId: clip.id,
 		});
 
-		await this.collapsedQueueService.updateNoteQueue.enqueue(noteId, { clippedCountDelta: -1 });
+		await this.collapsedQueueService.updateNoteQueue.enqueue(noteId, {
+			clippedCountDelta: -1,
+		});
 	}
 }

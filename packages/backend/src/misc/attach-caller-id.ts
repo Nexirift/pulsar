@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { MiAccessToken } from '@/models/AccessToken.js';
+import type { MiAccessToken } from "@/models/AccessToken.js";
 
-const callerIdSymbol = Symbol('callerId');
+const callerIdSymbol = Symbol("callerId");
 
 /**
  * Client metadata associated with an object (typically an instance of MiUser).
@@ -28,7 +28,10 @@ interface ObjectWithCallerId {
  * @param target Object to attach to (typically an instance of MiUser).
  * @param callerId Data to attach.
  */
-export function attachCallerId(target: object, callerId: CallerId | undefined): void {
+export function attachCallerId(
+	target: object,
+	callerId: CallerId | undefined,
+): void {
 	(target as ObjectWithCallerId)[callerIdSymbol] = callerId;
 }
 

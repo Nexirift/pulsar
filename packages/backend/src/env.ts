@@ -27,7 +27,7 @@ const defaultEnvOption: Readonly<EnvOption> = {
 };
 
 function translateKey(key: string): string {
-	return 'MK_' + key.replace(/[A-Z]/g, letter => `_${letter}`).toUpperCase();
+	return "MK_" + key.replace(/[A-Z]/g, (letter) => `_${letter}`).toUpperCase();
 }
 
 const testEnvOption: Readonly<EnvOption> = {
@@ -40,10 +40,12 @@ const testEnvOption: Readonly<EnvOption> = {
 /** @deprecated use EnvService when possible */
 export const envOption: EnvOption = createEnvOptions(() => process.env);
 
-export function createEnvOptions(getEnv: () => Partial<Record<string, string>>): EnvOption {
+export function createEnvOptions(
+	getEnv: () => Partial<Record<string, string>>,
+): EnvOption {
 	return new Proxy({} as EnvOption, {
 		get(target, key) {
-			if (typeof(key) !== 'string') {
+			if (typeof key !== "string") {
 				return Reflect.get(target, key);
 			}
 
@@ -51,10 +53,10 @@ export function createEnvOptions(getEnv: () => Partial<Record<string, string>>):
 			const envKey = translateKey(key);
 			if (envKey in env) {
 				const envValue = env[envKey]?.toLowerCase();
-				return !!envValue && envValue !== '0' && envValue !== 'false';
+				return !!envValue && envValue !== "0" && envValue !== "false";
 			}
 
-			const def = env.NODE_ENV === 'test' ? testEnvOption : defaultEnvOption;
+			const def = env.NODE_ENV === "test" ? testEnvOption : defaultEnvOption;
 			if (key in def) {
 				return def[key];
 			}
@@ -62,24 +64,24 @@ export function createEnvOptions(getEnv: () => Partial<Record<string, string>>):
 			return false;
 		},
 		set(target, key, value) {
-			if (typeof(key) !== 'string') {
+			if (typeof key !== "string") {
 				return Reflect.set(target, key, value);
 			}
 
 			const env = getEnv();
 			const envKey = translateKey(key);
 			if (value) {
-				env[envKey] = '1';
+				env[envKey] = "1";
 			} else {
 				delete env[envKey];
 			}
 			return true;
 		},
 		has(target, key): boolean {
-			return typeof(key) === 'string' || key in target;
+			return typeof key === "string" || key in target;
 		},
 		deleteProperty(target, key): boolean {
-			if (typeof(key) !== 'string') {
+			if (typeof key !== "string") {
 				return Reflect.deleteProperty(target, key);
 			}
 

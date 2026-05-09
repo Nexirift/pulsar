@@ -3,33 +3,34 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { UsersRepository } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
-import { CacheService } from '@/core/CacheService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { UsersRepository } from "@/models/_.js";
+import { DI } from "@/di-symbols.js";
+import { CacheService } from "@/core/CacheService.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
 
 export const meta = {
-	tags: ['admin'],
+	tags: ["admin"],
 
 	requireCredential: true,
 	requireModerator: true,
-	kind: 'write:admin:cw-user',
+	kind: "write:admin:cw-user",
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		userId: { type: 'string', format: 'misskey:id' },
-		cw: { type: 'string', nullable: true },
+		userId: { type: "string", format: "misskey:id" },
+		cw: { type: "string", nullable: true },
 	},
-	required: ['userId', 'cw'],
+	required: ["userId", "cw"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.usersRepository)
 		private readonly usersRepository: UsersRepository,
@@ -51,10 +52,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			await this.usersRepository.update(ps.userId, { mandatoryCW: newCW });
 
 			// Synchronize caches and other processes
-			const evt = user.host == null ? 'localUserUpdated' : 'remoteUserUpdated';
+			const evt = user.host == null ? "localUserUpdated" : "remoteUserUpdated";
 			this.globalEventService.publishInternalEvent(evt, { id: ps.userId });
 
-			await this.moderationLogService.log(me, 'setMandatoryCW', {
+			await this.moderationLogService.log(me, "setMandatoryCW", {
 				newCW,
 				oldCW,
 				userId: user.id,

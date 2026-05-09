@@ -14,6 +14,6 @@
  *
  * @module
  */
-export type * from './public-api.d.ts';
-export type * from './source-api.d.ts';
-export type * from './install.d.ts';
+export type * from "./public-api.d.ts";
+export type * from "./source-api.d.ts";
+export type * from "./install.d.ts";

@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { appendContentWarning } from './append-content-warning.js';
-import type { Packed } from './json-schema.js';
+import { appendContentWarning } from "./append-content-warning.js";
+import type { Packed } from "./json-schema.js";
 
 // export type PackedNoteForSummary = Omit<Partial<Packed<'Note'>>, 'user'> & {
 // 	user: Omit<Partial<Packed<'Note'>['user']>, 'instance'> & {
@@ -37,7 +37,7 @@ import type { Packed } from './json-schema.js';
 // };
 //
 // export type PackedNoteForSummary = Pivot<Packed<'Note'>, Packed<'Note'>['user'], NonNullable<Packed<'Note'>['user']['instance']>>;
-export type PackedNoteForSummary = DeepPartial<Packed<'Note'>>;
+export type PackedNoteForSummary = DeepPartial<Packed<"Note">>;
 
 // Do we really not have a type for this yet??
 type DeepPartial<T extends object> = {
@@ -50,14 +50,14 @@ type DeepPartial<T extends object> = {
  */
 export const getNoteSummary = (note: PackedNoteForSummary): string => {
 	if (note.deletedAt) {
-		return '(❌⛔)';
+		return "(❌⛔)";
 	}
 
 	if (note.isHidden) {
-		return '(⛔)';
+		return "(⛔)";
 	}
 
-	let summary = '';
+	let summary = "";
 
 	// Append mandatory CW, if applicable
 	let cw = note.cw;
@@ -68,10 +68,16 @@ export const getNoteSummary = (note: PackedNoteForSummary): string => {
 		const username = note.user.host
 			? `@${note.user.username}@${note.user.host}`
 			: `@${note.user.username}`;
-		cw = appendContentWarning(cw, `${username} is flagged: "${note.user.mandatoryCW}"`);
+		cw = appendContentWarning(
+			cw,
+			`${username} is flagged: "${note.user.mandatoryCW}"`,
+		);
 	}
 	if (note.user?.instance?.mandatoryCW) {
-		cw = appendContentWarning(cw, `${note.user.host} is flagged: "${note.user.instance.mandatoryCW}"`);
+		cw = appendContentWarning(
+			cw,
+			`${note.user.host} is flagged: "${note.user.instance.mandatoryCW}"`,
+		);
 	}
 
 	// 本文
@@ -88,7 +94,7 @@ export const getNoteSummary = (note: PackedNoteForSummary): string => {
 
 	// 投票が添付されているとき
 	if (note.poll) {
-		summary += ' (📊)';
+		summary += " (📊)";
 	}
 
 	// 返信のとき
@@ -96,7 +102,7 @@ export const getNoteSummary = (note: PackedNoteForSummary): string => {
 		if (note.reply && !note.cw) {
 			summary += `\n\nRE: ${getNoteSummary(note.reply)}`;
 		} else {
-			summary += '\n\nRE: ...';
+			summary += "\n\nRE: ...";
 		}
 	}
 
@@ -105,7 +111,7 @@ export const getNoteSummary = (note: PackedNoteForSummary): string => {
 		if (note.renote && !note.cw) {
 			summary += `\n\nRN: ${getNoteSummary(note.renote)}`;
 		} else {
-			summary += '\n\nRN: ...';
+			summary += "\n\nRN: ...";
 		}
 	}
 

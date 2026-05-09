@@ -4,55 +4,73 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader :actions="headerActions" :tabs="headerTabs">
-	<div class="_spacer" style="--MI_SPACER-w: 700px;">
-		<div class="_gaps">
-			<MkInput v-model="title">
-				<template #label>{{ i18n.ts._play.title }}</template>
-			</MkInput>
-			<MkSelect v-model="visibility">
-				<template #label>{{ i18n.ts.visibility }}</template>
-				<template #caption>{{ i18n.ts._play.visibilityDescription }}</template>
-				<option :key="'public'" :value="'public'">{{ i18n.ts.public }}</option>
-				<option :key="'private'" :value="'private'">{{ i18n.ts.private }}</option>
-			</MkSelect>
-			<MkTextarea v-model="summary" :mfmAutocomplete="true" :mfmPreview="true">
-				<template #label>{{ i18n.ts._play.summary }}</template>
-			</MkTextarea>
-			<MkButton primary @click="selectPreset">{{ i18n.ts.selectFromPresets }}<i class="ti ti-chevron-down"></i></MkButton>
-			<MkCodeEditor v-model="script" lang="is">
-				<template #label>{{ i18n.ts._play.script }}</template>
-			</MkCodeEditor>
-		</div>
-	</div>
-	<template #footer>
-		<div :class="$style.footer">
-			<div class="_spacer">
-				<div class="_buttons">
-					<MkButton primary @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
-					<MkButton @click="show"><i class="ti ti-eye"></i> {{ i18n.ts.show }}</MkButton>
-					<MkButton v-if="flash" danger @click="del"><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton>
-				</div>
+	<PageWithHeader :actions="headerActions" :tabs="headerTabs">
+		<div class="_spacer" style="--MI_SPACER-w: 700px">
+			<div class="_gaps">
+				<MkInput v-model="title">
+					<template #label>{{ i18n.ts._play.title }}</template>
+				</MkInput>
+				<MkSelect v-model="visibility">
+					<template #label>{{ i18n.ts.visibility }}</template>
+					<template #caption>{{
+						i18n.ts._play.visibilityDescription
+					}}</template>
+					<option :key="'public'" :value="'public'">
+						{{ i18n.ts.public }}
+					</option>
+					<option :key="'private'" :value="'private'">
+						{{ i18n.ts.private }}
+					</option>
+				</MkSelect>
+				<MkTextarea
+					v-model="summary"
+					:mfmAutocomplete="true"
+					:mfmPreview="true"
+				>
+					<template #label>{{ i18n.ts._play.summary }}</template>
+				</MkTextarea>
+				<MkButton primary @click="selectPreset"
+					>{{ i18n.ts.selectFromPresets }}<i class="ti ti-chevron-down"></i
+				></MkButton>
+				<MkCodeEditor v-model="script" lang="is">
+					<template #label>{{ i18n.ts._play.script }}</template>
+				</MkCodeEditor>
 			</div>
 		</div>
-	</template>
-</PageWithHeader>
+		<template #footer>
+			<div :class="$style.footer">
+				<div class="_spacer">
+					<div class="_buttons">
+						<MkButton primary @click="save"
+							><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton
+						>
+						<MkButton @click="show"
+							><i class="ti ti-eye"></i> {{ i18n.ts.show }}</MkButton
+						>
+						<MkButton v-if="flash" danger @click="del"
+							><i class="ti ti-trash"></i> {{ i18n.ts.delete }}</MkButton
+						>
+					</div>
+				</div>
+			</div>
+		</template>
+	</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import { AISCRIPT_VERSION } from '@syuilo/aiscript';
-import MkButton from '@/components/MkButton.vue';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { i18n } from '@/i18n.js';
-import { definePage } from '@/page.js';
-import MkTextarea from '@/components/MkTextarea.vue';
-import MkCodeEditor from '@/components/MkCodeEditor.vue';
-import MkInput from '@/components/MkInput.vue';
-import MkSelect from '@/components/MkSelect.vue';
-import { useRouter } from '@/router.js';
+import { computed, ref } from "vue";
+import * as Misskey from "misskey-js";
+import { AISCRIPT_VERSION } from "@syuilo/aiscript";
+import MkButton from "@/components/MkButton.vue";
+import * as os from "@/os.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { i18n } from "@/i18n.js";
+import { definePage } from "@/page.js";
+import MkTextarea from "@/components/MkTextarea.vue";
+import MkCodeEditor from "@/components/MkCodeEditor.vue";
+import MkInput from "@/components/MkInput.vue";
+import MkSelect from "@/components/MkSelect.vue";
+import { useRouter } from "@/router.js";
 
 const PRESET_DEFAULT = `/// @ ${AISCRIPT_VERSION}
 
@@ -376,44 +394,54 @@ const props = defineProps<{
 const flash = ref<Misskey.entities.Flash | null>(null);
 
 if (props.id) {
-	flash.value = await misskeyApi('flash/show', {
+	flash.value = await misskeyApi("flash/show", {
 		flashId: props.id,
 	});
 }
 
-const title = ref(flash.value?.title ?? 'New Play');
-const summary = ref(flash.value?.summary ?? '');
+const title = ref(flash.value?.title ?? "New Play");
+const summary = ref(flash.value?.summary ?? "");
 const permissions = ref(flash.value?.permissions ?? []);
-const visibility = ref<'private' | 'public'>(flash.value?.visibility ?? 'public');
+const visibility = ref<"private" | "public">(
+	flash.value?.visibility ?? "public",
+);
 const script = ref(flash.value?.script ?? PRESET_DEFAULT);
 
 function selectPreset(ev: MouseEvent) {
-	os.popupMenu([{
-		text: 'Omikuji',
-		action: () => {
-			script.value = PRESET_OMIKUJI;
-		},
-	}, {
-		text: 'Shuffle',
-		action: () => {
-			script.value = PRESET_SHUFFLE;
-		},
-	}, {
-		text: 'Quiz',
-		action: () => {
-			script.value = PRESET_QUIZ;
-		},
-	}, {
-		text: 'Timeline viewer',
-		action: () => {
-			script.value = PRESET_TIMELINE;
-		},
-	}], ev.currentTarget ?? ev.target);
+	os.popupMenu(
+		[
+			{
+				text: "Omikuji",
+				action: () => {
+					script.value = PRESET_OMIKUJI;
+				},
+			},
+			{
+				text: "Shuffle",
+				action: () => {
+					script.value = PRESET_SHUFFLE;
+				},
+			},
+			{
+				text: "Quiz",
+				action: () => {
+					script.value = PRESET_QUIZ;
+				},
+			},
+			{
+				text: "Timeline viewer",
+				action: () => {
+					script.value = PRESET_TIMELINE;
+				},
+			},
+		],
+		ev.currentTarget ?? ev.target,
+	);
 }
 
 async function save() {
 	if (flash.value) {
-		os.apiWithDialog('flash/update', {
+		os.apiWithDialog("flash/update", {
 			flashId: props.id,
 			title: title.value,
 			summary: summary.value,
@@ -422,21 +450,21 @@ async function save() {
 			visibility: visibility.value,
 		});
 	} else {
-		const created = await os.apiWithDialog('flash/create', {
+		const created = await os.apiWithDialog("flash/create", {
 			title: title.value,
 			summary: summary.value,
 			permissions: permissions.value,
 			script: script.value,
 			visibility: visibility.value,
 		});
-		router.push('/play/' + created.id + '/edit');
+		router.push("/play/" + created.id + "/edit");
 	}
 }
 
 function show() {
 	if (flash.value == null) {
 		os.alert({
-			text: 'Please save',
+			text: "Please save",
 		});
 	} else {
 		os.pageWindow(`/play/${flash.value.id}`);
@@ -445,15 +473,15 @@ function show() {
 
 async function del() {
 	const { canceled } = await os.confirm({
-		type: 'warning',
+		type: "warning",
 		text: i18n.tsx.deleteAreYouSure({ x: flash.value.title }),
 	});
 	if (canceled) return;
 
-	await os.apiWithDialog('flash/delete', {
+	await os.apiWithDialog("flash/delete", {
 		flashId: props.id,
 	});
-	router.push('/play');
+	router.push("/play");
 }
 
 const headerActions = computed(() => []);
@@ -461,13 +489,15 @@ const headerActions = computed(() => []);
 const headerTabs = computed(() => []);
 
 definePage(() => ({
-	title: flash.value ? `${i18n.ts._play.edit}: ${flash.value.title}` : i18n.ts._play.new,
+	title: flash.value
+		? `${i18n.ts._play.edit}: ${flash.value.title}`
+		: i18n.ts._play.new,
 }));
 </script>
 <style lang="scss" module>
 .footer {
 	backdrop-filter: var(--MI-blur, blur(15px));
 	background: color(from var(--MI_THEME-bg) srgb r g b / 0.5);
-	border-top: solid .5px var(--MI_THEME-divider);
+	border-top: solid 0.5px var(--MI_THEME-divider);
 }
 </style>

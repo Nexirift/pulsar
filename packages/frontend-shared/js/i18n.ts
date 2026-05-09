@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { ILocale, ParameterizedString } from '../../../locales/index.js';
+import type { ILocale, ParameterizedString } from "../../../locales/index.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TODO = any;
@@ -18,9 +18,12 @@ type FlattenKeys<T extends ILocale, TPrediction> = keyof {
 			: never]: T[K];
 };
 
-type ParametersOf<T extends ILocale, TKey extends FlattenKeys<T, ParameterizedString>> = TKey extends `${infer K}.${infer C}`
-	// @ts-expect-error -- C は明らかに FlattenKeys<T[K], ParameterizedString> になるが、型システムはここでは TKey がドット区切りであることのコンテキストを持たないので、型システムに合法にて示すことはできない。
-	? ParametersOf<T[K], C>
+type ParametersOf<
+	T extends ILocale,
+	TKey extends FlattenKeys<T, ParameterizedString>,
+> = TKey extends `${infer K}.${infer C}`
+	? // @ts-expect-error -- C は明らかに FlattenKeys<T[K], ParameterizedString> になるが、型システムはここでは TKey がドット区切りであることのコンテキストを持たないので、型システムに合法にて示すことはできない。
+		ParametersOf<T[K], C>
 	: TKey extends keyof T
 		? T[TKey] extends ParameterizedString<infer P>
 			? P
@@ -28,17 +31,22 @@ type ParametersOf<T extends ILocale, TKey extends FlattenKeys<T, ParameterizedSt
 		: never;
 
 type Tsx<T extends ILocale> = {
-	readonly [K in keyof T as T[K] extends string ? never : K]: T[K] extends ParameterizedString<infer P>
+	readonly [K in keyof T as T[K] extends string
+		? never
+		: K]: T[K] extends ParameterizedString<infer P>
 		? (arg: { readonly [_ in P]: string | number }) => string
-		// @ts-expect-error -- 証明省略
-		: Tsx<T[K]>;
+		: // @ts-expect-error -- 証明省略
+			Tsx<T[K]>;
 };
 
 export class I18n<T extends ILocale> {
 	private tsxCache?: Tsx<T>;
 	private devMode: boolean;
 
-	constructor(public locale: T, devMode = false) {
+	constructor(
+		public locale: T,
+		devMode = false,
+	) {
 		this.devMode = devMode;
 
 		//#region BIND
@@ -52,16 +60,24 @@ export class I18n<T extends ILocale> {
 				get(target: TTarget, p: string | symbol): unknown {
 					const value = target[p as keyof TTarget];
 
-					if (typeof value === 'object') {
-						return new Proxy(value, new Handler<TTarget[keyof TTarget] & ILocale>());
+					if (typeof value === "object") {
+						return new Proxy(
+							value,
+							new Handler<TTarget[keyof TTarget] & ILocale>(),
+						);
 					}
 
-					if (typeof value === 'string') {
-						const parameters = Array.from(value.matchAll(/\{(\w+)\}/g), ([, parameter]) => parameter);
+					if (typeof value === "string") {
+						const parameters = Array.from(
+							value.matchAll(/\{(\w+)\}/g),
+							([, parameter]) => parameter,
+						);
 
 						// TODO add a flag to suppress this warning from uses of <I18n> component
 						if (parameters.length) {
-							console.error(`Missing locale parameters: ${parameters.join(', ')} at ${String(p)}`);
+							console.error(
+								`Missing locale parameters: ${parameters.join(", ")} at ${String(p)}`,
+							);
 						}
 
 						return value;
@@ -89,17 +105,20 @@ export class I18n<T extends ILocale> {
 				get(target: TTarget, p: string | symbol): unknown {
 					const value = target[p as keyof TTarget];
 
-					if (typeof value === 'object') {
-						return new Proxy(value, new Handler<TTarget[keyof TTarget] & ILocale>());
+					if (typeof value === "object") {
+						return new Proxy(
+							value,
+							new Handler<TTarget[keyof TTarget] & ILocale>(),
+						);
 					}
 
-					if (typeof value === 'string') {
+					if (typeof value === "string") {
 						const quasis: string[] = [];
 						const expressions: string[] = [];
 						let cursor = 0;
 
 						while (~cursor) {
-							const start = value.indexOf('{', cursor);
+							const start = value.indexOf("{", cursor);
 
 							if (!~start) {
 								quasis.push(value.slice(cursor));
@@ -108,7 +127,7 @@ export class I18n<T extends ILocale> {
 
 							quasis.push(value.slice(cursor, start));
 
-							const end = value.indexOf('}', start);
+							const end = value.indexOf("}", start);
 
 							expressions.push(value.slice(start + 1, end));
 
@@ -126,7 +145,9 @@ export class I18n<T extends ILocale> {
 
 							for (let i = 0; i < expressions.length; i++) {
 								if (!Object.hasOwn(arg, expressions[i])) {
-									console.error(`Missing locale parameters: ${expressions[i]} at ${String(p)}`);
+									console.error(
+										`Missing locale parameters: ${expressions[i]} at ${String(p)}`,
+									);
 								}
 
 								str += arg[expressions[i]] + quasis[i + 1];
@@ -142,7 +163,10 @@ export class I18n<T extends ILocale> {
 				}
 			}
 
-			return this.tsxCache = new Proxy(this.locale, new Handler()) as unknown as Tsx<T>;
+			return (this.tsxCache = new Proxy(
+				this.locale,
+				new Handler(),
+			) as unknown as Tsx<T>);
 		}
 
 		if (this.tsxCache) {
@@ -159,15 +183,15 @@ export class I18n<T extends ILocale> {
 
 				const value = target[k as keyof typeof target];
 
-				if (typeof value === 'object') {
+				if (typeof value === "object") {
 					(result as TODO)[k] = build(value as ILocale);
-				} else if (typeof value === 'string') {
+				} else if (typeof value === "string") {
 					const quasis: string[] = [];
 					const expressions: string[] = [];
 					let cursor = 0;
 
 					while (~cursor) {
-						const start = value.indexOf('{', cursor);
+						const start = value.indexOf("{", cursor);
 
 						if (!~start) {
 							quasis.push(value.slice(cursor));
@@ -176,7 +200,7 @@ export class I18n<T extends ILocale> {
 
 						quasis.push(value.slice(cursor, start));
 
-						const end = value.indexOf('}', start);
+						const end = value.indexOf("}", start);
 
 						expressions.push(value.slice(start + 1, end));
 
@@ -201,7 +225,7 @@ export class I18n<T extends ILocale> {
 			return result;
 		}
 
-		return this.tsxCache = build(this.locale);
+		return (this.tsxCache = build(this.locale));
 	}
 
 	/**
@@ -211,15 +235,18 @@ export class I18n<T extends ILocale> {
 	/**
 	 * @deprecated なるべくこのメソッド使うよりも tsx 直接参照の方が vue のキャッシュ効いてパフォーマンスが良いかも
 	 */
-	public t<TKey extends FlattenKeys<T, ParameterizedString>>(key: TKey, args: { readonly [_ in ParametersOf<T, TKey>]: string | number }): string;
+	public t<TKey extends FlattenKeys<T, ParameterizedString>>(
+		key: TKey,
+		args: { readonly [_ in ParametersOf<T, TKey>]: string | number },
+	): string;
 	public t(key: string, args?: { readonly [_: string]: string | number }) {
 		let str: string | ParameterizedString | ILocale = this.locale;
 
-		for (const k of key.split('.')) {
+		for (const k of key.split(".")) {
 			str = (str as TODO)[k];
 
 			if (this.devMode) {
-				if (typeof str === 'undefined') {
+				if (typeof str === "undefined") {
 					console.error(`Unexpected locale key: ${key}`);
 					return key;
 				}
@@ -228,10 +255,15 @@ export class I18n<T extends ILocale> {
 
 		if (args) {
 			if (this.devMode) {
-				const missing = Array.from((str as string).matchAll(/\{(\w+)\}/g), ([, parameter]) => parameter).filter(parameter => !Object.hasOwn(args, parameter));
+				const missing = Array.from(
+					(str as string).matchAll(/\{(\w+)\}/g),
+					([, parameter]) => parameter,
+				).filter((parameter) => !Object.hasOwn(args, parameter));
 
 				if (missing.length) {
-					console.error(`Missing locale parameters: ${missing.join(', ')} at ${key}`);
+					console.error(
+						`Missing locale parameters: ${missing.join(", ")} at ${key}`,
+					);
 				}
 			}
 

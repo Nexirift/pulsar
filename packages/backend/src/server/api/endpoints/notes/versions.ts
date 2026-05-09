@@ -3,36 +3,40 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { DI } from '@/di-symbols.js';
-import type { NotesRepository } from '@/models/_.js';
-import { GetterService } from '@/server/api/GetterService.js';
-import { QueryService } from '@/core/QueryService.js';
-import { ApiError } from '../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { DI } from "@/di-symbols.js";
+import type { NotesRepository } from "@/models/_.js";
+import { GetterService } from "@/server/api/GetterService.js";
+import { QueryService } from "@/core/QueryService.js";
+import { ApiError } from "../../error.js";
 
 export const meta = {
-	tags: ['notes'],
+	tags: ["notes"],
 
 	requireCredential: false,
 
 	res: {
-		type: 'array',
+		type: "array",
 		items: {
-			type: 'object',
-			optional: false, nullable: false,
+			type: "object",
+			optional: false,
+			nullable: false,
 			properties: {
 				oldDate: {
-					type: 'string',
-					optional: false, nullable: false,
+					type: "string",
+					optional: false,
+					nullable: false,
 				},
 				updatedAt: {
-					type: 'string',
-					optional: false, nullable: false,
+					type: "string",
+					optional: false,
+					nullable: false,
 				},
 				text: {
-					type: 'string',
-					optional: false, nullable: true,
+					type: "string",
+					optional: false,
+					nullable: true,
 				},
 			},
 		},
@@ -40,15 +44,15 @@ export const meta = {
 
 	errors: {
 		noSuchNote: {
-			message: 'No such note.',
-			code: 'NO_SUCH_NOTE',
-			id: '24fcbfc6-2e37-42b6-8388-c29b3861a08d',
+			message: "No such note.",
+			code: "NO_SUCH_NOTE",
+			id: "24fcbfc6-2e37-42b6-8388-c29b3861a08d",
 		},
 
 		signinRequired: {
-			message: 'Signin required.',
-			code: 'SIGNIN_REQUIRED',
-			id: '8e75455b-738c-471d-9f80-62693f33372e',
+			message: "Signin required.",
+			code: "SIGNIN_REQUIRED",
+			id: "8e75455b-738c-471d-9f80-62693f33372e",
 		},
 	},
 
@@ -60,15 +64,16 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		noteId: { type: 'string', format: 'misskey:id' },
+		noteId: { type: "string", format: "misskey:id" },
 	},
-	required: ['noteId'],
+	required: ["noteId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
@@ -77,9 +82,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const query = this.notesRepository.createQueryBuilder('note')
-				.where('note.id = :noteId', { noteId: ps.noteId })
-				.innerJoinAndSelect('note.user', 'user');
+			const query = this.notesRepository
+				.createQueryBuilder("note")
+				.where("note.id = :noteId", { noteId: ps.noteId })
+				.innerJoinAndSelect("note.user", "user");
 
 			this.queryService.generateVisibilityQuery(query, me);
 			if (me) {
@@ -97,12 +103,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.signinRequired);
 			}
 
-			const edits = await this.getterService.getEdits(ps.noteId).catch(err => {
-				if (err.id === '9725d0ce-ba28-4dde-95a7-2cbb2c15de24') throw new ApiError(meta.errors.noSuchNote);
-				throw err;
-			});
+			const edits = await this.getterService
+				.getEdits(ps.noteId)
+				.catch((err) => {
+					if (err.id === "9725d0ce-ba28-4dde-95a7-2cbb2c15de24")
+						throw new ApiError(meta.errors.noSuchNote);
+					throw err;
+				});
 
-			let editArray: { oldDate: string, updatedAt: string, text: string | null }[] = [];
+			let editArray: {
+				oldDate: string;
+				updatedAt: string;
+				text: string | null;
+			}[] = [];
 
 			for (const edit of edits) {
 				editArray.push({
@@ -112,7 +125,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				});
 			}
 
-			editArray = editArray.sort((a, b) => { return new Date(b.oldDate).getTime() - new Date(a.oldDate).getTime(); });
+			editArray = editArray.sort((a, b) => {
+				return new Date(b.oldDate).getTime() - new Date(a.oldDate).getTime();
+			});
 
 			return editArray;
 		});

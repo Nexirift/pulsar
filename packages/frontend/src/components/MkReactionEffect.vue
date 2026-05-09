@@ -4,32 +4,37 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root" :style="{ zIndex, top: `${y - 64}px`, left: `${x - 64}px` }">
-	<span :class="[$style.text, { [$style.up]: up }]">
-		<MkReactionIcon class="icon" :reaction="reaction"/>
-	</span>
-</div>
+	<div
+		:class="$style.root"
+		:style="{ zIndex, top: `${y - 64}px`, left: `${x - 64}px` }"
+	>
+		<span :class="[$style.text, { [$style.up]: up }]">
+			<MkReactionIcon class="icon" :reaction="reaction" />
+		</span>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
-import * as os from '@/os.js';
-import MkReactionIcon from '@/components/MkReactionIcon.vue';
+import { onMounted, ref } from "vue";
+import * as os from "@/os.js";
+import MkReactionIcon from "@/components/MkReactionIcon.vue";
 
-const props = withDefaults(defineProps<{
-	reaction: string;
-	x: number;
-	y: number;
-}>(), {
-});
+const props = withDefaults(
+	defineProps<{
+		reaction: string;
+		x: number;
+		y: number;
+	}>(),
+	{},
+);
 
 const emit = defineEmits<{
-	(ev: 'end'): void;
+	(ev: "end"): void;
 }>();
 
 const up = ref(false);
-const zIndex = os.claimZIndex('middle');
-const angle = (90 - (Math.random() * 180)) + 'deg';
+const zIndex = os.claimZIndex("middle");
+const angle = 90 - Math.random() * 180 + "deg";
 
 onMounted(() => {
 	window.setTimeout(() => {
@@ -37,7 +42,7 @@ onMounted(() => {
 	}, 10);
 
 	window.setTimeout(() => {
-		emit('end');
+		emit("end");
 	}, 1100);
 });
 </script>
@@ -64,7 +69,9 @@ onMounted(() => {
 	font-size: 18px;
 	font-weight: bold;
 	transform: translateY(-30px);
-	transition: transform 1s cubic-bezier(0,.5,0,1), opacity 1s cubic-bezier(.5,0,1,.5);
+	transition:
+		transform 1s cubic-bezier(0, 0.5, 0, 1),
+		opacity 1s cubic-bezier(0.5, 0, 1, 0.5);
 	will-change: opacity, transform;
 
 	&.up {

@@ -12,5 +12,5 @@ interface UserLike {
  * Checks if the given user represents a system account, such as instance.actor.
  */
 export function isSystemAccount(user: UserLike): boolean {
-	return user.host == null && user.username.includes('.');
+	return user.host == null && user.username.includes(".");
 }

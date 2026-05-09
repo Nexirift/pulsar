@@ -3,29 +3,32 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
-import { RoleService } from '@/core/RoleService.js';
+import { Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { DriveFileEntityService } from "@/core/entities/DriveFileEntityService.js";
+import { RoleService } from "@/core/RoleService.js";
 
 export const meta = {
-	tags: ['drive', 'account'],
+	tags: ["drive", "account"],
 
 	requireCredential: true,
 
-	kind: 'read:drive',
+	kind: "read:drive",
 
 	res: {
-		type: 'object',
-		optional: false, nullable: false,
+		type: "object",
+		optional: false,
+		nullable: false,
 		properties: {
 			capacity: {
-				type: 'number',
-				optional: false, nullable: false,
+				type: "number",
+				optional: false,
+				nullable: false,
 			},
 			usage: {
-				type: 'number',
-				optional: false, nullable: false,
+				type: "number",
+				optional: false,
+				nullable: false,
 			},
 		},
 	},
@@ -38,13 +41,14 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {},
 	required: [],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		private driveFileEntityService: DriveFileEntityService,
 		private roleService: RoleService,

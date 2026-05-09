@@ -4,39 +4,48 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkContainer :showHeader="widgetProps.showHeader" class="mkw-aiscriptApp">
-	<template #header>App</template>
-	<div :class="$style.root">
-		<MkAsUi v-if="root" :component="root" :components="components" size="small"/>
-	</div>
-</MkContainer>
+	<MkContainer :showHeader="widgetProps.showHeader" class="mkw-aiscriptApp">
+		<template #header>App</template>
+		<div :class="$style.root">
+			<MkAsUi
+				v-if="root"
+				:component="root"
+				:components="components"
+				size="small"
+			/>
+		</div>
+	</MkContainer>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, watch } from 'vue';
-import type { Ref } from 'vue';
-import { Interpreter, Parser } from '@syuilo/aiscript';
-import { useWidgetPropsManager } from './widget.js';
-import type { WidgetComponentEmits, WidgetComponentExpose, WidgetComponentProps } from './widget.js';
-import type { GetFormResultType } from '@/utility/form.js';
-import * as os from '@/os.js';
-import { aiScriptReadline, createAiScriptEnv } from '@/aiscript/api.js';
-import { $i } from '@/i.js';
-import MkAsUi from '@/components/MkAsUi.vue';
-import MkContainer from '@/components/MkContainer.vue';
-import { registerAsUiLib } from '@/aiscript/ui.js';
-import type { AsUiComponent, AsUiRoot } from '@/aiscript/ui.js';
+import { onMounted, ref, watch } from "vue";
+import type { Ref } from "vue";
+import { Interpreter, Parser } from "@syuilo/aiscript";
+import { useWidgetPropsManager } from "./widget.js";
+import type {
+	WidgetComponentEmits,
+	WidgetComponentExpose,
+	WidgetComponentProps,
+} from "./widget.js";
+import type { GetFormResultType } from "@/utility/form.js";
+import * as os from "@/os.js";
+import { aiScriptReadline, createAiScriptEnv } from "@/aiscript/api.js";
+import { $i } from "@/i.js";
+import MkAsUi from "@/components/MkAsUi.vue";
+import MkContainer from "@/components/MkContainer.vue";
+import { registerAsUiLib } from "@/aiscript/ui.js";
+import type { AsUiComponent, AsUiRoot } from "@/aiscript/ui.js";
 
-const name = 'aiscriptApp';
+const name = "aiscriptApp";
 
 const widgetPropsDef = {
 	script: {
-		type: 'string' as const,
+		type: "string" as const,
 		multiline: true,
-		default: '',
+		default: "",
 	},
 	showHeader: {
-		type: 'boolean' as const,
+		type: "boolean" as const,
 		default: true,
 	},
 };
@@ -46,7 +55,8 @@ type WidgetProps = GetFormResultType<typeof widgetPropsDef>;
 const props = defineProps<WidgetComponentProps<WidgetProps>>();
 const emit = defineEmits<WidgetComponentEmits<WidgetProps>>();
 
-const { widgetProps, configure } = useWidgetPropsManager(name,
+const { widgetProps, configure } = useWidgetPropsManager(
+	name,
 	widgetPropsDef,
 	props,
 	emit,
@@ -58,31 +68,34 @@ const root = ref<AsUiRoot>();
 const components = ref<Ref<AsUiComponent>[]>([]);
 
 async function run() {
-	const aiscript = new Interpreter({
-		...createAiScriptEnv({
-			storageKey: 'widget',
-			token: $i?.token,
-		}),
-		...registerAsUiLib(components.value, (_root) => {
-			root.value = _root.value;
-		}),
-	}, {
-		in: aiScriptReadline,
-		out: (value) => {
-			// nop
+	const aiscript = new Interpreter(
+		{
+			...createAiScriptEnv({
+				storageKey: "widget",
+				token: $i?.token,
+			}),
+			...registerAsUiLib(components.value, (_root) => {
+				root.value = _root.value;
+			}),
 		},
-		log: (type, params) => {
-			// nop
+		{
+			in: aiScriptReadline,
+			out: (value) => {
+				// nop
+			},
+			log: (type, params) => {
+				// nop
+			},
 		},
-	});
+	);
 
 	let ast;
 	try {
 		ast = parser.parse(widgetProps.script);
 	} catch (err) {
 		os.alert({
-			type: 'error',
-			text: 'Syntax error :(',
+			type: "error",
+			text: "Syntax error :(",
 		});
 		return;
 	}
@@ -90,16 +103,19 @@ async function run() {
 		await aiscript.exec(ast);
 	} catch (err) {
 		os.alert({
-			type: 'error',
-			title: 'AiScript Error',
+			type: "error",
+			title: "AiScript Error",
 			text: err.message,
 		});
 	}
 }
 
-watch(() => widgetProps.script, () => {
-	run();
-});
+watch(
+	() => widgetProps.script,
+	() => {
+		run();
+	},
+);
 
 onMounted(() => {
 	run();

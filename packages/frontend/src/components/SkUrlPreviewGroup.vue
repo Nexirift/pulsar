@@ -9,42 +9,42 @@ Attempts to avoid displaying the same preview twice, even if multiple URLs point
 -->
 
 <template>
-<div v-if="isRefreshing">
-	<MkLoading :class="$style.loading"></MkLoading>
-</div>
-<template v-else>
-	<MkUrlPreview
-		v-for="preview of urlPreviews"
-		:key="preview.url"
-		:url="preview.url"
-		:previewHint="preview"
-		:noteHint="preview.note"
-		:attributionHint="preview.attributionUser"
-		:detail="detail"
-		:compact="compact"
-		:showAsQuote="showAsQuote"
-		:showActions="showActions"
-		:skipNoteIds="skipNoteIds"
-		@expandMute="n => onExpandNote(n)"
-	></MkUrlPreview>
-</template>
+	<div v-if="isRefreshing">
+		<MkLoading :class="$style.loading"></MkLoading>
+	</div>
+	<template v-else>
+		<MkUrlPreview
+			v-for="preview of urlPreviews"
+			:key="preview.url"
+			:url="preview.url"
+			:previewHint="preview"
+			:noteHint="preview.note"
+			:attributionHint="preview.attributionUser"
+			:detail="detail"
+			:compact="compact"
+			:showAsQuote="showAsQuote"
+			:showActions="showActions"
+			:skipNoteIds="skipNoteIds"
+			@expandMute="(n) => onExpandNote(n)"
+		></MkUrlPreview>
+	</template>
 </template>
 
 <script setup lang="ts">
-import * as Misskey from 'misskey-js';
-import * as mfm from 'mfm-js';
-import { computed, ref, watch } from 'vue';
-import { versatileLang } from '@@/js/intl-const';
-import promiseLimit from 'promise-limit';
-import type { SummalyResult } from '@/components/MkUrlPreview.vue';
-import { extractPreviewUrls } from '@/utility/extract-preview-urls';
-import { extractUrlFromMfm } from '@/utility/extract-url-from-mfm';
-import { $i } from '@/i';
-import { misskeyApi } from '@/utility/misskey-api';
-import MkUrlPreview from '@/components/MkUrlPreview.vue';
-import { getNoteUrls } from '@/utility/getNoteUrls';
-import { deepAssign } from '@/utility/merge';
-import { useMuteOverrides } from '@/utility/check-word-mute';
+import * as Misskey from "misskey-js";
+import * as mfm from "mfm-js";
+import { computed, ref, watch } from "vue";
+import { versatileLang } from "@@/js/intl-const";
+import promiseLimit from "promise-limit";
+import type { SummalyResult } from "@/components/MkUrlPreview.vue";
+import { extractPreviewUrls } from "@/utility/extract-preview-urls";
+import { extractUrlFromMfm } from "@/utility/extract-url-from-mfm";
+import { $i } from "@/i";
+import { misskeyApi } from "@/utility/misskey-api";
+import MkUrlPreview from "@/components/MkUrlPreview.vue";
+import { getNoteUrls } from "@/utility/getNoteUrls";
+import { deepAssign } from "@/utility/merge";
+import { useMuteOverrides } from "@/utility/check-word-mute";
 
 type Summary = SummalyResult & {
 	note?: Misskey.entities.Note | null;
@@ -53,32 +53,35 @@ type Summary = SummalyResult & {
 
 type Limiter<T> = ReturnType<typeof promiseLimit<T>>;
 
-const props = withDefaults(defineProps<{
-	sourceUrls?: string[];
-	sourceNodes?: mfm.MfmNode[];
-	sourceText?: string;
-	sourceNote?: Misskey.entities.Note;
+const props = withDefaults(
+	defineProps<{
+		sourceUrls?: string[];
+		sourceNodes?: mfm.MfmNode[];
+		sourceText?: string;
+		sourceNote?: Misskey.entities.Note;
 
-	detail?: boolean;
-	compact?: boolean;
-	showAsQuote?: boolean;
-	showActions?: boolean;
-	skipNoteIds?: string[];
-}>(), {
-	sourceUrls: undefined,
-	sourceText: undefined,
-	sourceNodes: undefined,
-	sourceNote: undefined,
+		detail?: boolean;
+		compact?: boolean;
+		showAsQuote?: boolean;
+		showActions?: boolean;
+		skipNoteIds?: string[];
+	}>(),
+	{
+		sourceUrls: undefined,
+		sourceText: undefined,
+		sourceNodes: undefined,
+		sourceNote: undefined,
 
-	detail: undefined,
-	compact: undefined,
-	showAsQuote: undefined,
-	showActions: undefined,
-	skipNoteIds: () => [],
-});
+		detail: undefined,
+		compact: undefined,
+		showAsQuote: undefined,
+		showActions: undefined,
+		skipNoteIds: () => [],
+	},
+);
 
 const emit = defineEmits<{
-	(ev: 'expandMute', note: Misskey.entities.Note): void;
+	(ev: "expandMute", note: Misskey.entities.Note): void;
 }>();
 
 const muteOverrides = useMuteOverrides();
@@ -93,14 +96,14 @@ function onExpandNote(note: Misskey.entities.Note) {
 			},
 		},
 		instance: {
-			[note.user.host ?? '']: {
+			[note.user.host ?? ""]: {
 				instanceMandatoryCW: null,
 				instanceSilenced: false,
 			},
 		},
 	});
 
-	emit('expandMute', note);
+	emit("expandMute", note);
 }
 
 const urlPreviews = ref<Summary[]>([]);
@@ -140,7 +143,7 @@ function refresh(): Promise<void> {
 	if (isRefreshing.value) return isRefreshing.value;
 
 	const promise = doRefresh();
-	promise.finally(() => isRefreshing.value = false);
+	promise.finally(() => (isRefreshing.value = false));
 	isRefreshing.value = promise;
 	return promise;
 }
@@ -156,7 +159,9 @@ async function doRefresh(): Promise<void> {
 	previews = deduplicatePreviews(previews);
 
 	// Remove any with hidden notes
-	previews = previews.filter(preview => !preview.note || !props.skipNoteIds.includes(preview.note.id));
+	previews = previews.filter(
+		(preview) => !preview.note || !props.skipNoteIds.includes(preview.note.id),
+	);
 
 	urlPreviews.value = previews;
 }
@@ -166,19 +171,22 @@ async function fetchPreviews(): Promise<Summary[]> {
 	const noteLimiter = promiseLimit<Misskey.entities.Note | null>(2);
 	const summaryLimiter = promiseLimit<Summary | null>(5);
 
-	const summaries = await Promise.all(urls.value.map(url =>
-		summaryLimiter(async () => {
-			return await fetchPreview(url);
-		}).then(async (summary) => {
-			if (summary) {
-				await Promise.all([
-					attachNote(summary, noteLimiter),
-					attachAttribution(summary, userLimiter),
-				]);
-			}
+	const summaries = await Promise.all(
+		urls.value.map((url) =>
+			summaryLimiter(async () => {
+				return await fetchPreview(url);
+			}).then(async (summary) => {
+				if (summary) {
+					await Promise.all([
+						attachNote(summary, noteLimiter),
+						attachAttribution(summary, userLimiter),
+					]);
+				}
 
-			return summary;
-		})));
+				return summary;
+			}),
+		),
+	);
 
 	return summaries.filter((preview): preview is Summary => preview != null);
 }
@@ -191,7 +199,9 @@ async function fetchPreview(url: string): Promise<Summary | null> {
 
 	const headers = $i ? { Authorization: `Bearer ${$i.token}` } : undefined;
 	const params = new URLSearchParams({ url, lang: versatileLang });
-	const res = await window.fetch(`/url?${params.toString()}`, { headers }).catch(() => null);
+	const res = await window
+		.fetch(`/url?${params.toString()}`, { headers })
+		.catch(() => null);
 
 	if (res?.ok) {
 		// Success - got the summary
@@ -208,7 +218,10 @@ async function fetchPreview(url: string): Promise<Summary | null> {
 	return null;
 }
 
-async function attachNote(summary: Summary, noteLimiter: Limiter<Misskey.entities.Note | null>): Promise<void> {
+async function attachNote(
+	summary: Summary,
+	noteLimiter: Limiter<Misskey.entities.Note | null>,
+): Promise<void> {
 	if (props.showAsQuote && summary.activityPub && summary.haveNoteLocally) {
 		// Have to pull this out to make TS happy
 		const noteUri = summary.activityPub;
@@ -219,15 +232,19 @@ async function attachNote(summary: Summary, noteLimiter: Limiter<Misskey.entitie
 	}
 }
 
-async function fetchNote(noteUri: string): Promise<Misskey.entities.Note | null> {
+async function fetchNote(
+	noteUri: string,
+): Promise<Misskey.entities.Note | null> {
 	const cached = cachedNotes.get(noteUri);
 	if (cached) {
 		return cached;
 	}
 
-	const response = await misskeyApi('ap/show', { uri: noteUri }).catch(() => null);
-	if (response && response.type === 'Note') {
-		const note = response['object'];
+	const response = await misskeyApi("ap/show", { uri: noteUri }).catch(
+		() => null,
+	);
+	if (response && response.type === "Note") {
+		const note = response["object"];
 
 		// Success - got the note
 		cachedNotes.set(noteUri, note);
@@ -242,7 +259,10 @@ async function fetchNote(noteUri: string): Promise<Misskey.entities.Note | null>
 	return null;
 }
 
-async function attachAttribution(summary: Summary, userLimiter: Limiter<Misskey.entities.User | null>): Promise<void> {
+async function attachAttribution(
+	summary: Summary,
+	userLimiter: Limiter<Misskey.entities.User | null>,
+): Promise<void> {
 	if (summary.linkAttribution) {
 		// Have to pull this out to make TS happy
 		const userId = summary.linkAttribution.userId;
@@ -253,13 +273,15 @@ async function attachAttribution(summary: Summary, userLimiter: Limiter<Misskey.
 	}
 }
 
-async function fetchUser(userId: string): Promise<Misskey.entities.User | null> {
+async function fetchUser(
+	userId: string,
+): Promise<Misskey.entities.User | null> {
 	const cached = cachedUsers.get(userId);
 	if (cached) {
 		return cached;
 	}
 
-	const user = await misskeyApi('users/show', { userId }).catch(() => null);
+	const user = await misskeyApi("users/show", { userId }).catch(() => null);
 
 	cachedUsers.set(userId, user);
 	return user;
@@ -269,98 +291,116 @@ function deduplicatePreviews(previews: Summary[]): Summary[] {
 	// eslint-disable-next-line no-param-reassign
 	previews = previews
 		// Remove any previews with duplicate URL
-		.filter((preview, index) => !previews.some((p, i) => {
-			// Skip the current preview (don't count self as duplicate).
-			if (p === preview) return false;
+		.filter(
+			(preview, index) =>
+				!previews.some((p, i) => {
+					// Skip the current preview (don't count self as duplicate).
+					if (p === preview) return false;
 
-			// Skip differing URLs (not duplicate).
-			if (p.url !== preview.url) return false;
+					// Skip differing URLs (not duplicate).
+					if (p.url !== preview.url) return false;
 
-			// Skip if we have AP and the other doesn't
-			if (preview.activityPub && !p.activityPub) return false;
+					// Skip if we have AP and the other doesn't
+					if (preview.activityPub && !p.activityPub) return false;
 
-			// Skip if we have a note and the other doesn't
-			if (preview.note && !p.note) return false;
+					// Skip if we have a note and the other doesn't
+					if (preview.note && !p.note) return false;
 
-			// Skip later previews (keep the earliest instance)...
-			// ...but only if we have AP or the later one doesn't...
-			// ...and only if we have note or the later one doesn't.
-			if (i > index && (preview.activityPub || !p.activityPub) && (preview.note || !p.note)) return false;
+					// Skip later previews (keep the earliest instance)...
+					// ...but only if we have AP or the later one doesn't...
+					// ...and only if we have note or the later one doesn't.
+					if (
+						i > index &&
+						(preview.activityPub || !p.activityPub) &&
+						(preview.note || !p.note)
+					)
+						return false;
 
-			// If we get here, then "preview" is a duplicate of "p" and should be skipped.
-			return true;
-		}));
+					// If we get here, then "preview" is a duplicate of "p" and should be skipped.
+					return true;
+				}),
+		);
 
 	// eslint-disable-next-line no-param-reassign
 	previews = previews
 		// Remove any previews with duplicate AP
-		.filter((preview, index) => !previews.some((p, i) => {
-			// Skip the current preview (don't count self as duplicate).
-			if (p === preview) return false;
+		.filter(
+			(preview, index) =>
+				!previews.some((p, i) => {
+					// Skip the current preview (don't count self as duplicate).
+					if (p === preview) return false;
 
-			// Skip if we don't have AP
-			if (!preview.activityPub) return false;
+					// Skip if we don't have AP
+					if (!preview.activityPub) return false;
 
-			// Skip if other does not have AP
-			if (!p.activityPub) return false;
+					// Skip if other does not have AP
+					if (!p.activityPub) return false;
 
-			// Skip differing URLs (not duplicate).
-			if (p.activityPub !== preview.activityPub) return false;
+					// Skip differing URLs (not duplicate).
+					if (p.activityPub !== preview.activityPub) return false;
 
-			// Skip later previews (keep the earliest instance)
-			if (i > index) return false;
+					// Skip later previews (keep the earliest instance)
+					if (i > index) return false;
 
-			// If we get here, then "preview" is a duplicate of "p" and should be skipped.
-			return true;
-		}));
+					// If we get here, then "preview" is a duplicate of "p" and should be skipped.
+					return true;
+				}),
+		);
 
 	// eslint-disable-next-line no-param-reassign
 	previews = previews
 		// Remove any previews with duplicate note
-		.filter((preview, index) => !previews.some((p, i) => {
-			// Skip the current preview (don't count self as duplicate).
-			if (p === preview) return false;
+		.filter(
+			(preview, index) =>
+				!previews.some((p, i) => {
+					// Skip the current preview (don't count self as duplicate).
+					if (p === preview) return false;
 
-			// Skip if we don't have a note
-			if (!preview.note) return false;
+					// Skip if we don't have a note
+					if (!preview.note) return false;
 
-			// Skip if other does not have a note
-			if (!p.note) return false;
+					// Skip if other does not have a note
+					if (!p.note) return false;
 
-			// Skip differing notes (not duplicate).
-			if (p.note.id !== preview.note.id) return false;
+					// Skip differing notes (not duplicate).
+					if (p.note.id !== preview.note.id) return false;
 
-			// Skip later previews (keep the earliest instance)
-			if (i > index) return false;
+					// Skip later previews (keep the earliest instance)
+					if (i > index) return false;
 
-			// If we get here, then "preview" is a duplicate of "p" and should be skipped.
-			return true;
-		}));
+					// If we get here, then "preview" is a duplicate of "p" and should be skipped.
+					return true;
+				}),
+		);
 
 	// eslint-disable-next-line no-param-reassign
 	previews = previews
 		// Remove any previews where the note duplicates url
-		.filter((preview, index) => !previews.some((p, i) => {
-			// Skip the current preview (don't count self as duplicate).
-			if (p === preview) return false;
+		.filter(
+			(preview, index) =>
+				!previews.some((p, i) => {
+					// Skip the current preview (don't count self as duplicate).
+					if (p === preview) return false;
 
-			// Skip if we have a note
-			if (preview.note) return false;
+					// Skip if we have a note
+					if (preview.note) return false;
 
-			// Skip if other does not have a note
-			if (!p.note) return false;
+					// Skip if other does not have a note
+					if (!p.note) return false;
 
-			// Skip later previews (keep the earliest instance)
-			if (i > index) return false;
+					// Skip later previews (keep the earliest instance)
+					if (i > index) return false;
 
-			const noteUrls = getNoteUrls(p.note);
+					const noteUrls = getNoteUrls(p.note);
 
-			// Remove if other duplicates our AP URL
-			if (preview.activityPub && noteUrls.includes(preview.activityPub)) return true;
+					// Remove if other duplicates our AP URL
+					if (preview.activityPub && noteUrls.includes(preview.activityPub))
+						return true;
 
-			// Remove if other duplicates our main URL
-			return noteUrls.includes(preview.url);
-		}));
+					// Remove if other duplicates our main URL
+					return noteUrls.includes(preview.url);
+				}),
+		);
 
 	return previews;
 }

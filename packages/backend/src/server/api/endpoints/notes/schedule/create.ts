@@ -3,222 +3,222 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import ms from 'ms';
-import { In } from 'typeorm';
-import { Inject, Injectable } from '@nestjs/common';
-import moment from 'moment';
-import { isPureRenote } from '@/misc/is-renote.js';
-import type { MiUser } from '@/models/User.js';
+import ms from "ms";
+import { In } from "typeorm";
+import { Inject, Injectable } from "@nestjs/common";
+import moment from "moment";
+import { isPureRenote } from "@/misc/is-renote.js";
+import type { MiUser } from "@/models/User.js";
 import type {
 	UsersRepository,
 	NotesRepository,
 	BlockingsRepository,
 	DriveFilesRepository,
 	NoteScheduleRepository,
-} from '@/models/_.js';
-import type { MiDriveFile } from '@/models/DriveFile.js';
-import type { MiNote } from '@/models/Note.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { DI } from '@/di-symbols.js';
-import { QueueService } from '@/core/QueueService.js';
-import { IdService } from '@/core/IdService.js';
-import { MiScheduleNoteType } from '@/models/NoteSchedule.js';
-import { RoleService } from '@/core/RoleService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { Config } from '@/config.js';
-import { ApiError } from '../../../error.js';
+} from "@/models/_.js";
+import type { MiDriveFile } from "@/models/DriveFile.js";
+import type { MiNote } from "@/models/Note.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { DI } from "@/di-symbols.js";
+import { QueueService } from "@/core/QueueService.js";
+import { IdService } from "@/core/IdService.js";
+import { MiScheduleNoteType } from "@/models/NoteSchedule.js";
+import { RoleService } from "@/core/RoleService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { Config } from "@/config.js";
+import { ApiError } from "../../../error.js";
 
 export const meta = {
-	tags: ['notes'],
+	tags: ["notes"],
 
 	requireCredential: true,
 
 	prohibitMoved: true,
 
 	limit: {
-		duration: ms('1hour'),
+		duration: ms("1hour"),
 		max: 300,
 	},
 
-	kind: 'write:notes-schedule',
+	kind: "write:notes-schedule",
 
 	errors: {
 		scheduleNoteMax: {
-			message: 'Schedule note max.',
-			code: 'SCHEDULE_NOTE_MAX',
-			id: '168707c3-e7da-4031-989e-f42aa3a274b2',
+			message: "Schedule note max.",
+			code: "SCHEDULE_NOTE_MAX",
+			id: "168707c3-e7da-4031-989e-f42aa3a274b2",
 		},
 		noSuchRenoteTarget: {
-			message: 'No such renote target.',
-			code: 'NO_SUCH_RENOTE_TARGET',
-			id: 'b5c90186-4ab0-49c8-9bba-a1f76c282ba4',
+			message: "No such renote target.",
+			code: "NO_SUCH_RENOTE_TARGET",
+			id: "b5c90186-4ab0-49c8-9bba-a1f76c282ba4",
 		},
 
 		cannotReRenote: {
-			message: 'You can not Renote a pure Renote.',
-			code: 'CANNOT_RENOTE_TO_A_PURE_RENOTE',
-			id: 'fd4cc33e-2a37-48dd-99cc-9b806eb2031a',
+			message: "You can not Renote a pure Renote.",
+			code: "CANNOT_RENOTE_TO_A_PURE_RENOTE",
+			id: "fd4cc33e-2a37-48dd-99cc-9b806eb2031a",
 		},
 
 		cannotRenoteDueToVisibility: {
-			message: 'You can not Renote due to target visibility.',
-			code: 'CANNOT_RENOTE_DUE_TO_VISIBILITY',
-			id: 'be9529e9-fe72-4de0-ae43-0b363c4938af',
+			message: "You can not Renote due to target visibility.",
+			code: "CANNOT_RENOTE_DUE_TO_VISIBILITY",
+			id: "be9529e9-fe72-4de0-ae43-0b363c4938af",
 		},
 
 		noSuchReplyTarget: {
-			message: 'No such reply target.',
-			code: 'NO_SUCH_REPLY_TARGET',
-			id: '749ee0f6-d3da-459a-bf02-282e2da4292c',
+			message: "No such reply target.",
+			code: "NO_SUCH_REPLY_TARGET",
+			id: "749ee0f6-d3da-459a-bf02-282e2da4292c",
 		},
 
 		cannotReplyToPureRenote: {
-			message: 'You can not reply to a pure Renote.',
-			code: 'CANNOT_REPLY_TO_A_PURE_RENOTE',
-			id: '3ac74a84-8fd5-4bb0-870f-01804f82ce15',
+			message: "You can not reply to a pure Renote.",
+			code: "CANNOT_REPLY_TO_A_PURE_RENOTE",
+			id: "3ac74a84-8fd5-4bb0-870f-01804f82ce15",
 		},
 
 		cannotCreateAlreadyExpiredPoll: {
-			message: 'Poll is already expired.',
-			code: 'CANNOT_CREATE_ALREADY_EXPIRED_POLL',
-			id: '04da457d-b083-4055-9082-955525eda5a5',
+			message: "Poll is already expired.",
+			code: "CANNOT_CREATE_ALREADY_EXPIRED_POLL",
+			id: "04da457d-b083-4055-9082-955525eda5a5",
 		},
 
 		cannotCreateAlreadyExpiredSchedule: {
-			message: 'Schedule is already expired.',
-			code: 'CANNOT_CREATE_ALREADY_EXPIRED_SCHEDULE',
-			id: '8a9bfb90-fc7e-4878-a3e8-d97faaf5fb07',
+			message: "Schedule is already expired.",
+			code: "CANNOT_CREATE_ALREADY_EXPIRED_SCHEDULE",
+			id: "8a9bfb90-fc7e-4878-a3e8-d97faaf5fb07",
 		},
 
 		noSuchChannel: {
-			message: 'No such channel.',
-			code: 'NO_SUCH_CHANNEL',
-			id: 'b1653923-5453-4edc-b786-7c4f39bb0bbb',
+			message: "No such channel.",
+			code: "NO_SUCH_CHANNEL",
+			id: "b1653923-5453-4edc-b786-7c4f39bb0bbb",
 		},
 		noSuchSchedule: {
-			message: 'No such schedule.',
-			code: 'NO_SUCH_SCHEDULE',
-			id: '44dee229-8da1-4a61-856d-e3a4bbc12032',
+			message: "No such schedule.",
+			code: "NO_SUCH_SCHEDULE",
+			id: "44dee229-8da1-4a61-856d-e3a4bbc12032",
 		},
 		youHaveBeenBlocked: {
-			message: 'You have been blocked by this user.',
-			code: 'YOU_HAVE_BEEN_BLOCKED',
-			id: 'b390d7e1-8a5e-46ed-b625-06271cafd3d3',
+			message: "You have been blocked by this user.",
+			code: "YOU_HAVE_BEEN_BLOCKED",
+			id: "b390d7e1-8a5e-46ed-b625-06271cafd3d3",
 		},
 
 		noSuchFile: {
-			message: 'Some files are not found.',
-			code: 'NO_SUCH_FILE',
-			id: 'b6992544-63e7-67f0-fa7f-32444b1b5306',
+			message: "Some files are not found.",
+			code: "NO_SUCH_FILE",
+			id: "b6992544-63e7-67f0-fa7f-32444b1b5306",
 		},
 
 		cannotRenoteOutsideOfChannel: {
-			message: 'Cannot renote outside of channel.',
-			code: 'CANNOT_RENOTE_OUTSIDE_OF_CHANNEL',
-			id: '33510210-8452-094c-6227-4a6c05d99f00',
+			message: "Cannot renote outside of channel.",
+			code: "CANNOT_RENOTE_OUTSIDE_OF_CHANNEL",
+			id: "33510210-8452-094c-6227-4a6c05d99f00",
 		},
 
 		tooManyPollChoices: {
-			message: 'You have specified too many choices for the poll.',
-			code: 'TOO_MANY_POLL_CHOICES',
-			id: 'c26a712d-3f43-4d99-a571-40b3ceeee0a2',
+			message: "You have specified too many choices for the poll.",
+			code: "TOO_MANY_POLL_CHOICES",
+			id: "c26a712d-3f43-4d99-a571-40b3ceeee0a2",
 		},
 
 		tooManyAttachments: {
-			message: 'You have attached too many files to your note.',
-			code: 'TOO_MANY_ATTACHMENTS',
-			id: '2d44ec3b-df46-4210-995d-9d48e754ab7a',
+			message: "You have attached too many files to your note.",
+			code: "TOO_MANY_ATTACHMENTS",
+			id: "2d44ec3b-df46-4210-995d-9d48e754ab7a",
 		},
 	},
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
 		visibility: {
-			type: 'string',
-			enum: ['public', 'home', 'followers', 'specified'],
-			default: 'public',
+			type: "string",
+			enum: ["public", "home", "followers", "specified"],
+			default: "public",
 		},
 		visibleUserIds: {
-			type: 'array',
+			type: "array",
 			uniqueItems: true,
 			items: {
-				type: 'string',
-				format: 'misskey:id',
+				type: "string",
+				format: "misskey:id",
 			},
 		},
-		cw: { type: 'string', nullable: true, minLength: 1, maxLength: 100 },
+		cw: { type: "string", nullable: true, minLength: 1, maxLength: 100 },
 		reactionAcceptance: {
-			type: 'string',
+			type: "string",
 			nullable: true,
 			enum: [
 				null,
-				'likeOnly',
-				'likeOnlyForRemote',
-				'nonSensitiveOnly',
-				'nonSensitiveOnlyForLocalLikeOnlyForRemote',
+				"likeOnly",
+				"likeOnlyForRemote",
+				"nonSensitiveOnly",
+				"nonSensitiveOnlyForLocalLikeOnlyForRemote",
 			],
 			default: null,
 		},
-		noExtractMentions: { type: 'boolean', default: false },
-		noExtractHashtags: { type: 'boolean', default: false },
-		noExtractEmojis: { type: 'boolean', default: false },
-		replyId: { type: 'string', format: 'misskey:id', nullable: true },
-		renoteId: { type: 'string', format: 'misskey:id', nullable: true },
+		noExtractMentions: { type: "boolean", default: false },
+		noExtractHashtags: { type: "boolean", default: false },
+		noExtractEmojis: { type: "boolean", default: false },
+		replyId: { type: "string", format: "misskey:id", nullable: true },
+		renoteId: { type: "string", format: "misskey:id", nullable: true },
 
 		// anyOf内にバリデーションを書いても最初の一つしかチェックされない
 		// See https://github.com/misskey-dev/misskey/pull/10082
 		text: {
-			type: 'string',
+			type: "string",
 			minLength: 1,
 			nullable: true,
 		},
 		fileIds: {
-			type: 'array',
+			type: "array",
 			uniqueItems: true,
 			minItems: 1,
-			items: { type: 'string', format: 'misskey:id' },
+			items: { type: "string", format: "misskey:id" },
 		},
 		mediaIds: {
-			type: 'array',
+			type: "array",
 			uniqueItems: true,
 			minItems: 1,
-			items: { type: 'string', format: 'misskey:id' },
+			items: { type: "string", format: "misskey:id" },
 		},
 		poll: {
-			type: 'object',
+			type: "object",
 			nullable: true,
 			properties: {
 				choices: {
-					type: 'array',
+					type: "array",
 					uniqueItems: true,
 					minItems: 2,
-					items: { type: 'string', minLength: 1, maxLength: 50 },
+					items: { type: "string", minLength: 1, maxLength: 50 },
 				},
-				multiple: { type: 'boolean' },
-				expiresAt: { type: 'integer', nullable: true },
-				expiredAfter: { type: 'integer', nullable: true, minimum: 1 },
+				multiple: { type: "boolean" },
+				expiresAt: { type: "integer", nullable: true },
+				expiredAfter: { type: "integer", nullable: true, minimum: 1 },
 			},
-			required: ['choices'],
+			required: ["choices"],
 		},
 		scheduleNote: {
-			type: 'object',
+			type: "object",
 			nullable: false,
 			properties: {
-				scheduledAt: { type: 'integer', nullable: false },
+				scheduledAt: { type: "integer", nullable: false },
 			},
 		},
 	},
 	// (re)note with text, files and poll are optional
 	anyOf: [
-		{ required: ['text'] },
-		{ required: ['renoteId'] },
-		{ required: ['fileIds'] },
-		{ required: ['mediaIds'] },
-		{ required: ['poll'] },
+		{ required: ["text"] },
+		{ required: ["renoteId"] },
+		{ required: ["fileIds"] },
+		{ required: ["mediaIds"] },
+		{ required: ["poll"] },
 	],
-	required: ['scheduleNote'],
+	required: ["scheduleNote"],
 } as const;
 
 @Injectable()
@@ -280,8 +280,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 			const fileIds = ps.fileIds ?? ps.mediaIds ?? null;
 			if (fileIds != null) {
 				files = await this.driveFilesRepository
-					.createQueryBuilder('file')
-					.where('file.userId = :userId AND file.id IN (:...fileIds)', {
+					.createQueryBuilder("file")
+					.where("file.userId = :userId AND file.id IN (:...fileIds)", {
 						userId: me.id,
 						fileIds,
 					})
@@ -318,10 +318,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 					}
 				}
 
-				if (renote.visibility === 'followers' && renote.userId !== me.id) {
+				if (renote.visibility === "followers" && renote.userId !== me.id) {
 					// 他人のfollowers noteはreject
 					throw new ApiError(meta.errors.cannotRenoteDueToVisibility);
-				} else if (renote.visibility === 'specified') {
+				} else if (renote.visibility === "specified") {
 					// specified / direct noteはreject
 					throw new ApiError(meta.errors.cannotRenoteDueToVisibility);
 				}
@@ -354,21 +354,21 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 
 			if (ps.poll) {
 				let scheduleNote_scheduledAt = this.timeService.now;
-				if (typeof ps.scheduleNote.scheduledAt === 'number') {
+				if (typeof ps.scheduleNote.scheduledAt === "number") {
 					scheduleNote_scheduledAt = moment
 						.utc(ps.scheduleNote.scheduledAt)
 						.local()
 						.valueOf();
 				}
-				if (typeof ps.poll.expiresAt === 'number') {
+				if (typeof ps.poll.expiresAt === "number") {
 					if (ps.poll.expiresAt < scheduleNote_scheduledAt) {
 						throw new ApiError(meta.errors.cannotCreateAlreadyExpiredPoll);
 					}
-				} else if (typeof ps.poll.expiredAfter === 'number') {
+				} else if (typeof ps.poll.expiredAfter === "number") {
 					ps.poll.expiresAt = scheduleNote_scheduledAt + ps.poll.expiredAfter;
 				}
 			}
-			if (typeof ps.scheduleNote.scheduledAt === 'number') {
+			if (typeof ps.scheduleNote.scheduledAt === "number") {
 				if (
 					moment.utc(ps.scheduleNote.scheduledAt).local().valueOf() <
 					this.timeService.now
@@ -382,12 +382,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				files: files.map((f) => f.id),
 				poll: ps.poll
 					? {
-						choices: ps.poll.choices,
-						multiple: ps.poll.multiple ?? false,
-						expiresAt: ps.poll.expiresAt
-							? new Date(ps.poll.expiresAt).toISOString()
-							: null,
-					}
+							choices: ps.poll.choices,
+							multiple: ps.poll.multiple ?? false,
+							expiresAt: ps.poll.expiresAt
+								? new Date(ps.poll.expiresAt).toISOString()
+								: null,
+						}
 					: undefined,
 				text: ps.text ?? undefined,
 				reply: reply?.id,
@@ -431,7 +431,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> {
 				);
 			}
 
-			return '';
+			return "";
 		});
 	}
 }

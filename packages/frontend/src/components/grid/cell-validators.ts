@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { CellValue, GridCell } from '@/components/grid/cell.js';
-import type { GridColumn } from '@/components/grid/column.js';
-import type { GridRow } from '@/components/grid/row.js';
-import { i18n } from '@/i18n.js';
+import type { CellValue, GridCell } from "@/components/grid/cell.js";
+import type { GridColumn } from "@/components/grid/column.js";
+import type { GridRow } from "@/components/grid/row.js";
+import { i18n } from "@/i18n.js";
 
 export type ValidatorParams = {
 	column: GridColumn;
@@ -38,7 +38,11 @@ export type ValidateViolationItem = {
 	result: ValidatorResult;
 };
 
-export function cellValidation(allCells: GridCell[], cell: GridCell, newValue: CellValue): ValidateViolation {
+export function cellValidation(
+	allCells: GridCell[],
+	cell: GridCell,
+	newValue: CellValue,
+): ValidateViolation {
 	const { column, row } = cell;
 	const validators = column.setting.validators ?? [];
 
@@ -49,7 +53,7 @@ export function cellValidation(allCells: GridCell[], cell: GridCell, newValue: C
 		allCells,
 	};
 
-	const violations: ValidateViolationItem[] = validators.map(validator => {
+	const violations: ValidateViolationItem[] = validators.map((validator) => {
 		const result = validator.validate(params);
 		return {
 			valid: result.valid,
@@ -59,7 +63,7 @@ export function cellValidation(allCells: GridCell[], cell: GridCell, newValue: C
 	});
 
 	return {
-		valid: violations.every(v => v.result.valid),
+		valid: violations.every((v) => v.result.valid),
 		params,
 		violations,
 	};
@@ -68,10 +72,10 @@ export function cellValidation(allCells: GridCell[], cell: GridCell, newValue: C
 class ValidatorPreset {
 	required(): GridCellValidator {
 		return {
-			name: 'required',
+			name: "required",
 			validate: ({ value }): ValidatorResult => {
 				return {
-					valid: value !== null && value !== undefined && value !== '',
+					valid: value !== null && value !== undefined && value !== "",
 					message: i18n.ts._gridComponent._error.requiredValue,
 				};
 			},
@@ -80,11 +84,14 @@ class ValidatorPreset {
 
 	regex(pattern: RegExp): GridCellValidator {
 		return {
-			name: 'regex',
+			name: "regex",
 			validate: ({ value }): ValidatorResult => {
 				return {
-					valid: (typeof value !== 'string') || pattern.test(value.toString() ?? ''),
-					message: i18n.tsx._gridComponent._error.patternNotMatch({ pattern: pattern.source }),
+					valid:
+						typeof value !== "string" || pattern.test(value.toString() ?? ""),
+					message: i18n.tsx._gridComponent._error.patternNotMatch({
+						pattern: pattern.source,
+					}),
 				};
 			},
 		};
@@ -92,12 +99,15 @@ class ValidatorPreset {
 
 	unique(): GridCellValidator {
 		return {
-			name: 'unique',
+			name: "unique",
 			validate: ({ column, row, value, allCells }): ValidatorResult => {
 				const bindTo = column.setting.bindTo;
 				const isUnique = allCells
-					.filter(it => it.column.setting.bindTo === bindTo && it.row.index !== row.index)
-					.every(cell => cell.value !== value);
+					.filter(
+						(it) =>
+							it.column.setting.bindTo === bindTo && it.row.index !== row.index,
+					)
+					.every((cell) => cell.value !== value);
 				return {
 					valid: isUnique,
 					message: i18n.ts._gridComponent._error.notUnique,

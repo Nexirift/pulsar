@@ -4,55 +4,63 @@
  */
 
 const blockBaseSchema = {
-	type: 'object',
+	type: "object",
 	properties: {
 		id: {
-			type: 'string',
-			optional: false, nullable: false,
+			type: "string",
+			optional: false,
+			nullable: false,
 		},
 		type: {
-			type: 'string',
-			optional: false, nullable: false,
+			type: "string",
+			optional: false,
+			nullable: false,
 		},
 	},
 } as const;
 
 const textBlockSchema = {
-	type: 'object',
+	type: "object",
 	properties: {
 		...blockBaseSchema.properties,
 		type: {
-			type: 'string',
-			optional: false, nullable: false,
-			enum: ['text'],
+			type: "string",
+			optional: false,
+			nullable: false,
+			enum: ["text"],
 		},
 		text: {
-			type: 'string',
-			optional: false, nullable: false,
+			type: "string",
+			optional: false,
+			nullable: false,
 		},
 	},
 } as const;
 
 const sectionBlockSchema = {
-	type: 'object',
+	type: "object",
 	properties: {
 		...blockBaseSchema.properties,
 		type: {
-			type: 'string',
-			optional: false, nullable: false,
-			enum: ['section'],
+			type: "string",
+			optional: false,
+			nullable: false,
+			enum: ["section"],
 		},
 		title: {
-			type: 'string',
-			optional: false, nullable: false,
+			type: "string",
+			optional: false,
+			nullable: false,
 		},
 		children: {
-			type: 'array',
-			optional: false, nullable: false,
+			type: "array",
+			optional: false,
+			nullable: false,
 			items: {
-				type: 'object',
-				optional: false, nullable: false,
-				ref: 'PageBlock',
+				type: "object",
+				optional: false,
+				nullable: false,
+				ref: "PageBlock",
 				selfRef: true,
 			},
 		},
@@ -60,43 +68,48 @@ const sectionBlockSchema = {
 } as const;
 
 const imageBlockSchema = {
-	type: 'object',
+	type: "object",
 	properties: {
 		...blockBaseSchema.properties,
 		type: {
-			type: 'string',
-			optional: false, nullable: false,
-			enum: ['image'],
+			type: "string",
+			optional: false,
+			nullable: false,
+			enum: ["image"],
 		},
 		fileId: {
-			type: 'string',
-			optional: false, nullable: true,
+			type: "string",
+			optional: false,
+			nullable: true,
 		},
 	},
 } as const;
 
 const noteBlockSchema = {
-	type: 'object',
+	type: "object",
 	properties: {
 		...blockBaseSchema.properties,
 		type: {
-			type: 'string',
-			optional: false, nullable: false,
-			enum: ['note'],
+			type: "string",
+			optional: false,
+			nullable: false,
+			enum: ["note"],
 		},
 		detailed: {
-			type: 'boolean',
-			optional: false, nullable: false,
+			type: "boolean",
+			optional: false,
+			nullable: false,
 		},
 		note: {
-			type: 'string',
-			optional: false, nullable: true,
+			type: "string",
+			optional: false,
+			nullable: true,
 		},
 	},
 } as const;
 
 export const packedPageBlockSchema = {
-	type: 'object',
+	type: "object",
 	oneOf: [
 		textBlockSchema,
 		sectionBlockSchema,
@@ -106,104 +119,126 @@ export const packedPageBlockSchema = {
 } as const;
 
 export const packedPageSchema = {
-	type: 'object',
+	type: "object",
 	properties: {
 		id: {
-			type: 'string',
-			optional: false, nullable: false,
-			format: 'id',
-			example: 'xxxxxxxxxx',
+			type: "string",
+			optional: false,
+			nullable: false,
+			format: "id",
+			example: "xxxxxxxxxx",
 		},
 		createdAt: {
-			type: 'string',
-			optional: false, nullable: false,
-			format: 'date-time',
+			type: "string",
+			optional: false,
+			nullable: false,
+			format: "date-time",
 		},
 		updatedAt: {
-			type: 'string',
-			optional: false, nullable: false,
-			format: 'date-time',
+			type: "string",
+			optional: false,
+			nullable: false,
+			format: "date-time",
 		},
 		userId: {
-			type: 'string',
-			optional: false, nullable: false,
-			format: 'id',
+			type: "string",
+			optional: false,
+			nullable: false,
+			format: "id",
 		},
 		user: {
-			type: 'object',
-			ref: 'UserLite',
-			optional: false, nullable: false,
+			type: "object",
+			ref: "UserLite",
+			optional: false,
+			nullable: false,
 		},
 		content: {
-			type: 'array',
-			optional: false, nullable: false,
+			type: "array",
+			optional: false,
+			nullable: false,
 			items: {
-				type: 'object',
-				optional: false, nullable: false,
-				ref: 'PageBlock',
+				type: "object",
+				optional: false,
+				nullable: false,
+				ref: "PageBlock",
 			},
 		},
 		variables: {
-			type: 'array',
-			optional: false, nullable: false,
+			type: "array",
+			optional: false,
+			nullable: false,
 			items: {
-				type: 'object',
-				optional: false, nullable: false,
+				type: "object",
+				optional: false,
+				nullable: false,
 			},
 		},
 		title: {
-			type: 'string',
-			optional: false, nullable: false,
+			type: "string",
+			optional: false,
+			nullable: false,
 		},
 		name: {
-			type: 'string',
-			optional: false, nullable: false,
+			type: "string",
+			optional: false,
+			nullable: false,
 		},
 		summary: {
-			type: 'string',
-			optional: false, nullable: true,
+			type: "string",
+			optional: false,
+			nullable: true,
 		},
 		hideTitleWhenPinned: {
-			type: 'boolean',
-			optional: false, nullable: false,
+			type: "boolean",
+			optional: false,
+			nullable: false,
 		},
 		alignCenter: {
-			type: 'boolean',
-			optional: false, nullable: false,
+			type: "boolean",
+			optional: false,
+			nullable: false,
 		},
 		font: {
-			type: 'string',
-			optional: false, nullable: false,
+			type: "string",
+			optional: false,
+			nullable: false,
 		},
 		script: {
-			type: 'string',
-			optional: false, nullable: false,
+			type: "string",
+			optional: false,
+			nullable: false,
 		},
 		eyeCatchingImageId: {
-			type: 'string',
-			optional: false, nullable: true,
+			type: "string",
+			optional: false,
+			nullable: true,
 		},
 		eyeCatchingImage: {
-			type: 'object',
-			optional: false, nullable: true,
-			ref: 'DriveFile',
+			type: "object",
+			optional: false,
+			nullable: true,
+			ref: "DriveFile",
 		},
 		attachedFiles: {
-			type: 'array',
-			optional: false, nullable: false,
+			type: "array",
+			optional: false,
+			nullable: false,
 			items: {
-				type: 'object',
-				optional: false, nullable: false,
-				ref: 'DriveFile',
+				type: "object",
+				optional: false,
+				nullable: false,
+				ref: "DriveFile",
 			},
 		},
 		likedCount: {
-			type: 'number',
-			optional: false, nullable: false,
+			type: "number",
+			optional: false,
+			nullable: false,
 		},
 		isLiked: {
-			type: 'boolean',
-			optional: true, nullable: false,
+			type: "boolean",
+			optional: true,
+			nullable: false,
 		},
 	},
 } as const;

@@ -3,44 +3,46 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import * as Redis from 'ioredis';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { NotesRepository, AntennasRepository } from '@/models/_.js';
-import { QueryService } from '@/core/QueryService.js';
-import { DI } from '@/di-symbols.js';
-import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import { IdService } from '@/core/IdService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { trackPromise } from '@/misc/promise-tracker.js';
-import ActiveUsersChart from '@/core/chart/charts/active-users.js';
-import { CollapsedQueueService } from '@/core/CollapsedQueueService.js';
-import { ApiError } from '../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import * as Redis from "ioredis";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { NotesRepository, AntennasRepository } from "@/models/_.js";
+import { QueryService } from "@/core/QueryService.js";
+import { DI } from "@/di-symbols.js";
+import { NoteEntityService } from "@/core/entities/NoteEntityService.js";
+import { IdService } from "@/core/IdService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { FanoutTimelineService } from "@/core/FanoutTimelineService.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { trackPromise } from "@/misc/promise-tracker.js";
+import ActiveUsersChart from "@/core/chart/charts/active-users.js";
+import { CollapsedQueueService } from "@/core/CollapsedQueueService.js";
+import { ApiError } from "../../error.js";
 
 export const meta = {
-	tags: ['antennas', 'account', 'notes'],
+	tags: ["antennas", "account", "notes"],
 
 	requireCredential: true,
 
-	kind: 'read:account',
+	kind: "read:account",
 
 	errors: {
 		noSuchAntenna: {
-			message: 'No such antenna.',
-			code: 'NO_SUCH_ANTENNA',
-			id: '850926e0-fd3b-49b6-b69a-b28a5dbd82fe',
+			message: "No such antenna.",
+			code: "NO_SUCH_ANTENNA",
+			id: "850926e0-fd3b-49b6-b69a-b28a5dbd82fe",
 		},
 	},
 
 	res: {
-		type: 'array',
-		optional: false, nullable: false,
+		type: "array",
+		optional: false,
+		nullable: false,
 		items: {
-			type: 'object',
-			optional: false, nullable: false,
-			ref: 'Note',
+			type: "object",
+			optional: false,
+			nullable: false,
+			ref: "Note",
 		},
 	},
 
@@ -52,20 +54,21 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		antennaId: { type: 'string', format: 'misskey:id' },
-		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
-		sinceId: { type: 'string', format: 'misskey:id' },
-		untilId: { type: 'string', format: 'misskey:id' },
-		sinceDate: { type: 'integer' },
-		untilDate: { type: 'integer' },
+		antennaId: { type: "string", format: "misskey:id" },
+		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+		sinceId: { type: "string", format: "misskey:id" },
+		untilId: { type: "string", format: "misskey:id" },
+		sinceDate: { type: "integer" },
+		untilDate: { type: "integer" },
 	},
-	required: ['antennaId'],
+	required: ["antennaId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
@@ -83,8 +86,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly collapsedQueueService: CollapsedQueueService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
-			const sinceId = ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : null);
+			const untilId =
+				ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
+			const sinceId =
+				ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : null);
 
 			const antenna = await this.antennasRepository.findOneBy({
 				id: ps.antennaId,
@@ -104,23 +109,31 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			});
 
 			if (needPublishEvent) {
-				this.globalEventService.publishInternalEvent('antennaUpdated', antenna);
+				this.globalEventService.publishInternalEvent("antennaUpdated", antenna);
 			}
 
-			let noteIds = await this.fanoutTimelineService.get(`antennaTimeline:${antenna.id}`, untilId, sinceId);
+			let noteIds = await this.fanoutTimelineService.get(
+				`antennaTimeline:${antenna.id}`,
+				untilId,
+				sinceId,
+			);
 			noteIds = noteIds.slice(0, ps.limit);
 			if (noteIds.length === 0) {
 				return [];
 			}
 
-			const query = this.queryService.makePaginationQuery(this.notesRepository.createQueryBuilder('note'),
-				ps.sinceId, ps.untilId)
-				.where('note.id IN (:...noteIds)', { noteIds: noteIds })
-				.innerJoinAndSelect('note.user', 'user')
-				.leftJoinAndSelect('note.reply', 'reply')
-				.leftJoinAndSelect('note.renote', 'renote')
-				.leftJoinAndSelect('reply.user', 'replyUser')
-				.leftJoinAndSelect('renote.user', 'renoteUser');
+			const query = this.queryService
+				.makePaginationQuery(
+					this.notesRepository.createQueryBuilder("note"),
+					ps.sinceId,
+					ps.untilId,
+				)
+				.where("note.id IN (:...noteIds)", { noteIds: noteIds })
+				.innerJoinAndSelect("note.user", "user")
+				.leftJoinAndSelect("note.reply", "reply")
+				.leftJoinAndSelect("note.renote", "renote")
+				.leftJoinAndSelect("reply.user", "replyUser")
+				.leftJoinAndSelect("renote.user", "renoteUser");
 
 			// NOTE: センシティブ除外の設定はこのエンドポイントでは無視する。
 			// https://github.com/misskey-dev/misskey/pull/15346#discussion_r1929950255

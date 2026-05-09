@@ -3,31 +3,47 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { getScrollPosition, getScrollContainer, getStickyBottom, getStickyTop } from '@@/js/scroll.js';
-import { getElementOrNull, getNodeOrNull } from '@/utility/get-dom-node-or-null.js';
+import {
+	getScrollPosition,
+	getScrollContainer,
+	getStickyBottom,
+	getStickyTop,
+} from "@@/js/scroll.js";
+import {
+	getElementOrNull,
+	getNodeOrNull,
+} from "@/utility/get-dom-node-or-null.js";
 
 type MaybeHTMLElement = EventTarget | Node | Element | HTMLElement;
 
-export const isFocusable = (input: MaybeHTMLElement | null | undefined): input is HTMLElement => {
+export const isFocusable = (
+	input: MaybeHTMLElement | null | undefined,
+): input is HTMLElement => {
 	if (input == null || !(input instanceof HTMLElement)) return false;
 
 	if (input.tabIndex < 0) return false;
-	if ('disabled' in input && input.disabled === true) return false;
-	if ('readonly' in input && input.readonly === true) return false;
+	if ("disabled" in input && input.disabled === true) return false;
+	if ("readonly" in input && input.readonly === true) return false;
 
 	if (!input.ownerDocument.contains(input)) return false;
 
 	const style = window.getComputedStyle(input);
-	if (style.display === 'none') return false;
-	if (style.visibility === 'hidden') return false;
-	if (style.opacity === '0') return false;
-	if (style.pointerEvents === 'none') return false;
+	if (style.display === "none") return false;
+	if (style.visibility === "hidden") return false;
+	if (style.opacity === "0") return false;
+	if (style.pointerEvents === "none") return false;
 
 	return true;
 };
 
-export const focusPrev = (input: MaybeHTMLElement | null | undefined, self = false, scroll = true) => {
-	const element = self ? input : getElementOrNull(input)?.previousElementSibling;
+export const focusPrev = (
+	input: MaybeHTMLElement | null | undefined,
+	self = false,
+	scroll = true,
+) => {
+	const element = self
+		? input
+		: getElementOrNull(input)?.previousElementSibling;
 	if (element == null) return;
 	if (isFocusable(element)) {
 		focusOrScroll(element, scroll);
@@ -36,7 +52,11 @@ export const focusPrev = (input: MaybeHTMLElement | null | undefined, self = fal
 	}
 };
 
-export const focusNext = (input: MaybeHTMLElement | null | undefined, self = false, scroll = true) => {
+export const focusNext = (
+	input: MaybeHTMLElement | null | undefined,
+	self = false,
+	scroll = true,
+) => {
 	const element = self ? input : getElementOrNull(input)?.nextElementSibling;
 	if (element == null) return;
 	if (isFocusable(element)) {
@@ -46,7 +66,11 @@ export const focusNext = (input: MaybeHTMLElement | null | undefined, self = fal
 	}
 };
 
-export const focusParent = (input: MaybeHTMLElement | null | undefined, self = false, scroll = true) => {
+export const focusParent = (
+	input: MaybeHTMLElement | null | undefined,
+	self = false,
+	scroll = true,
+) => {
 	const element = self ? input : getNodeOrNull(input)?.parentElement;
 	if (element == null) return;
 	if (isFocusable(element)) {
@@ -58,7 +82,8 @@ export const focusParent = (input: MaybeHTMLElement | null | undefined, self = f
 
 const focusOrScroll = (element: HTMLElement, scroll: boolean) => {
 	if (scroll) {
-		const scrollContainer = getScrollContainer(element) ?? window.document.documentElement;
+		const scrollContainer =
+			getScrollContainer(element) ?? window.document.documentElement;
 		const scrollContainerTop = getScrollPosition(scrollContainer);
 		const stickyTop = getStickyTop(element, scrollContainer);
 		const stickyBottom = getStickyBottom(element, scrollContainer);
@@ -71,7 +96,7 @@ const focusOrScroll = (element: HTMLElement, scroll: boolean) => {
 		} else if (bottom > window.innerHeight - stickyBottom) {
 			scrollTo += bottom - window.innerHeight + stickyBottom;
 		}
-		scrollContainer.scrollTo({ top: scrollTo, behavior: 'instant' });
+		scrollContainer.scrollTo({ top: scrollTo, behavior: "instant" });
 	}
 
 	if (window.document.activeElement !== element) {

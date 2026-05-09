@@ -6,36 +6,38 @@ Small label that displays the name and icon of an instance.
 -->
 
 <template>
-<div :class="$style.root" :style="themeColorStyle">
-	<img v-if="faviconUrl" :class="$style.icon" :src="faviconUrl"/>
-	<div :class="$style.name">{{ instanceName }}</div>
-</div>
+	<div :class="$style.root" :style="themeColorStyle">
+		<img v-if="faviconUrl" :class="$style.icon" :src="faviconUrl" />
+		<div :class="$style.name">{{ instanceName }}</div>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { instanceName as localInstanceName } from '@@/js/config.js';
-import { computed } from 'vue';
-import type { CSSProperties } from 'vue';
-import { instance as localInstance } from '@/instance.js';
-import { getProxiedImageUrlNullable } from '@/utility/media-proxy.js';
+import { instanceName as localInstanceName } from "@@/js/config.js";
+import { computed } from "vue";
+import type { CSSProperties } from "vue";
+import { instance as localInstance } from "@/instance.js";
+import { getProxiedImageUrlNullable } from "@/utility/media-proxy.js";
 
 const props = defineProps<{
 	host: string | null;
 	instance?: {
-		faviconUrl?: string | null
-		name?: string | null
-		themeColor?: string | null
-	}
+		faviconUrl?: string | null;
+		name?: string | null;
+		themeColor?: string | null;
+	};
 }>();
 
 // if no instance data is given, this is for the local instance
-const instanceName = computed(() => props.host == null ? localInstanceName : props.instance?.name ?? props.host);
+const instanceName = computed(() =>
+	props.host == null ? localInstanceName : (props.instance?.name ?? props.host),
+);
 
 const faviconUrl = computed(() => {
 	let imageSrc: string | null = null;
 	if (props.host == null) {
 		if (localInstance.iconUrl == null) {
-			return '/favicon.ico';
+			return "/favicon.ico";
 		} else {
 			imageSrc = localInstance.iconUrl;
 		}
@@ -46,7 +48,10 @@ const faviconUrl = computed(() => {
 });
 
 const themeColorStyle = computed<CSSProperties>(() => {
-	const themeColor = (props.host == null ? localInstance.themeColor : props.instance?.themeColor) ?? '#777777';
+	const themeColor =
+		(props.host == null
+			? localInstance.themeColor
+			: props.instance?.themeColor) ?? "#777777";
 	return {
 		background: `${themeColor}`,
 	};
@@ -64,17 +69,17 @@ const themeColorStyle = computed<CSSProperties>(() => {
 	color: #fff;
 	text-shadow: /* .866 ≈ sin(60deg) */
 		1px 0 1px #000,
-		.866px .5px 1px #000,
-		.5px .866px 1px #000,
+		0.866px 0.5px 1px #000,
+		0.5px 0.866px 1px #000,
 		0 1px 1px #000,
-		-.5px .866px 1px #000,
-		-.866px .5px 1px #000,
+		-0.5px 0.866px 1px #000,
+		-0.866px 0.5px 1px #000,
 		-1px 0 1px #000,
-		-.866px -.5px 1px #000,
-		-.5px -.866px 1px #000,
+		-0.866px -0.5px 1px #000,
+		-0.5px -0.866px 1px #000,
 		0 -1px 1px #000,
-		.5px -.866px 1px #000,
-		.866px -.5px 1px #000;
+		0.5px -0.866px 1px #000,
+		0.866px -0.5px 1px #000;
 }
 
 .icon {

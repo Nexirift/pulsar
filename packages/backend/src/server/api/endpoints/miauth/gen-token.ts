@@ -3,45 +3,47 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { ApiError } from '@/server/api/error.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AccessTokensRepository } from '@/models/_.js';
-import { IdService } from '@/core/IdService.js';
-import { NotificationService } from '@/core/NotificationService.js';
-import { secureRndstr } from '@/misc/secure-rndstr.js';
-import { DI } from '@/di-symbols.js';
-import { TimeService } from '@/global/TimeService.js';
-import { CacheService } from '@/core/CacheService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { ApiError } from "@/server/api/error.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { AccessTokensRepository } from "@/models/_.js";
+import { IdService } from "@/core/IdService.js";
+import { NotificationService } from "@/core/NotificationService.js";
+import { secureRndstr } from "@/misc/secure-rndstr.js";
+import { DI } from "@/di-symbols.js";
+import { TimeService } from "@/global/TimeService.js";
+import { CacheService } from "@/core/CacheService.js";
 
 export const meta = {
-	tags: ['auth'],
+	tags: ["auth"],
 
 	requireCredential: true,
 
 	secure: true,
 
 	res: {
-		type: 'object',
-		optional: false, nullable: false,
+		type: "object",
+		optional: false,
+		nullable: false,
 		properties: {
 			token: {
-				type: 'string',
-				optional: false, nullable: false,
+				type: "string",
+				optional: false,
+				nullable: false,
 			},
 		},
 	},
 
 	errors: {
 		noSuchUser: {
-			message: 'No such user.',
-			code: 'NO_SUCH_USER',
-			id: 'a89abd3d-f0bc-4cce-beb1-2f446f4f1e6a',
+			message: "No such user.",
+			code: "NO_SUCH_USER",
+			id: "a89abd3d-f0bc-4cce-beb1-2f446f4f1e6a",
 		},
 		mustBeLocal: {
-			message: 'Grantee must be local',
-			code: 'MUST_BE_LOCAL',
-			id: '403c73e5-6f03-41b4-9394-ac128947f7ae',
+			message: "Grantee must be local",
+			code: "MUST_BE_LOCAL",
+			id: "403c73e5-6f03-41b4-9394-ac128947f7ae",
 		},
 	},
 
@@ -53,25 +55,34 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		session: { type: 'string', nullable: true },
-		name: { type: 'string', nullable: true },
-		description: { type: 'string', nullable: true },
-		iconUrl: { type: 'string', nullable: true },
-		permission: { type: 'array', uniqueItems: true, items: {
-			type: 'string',
-		} },
-		grantees: { type: 'array', uniqueItems: true, items: {
-			type: 'string',
-		} },
-		rank: { type: 'string', enum: ['admin', 'mod', 'user'], nullable: true },
+		session: { type: "string", nullable: true },
+		name: { type: "string", nullable: true },
+		description: { type: "string", nullable: true },
+		iconUrl: { type: "string", nullable: true },
+		permission: {
+			type: "array",
+			uniqueItems: true,
+			items: {
+				type: "string",
+			},
+		},
+		grantees: {
+			type: "array",
+			uniqueItems: true,
+			items: {
+				type: "string",
+			},
+		},
+		rank: { type: "string", enum: ["admin", "mod", "user"], nullable: true },
 	},
-	required: ['session', 'permission'],
+	required: ["session", "permission"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.accessTokensRepository)
 		private accessTokensRepository: AccessTokensRepository,
@@ -120,12 +131,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			if (ps.grantees) {
 				for (const granteeId of ps.grantees) {
-					this.notificationService.createNotification(granteeId, 'sharedAccessGranted', { permCount: ps.permission.length, rank: ps.rank ?? null }, me.id);
+					this.notificationService.createNotification(
+						granteeId,
+						"sharedAccessGranted",
+						{ permCount: ps.permission.length, rank: ps.rank ?? null },
+						me.id,
+					);
 				}
 			}
 
 			// アクセストークンが生成されたことを通知
-			this.notificationService.createNotification(me.id, 'createToken', {});
+			this.notificationService.createNotification(me.id, "createToken", {});
 
 			return {
 				token: accessToken,

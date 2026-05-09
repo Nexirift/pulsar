@@ -3,25 +3,31 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { IsNull } from 'typeorm';
-import { Inject, Injectable } from '@nestjs/common';
-import type { MiMeta, UsedUsernamesRepository, UsersRepository } from '@/models/_.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { localUsernameSchema } from '@/models/User.js';
-import { DI } from '@/di-symbols.js';
+import { IsNull } from "typeorm";
+import { Inject, Injectable } from "@nestjs/common";
+import type {
+	MiMeta,
+	UsedUsernamesRepository,
+	UsersRepository,
+} from "@/models/_.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { localUsernameSchema } from "@/models/User.js";
+import { DI } from "@/di-symbols.js";
 
 export const meta = {
-	tags: ['users'],
+	tags: ["users"],
 
 	requireCredential: false,
 
 	res: {
-		type: 'object',
-		optional: false, nullable: false,
+		type: "object",
+		optional: false,
+		nullable: false,
 		properties: {
 			available: {
-				type: 'boolean',
-				optional: false, nullable: false,
+				type: "boolean",
+				optional: false,
+				nullable: false,
 			},
 		},
 	},
@@ -34,15 +40,16 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
 		username: localUsernameSchema,
 	},
-	required: ['username'],
+	required: ["username"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.meta)
 		private serverSettings: MiMeta,
@@ -59,9 +66,13 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				usernameLower: ps.username.toLowerCase(),
 			});
 
-			const exist2 = await this.usedUsernamesRepository.countBy({ username: ps.username.toLowerCase() });
+			const exist2 = await this.usedUsernamesRepository.countBy({
+				username: ps.username.toLowerCase(),
+			});
 
-			const isPreserved = this.serverSettings.preservedUsernames.map(x => x.toLowerCase()).includes(ps.username.toLowerCase());
+			const isPreserved = this.serverSettings.preservedUsernames
+				.map((x) => x.toLowerCase())
+				.includes(ps.username.toLowerCase());
 
 			return {
 				available: exist === 0 && exist2 === 0 && !isPreserved,

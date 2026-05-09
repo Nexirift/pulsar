@@ -3,24 +3,26 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Misskey } from 'megalodon';
-import { Injectable } from '@nestjs/common';
-import { MiLocalUser } from '@/models/User.js';
-import { AuthenticateService } from '@/server/api/AuthenticateService.js';
-import type { FastifyRequest } from 'fastify';
+import { Misskey } from "megalodon";
+import { Injectable } from "@nestjs/common";
+import { MiLocalUser } from "@/models/User.js";
+import { AuthenticateService } from "@/server/api/AuthenticateService.js";
+import type { FastifyRequest } from "fastify";
 
 @Injectable()
 export class MastodonClientService {
-	constructor(
-		private readonly authenticateService: AuthenticateService,
-	) {}
+	constructor(private readonly authenticateService: AuthenticateService) {}
 
 	/**
 	 * Gets the authenticated user and API client for a request.
 	 */
-	public async getAuthClient(request: FastifyRequest, accessToken?: string | null): Promise<{ client: Misskey, me: MiLocalUser | null }> {
+	public async getAuthClient(
+		request: FastifyRequest,
+		accessToken?: string | null,
+	): Promise<{ client: Misskey; me: MiLocalUser | null }> {
 		const authorization = request.headers.authorization;
-		accessToken = accessToken !== undefined ? accessToken : getAccessToken(authorization);
+		accessToken =
+			accessToken !== undefined ? accessToken : getAccessToken(authorization);
 
 		const me = await this.getAuth(request, accessToken);
 		const client = this.getClient(request, accessToken);
@@ -31,9 +33,13 @@ export class MastodonClientService {
 	/**
 	 * Gets the authenticated client user for a request.
 	 */
-	public async getAuth(request: FastifyRequest, accessToken?: string | null): Promise<MiLocalUser | null> {
+	public async getAuth(
+		request: FastifyRequest,
+		accessToken?: string | null,
+	): Promise<MiLocalUser | null> {
 		const authorization = request.headers.authorization;
-		accessToken = accessToken !== undefined ? accessToken : getAccessToken(authorization);
+		accessToken =
+			accessToken !== undefined ? accessToken : getAccessToken(authorization);
 		const [me] = await this.authenticateService.authenticate(accessToken);
 		return me;
 	}
@@ -41,13 +47,17 @@ export class MastodonClientService {
 	/**
 	 * Creates an authenticated API client for a request.
 	 */
-	public getClient(request: FastifyRequest, accessToken?: string | null): Misskey {
+	public getClient(
+		request: FastifyRequest,
+		accessToken?: string | null,
+	): Misskey {
 		const authorization = request.headers.authorization;
-		accessToken = accessToken !== undefined ? accessToken : getAccessToken(authorization);
+		accessToken =
+			accessToken !== undefined ? accessToken : getAccessToken(authorization);
 
 		// TODO pass agent?
 		const baseUrl = this.getBaseUrl(request);
-		const userAgent = request.headers['user-agent'];
+		const userAgent = request.headers["user-agent"];
 		return new Misskey(baseUrl, accessToken, userAgent);
 	}
 
@@ -66,6 +76,6 @@ export function getBaseUrl(request: FastifyRequest): string {
  * Returns null if none were found.
  */
 function getAccessToken(authorization: string | undefined): string | null {
-	const accessTokenArr = authorization?.split(' ') ?? [null];
+	const accessTokenArr = authorization?.split(" ") ?? [null];
 	return accessTokenArr[accessTokenArr.length - 1];
 }

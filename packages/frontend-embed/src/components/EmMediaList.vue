@@ -4,33 +4,65 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div>
-	<div v-for="media in mediaList.filter(media => !previewable(media))" :key="media.id" :class="$style.banner">
-		<XBanner :media="media" :href="originalEntityUrl"/>
-	</div>
-	<div v-if="mediaList.filter(media => previewable(media)).length > 0" :class="$style.container">
+	<div>
 		<div
-			:class="[
-				$style.medias,
-				count === 1 ? [$style.n1] : count === 2 ? $style.n2 : count === 3 ? $style.n3 : count === 4 ? $style.n4 : $style.nMany,
-			]"
+			v-for="media in mediaList.filter((media) => !previewable(media))"
+			:key="media.id"
+			:class="$style.banner"
 		>
-			<div v-for="media in mediaList.filter(media => previewable(media))" :class="$style.media">
-				<XVideo v-if="media.type.startsWith('video')" :key="`video:${media.id}`" :class="$style.mediaInner" :video="media" :href="originalEntityUrl"/>
-				<XImage v-else-if="media.type.startsWith('image')" :key="`image:${media.id}`" :class="$style.mediaInner" class="image" :image="media" :raw="raw" :href="originalEntityUrl"/>
+			<XBanner :media="media" :href="originalEntityUrl" />
+		</div>
+		<div
+			v-if="mediaList.filter((media) => previewable(media)).length > 0"
+			:class="$style.container"
+		>
+			<div
+				:class="[
+					$style.medias,
+					count === 1
+						? [$style.n1]
+						: count === 2
+							? $style.n2
+							: count === 3
+								? $style.n3
+								: count === 4
+									? $style.n4
+									: $style.nMany,
+				]"
+			>
+				<div
+					v-for="media in mediaList.filter((media) => previewable(media))"
+					:class="$style.media"
+				>
+					<XVideo
+						v-if="media.type.startsWith('video')"
+						:key="`video:${media.id}`"
+						:class="$style.mediaInner"
+						:video="media"
+						:href="originalEntityUrl"
+					/>
+					<XImage
+						v-else-if="media.type.startsWith('image')"
+						:key="`image:${media.id}`"
+						:class="$style.mediaInner"
+						class="image"
+						:image="media"
+						:raw="raw"
+						:href="originalEntityUrl"
+					/>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
-import * as Misskey from 'misskey-js';
-import XBanner from './EmMediaBanner.vue';
-import XImage from './EmMediaImage.vue';
-import XVideo from './EmMediaVideo.vue';
-import { FILE_TYPE_BROWSERSAFE } from '@@/js/const.js';
+import { computed } from "vue";
+import * as Misskey from "misskey-js";
+import XBanner from "./EmMediaBanner.vue";
+import XImage from "./EmMediaImage.vue";
+import XVideo from "./EmMediaVideo.vue";
+import { FILE_TYPE_BROWSERSAFE } from "@@/js/const.js";
 
 const props = defineProps<{
 	mediaList: Misskey.entities.DriveFile[];
@@ -40,12 +72,17 @@ const props = defineProps<{
 	originalEntityUrl: string;
 }>();
 
-const count = computed(() => props.mediaList.filter(media => previewable(media)).length);
+const count = computed(
+	() => props.mediaList.filter((media) => previewable(media)).length,
+);
 
 const previewable = (file: Misskey.entities.DriveFile): boolean => {
-	if (file.type === 'image/svg+xml') return true; // svgのwebpublic/thumbnailはpngなのでtrue
+	if (file.type === "image/svg+xml") return true; // svgのwebpublic/thumbnailはpngなのでtrue
 	// FILE_TYPE_BROWSERSAFEに適合しないものはブラウザで表示するのに不適切
-	return (file.type.startsWith('video') || file.type.startsWith('image')) && FILE_TYPE_BROWSERSAFE.includes(file.type);
+	return (
+		(file.type.startsWith("video") || file.type.startsWith("image")) &&
+		FILE_TYPE_BROWSERSAFE.includes(file.type)
+	);
 };
 </script>
 
@@ -68,11 +105,7 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 
 		// default but fallback (expand)
 		min-height: 64px;
-		max-height: clamp(
-			64px,
-			50cqh,
-			min(360px, 50vh)
-		);
+		max-height: clamp(64px, 50cqh, min(360px, 50vh));
 
 		&.n116_9 {
 			min-height: initial;
@@ -80,7 +113,7 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 			aspect-ratio: 16 / 9; // fallback
 		}
 
-		&.n11_1{
+		&.n11_1 {
 			min-height: initial;
 			max-height: initial;
 			aspect-ratio: 1 / 1; // fallback
@@ -134,7 +167,7 @@ const previewable = (file: Misskey.entities.DriveFile): boolean => {
 	border-radius: 8px;
 	position: relative;
 
-	>.mediaInner {
+	> .mediaInner {
 		width: 100%;
 		height: 100%;
 	}

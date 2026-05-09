@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { ref } from 'vue';
+import { ref } from "vue";
 
 export class Cache<T> {
 	private cachedAt: number | null = null;
@@ -11,7 +11,7 @@ export class Cache<T> {
 	private lifetime: number;
 	private fetcher: () => Promise<T>;
 
-	constructor(lifetime: Cache<never>['lifetime'], fetcher: () => Promise<T>) {
+	constructor(lifetime: Cache<never>["lifetime"], fetcher: () => Promise<T>) {
 		this.lifetime = lifetime;
 		this.fetcher = fetcher;
 	}
@@ -23,7 +23,7 @@ export class Cache<T> {
 
 	private get(): T | undefined {
 		if (this.cachedAt == null) return undefined;
-		if ((Date.now() - this.cachedAt) > this.lifetime) {
+		if (Date.now() - this.cachedAt > this.lifetime) {
 			this.value.value = undefined;
 			this.cachedAt = null;
 			return undefined;

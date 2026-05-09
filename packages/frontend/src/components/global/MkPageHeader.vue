@@ -4,55 +4,126 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div v-if="show" ref="el" :class="[$style.root]">
-	<div :class="[$style.upper, { [$style.slim]: narrow, [$style.thin]: thin_ }]">
-		<div v-if="!thin_ && narrow && props.displayMyAvatar && $i" class="_button" :class="$style.buttonsLeft" @click="openAccountMenu">
-			<MkAvatar :class="$style.avatar" :user="$i"/>
-		</div>
-		<div v-else-if="!thin_ && narrow && !hideTitle" :class="$style.buttonsLeft">
-			<button v-if="displayBackButton" class="_button" :class="$style.button" @click.stop="goBack()" @touchstart="preventDrag">
-				<i class="ph-caret-left ph-bold ph-lg"></i>
-			</button>
-		</div>
-
-		<template v-if="pageMetadata">
-			<div v-if="displayBackButton && !narrow" style="margin: 0 -45px 0 0;" :class="$style.buttonsLeft">
-				<button class="_button" :class="$style.button" style="left: 5px;" @click.stop="goBack()" @touchstart="preventDrag">
+	<div v-if="show" ref="el" :class="[$style.root]">
+		<div
+			:class="[$style.upper, { [$style.slim]: narrow, [$style.thin]: thin_ }]"
+		>
+			<div
+				v-if="!thin_ && narrow && props.displayMyAvatar && $i"
+				class="_button"
+				:class="$style.buttonsLeft"
+				@click="openAccountMenu"
+			>
+				<MkAvatar :class="$style.avatar" :user="$i" />
+			</div>
+			<div
+				v-else-if="!thin_ && narrow && !hideTitle"
+				:class="$style.buttonsLeft"
+			>
+				<button
+					v-if="displayBackButton"
+					class="_button"
+					:class="$style.button"
+					@click.stop="goBack()"
+					@touchstart="preventDrag"
+				>
 					<i class="ph-caret-left ph-bold ph-lg"></i>
 				</button>
 			</div>
-			<div v-if="!hideTitle" :class="$style.titleContainer" @click="top">
-				<div v-if="pageMetadata.avatar" :class="$style.titleAvatarContainer">
-					<MkAvatar :class="$style.titleAvatar" :user="pageMetadata.avatar" indicator/>
-				</div>
-				<i v-else-if="pageMetadata.icon" :class="[$style.titleIcon, pageMetadata.icon]"></i>
 
-				<div :class="$style.title">
-					<MkUserName v-if="pageMetadata.userName" :user="pageMetadata.userName" :nowrap="true"/>
-					<div v-else-if="pageMetadata.title">{{ pageMetadata.title }}</div>
-					<div v-if="pageMetadata.subtitle" :class="$style.subtitle">
-						{{ pageMetadata.subtitle }}
+			<template v-if="pageMetadata">
+				<div
+					v-if="displayBackButton && !narrow"
+					style="margin: 0 -45px 0 0"
+					:class="$style.buttonsLeft"
+				>
+					<button
+						class="_button"
+						:class="$style.button"
+						style="left: 5px"
+						@click.stop="goBack()"
+						@touchstart="preventDrag"
+					>
+						<i class="ph-caret-left ph-bold ph-lg"></i>
+					</button>
+				</div>
+				<div v-if="!hideTitle" :class="$style.titleContainer" @click="top">
+					<div v-if="pageMetadata.avatar" :class="$style.titleAvatarContainer">
+						<MkAvatar
+							:class="$style.titleAvatar"
+							:user="pageMetadata.avatar"
+							indicator
+						/>
+					</div>
+					<i
+						v-else-if="pageMetadata.icon"
+						:class="[$style.titleIcon, pageMetadata.icon]"
+					></i>
+
+					<div :class="$style.title">
+						<MkUserName
+							v-if="pageMetadata.userName"
+							:user="pageMetadata.userName"
+							:nowrap="true"
+						/>
+						<div v-else-if="pageMetadata.title">{{ pageMetadata.title }}</div>
+						<div v-if="pageMetadata.subtitle" :class="$style.subtitle">
+							{{ pageMetadata.subtitle }}
+						</div>
 					</div>
 				</div>
-			</div>
-			<XTabs v-if="!narrow || hideTitle" :class="$style.tabs" :tab="tab" :tabs="tabs" :rootEl="el" @update:tab="key => emit('update:tab', key)" @tabClick="onTabClick"/>
-		</template>
-		<div v-if="(!thin_ && narrow && !hideTitle) || (actions && actions.length > 0)" :class="$style.buttonsRight">
-			<template v-for="action in actions">
-				<button v-tooltip.noDelay="action.text" class="_button" :class="[$style.button, { [$style.highlighted]: action.highlighted }]" @click.stop="action.handler" @touchstart="preventDrag"><i :class="action.icon"></i></button>
+				<XTabs
+					v-if="!narrow || hideTitle"
+					:class="$style.tabs"
+					:tab="tab"
+					:tabs="tabs"
+					:rootEl="el"
+					@update:tab="(key) => emit('update:tab', key)"
+					@tabClick="onTabClick"
+				/>
 			</template>
+			<div
+				v-if="
+					(!thin_ && narrow && !hideTitle) || (actions && actions.length > 0)
+				"
+				:class="$style.buttonsRight"
+			>
+				<template v-for="action in actions">
+					<button
+						v-tooltip.noDelay="action.text"
+						class="_button"
+						:class="[
+							$style.button,
+							{ [$style.highlighted]: action.highlighted },
+						]"
+						@click.stop="action.handler"
+						@touchstart="preventDrag"
+					>
+						<i :class="action.icon"></i>
+					</button>
+				</template>
+			</div>
+		</div>
+		<div
+			v-if="narrow && !hideTitle && hasTabs"
+			:class="[$style.lower, { [$style.slim]: narrow, [$style.thin]: thin_ }]"
+		>
+			<XTabs
+				:class="$style.tabs"
+				:tab="tab"
+				:tabs="tabs"
+				:rootEl="el"
+				@update:tab="(key) => emit('update:tab', key)"
+				@tabClick="onTabClick"
+			/>
 		</div>
 	</div>
-	<div v-if="(narrow && !hideTitle) && hasTabs" :class="[$style.lower, { [$style.slim]: narrow, [$style.thin]: thin_ }]">
-		<XTabs :class="$style.tabs" :tab="tab" :tabs="tabs" :rootEl="el" @update:tab="key => emit('update:tab', key)" @tabClick="onTabClick"/>
-	</div>
-</div>
 </template>
 
 <script lang="ts">
-import type { PageHeaderItem } from '@/types/page-header.js';
-import type { PageMetadata } from '@/page.js';
-import type { Tab } from './MkPageHeader.tabs.vue';
+import type { PageHeaderItem } from "@/types/page-header.js";
+import type { PageMetadata } from "@/page.js";
+import type { Tab } from "./MkPageHeader.tabs.vue";
 
 export type PageHeaderProps = {
 	overridePageMetadata?: PageMetadata;
@@ -67,33 +138,48 @@ export type PageHeaderProps = {
 </script>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref, inject, useTemplateRef, computed } from 'vue';
-import { scrollToTop } from '@@/js/scroll.js';
-import XTabs from './MkPageHeader.tabs.vue';
-import { globalEvents } from '@/events.js';
-import { openAccountMenu as openAccountMenu_ } from '@/accounts.js';
-import { $i } from '@/i.js';
-import { DI } from '@/di.js';
-import { prefer } from '@/preferences.js';
+import {
+	onMounted,
+	onUnmounted,
+	ref,
+	inject,
+	useTemplateRef,
+	computed,
+} from "vue";
+import { scrollToTop } from "@@/js/scroll.js";
+import XTabs from "./MkPageHeader.tabs.vue";
+import { globalEvents } from "@/events.js";
+import { openAccountMenu as openAccountMenu_ } from "@/accounts.js";
+import { $i } from "@/i.js";
+import { DI } from "@/di.js";
+import { prefer } from "@/preferences.js";
 
 const props = withDefaults(defineProps<PageHeaderProps>(), {
-	tabs: () => ([] as Tab[]),
+	tabs: () => [] as Tab[],
 });
 
 const emit = defineEmits<{
-	(ev: 'update:tab', key: string);
+	(ev: "update:tab", key: string);
 }>();
 
-const displayBackButton = props.displayBackButton && window.history.state.key !== 'index' && window.history.length > 1 && inject('shouldBackButton', true);
+const displayBackButton =
+	props.displayBackButton &&
+	window.history.state.key !== "index" &&
+	window.history.length > 1 &&
+	inject("shouldBackButton", true);
 
 //const viewId = inject(DI.viewId);
 const injectedPageMetadata = inject(DI.pageMetadata, ref(null));
-const pageMetadata = computed(() => props.overridePageMetadata ?? injectedPageMetadata.value);
+const pageMetadata = computed(
+	() => props.overridePageMetadata ?? injectedPageMetadata.value,
+);
 
-const hideTitle = computed(() => inject('shouldOmitHeaderTitle', false) || props.hideTitle);
-const thin_ = props.thin || inject('shouldHeaderThin', false);
+const hideTitle = computed(
+	() => inject("shouldOmitHeaderTitle", false) || props.hideTitle,
+);
+const thin_ = props.thin || inject("shouldHeaderThin", false);
 
-const el = useTemplateRef('el');
+const el = useTemplateRef("el");
 const narrow = ref(false);
 const hasTabs = computed(() => props.tabs.length > 0);
 const hasActions = computed(() => props.actions && props.actions.length > 0);
@@ -107,7 +193,7 @@ const preventDrag = (ev: TouchEvent) => {
 
 const top = () => {
 	if (el.value) {
-		scrollToTop(el.value as HTMLElement, { behavior: 'smooth' });
+		scrollToTop(el.value as HTMLElement, { behavior: "smooth" });
 	}
 };
 
@@ -115,10 +201,13 @@ const injectedDrawerMenuShowing = inject(DI.drawerMenuShowing, ref(false));
 
 function openAccountMenu(ev: MouseEvent) {
 	if (prefer.r.showAccountMenuOnAvatarClick.value) {
-		openAccountMenu_({
-			withExtraOperation: true,
-			drawerMenuShowing: injectedDrawerMenuShowing,
-		}, ev);
+		openAccountMenu_(
+			{
+				withExtraOperation: true,
+				drawerMenuShowing: injectedDrawerMenuShowing,
+			},
+			ev,
+		);
 	} else {
 		injectedDrawerMenuShowing.value = true;
 	}
@@ -138,7 +227,11 @@ onMounted(() => {
 	if (el.value && el.value.parentElement) {
 		narrow.value = el.value.parentElement.offsetWidth < 500;
 		ro = new ResizeObserver((entries, observer) => {
-			if (el.value && el.value.parentElement && window.document.body.contains(el.value as HTMLElement)) {
+			if (
+				el.value &&
+				el.value.parentElement &&
+				window.document.body.contains(el.value as HTMLElement)
+			) {
 				narrow.value = el.value.parentElement.offsetWidth < 500;
 			}
 		});

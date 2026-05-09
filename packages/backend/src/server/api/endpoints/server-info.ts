@@ -3,60 +3,61 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as os from 'node:os';
-import si from 'systeminformation';
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { MiMeta } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
+import * as os from "node:os";
+import si from "systeminformation";
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { MiMeta } from "@/models/_.js";
+import { DI } from "@/di-symbols.js";
 
 export const meta = {
 	requireCredential: false,
 	allowGet: true,
 	cacheSec: 60 * 1,
 
-	tags: ['meta'],
+	tags: ["meta"],
 	res: {
-		type: 'object',
-		optional: false, nullable: false,
+		type: "object",
+		optional: false,
+		nullable: false,
 		properties: {
 			machine: {
-				type: 'string',
+				type: "string",
 				nullable: false,
 			},
 			cpu: {
-				type: 'object',
+				type: "object",
 				nullable: false,
 				properties: {
 					model: {
-						type: 'string',
+						type: "string",
 						nullable: false,
 					},
 					cores: {
-						type: 'number',
+						type: "number",
 						nullable: false,
 					},
 				},
 			},
 			mem: {
-				type: 'object',
+				type: "object",
 				properties: {
 					total: {
-						type: 'number',
+						type: "number",
 						nullable: false,
 					},
 				},
 			},
 			fs: {
-				type: 'object',
+				type: "object",
 				nullable: false,
 				properties: {
 					total: {
-						type: 'number',
+						type: "number",
 						nullable: false,
 					},
 					used: {
-						type: 'number',
+						type: "number",
 						nullable: false,
 					},
 				},
@@ -66,7 +67,7 @@ export const meta = {
 
 	// 24 calls, then 7 per second-ish (1 for each type of server info graph)
 	limit: {
-		type: 'bucket',
+		type: "bucket",
 		size: 24,
 		dripSize: 7,
 		dripRate: 900,
@@ -74,32 +75,34 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {},
 	required: [],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.meta)
 		private serverSettings: MiMeta,
 	) {
 		super(meta, paramDef, async () => {
-			if (!this.serverSettings.enableServerMachineStats) return {
-				machine: '?',
-				cpu: {
-					model: '?',
-					cores: 0,
-				},
-				mem: {
-					total: 0,
-				},
-				fs: {
-					total: 0,
-					used: 0,
-				},
-			};
+			if (!this.serverSettings.enableServerMachineStats)
+				return {
+					machine: "?",
+					cpu: {
+						model: "?",
+						cores: 0,
+					},
+					mem: {
+						total: 0,
+					},
+					fs: {
+						total: 0,
+						used: 0,
+					},
+				};
 
 			const memStats = await si.mem();
 			const fsStats = await si.fsSize();

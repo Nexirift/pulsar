@@ -3,18 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Brackets } from 'typeorm';
-import { Inject, Injectable } from '@nestjs/common';
-import JSON5 from 'json5';
-import type { Packed } from '@/misc/json-schema.js';
-import type { MiMeta } from '@/models/Meta.js';
-import type { AdsRepository } from '@/models/_.js';
-import { bindThis } from '@/decorators.js';
-import { SystemAccountService } from '@/core/SystemAccountService.js';
-import type { Config } from '@/config.js';
-import { DI } from '@/di-symbols.js';
-import { DEFAULT_POLICIES } from '@/core/RoleService.js';
-import { TimeService } from '@/global/TimeService.js';
+import { Brackets } from "typeorm";
+import { Inject, Injectable } from "@nestjs/common";
+import JSON5 from "json5";
+import type { Packed } from "@/misc/json-schema.js";
+import type { MiMeta } from "@/models/Meta.js";
+import type { AdsRepository } from "@/models/_.js";
+import { bindThis } from "@/decorators.js";
+import { SystemAccountService } from "@/core/SystemAccountService.js";
+import type { Config } from "@/config.js";
+import { DI } from "@/di-symbols.js";
+import { DEFAULT_POLICIES } from "@/core/RoleService.js";
+import { TimeService } from "@/global/TimeService.js";
 
 @Injectable()
 export class MetaEntityService {
@@ -30,24 +30,28 @@ export class MetaEntityService {
 
 		private systemAccountService: SystemAccountService,
 		private readonly timeService: TimeService,
-	) { }
+	) {}
 
 	@bindThis
-	public async pack(meta?: MiMeta): Promise<Packed<'MetaLite'>> {
+	public async pack(meta?: MiMeta): Promise<Packed<"MetaLite">> {
 		let instance = meta;
 
 		if (!instance) {
 			instance = this.meta;
 		}
 
-		const ads = await this.adsRepository.createQueryBuilder('ads')
-			.where('ads.expiresAt > :now', { now: this.timeService.date })
-			.andWhere('ads.startsAt <= :now', { now: this.timeService.date })
-			.andWhere(new Brackets(qb => {
-				// 曜日のビットフラグを確認する
-				qb.where('ads.dayOfWeek & :dayOfWeek > 0', { dayOfWeek: 1 << this.timeService.date.getDay() })
-					.orWhere('ads.dayOfWeek = 0');
-			}))
+		const ads = await this.adsRepository
+			.createQueryBuilder("ads")
+			.where("ads.expiresAt > :now", { now: this.timeService.date })
+			.andWhere("ads.startsAt <= :now", { now: this.timeService.date })
+			.andWhere(
+				new Brackets((qb) => {
+					// 曜日のビットフラグを確認する
+					qb.where("ads.dayOfWeek & :dayOfWeek > 0", {
+						dayOfWeek: 1 << this.timeService.date.getDay(),
+					}).orWhere("ads.dayOfWeek = 0");
+				}),
+			)
 			.getMany();
 
 		// クライアントの手間を減らすためあらかじめJSONに変換しておく
@@ -55,18 +59,20 @@ export class MetaEntityService {
 		let defaultDarkTheme: string | null = null;
 		if (instance.defaultLightTheme) {
 			try {
-				defaultLightTheme = JSON.stringify(JSON5.parse(instance.defaultLightTheme));
-			} catch (e) {
-			}
+				defaultLightTheme = JSON.stringify(
+					JSON5.parse(instance.defaultLightTheme),
+				);
+			} catch (e) {}
 		}
 		if (instance.defaultDarkTheme) {
 			try {
-				defaultDarkTheme = JSON.stringify(JSON5.parse(instance.defaultDarkTheme));
-			} catch (e) {
-			}
+				defaultDarkTheme = JSON.stringify(
+					JSON5.parse(instance.defaultDarkTheme),
+				);
+			} catch (e) {}
 		}
 
-		const packed: Packed<'MetaLite'> = {
+		const packed: Packed<"MetaLite"> = {
 			maintainerName: instance.maintainerName,
 			maintainerEmail: instance.maintainerEmail,
 
@@ -110,7 +116,7 @@ export class MetaEntityService {
 			enableTenor: instance.enableTenor,
 			swPublickey: instance.swPublicKey,
 			themeColor: instance.themeColor,
-			mascotImageUrl: instance.mascotImageUrl ?? '/assets/ai.png',
+			mascotImageUrl: instance.mascotImageUrl ?? "/assets/ai.png",
 			bannerUrl: instance.bannerUrl,
 			infoImageUrl: instance.infoImageUrl,
 			serverErrorImageUrl: instance.serverErrorImageUrl,
@@ -130,7 +136,7 @@ export class MetaEntityService {
 			defaultLightTheme,
 			defaultDarkTheme,
 			defaultLike: instance.defaultLike,
-			ads: ads.map(ad => ({
+			ads: ads.map((ad) => ({
 				id: ad.id,
 				url: ad.url,
 				place: ad.place,
@@ -143,7 +149,10 @@ export class MetaEntityService {
 			enableEmail: instance.enableEmail,
 			enableServiceWorker: instance.enableServiceWorker,
 
-			translatorAvailable: instance.deeplAuthKey != null || instance.libreTranslateURL != null || instance.deeplFreeMode && instance.deeplFreeInstance != null,
+			translatorAvailable:
+				instance.deeplAuthKey != null ||
+				instance.libreTranslateURL != null ||
+				(instance.deeplFreeMode && instance.deeplFreeInstance != null),
 
 			serverRules: instance.serverRules,
 
@@ -152,7 +161,11 @@ export class MetaEntityService {
 			sentryForFrontend: this.config.sentryForFrontend ?? null,
 			mediaProxy: this.config.mediaProxy,
 			enableUrlPreview: instance.urlPreviewEnabled,
-			noteSearchableScope: (this.config.meilisearch == null || this.config.meilisearch.scope !== 'local') ? 'global' : 'local',
+			noteSearchableScope:
+				this.config.meilisearch == null ||
+				this.config.meilisearch.scope !== "local"
+					? "global"
+					: "local",
 			maxFileSize: this.config.maxFileSize,
 			federation: this.meta.federation,
 		};
@@ -161,7 +174,7 @@ export class MetaEntityService {
 	}
 
 	@bindThis
-	public async packDetailed(meta?: MiMeta): Promise<Packed<'MetaDetailed'>> {
+	public async packDetailed(meta?: MiMeta): Promise<Packed<"MetaDetailed">> {
 		let instance = meta;
 
 		if (!instance) {
@@ -170,9 +183,9 @@ export class MetaEntityService {
 
 		const packed = await this.pack(instance);
 
-		const proxyAccount = await this.systemAccountService.fetch('proxy');
+		const proxyAccount = await this.systemAccountService.fetch("proxy");
 
-		const packDetailed: Packed<'MetaDetailed'> = {
+		const packDetailed: Packed<"MetaDetailed"> = {
 			...packed,
 			cacheRemoteFiles: instance.cacheRemoteFiles,
 			cacheRemoteSensitiveFiles: instance.cacheRemoteSensitiveFiles,
@@ -197,4 +210,3 @@ export class MetaEntityService {
 		return packDetailed;
 	}
 }
-

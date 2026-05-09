@@ -3,22 +3,22 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { IsNull } from 'typeorm';
-import { DI } from '@/di-symbols.js';
-import type { UsersRepository, DriveFilesRepository } from '@/models/_.js';
-import type Logger from '@/logger.js';
-import * as Acct from '@/misc/acct.js';
-import { RemoteUserResolveService } from '@/core/RemoteUserResolveService.js';
-import { DownloadService } from '@/core/DownloadService.js';
-import { UserMutingService } from '@/core/UserMutingService.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import { bindThis } from '@/decorators.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import { NotificationService } from '@/core/NotificationService.js';
-import type * as Bull from 'bullmq';
-import type { DbUserImportJobData } from '../types.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { IsNull } from "typeorm";
+import { DI } from "@/di-symbols.js";
+import type { UsersRepository, DriveFilesRepository } from "@/models/_.js";
+import type Logger from "@/logger.js";
+import * as Acct from "@/misc/acct.js";
+import { RemoteUserResolveService } from "@/core/RemoteUserResolveService.js";
+import { DownloadService } from "@/core/DownloadService.js";
+import { UserMutingService } from "@/core/UserMutingService.js";
+import { UtilityService } from "@/core/UtilityService.js";
+import { bindThis } from "@/decorators.js";
+import { renderInlineError } from "@/misc/render-inline-error.js";
+import { QueueLoggerService } from "../QueueLoggerService.js";
+import { NotificationService } from "@/core/NotificationService.js";
+import type * as Bull from "bullmq";
+import type { DbUserImportJobData } from "../types.js";
 
 @Injectable()
 export class ImportMutingProcessorService {
@@ -38,7 +38,8 @@ export class ImportMutingProcessorService {
 		private queueLoggerService: QueueLoggerService,
 		private notificationService: NotificationService,
 	) {
-		this.logger = this.queueLoggerService.logger.createSubLogger('import-muting');
+		this.logger =
+			this.queueLoggerService.logger.createSubLogger("import-muting");
 	}
 
 	@bindThis
@@ -63,27 +64,32 @@ export class ImportMutingProcessorService {
 
 		let linenum = 0;
 
-		for (const line of csv.trim().split('\n')) {
+		for (const line of csv.trim().split("\n")) {
 			linenum++;
 
 			try {
-				const acct = line.split(',')[0].trim();
+				const acct = line.split(",")[0].trim();
 				const { username, host } = Acct.parse(acct);
 
 				if (!host) continue;
 
-				let target = this.utilityService.isSelfHost(host) ? await this.usersRepository.findOneBy({
-					host: IsNull(),
-					usernameLower: username.toLowerCase(),
-				}) : await this.usersRepository.findOneBy({
-					host: this.utilityService.toPuny(host),
-					usernameLower: username.toLowerCase(),
-				});
+				let target = this.utilityService.isSelfHost(host)
+					? await this.usersRepository.findOneBy({
+							host: IsNull(),
+							usernameLower: username.toLowerCase(),
+						})
+					: await this.usersRepository.findOneBy({
+							host: this.utilityService.toPuny(host),
+							usernameLower: username.toLowerCase(),
+						});
 
 				if (host == null && target == null) continue;
 
 				if (target == null) {
-					target = await this.remoteUserResolveService.resolveUser(username, host);
+					target = await this.remoteUserResolveService.resolveUser(
+						username,
+						host,
+					);
 				}
 
 				if (target == null) {
@@ -101,11 +107,15 @@ export class ImportMutingProcessorService {
 			}
 		}
 
-		this.notificationService.createNotification(job.data.user.id, 'importCompleted', {
-			importedEntity: 'muting',
-			fileId: file.id,
-		});
+		this.notificationService.createNotification(
+			job.data.user.id,
+			"importCompleted",
+			{
+				importedEntity: "muting",
+				fileId: file.id,
+			},
+		);
 
-		this.logger.debug('Imported');
+		this.logger.debug("Imported");
 	}
 }

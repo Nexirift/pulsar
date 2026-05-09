@@ -3,7 +3,7 @@
 	"files": [],
 	// WebStorm only reads one tsconfig per directory, so this tricks it into loading both.
 	"references": [
-		{ "path":  "./tsconfig.scripts.json" },
-		{ "path":  "./tsconfig.game.json" }
+		{ "path": "./tsconfig.scripts.json" },
+		{ "path": "./tsconfig.game.json" }
 	]
 }

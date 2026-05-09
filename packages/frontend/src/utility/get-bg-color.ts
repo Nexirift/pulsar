@@ -3,9 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import tinycolor from 'tinycolor2';
+import tinycolor from "tinycolor2";
 
-export const getBgColor = (elem?: Element | null | undefined): string | null => {
+export const getBgColor = (
+	elem?: Element | null | undefined,
+): string | null => {
 	if (elem == null) return null;
 
 	const { backgroundColor: bg } = window.getComputedStyle(elem);

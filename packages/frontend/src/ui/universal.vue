@@ -4,67 +4,106 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="[$style.root, { '_forceShrinkSpacer': deviceKind === 'smartphone' }]">
-	<XTitlebar v-if="prefer.r.showTitlebar.value" style="flex-shrink: 0;"/>
+	<div
+		:class="[$style.root, { _forceShrinkSpacer: deviceKind === 'smartphone' }]"
+	>
+		<XTitlebar v-if="prefer.r.showTitlebar.value" style="flex-shrink: 0" />
 
-	<div :class="$style.nonTitlebarArea">
-		<XSidebar v-if="!isMobile" :class="$style.sidebar" :onWidgetButtonClick="toggleWidgets"/>
+		<div :class="$style.nonTitlebarArea">
+			<XSidebar
+				v-if="!isMobile"
+				:class="$style.sidebar"
+				:onWidgetButtonClick="toggleWidgets"
+			/>
 
-		<div :class="[$style.contents, !isMobile && prefer.r.showTitlebar.value ? $style.withSidebarAndTitlebar : null]" @contextmenu.stop="onContextmenu">
-			<div>
-				<XPreferenceRestore v-if="shouldSuggestRestoreBackup"/>
-				<XAnnouncements v-if="$i"/>
-				<XStatusBars :class="$style.statusbars"/>
+			<div
+				:class="[
+					$style.contents,
+					!isMobile && prefer.r.showTitlebar.value
+						? $style.withSidebarAndTitlebar
+						: null,
+				]"
+				@contextmenu.stop="onContextmenu"
+			>
+				<div>
+					<XPreferenceRestore v-if="shouldSuggestRestoreBackup" />
+					<XAnnouncements v-if="$i" />
+					<XStatusBars :class="$style.statusbars" />
+				</div>
+				<StackingRouterView
+					v-if="prefer.s['experimental.stackingRouterView']"
+					:class="$style.content"
+				/>
+				<RouterView v-else :class="$style.content" />
+				<XMobileFooterMenu
+					v-if="isMobile"
+					ref="navFooter"
+					v-model:drawerMenuShowing="drawerMenuShowing"
+					v-model:widgetsShowing="widgetsShowing"
+				/>
 			</div>
-			<StackingRouterView v-if="prefer.s['experimental.stackingRouterView']" :class="$style.content"/>
-			<RouterView v-else :class="$style.content"/>
-			<XMobileFooterMenu v-if="isMobile" ref="navFooter" v-model:drawerMenuShowing="drawerMenuShowing" v-model:widgetsShowing="widgetsShowing"/>
+
+			<div
+				v-if="
+					isDesktop &&
+					!pageMetadata?.needWideArea &&
+					prefer.r.widgetsVisible.value
+				"
+				:class="$style.widgets"
+			>
+				<XWidgets />
+			</div>
 		</div>
 
-		<div v-if="isDesktop && !pageMetadata?.needWideArea && prefer.r.widgetsVisible.value" :class="$style.widgets">
-			<XWidgets/>
-		</div>
+		<XCommon
+			v-model:drawerMenuShowing="drawerMenuShowing"
+			v-model:widgetsShowing="widgetsShowing"
+		/>
 	</div>
-
-	<XCommon v-model:drawerMenuShowing="drawerMenuShowing" v-model:widgetsShowing="widgetsShowing"/>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { defineAsyncComponent, provide, onMounted, computed, ref } from 'vue';
-import { instanceName } from '@@/js/config.js';
-import { isLink } from '@@/js/is-link.js';
-import XCommon from './_common_/common.vue';
-import type { PageMetadata } from '@/page.js';
-import XMobileFooterMenu from '@/ui/_common_/mobile-footer-menu.vue';
-import XPreferenceRestore from '@/ui/_common_/PreferenceRestore.vue';
-import XTitlebar from '@/ui/_common_/titlebar.vue';
-import XSidebar from '@/ui/_common_/navbar.vue';
-import * as os from '@/os.js';
-import { i18n } from '@/i18n.js';
-import { $i } from '@/i.js';
-import { provideMetadataReceiver, provideReactiveMetadata } from '@/page.js';
-import { deviceKind } from '@/utility/device-kind.js';
-import { miLocalStorage } from '@/local-storage.js';
-import { mainRouter } from '@/router.js';
-import { prefer } from '@/preferences.js';
-import { shouldSuggestRestoreBackup } from '@/preferences/utility.js';
-import { DI } from '@/di.js';
+import { defineAsyncComponent, provide, onMounted, computed, ref } from "vue";
+import { instanceName } from "@@/js/config.js";
+import { isLink } from "@@/js/is-link.js";
+import XCommon from "./_common_/common.vue";
+import type { PageMetadata } from "@/page.js";
+import XMobileFooterMenu from "@/ui/_common_/mobile-footer-menu.vue";
+import XPreferenceRestore from "@/ui/_common_/PreferenceRestore.vue";
+import XTitlebar from "@/ui/_common_/titlebar.vue";
+import XSidebar from "@/ui/_common_/navbar.vue";
+import * as os from "@/os.js";
+import { i18n } from "@/i18n.js";
+import { $i } from "@/i.js";
+import { provideMetadataReceiver, provideReactiveMetadata } from "@/page.js";
+import { deviceKind } from "@/utility/device-kind.js";
+import { miLocalStorage } from "@/local-storage.js";
+import { mainRouter } from "@/router.js";
+import { prefer } from "@/preferences.js";
+import { shouldSuggestRestoreBackup } from "@/preferences/utility.js";
+import { DI } from "@/di.js";
 
-const XWidgets = defineAsyncComponent(() => import('./_common_/widgets.vue'));
-const XStatusBars = defineAsyncComponent(() => import('@/ui/_common_/statusbars.vue'));
-const XAnnouncements = defineAsyncComponent(() => import('@/ui/_common_/announcements.vue'));
+const XWidgets = defineAsyncComponent(() => import("./_common_/widgets.vue"));
+const XStatusBars = defineAsyncComponent(
+	() => import("@/ui/_common_/statusbars.vue"),
+);
+const XAnnouncements = defineAsyncComponent(
+	() => import("@/ui/_common_/announcements.vue"),
+);
 
-const isRoot = computed(() => mainRouter.currentRoute.value.name === 'index');
+const isRoot = computed(() => mainRouter.currentRoute.value.name === "index");
 
 const DESKTOP_THRESHOLD = 1100;
 const MOBILE_THRESHOLD = 500;
 
 // デスクトップでウィンドウを狭くしたときモバイルUIが表示されて欲しいことはあるので deviceKind === 'desktop' の判定は行わない
 const isDesktop = ref(window.innerWidth >= DESKTOP_THRESHOLD);
-const isMobile = ref(deviceKind === 'smartphone' || window.innerWidth <= MOBILE_THRESHOLD);
-window.addEventListener('resize', () => {
-	isMobile.value = deviceKind === 'smartphone' || window.innerWidth <= MOBILE_THRESHOLD;
+const isMobile = ref(
+	deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD,
+);
+window.addEventListener("resize", () => {
+	isMobile.value =
+		deviceKind === "smartphone" || window.innerWidth <= MOBILE_THRESHOLD;
 });
 
 const pageMetadata = ref<null | PageMetadata>(null);
@@ -87,7 +126,7 @@ provideReactiveMetadata(pageMetadata);
 const drawerMenuShowing = ref(false);
 provide(DI.drawerMenuShowing, drawerMenuShowing);
 
-mainRouter.on('change', () => {
+mainRouter.on("change", () => {
 	drawerMenuShowing.value = false;
 });
 
@@ -97,42 +136,58 @@ function toggleWidgets() {
 	if (!isDesktop.value) {
 		widgetsShowing.value = true;
 	} else {
-		prefer.commit('widgetsVisible', !prefer.s.widgetsVisible);
+		prefer.commit("widgetsVisible", !prefer.s.widgetsVisible);
 	}
 }
 
 if (window.innerWidth > 1024) {
-	const tempUI = miLocalStorage.getItem('ui_temp');
+	const tempUI = miLocalStorage.getItem("ui_temp");
 	if (tempUI) {
-		miLocalStorage.setItem('ui', tempUI);
-		miLocalStorage.removeItem('ui_temp');
+		miLocalStorage.setItem("ui", tempUI);
+		miLocalStorage.removeItem("ui_temp");
 		window.location.reload();
 	}
 }
 
 onMounted(() => {
 	if (!isDesktop.value) {
-		window.addEventListener('resize', () => {
-			if (window.innerWidth >= DESKTOP_THRESHOLD) isDesktop.value = true;
-		}, { passive: true });
+		window.addEventListener(
+			"resize",
+			() => {
+				if (window.innerWidth >= DESKTOP_THRESHOLD) isDesktop.value = true;
+			},
+			{ passive: true },
+		);
 	}
 });
 
 const onContextmenu = (ev) => {
 	if (isLink(ev.target)) return;
-	if (['INPUT', 'TEXTAREA', 'IMG', 'VIDEO', 'CANVAS'].includes(ev.target.tagName) || ev.target.attributes['contenteditable']) return;
-	if (window.getSelection()?.toString() !== '') return;
+	if (
+		["INPUT", "TEXTAREA", "IMG", "VIDEO", "CANVAS"].includes(
+			ev.target.tagName,
+		) ||
+		ev.target.attributes["contenteditable"]
+	)
+		return;
+	if (window.getSelection()?.toString() !== "") return;
 	const path = mainRouter.getCurrentFullPath();
-	os.contextMenu([{
-		type: 'label',
-		text: path,
-	}, {
-		icon: 'ti ti-window-maximize',
-		text: i18n.ts.openInWindow,
-		action: () => {
-			os.pageWindow(path);
-		},
-	}], ev);
+	os.contextMenu(
+		[
+			{
+				type: "label",
+				text: path,
+			},
+			{
+				icon: "ti ti-window-maximize",
+				text: i18n.ts.openInWindow,
+				action: () => {
+					os.pageWindow(path);
+				},
+			},
+		],
+		ev,
+	);
 };
 </script>
 
@@ -189,7 +244,8 @@ $widgets-hide-threshold: 1090px;
 	height: 100%;
 	box-sizing: border-box;
 	overflow: auto;
-	padding: var(--MI-margin) var(--MI-margin) calc(var(--MI-margin) + env(safe-area-inset-bottom, 0px));
+	padding: var(--MI-margin) var(--MI-margin)
+		calc(var(--MI-margin) + env(safe-area-inset-bottom, 0px));
 	border-left: solid 0.5px var(--MI_THEME-divider);
 	background: var(--MI_THEME-bg);
 

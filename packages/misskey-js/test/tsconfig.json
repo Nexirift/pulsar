@@ -8,10 +8,6 @@
 		// Output
 		"outDir": "../temp/built/test/"
 	},
-	"references": [
-		{ "path": "../src/tsconfig.json" }
-	],
-	"include": [
-		"**/*"
-	]
+	"references": [{ "path": "../src/tsconfig.json" }],
+	"include": ["**/*"]
 }

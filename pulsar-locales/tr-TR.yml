@@ -1,6 +1,6 @@
 ---
 introMisskey: "Hoş geldiniz! Pulsar, açık kaynaklı, merkeziyetsiz bir mikroblog servisidir.\n\"Notlar\" oluşturarak düşüncelerinizi çevrenizdeki herkesle paylaşabilirsiniz. 📡\n\"Tepkiler\" ile de başkalarının notlarına duygularınızı hızlıca ifade edebilirsiniz. 👍\nHaydi, yeni bir dünyayı keşfedelim! 🚀"
-poweredByMisskeyDescription: "{name}, Misskey tabanlı <b>Pulsar</b> açık kaynak platformu üzerinde çalışan servislerden biridir (\"Misskey sunucusu\" olarak da anılır)."
+poweredByMisskeyDescription: '{name}, Misskey tabanlı <b>Pulsar</b> açık kaynak platformu üzerinde çalışan servislerden biridir ("Misskey sunucusu" olarak da anılır).'
 flagAsBotDescription: "Bu hesabın bir program tarafından kontrol edildiğini belirtmek için etkinleştirin. Etkinleştirildiğinde, diğer botlarla sonsuz etkileşim döngülerini önlemek ve Pulsar’in iç sistemlerinin bu hesabı bot olarak ele almasını sağlamak için bir işaret olarak kullanılır."
 intro: "Pulsar kurulumu tamamlandı! Lütfen bir yönetici hesabı oluşturun."
 aboutMisskey: "Pulsar Hakkında"
@@ -12,7 +12,7 @@ misskeyUpdated: "Pulsar güncellendi!"
 didYouLikeMisskey: "Pulsar’i beğendiniz mi?"
 pleaseDonate: "{host}, Pulsar açık kaynak yazılımını kullanmaktadır. Pulsar'in gelişiminin devamı için bağışlarınızı memnuniyetle kabul ederiz!"
 goToMisskey: "Pulsar’e git"
-repositoryUrlDescription: "Eğer kaynak kodun halka açık olduğu bir depo varsa URL’sini girin. Pulsar’i olduğu gibi kullanıyorsanız (kaynakta değişiklik yapmadan) şu adresi girin: https://code.nexirift.com/Nexirift/pulsar."
+repositoryUrlDescription: "Eğer kaynak kodun halka açık olduğu bir depo varsa URL’sini girin. Pulsar’i olduğu gibi kullanıyorsanız (kaynakta değişiklik yapmadan) şu adresi girin: https://git.codeguilds.org/Nexirift/pulsar."
 _initialAccountSetting:
   youCanContinueTutorial: "{name} (Pulsar) kullanımına dair eğitime devam edebilir veya buradan çıkıp doğrudan kullanmaya başlayabilirsiniz."
 _initialTutorial:
@@ -36,12 +36,12 @@ _achievements:
       flavor: "Pulsar’i kullandığınız için teşekkürler!"
     _iLoveMisskey:
       title: "I Love Pulsar"
-      description: "\"I ❤ #Pulsar\" gönder"
+      description: '"I ❤ #Pulsar" gönder'
       flavor: "Pulsar geliştirme ekibi desteğiniz için minnettar!"
     _client30min:
       description: "Pulsar’i en az 30 dakika açık tut"
     _client60min:
-      title: "No \"Miss\" in Pulsar"
+      title: 'No "Miss" in Pulsar'
       description: "Pulsar’i en az 60 dakika açık tut"
     _brainDiver:
       flavor: "Pulsar-Pulsar La-Tu-Ma"

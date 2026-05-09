@@ -4,26 +4,45 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root">
-	<div :class="$style.title">
-		<img :src="instance.sidebarLogoUrl || instance.iconUrl || instance.faviconUrl || '/favicon.ico'" alt="" :class="instance.sidebarLogoUrl ? $style.wideInstanceIcon : $style.instanceIcon"/>
-		<span :class="$style.instanceTitle">{{ instance.name ?? host }}</span>
+	<div :class="$style.root">
+		<div :class="$style.title">
+			<img
+				:src="
+					instance.sidebarLogoUrl ||
+					instance.iconUrl ||
+					instance.faviconUrl ||
+					'/favicon.ico'
+				"
+				alt=""
+				:class="
+					instance.sidebarLogoUrl
+						? $style.wideInstanceIcon
+						: $style.instanceIcon
+				"
+			/>
+			<span :class="$style.instanceTitle">{{ instance.name ?? host }}</span>
+		</div>
+		<div :class="$style.controls">
+			<span :class="$style.left">
+				<button
+					v-if="canBack"
+					class="_button"
+					:class="$style.button"
+					@click="goBack"
+				>
+					<i class="ti ti-arrow-left"></i>
+				</button>
+			</span>
+			<span :class="$style.right"> </span>
+		</div>
 	</div>
-	<div :class="$style.controls">
-		<span :class="$style.left">
-			<button v-if="canBack" class="_button" :class="$style.button" @click="goBack"><i class="ti ti-arrow-left"></i></button>
-		</span>
-		<span :class="$style.right">
-		</span>
-	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { host } from '@@/js/config.js';
-import { ref } from 'vue';
-import { instance } from '@/instance.js';
-import { prefer } from '@/preferences.js';
+import { host } from "@@/js/config.js";
+import { ref } from "vue";
+import { instance } from "@/instance.js";
+import { prefer } from "@/preferences.js";
 
 const canBack = ref(true);
 

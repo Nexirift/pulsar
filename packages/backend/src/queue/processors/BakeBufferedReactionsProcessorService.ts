@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import type Logger from '@/logger.js';
-import { bindThis } from '@/decorators.js';
-import { ReactionsBufferingService } from '@/core/ReactionsBufferingService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type * as Bull from 'bullmq';
-import { MiMeta } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
+import { Inject, Injectable } from "@nestjs/common";
+import type Logger from "@/logger.js";
+import { bindThis } from "@/decorators.js";
+import { ReactionsBufferingService } from "@/core/ReactionsBufferingService.js";
+import { QueueLoggerService } from "../QueueLoggerService.js";
+import type * as Bull from "bullmq";
+import { MiMeta } from "@/models/_.js";
+import { DI } from "@/di-symbols.js";
 
 @Injectable()
 export class BakeBufferedReactionsProcessorService {
@@ -23,20 +23,22 @@ export class BakeBufferedReactionsProcessorService {
 		private reactionsBufferingService: ReactionsBufferingService,
 		private queueLoggerService: QueueLoggerService,
 	) {
-		this.logger = this.queueLoggerService.logger.createSubLogger('bake-buffered-reactions');
+		this.logger = this.queueLoggerService.logger.createSubLogger(
+			"bake-buffered-reactions",
+		);
 	}
 
 	@bindThis
 	public async process(): Promise<void> {
 		if (!this.meta.enableReactionsBuffering) {
-			this.logger.info('Reactions buffering is disabled. Skipping...');
+			this.logger.info("Reactions buffering is disabled. Skipping...");
 			return;
 		}
 
-		this.logger.info('Baking buffered reactions...');
+		this.logger.info("Baking buffered reactions...");
 
 		await this.reactionsBufferingService.bake();
 
-		this.logger.info('All buffered reactions baked.');
+		this.logger.info("All buffered reactions baked.");
 	}
 }

@@ -3,24 +3,20 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import nodePath from 'node:path';
-import nodeFs from 'node:fs/promises';
+import nodePath from "node:path";
+import nodeFs from "node:fs/promises";
 
 /**
  * Root directory of the repository.
  * @type {string}
  */
-const rootDir = nodePath.resolve(import.meta.dirname, '..');
+const rootDir = nodePath.resolve(import.meta.dirname, "..");
 
 /**
  * Filename patterns to exclude.
  * @type {RegExp[]}
  */
-const excludedPaths = [
-	/\/node_modules\//,
-	/\/(js_)?built\//i,
-	/\/temp\//i,
-];
+const excludedPaths = [/\/node_modules\//, /\/(js_)?built\//i, /\/temp\//i];
 
 /**
  * All packages located in the solution
@@ -32,13 +28,19 @@ const packages = await loadPackages();
  */
 const dependencies = mapDependencies(packages);
 const allDependencies = Object.values(dependencies);
-const allDependenciesWithDifference = allDependencies.filter(d => d.hasDifference);
+const allDependenciesWithDifference = allDependencies.filter(
+	(d) => d.hasDifference,
+);
 
-console.log(`Found ${allDependenciesWithDifference.length} mismatched dependencies (out of ${allDependencies.length} total) from ${packages.length} packages.`);
+console.log(
+	`Found ${allDependenciesWithDifference.length} mismatched dependencies (out of ${allDependencies.length} total) from ${packages.length} packages.`,
+);
 
 if (allDependenciesWithDifference.length > 0) {
 	await syncDependencies(allDependenciesWithDifference);
-	console.log(`package.json files have changed. Please run "pnpm i" to update the pnpm-lock.yaml, then verify that everything still works.`);
+	console.log(
+		`package.json files have changed. Please run "pnpm i" to update the pnpm-lock.yaml, then verify that everything still works.`,
+	);
 }
 
 async function loadPackages() {
@@ -58,11 +60,11 @@ async function loadPackages() {
 			const path = nodePath.join(dir, entry.name);
 
 			// Check for filtered paths
-			let filterPath = path.replaceAll(nodePath.sep, '/');
+			let filterPath = path.replaceAll(nodePath.sep, "/");
 			if (entry.isDirectory()) {
-				filterPath += '/';
+				filterPath += "/";
 			}
-			if (excludedPaths.some(p => p.test(filterPath))) {
+			if (excludedPaths.some((p) => p.test(filterPath))) {
 				//console.debug(`Skipping excluded path ${path}`);
 				continue;
 			}
@@ -72,16 +74,18 @@ async function loadPackages() {
 				continue;
 			}
 
-			if (entry.isFile() && entry.name === 'package.json') {
+			if (entry.isFile() && entry.name === "package.json") {
 				try {
-					const packageText = await nodeFs.readFile(path, { encoding: 'utf-8' });
+					const packageText = await nodeFs.readFile(path, {
+						encoding: "utf-8",
+					});
 					const packageJson = JSON.parse(packageText);
 
 					// Handle duplicate package names
 					let packageName = packageJson.name || nodePath.basename(dir);
-					if (packages.some(p => p.name === packageName)) {
+					if (packages.some((p) => p.name === packageName)) {
 						let i = 1;
-						while (packages.some(p => p.name === `${packageName}:${i}`) ){
+						while (packages.some((p) => p.name === `${packageName}:${i}`)) {
 							i++;
 						}
 						packageName = `${packageName}:${i}`;
@@ -89,11 +93,31 @@ async function loadPackages() {
 
 					// Parse and flatten all dependency sections
 					const dependencies = mergeDependencies(packageName, {
-						resolutions: parseDependencies(packageName, packageJson, 'resolutions'),
-						peerDependencies: parseDependencies(packageName, packageJson, 'peerDependencies'),
-						optionalDependencies: parseDependencies(packageName, packageJson, 'optionalDependencies'),
-						devDependencies: parseDependencies(packageName, packageJson, 'devDependencies'),
-						dependencies: parseDependencies(packageName, packageJson, 'dependencies'),
+						resolutions: parseDependencies(
+							packageName,
+							packageJson,
+							"resolutions",
+						),
+						peerDependencies: parseDependencies(
+							packageName,
+							packageJson,
+							"peerDependencies",
+						),
+						optionalDependencies: parseDependencies(
+							packageName,
+							packageJson,
+							"optionalDependencies",
+						),
+						devDependencies: parseDependencies(
+							packageName,
+							packageJson,
+							"devDependencies",
+						),
+						dependencies: parseDependencies(
+							packageName,
+							packageJson,
+							"dependencies",
+						),
 					});
 
 					packages.push({
@@ -104,7 +128,9 @@ async function loadPackages() {
 					});
 
 					if (dependencies.length > 0) {
-						console.info(`Loaded ${dependencies.length} dependencies from ${packageName}`);
+						console.info(
+							`Loaded ${dependencies.length} dependencies from ${packageName}`,
+						);
 					} else {
 						// console.debug(`Loaded no dependencies from ${packageName}`);
 					}
@@ -114,7 +140,6 @@ async function loadPackages() {
 			}
 		}
 	};
-
 
 	await loadPackagesFrom(rootDir);
 	return packages;
@@ -133,9 +158,11 @@ function mergeDependencies(packageName, dependencyGroups) {
 		/** @type {Dependency[]} */
 		const typeDependencies = dependencyGroups[type];
 		for (const dependency of typeDependencies) {
-			const existing = dependencies.find(d => d.name === dependency.name);
+			const existing = dependencies.find((d) => d.name === dependency.name);
 			if (existing) {
-				console.warn(`[${packageName}/${type}/${dependency.name}] Skipping duplicate dependency (was already defined in ${existing.type})`);
+				console.warn(
+					`[${packageName}/${type}/${dependency.name}] Skipping duplicate dependency (was already defined in ${existing.type})`,
+				);
 			} else {
 				dependencies.push(dependency);
 			}
@@ -156,7 +183,7 @@ function parseDependencies(packageName, packageJson, type) {
 	const dependencies = [];
 
 	// Make sure we actually have this type
-	if (typeof(packageJson[type]) === 'object') {
+	if (typeof packageJson[type] === "object") {
 		for (const [name, npmVersion] of Object.entries(packageJson[type])) {
 			const version = parseVersionString(packageName, type, name, npmVersion);
 			if (version != null) {
@@ -181,34 +208,47 @@ function parseDependencies(packageName, packageJson, type) {
  * @returns {DepVersion | null}
  */
 function parseVersionString(packageName, depType, depName, versionString) {
-	if (typeof(versionString) !== 'string') {
-		console.warn(`[${packageName}/${depType}/${depName}] Skipping version string "${versionString}" - incorrect type ${typeof(versionString)}`);
+	if (typeof versionString !== "string") {
+		console.warn(
+			`[${packageName}/${depType}/${depName}] Skipping version string "${versionString}" - incorrect type ${typeof versionString}`,
+		);
 		return null;
 	}
 
-	if (versionString.startsWith('npm:') || versionString.startsWith('workspace:')) {
+	if (
+		versionString.startsWith("npm:") ||
+		versionString.startsWith("workspace:")
+	) {
 		//console.warn(`[${packageName}/${depType}/${depName}] Skipping version string "${versionString}" - package redirects are not supported`);
 		return null;
 	}
 
-	if (versionString.startsWith('github:') || versionString.startsWith('http:') || versionString.startsWith('https:')) {
+	if (
+		versionString.startsWith("github:") ||
+		versionString.startsWith("http:") ||
+		versionString.startsWith("https:")
+	) {
 		//console.warn(`[${packageName}/${depType}/${depName}] Skipping version string "${versionString}" - external packages are not supported`);
 		return null;
 	}
 
-	if (versionString === '') {
-		versionString = '*';
-	} else if (versionString === 'latest') {
-		versionString = '*';
-	} else if (versionString === 'next') {
-		versionString = '*';
+	if (versionString === "") {
+		versionString = "*";
+	} else if (versionString === "latest") {
+		versionString = "*";
+	} else if (versionString === "next") {
+		versionString = "*";
 	} else {
-		versionString = versionString.replaceAll(/(\b|^)[x*]+(\b|$)/g, '*');
+		versionString = versionString.replaceAll(/(\b|^)[x*]+(\b|$)/g, "*");
 	}
 
-	const versionMatch = versionString.match(/^([\^<>~=]*)((\d+|\*)(\.(\d+|\*)+)*)(\b|$|[-+])/);
+	const versionMatch = versionString.match(
+		/^([\^<>~=]*)((\d+|\*)(\.(\d+|\*)+)*)(\b|$|[-+])/,
+	);
 	if (!versionMatch) {
-		console.warn(`[${packageName}/${depType}/${depName}] Skipping version string "${versionString}" - not in a parseable format`);
+		console.warn(
+			`[${packageName}/${depType}/${depName}] Skipping version string "${versionString}" - not in a parseable format`,
+		);
 		return null;
 	}
 
@@ -218,29 +258,29 @@ function parseVersionString(packageName, depType, depName, versionString) {
 	// Parse the primary version (x.y.z)
 	/** @type {DepVersion} */
 	const parsedVersion = primaryVersion
-		.split('.')
-		.map(p => p === '*' ? '*' : parseInt(p));
+		.split(".")
+		.map((p) => (p === "*" ? "*" : parseInt(p)));
 
 	// Parse the upgrade prefix
-	if (upgradePrefix === '>' || upgradePrefix === '>=') {
-		parsedVersion.push('*');
-	} else if (upgradePrefix === '~') {
+	if (upgradePrefix === ">" || upgradePrefix === ">=") {
+		parsedVersion.push("*");
+	} else if (upgradePrefix === "~") {
 		// "Allows patch-level changes if a minor version is specified on the comparator. Allows minor-level changes if not."
 		// https://github.com/npm/node-semver#versions
 		const start = parsedVersion.length > 2 ? 2 : 1;
 		for (let i = start; i < parsedVersion.length; i++) {
-			parsedVersion[i] = '*';
+			parsedVersion[i] = "*";
 		}
-	} else if (upgradePrefix === '^') {
+	} else if (upgradePrefix === "^") {
 		// "Allows changes that do not modify the left-most non-zero element in the [major, minor, patch] tuple."
 		// https://github.com/npm/node-semver#versions
 		for (let i = 1; i < parsedVersion.length; i++) {
-			parsedVersion[i] = '*';
+			parsedVersion[i] = "*";
 		}
 	}
 
 	// Collapse x.*.z to just x.*
-	const firstStarIdx = parsedVersion.indexOf('*');
+	const firstStarIdx = parsedVersion.indexOf("*");
 	if (firstStarIdx >= 0) {
 		parsedVersion.length = firstStarIdx + 1;
 	}
@@ -311,15 +351,15 @@ function compareVersions(a, b) {
 
 	// Check each part (x.y.z and so on)
 	for (let i = 0; i < limit; i++) {
-		const aPart = a[i] ?? '*';
-		const bPart = b[i] ?? '*';
+		const aPart = a[i] ?? "*";
+		const bPart = b[i] ?? "*";
 
-		if (aPart === '*') {
-			if (bPart !== '*') {
+		if (aPart === "*") {
+			if (bPart !== "*") {
 				// A matches any and B has a limit, therefore A is newer
 				return 1;
 			}
-		} else if (bPart === '*') {
+		} else if (bPart === "*") {
 			// A has a limit and B matches any, therefore B is newer
 			return -1;
 		} else if (aPart !== bPart) {
@@ -348,16 +388,19 @@ async function syncDependencies(dependencies) {
 	for (const dependency of dependencies) {
 		for (const pkg of dependency.packages) {
 			if (dependency.newestNpmVersion !== pkg.packageDependency.npmVersion) {
-				console.log(`Updating ${dependency.name} from version ${pkg.packageDependency.npmVersion} to ${dependency.newestNpmVersion} in package ${pkg.package.name}`);
-				pkg.package.json[pkg.packageDependency.type][dependency.name] = dependency.newestNpmVersion;
+				console.log(
+					`Updating ${dependency.name} from version ${pkg.packageDependency.npmVersion} to ${dependency.newestNpmVersion} in package ${pkg.package.name}`,
+				);
+				pkg.package.json[pkg.packageDependency.type][dependency.name] =
+					dependency.newestNpmVersion;
 				modifiedPackages[pkg.package.name] = pkg.package;
 			}
 		}
 	}
 
 	for (const pkg of Object.values(modifiedPackages)) {
-		const packageText = JSON.stringify(pkg.json, null, '\t');
-		await nodeFs.writeFile(pkg.path, packageText, 'utf-8');
+		const packageText = JSON.stringify(pkg.json, null, "\t");
+		await nodeFs.writeFile(pkg.path, packageText, "utf-8");
 	}
 }
 
@@ -391,4 +434,3 @@ async function syncDependencies(dependencies) {
  * @property {boolean} hasDifference
  * @property {{package: Package, packageDependency: Dependency}[]} packages
  */
-

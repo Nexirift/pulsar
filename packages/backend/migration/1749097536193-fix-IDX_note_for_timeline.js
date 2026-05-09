@@ -4,7 +4,7 @@
  */
 
 export class FixIDXNoteForTimeline1749097536193 {
-	name = 'FixIDXNoteForTimeline1749097536193';
+	name = "FixIDXNoteForTimeline1749097536193";
 
 	async up(queryRunner) {
 		await queryRunner.query('drop index "IDX_note_for_timelines"');
@@ -14,7 +14,9 @@ export class FixIDXNoteForTimeline1749097536193 {
 			include ("userId", "replyId", "replyUserId", "replyUserHost", "renoteId", "renoteUserId", "renoteUserHost", "threadId")
 			NULLS NOT DISTINCT
 		`);
-		await queryRunner.query(`comment on index "IDX_note_for_timelines" is 'Covering index for timeline queries'`);
+		await queryRunner.query(
+			`comment on index "IDX_note_for_timelines" is 'Covering index for timeline queries'`,
+		);
 	}
 
 	async down(queryRunner) {
@@ -25,6 +27,8 @@ export class FixIDXNoteForTimeline1749097536193 {
 			include ("userId", "userHost", "replyId", "replyUserId", "replyUserHost", "renoteId", "renoteUserId", "renoteUserHost")
 			NULLS NOT DISTINCT
 		`);
-		await queryRunner.query(`comment on index "IDX_note_for_timelines" is 'Covering index for timeline queries'`);
+		await queryRunner.query(
+			`comment on index "IDX_note_for_timelines" is 'Covering index for timeline queries'`,
+		);
 	}
 }

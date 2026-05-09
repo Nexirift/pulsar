@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import process from 'node:process';
-import { Injectable } from '@nestjs/common';
-import { EnvService } from '@/global/EnvService.js';
-import { bindThis } from '@/decorators.js';
+import process from "node:process";
+import { Injectable } from "@nestjs/common";
+import { EnvService } from "@/global/EnvService.js";
+import { bindThis } from "@/decorators.js";
 
 /**
  * Implementation of EnvService with support for mocking values.
@@ -14,7 +14,7 @@ import { bindThis } from '@/decorators.js';
  */
 @Injectable()
 export class MockEnvService extends EnvService {
-	public readonly _env: typeof process['env'];
+	public readonly _env: (typeof process)["env"];
 
 	private overrides: Partial<Record<string, string | null>> = {};
 
@@ -22,14 +22,20 @@ export class MockEnvService extends EnvService {
 		super();
 		this._env = new Proxy(process.env, {
 			get: (env, key) => {
-				if (key in this.overrides && this.overrides[key as string] !== undefined) {
+				if (
+					key in this.overrides &&
+					this.overrides[key as string] !== undefined
+				) {
 					return this.overrides[key as string] ?? undefined;
 				} else {
 					return env[key as string];
 				}
 			},
 			has: (env, key) => {
-				if (key in this.overrides && this.overrides[key as string] !== undefined) {
+				if (
+					key in this.overrides &&
+					this.overrides[key as string] !== undefined
+				) {
 					return this.overrides[key as string] != null;
 				} else {
 					return key in env;

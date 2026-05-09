@@ -4,19 +4,23 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div>
-	<MkButton inline rounded primary @click="selectButton($event)">{{ i18n.ts.selectFile }}</MkButton>
-	<div :class="['_nowrap', !fileName && $style.fileNotSelected]">{{ friendlyFileName }}</div>
-</div>
+	<div>
+		<MkButton inline rounded primary @click="selectButton($event)">{{
+			i18n.ts.selectFile
+		}}</MkButton>
+		<div :class="['_nowrap', !fileName && $style.fileNotSelected]">
+			{{ friendlyFileName }}
+		</div>
+	</div>
 </template>
 
 <script setup lang="ts">
-import * as Misskey from 'misskey-js';
-import { computed, ref } from 'vue';
-import { i18n } from '@/i18n.js';
-import MkButton from '@/components/MkButton.vue';
-import { selectFile } from '@/utility/select-file.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
+import * as Misskey from "misskey-js";
+import { computed, ref } from "vue";
+import { i18n } from "@/i18n.js";
+import MkButton from "@/components/MkButton.vue";
+import { selectFile } from "@/utility/select-file.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
 
 const props = defineProps<{
 	fileId?: string | null;
@@ -24,11 +28,11 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'update', result: Misskey.entities.DriveFile): void;
+	(ev: "update", result: Misskey.entities.DriveFile): void;
 }>();
 
-const fileUrl = ref('');
-const fileName = ref<string>('');
+const fileUrl = ref("");
+const fileName = ref<string>("");
 
 const friendlyFileName = computed<string>(() => {
 	if (fileName.value) {
@@ -42,7 +46,7 @@ const friendlyFileName = computed<string>(() => {
 });
 
 if (props.fileId) {
-	misskeyApi('drive/files/show', {
+	misskeyApi("drive/files/show", {
 		fileId: props.fileId,
 	}).then((apiRes) => {
 		fileName.value = apiRes.name;
@@ -53,14 +57,13 @@ if (props.fileId) {
 function selectButton(ev: MouseEvent) {
 	selectFile(ev.currentTarget ?? ev.target).then(async (file) => {
 		if (!file) return;
-		if (props.validate && !await props.validate(file)) return;
+		if (props.validate && !(await props.validate(file))) return;
 
-		emit('update', file);
+		emit("update", file);
 		fileName.value = file.name;
 		fileUrl.value = file.url;
 	});
 }
-
 </script>
 
 <style module>

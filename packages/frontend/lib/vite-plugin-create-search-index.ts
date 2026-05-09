@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { parse as vueSfcParse } from 'vue/compiler-sfc';
+import { parse as vueSfcParse } from "vue/compiler-sfc";
 import {
 	createLogger,
 	type EnvironmentModuleGraph,
@@ -11,15 +11,15 @@ import {
 	type LogOptions,
 	normalizePath,
 	type Plugin,
-	type PluginOption
-} from 'vite';
-import fs from 'node:fs';
-import { glob } from 'glob';
-import JSON5 from 'json5';
-import MagicString, { SourceMap } from 'magic-string';
-import path from 'node:path'
-import { hash, toBase62 } from '../vite.config.js';
-import { minimatch } from 'minimatch';
+	type PluginOption,
+} from "vite";
+import fs from "node:fs";
+import { glob } from "glob";
+import JSON5 from "json5";
+import MagicString, { SourceMap } from "magic-string";
+import path from "node:path";
+import { hash, toBase62 } from "../vite.config.js";
+import { minimatch } from "minimatch";
 import {
 	type AttributeNode,
 	type DirectiveNode,
@@ -29,7 +29,7 @@ import {
 	type RootNode,
 	type SimpleExpressionNode,
 	type TemplateChildNode,
-} from '@vue/compiler-core';
+} from "@vue/compiler-core";
 
 export interface SearchIndexItem {
 	id: string;
@@ -42,12 +42,12 @@ export interface SearchIndexItem {
 }
 
 export type Options = {
-	targetFilePaths: string[],
-	mainVirtualModule: string,
-	modulesToHmrOnUpdate: string[],
-	fileVirtualModulePrefix?: string,
-	fileVirtualModuleSuffix?: string,
-	verbose?: boolean,
+	targetFilePaths: string[];
+	mainVirtualModule: string;
+	modulesToHmrOnUpdate: string[];
+	fileVirtualModulePrefix?: string;
+	fileVirtualModuleSuffix?: string;
+	verbose?: boolean;
 };
 
 // マーカー関係を表す型
@@ -59,31 +59,31 @@ interface MarkerRelation {
 
 // ロガー
 let logger = {
-	info: (msg: string, options?: LogOptions) => { },
-	warn: (msg: string, options?: LogOptions) => { },
-	error: (msg: string, options?: LogErrorOptions) => { },
+	info: (msg: string, options?: LogOptions) => {},
+	warn: (msg: string, options?: LogOptions) => {},
+	error: (msg: string, options?: LogErrorOptions) => {},
 };
 let loggerInitialized = false;
 
 function initLogger(options: Options) {
 	if (loggerInitialized) return;
 	loggerInitialized = true;
-	const viteLogger = createLogger(options.verbose ? 'info' : 'warn');
+	const viteLogger = createLogger(options.verbose ? "info" : "warn");
 
 	logger.info = (msg, options) => {
 		msg = `[create-search-index] ${msg}`;
 		viteLogger.info(msg, options);
-	}
+	};
 
 	logger.warn = (msg, options) => {
 		msg = `[create-search-index] ${msg}`;
 		viteLogger.warn(msg, options);
-	}
+	};
 
 	logger.error = (msg, options) => {
 		msg = `[create-search-index] ${msg}`;
 		viteLogger.error(msg, options);
-	}
+	};
 }
 
 //region AST Utility
@@ -96,22 +96,30 @@ type WalkVueNode = RootNode | TemplateChildNode | SimpleExpressionNode;
  * @param context The context value passed to callback. you can update context for children by returning value in callback
  * @param callback Returns false if you don't want to walk inner tree
  */
-function walkVueElements<C extends {} | null>(nodes: WalkVueNode[], context: C, callback: (node: ElementNode, context: C) => C | undefined | void | false): void {
+function walkVueElements<C extends {} | null>(
+	nodes: WalkVueNode[],
+	context: C,
+	callback: (node: ElementNode, context: C) => C | undefined | void | false,
+): void {
 	for (const node of nodes) {
 		let currentContext = context;
-		if (node.type === NodeTypes.COMPOUND_EXPRESSION) throw new Error("Unexpected COMPOUND_EXPRESSION");
+		if (node.type === NodeTypes.COMPOUND_EXPRESSION)
+			throw new Error("Unexpected COMPOUND_EXPRESSION");
 		if (node.type === NodeTypes.ELEMENT) {
 			const result = callback(node, context);
 			if (result === false) return;
 			if (result !== undefined) currentContext = result;
 		}
-		if ('children' in node) {
+		if ("children" in node) {
 			walkVueElements(node.children, currentContext, callback);
 		}
 	}
 }
 
-function findAttribute(props: Array<AttributeNode | DirectiveNode>, name: string): AttributeNode | DirectiveNode | null {
+function findAttribute(
+	props: Array<AttributeNode | DirectiveNode>,
+	name: string,
+): AttributeNode | DirectiveNode | null {
 	for (const prop of props) {
 		switch (prop.type) {
 			case NodeTypes.ATTRIBUTE:
@@ -120,7 +128,12 @@ function findAttribute(props: Array<AttributeNode | DirectiveNode>, name: string
 				}
 				break;
 			case NodeTypes.DIRECTIVE:
-				if (prop.name === 'bind' && prop.arg && 'content' in prop.arg && prop.arg.content === name) {
+				if (
+					prop.name === "bind" &&
+					prop.arg &&
+					"content" in prop.arg &&
+					prop.arg.content === name
+				) {
 					return prop;
 				}
 				break;
@@ -134,8 +147,12 @@ function findEndOfStartTagAttributes(node: ElementNode): number {
 		// 子要素がある場合、最初の子要素の開始位置を基準にする
 		const nodeStart = node.loc.start.offset;
 		const firstChildStart = node.children[0].loc.start.offset;
-		const endOfStartTag = node.loc.source.lastIndexOf('>', firstChildStart - nodeStart);
-		if (endOfStartTag === -1) throw new Error("Bug: Failed to find end of start tag");
+		const endOfStartTag = node.loc.source.lastIndexOf(
+			">",
+			firstChildStart - nodeStart,
+		);
+		if (endOfStartTag === -1)
+			throw new Error("Bug: Failed to find end of start tag");
 		return nodeStart + endOfStartTag;
 	} else {
 		// 子要素がない場合、自身の終了位置から逆算
@@ -148,9 +165,13 @@ function findEndOfStartTagAttributes(node: ElementNode): number {
 /**
  * TypeScriptコード生成
  */
-function generateJavaScriptCode(resolvedRootMarkers: SearchIndexItem[]): string {
-	return `import { i18n } from '@/i18n.js';\n`
-		+ `export const searchIndexes = ${customStringify(resolvedRootMarkers)};\n`;
+function generateJavaScriptCode(
+	resolvedRootMarkers: SearchIndexItem[],
+): string {
+	return (
+		`import { i18n } from '@/i18n.js';\n` +
+		`export const searchIndexes = ${customStringify(resolvedRootMarkers)};\n`
+	);
 }
 
 /**
@@ -162,7 +183,7 @@ function customStringify(obj: unknown): string {
 		// propertyAccessProxy が i18n 参照を "${i18n.xxx}"のような形に変換してるので、これをそのまま`${i18n.xxx}`
 		// のような形にすると、実行時にi18nのプロパティにアクセスするようになる。
 		// objectのkeyでは``が使えないので、${ が使われている場合にのみ``に置き換えるようにする
-		return group.includes('${') ? '`' + group + '`' : all;
+		return group.includes("${") ? "`" + group + "`" : all;
 	});
 }
 
@@ -175,26 +196,38 @@ function extractElementText(node: ElementNode, id: string): string | null {
 	return extractElementTextChecked(node, node.tag, id);
 }
 
-function extractElementTextChecked(node: ElementNode, processingNodeName: string, id: string): string | null {
+function extractElementTextChecked(
+	node: ElementNode,
+	processingNodeName: string,
+	id: string,
+): string | null {
 	const result: string[] = [];
 	for (const child of node.children) {
 		const text = extractElementText2Inner(child, processingNodeName, id);
 		if (text == null) return null;
 		result.push(text);
 	}
-	return result.join('');
+	return result.join("");
 }
 
-function extractElementText2Inner(node: TemplateChildNode, processingNodeName: string, id: string): string | null {
-	if (node.type === NodeTypes.COMPOUND_EXPRESSION) throw new Error("Unexpected COMPOUND_EXPRESSION");
+function extractElementText2Inner(
+	node: TemplateChildNode,
+	processingNodeName: string,
+	id: string,
+): string | null {
+	if (node.type === NodeTypes.COMPOUND_EXPRESSION)
+		throw new Error("Unexpected COMPOUND_EXPRESSION");
 
 	switch (node.type) {
 		case NodeTypes.INTERPOLATION: {
 			const expr = node.content;
-			if (expr.type === NodeTypes.COMPOUND_EXPRESSION) throw new Error(`Unexpected COMPOUND_EXPRESSION`);
+			if (expr.type === NodeTypes.COMPOUND_EXPRESSION)
+				throw new Error(`Unexpected COMPOUND_EXPRESSION`);
 			const exprResult = evalExpression(expr.content);
-			if (typeof exprResult !== 'string') {
-				logger.error(`Result of interpolation node is not string at line ${id}:${node.loc.start.line}`);
+			if (typeof exprResult !== "string") {
+				logger.error(
+					`Result of interpolation node is not string at line ${id}:${node.loc.start.line}`,
+				);
 				return null;
 			}
 			return exprResult;
@@ -203,19 +236,23 @@ function extractElementText2Inner(node: TemplateChildNode, processingNodeName: s
 			if (node.tagType === ElementTypes.ELEMENT) {
 				return extractElementTextChecked(node, processingNodeName, id);
 			} else {
-				logger.error(`Unexpected ${node.tag} extracting text of ${processingNodeName} ${id}:${node.loc.start.line}`);
+				logger.error(
+					`Unexpected ${node.tag} extracting text of ${processingNodeName} ${id}:${node.loc.start.line}`,
+				);
 				return null;
 			}
 		case NodeTypes.TEXT:
 			return node.content;
 		case NodeTypes.COMMENT:
 			// We skip comments
-			return '';
+			return "";
 		case NodeTypes.IF:
 		case NodeTypes.IF_BRANCH:
 		case NodeTypes.FOR:
 		case NodeTypes.TEXT_CALL:
-			logger.error(`Unexpected controlflow element extracting text of ${processingNodeName} ${id}:${node.loc.start.line}`);
+			logger.error(
+				`Unexpected controlflow element extracting text of ${processingNodeName} ${id}:${node.loc.start.line}`,
+			);
 			return null;
 	}
 }
@@ -227,7 +264,10 @@ function extractElementText2Inner(node: TemplateChildNode, processingNodeName: s
 /**
  * SearchLabel/SearchKeyword/SearchIconを探して抽出する関数
  */
-function extractSugarTags(nodes: TemplateChildNode[], id: string): { label: string | null, keywords: string[], icon: string | null } {
+function extractSugarTags(
+	nodes: TemplateChildNode[],
+	id: string,
+): { label: string | null; keywords: string[]; icon: string | null } {
 	let label: string | null | undefined = undefined;
 	let icon: string | null | undefined = undefined;
 	const keywords: string[] = [];
@@ -236,39 +276,47 @@ function extractSugarTags(nodes: TemplateChildNode[], id: string): { label: stri
 
 	walkVueElements(nodes, null, (node) => {
 		switch (node.tag) {
-			case 'SearchMarker':
+			case "SearchMarker":
 				return false; // SearchMarkerはスキップ
-			case 'SearchLabel':
+			case "SearchLabel":
 				if (label !== undefined) {
-					logger.warn(`Duplicate SearchLabel found, ignoring the second one at ${id}:${node.loc.start.line}`);
+					logger.warn(
+						`Duplicate SearchLabel found, ignoring the second one at ${id}:${node.loc.start.line}`,
+					);
 					break; // 2つ目のSearchLabelは無視
 				}
 
 				label = extractElementText(node, id);
 				return;
-			case 'SearchKeyword':
+			case "SearchKeyword":
 				const content = extractElementText(node, id);
 				if (content) {
 					keywords.push(content);
 				}
 				return;
-			case 'SearchIcon':
+			case "SearchIcon":
 				if (icon !== undefined) {
-					logger.warn(`Duplicate SearchIcon found, ignoring the second one at ${id}:${node.loc.start.line}`);
+					logger.warn(
+						`Duplicate SearchIcon found, ignoring the second one at ${id}:${node.loc.start.line}`,
+					);
 					break; // 2つ目のSearchIconは無視
 				}
 
 				if (node.children.length !== 1) {
-					logger.error(`SearchIcon must have exactly one child at ${id}:${node.loc.start.line}`);
+					logger.error(
+						`SearchIcon must have exactly one child at ${id}:${node.loc.start.line}`,
+					);
 					return;
 				}
 
 				const iconNode = node.children[0];
 				if (iconNode.type !== NodeTypes.ELEMENT) {
-					logger.error(`SearchIcon must have a child element at ${id}:${node.loc.start.line}`);
+					logger.error(
+						`SearchIcon must have a child element at ${id}:${node.loc.start.line}`,
+					);
 					return;
 				}
-				icon = getStringProp(findAttribute(iconNode.props, 'class'), id);
+				icon = getStringProp(findAttribute(iconNode.props, "class"), id);
 				return;
 		}
 
@@ -276,11 +324,16 @@ function extractSugarTags(nodes: TemplateChildNode[], id: string): { label: stri
 	});
 
 	// デバッグ情報
-	logger.info(`Extraction completed: label=${label}, keywords=[${keywords.join(', ')}, icon=${icon}]`);
+	logger.info(
+		`Extraction completed: label=${label}, keywords=[${keywords.join(", ")}, icon=${icon}]`,
+	);
 	return { label: label ?? null, keywords, icon: icon ?? null };
 }
 
-function getStringProp(attr: AttributeNode | DirectiveNode | null, id: string): string | null {
+function getStringProp(
+	attr: AttributeNode | DirectiveNode | null,
+	id: string,
+): string | null {
 	switch (attr?.type) {
 		case null:
 		case undefined:
@@ -289,30 +342,41 @@ function getStringProp(attr: AttributeNode | DirectiveNode | null, id: string): 
 			return attr.value?.content ?? null;
 		case NodeTypes.DIRECTIVE:
 			if (attr.exp == null) return null;
-			if (attr.exp.type === NodeTypes.COMPOUND_EXPRESSION) throw new Error('Unexpected COMPOUND_EXPRESSION');
-			const value = evalExpression(attr.exp.content ?? '');
-			if (typeof value !== 'string') {
-				logger.error(`Expected string value, got ${typeof value} at ${id}:${attr.loc.start.line}`);
+			if (attr.exp.type === NodeTypes.COMPOUND_EXPRESSION)
+				throw new Error("Unexpected COMPOUND_EXPRESSION");
+			const value = evalExpression(attr.exp.content ?? "");
+			if (typeof value !== "string") {
+				logger.error(
+					`Expected string value, got ${typeof value} at ${id}:${attr.loc.start.line}`,
+				);
 				return null;
 			}
 			return value;
 	}
 }
 
-function getStringArrayProp(attr: AttributeNode | DirectiveNode | null, id: string): string[] | null {
+function getStringArrayProp(
+	attr: AttributeNode | DirectiveNode | null,
+	id: string,
+): string[] | null {
 	switch (attr?.type) {
 		case null:
 		case undefined:
 			return null;
 		case NodeTypes.ATTRIBUTE:
-			logger.error(`Expected directive, got attribute at ${id}:${attr.loc.start.line}`);
+			logger.error(
+				`Expected directive, got attribute at ${id}:${attr.loc.start.line}`,
+			);
 			return null;
 		case NodeTypes.DIRECTIVE:
 			if (attr.exp == null) return null;
-			if (attr.exp.type === NodeTypes.COMPOUND_EXPRESSION) throw new Error('Unexpected COMPOUND_EXPRESSION');
-			const value = evalExpression(attr.exp.content ?? '');
-			if (!Array.isArray(value) || !value.every(x => typeof x === 'string')) {
-				logger.error(`Expected string array value, got ${typeof value} at ${id}:${attr.loc.start.line}`);
+			if (attr.exp.type === NodeTypes.COMPOUND_EXPRESSION)
+				throw new Error("Unexpected COMPOUND_EXPRESSION");
+			const value = evalExpression(attr.exp.content ?? "");
+			if (!Array.isArray(value) || !value.every((x) => typeof x === "string")) {
+				logger.error(
+					`Expected string array value, got ${typeof value} at ${id}:${attr.loc.start.line}`,
+				);
 				return null;
 			}
 			return value;
@@ -329,13 +393,16 @@ function extractUsageInfoFromTemplateAst(
 	if (!templateAst) return allMarkers;
 
 	walkVueElements<string | null>([templateAst], null, (node, parentId) => {
-		if (node.tag !== 'SearchMarker') {
+		if (node.tag !== "SearchMarker") {
 			return;
 		}
 
 		// マーカーID取得
-		const markerIdProp = node.props?.find(p => p.name === 'markerId');
-		const markerId = markerIdProp?.type == NodeTypes.ATTRIBUTE ? markerIdProp.value?.content : null;
+		const markerIdProp = node.props?.find((p) => p.name === "markerId");
+		const markerId =
+			markerIdProp?.type == NodeTypes.ATTRIBUTE
+				? markerIdProp.value?.content
+				: null;
 
 		// SearchMarkerにマーカーIDがない場合はエラー
 		if (markerId == null) {
@@ -347,16 +414,22 @@ function extractUsageInfoFromTemplateAst(
 		const markerInfo: SearchIndexItem = {
 			id: markerId,
 			parentId: parentId ?? undefined,
-			label: '', // デフォルト値
+			label: "", // デフォルト値
 			keywords: [],
 		};
 
 		// バインドプロパティを取得
-		const path = getStringProp(findAttribute(node.props, 'path'), id)
-		const icon = getStringProp(findAttribute(node.props, 'icon'), id)
-		const label = getStringProp(findAttribute(node.props, 'label'), id)
-		const inlining = getStringArrayProp(findAttribute(node.props, 'inlining'), id)
-		const keywords = getStringArrayProp(findAttribute(node.props, 'keywords'), id)
+		const path = getStringProp(findAttribute(node.props, "path"), id);
+		const icon = getStringProp(findAttribute(node.props, "icon"), id);
+		const label = getStringProp(findAttribute(node.props, "label"), id);
+		const inlining = getStringArrayProp(
+			findAttribute(node.props, "inlining"),
+			id,
+		);
+		const keywords = getStringArrayProp(
+			findAttribute(node.props, "keywords"),
+			id,
+		);
 
 		if (path) markerInfo.path = path;
 		if (icon) markerInfo.icon = icon;
@@ -372,15 +445,23 @@ function extractUsageInfoFromTemplateAst(
 		// SearchLabelとSearchKeywordを抽出 (AST全体を探索)
 		{
 			const extracted = extractSugarTags(node.children, id);
-			if (extracted.label && markerInfo.label) logger.warn(`Duplicate label found for ${markerId} at ${id}:${node.loc.start.line}`);
-			if (extracted.icon && markerInfo.icon) logger.warn(`Duplicate icon found for ${markerId} at ${id}:${node.loc.start.line}`);
-			markerInfo.label = extracted.label ?? markerInfo.label ?? '';
+			if (extracted.label && markerInfo.label)
+				logger.warn(
+					`Duplicate label found for ${markerId} at ${id}:${node.loc.start.line}`,
+				);
+			if (extracted.icon && markerInfo.icon)
+				logger.warn(
+					`Duplicate icon found for ${markerId} at ${id}:${node.loc.start.line}`,
+				);
+			markerInfo.label = extracted.label ?? markerInfo.label ?? "";
 			markerInfo.keywords = [...extracted.keywords, ...markerInfo.keywords];
 			markerInfo.icon = extracted.icon ?? markerInfo.icon ?? undefined;
 		}
 
 		if (!markerInfo.label) {
-			logger.warn(`No label found for ${markerId} at ${id}:${node.loc.start.line}`);
+			logger.warn(
+				`No label found for ${markerId} at ${id}:${node.loc.start.line}`,
+			);
 		}
 
 		// マーカーを登録
@@ -401,18 +482,18 @@ function extractUsageInfoFromTemplateAst(
  * i18n はそのアクセスを保持するために propertyAccessProxy を使用しています。
  */
 function evalExpression(expr: string): unknown {
-	const rarResult = Function('i18n', `return ${expr}`)(i18nProxy);
+	const rarResult = Function("i18n", `return ${expr}`)(i18nProxy);
 	// JSON.stringify を一回通すことで、 AccessProxy を文字列に変換する
 	// Walk してもいいんだけど横着してJSON.stringifyしてる。ビルド時にしか通らないのであんまりパフォーマンス気にする必要ないんで
 	return JSON.parse(JSON.stringify(rarResult));
 }
 
-const propertyAccessProxySymbol = Symbol('propertyAccessProxySymbol');
+const propertyAccessProxySymbol = Symbol("propertyAccessProxySymbol");
 
 type AccessProxy = {
-	[propertyAccessProxySymbol]: string[],
-	[k: string]: AccessProxy,
-}
+	[propertyAccessProxySymbol]: string[];
+	[k: string]: AccessProxy;
+};
 
 const propertyAccessProxyHandler: ProxyHandler<AccessProxy> = {
 	get(target: AccessProxy, p: string | symbol): any {
@@ -422,12 +503,15 @@ const propertyAccessProxyHandler: ProxyHandler<AccessProxy> = {
 		if (p == "toJSON" || p == Symbol.toPrimitive) {
 			return propertyAccessProxyToJSON;
 		}
-		if (typeof p == 'string') {
-			return target[p] = propertyAccessProxy([...target[propertyAccessProxySymbol], p]);
+		if (typeof p == "string") {
+			return (target[p] = propertyAccessProxy([
+				...target[propertyAccessProxySymbol],
+				p,
+			]));
 		}
 		return undefined;
-	}
-}
+	},
+};
 
 function propertyAccessProxyToJSON(this: AccessProxy, hint: string) {
 	const expression = this[propertyAccessProxySymbol].reduce((prev, current) => {
@@ -437,7 +521,7 @@ function propertyAccessProxyToJSON(this: AccessProxy, hint: string) {
 			return `${prev}['${current}']`;
 		}
 	});
-	return '$\{' + expression + '}';
+	return "$\{" + expression + "}";
 }
 
 /**
@@ -453,9 +537,12 @@ function propertyAccessProxy(path: string[]): AccessProxy {
 	return new Proxy(target, propertyAccessProxyHandler);
 }
 
-const i18nProxy = propertyAccessProxy(['i18n']);
+const i18nProxy = propertyAccessProxy(["i18n"]);
 
-export function collectFileMarkers(id: string, code: string): SearchIndexItem[] {
+export function collectFileMarkers(
+	id: string,
+	code: string,
+): SearchIndexItem[] {
 	try {
 		const { descriptor, errors } = vueSfcParse(code, {
 			filename: id,
@@ -469,9 +556,12 @@ export function collectFileMarkers(id: string, code: string): SearchIndexItem[] 
 		return extractUsageInfoFromTemplateAst(descriptor.template?.ast, id);
 	} catch (error) {
 		logger.error(`Error analyzing file ${id}:`, {
-			error: error instanceof Error
-				? error
-				: new Error(`Unknown error of type ${typeof(error)}`, { cause: error }),
+			error:
+				error instanceof Error
+					? error
+					: new Error(`Unknown error of type ${typeof error}`, {
+							cause: error,
+						}),
 		});
 	}
 
@@ -481,8 +571,8 @@ export function collectFileMarkers(id: string, code: string): SearchIndexItem[] 
 // endregion
 
 type TransformedCode = {
-	code: string,
-	map: SourceMap,
+	code: string;
+	map: SourceMap;
 };
 
 export class MarkerIdAssigner {
@@ -528,24 +618,35 @@ export class MarkerIdAssigner {
 		}
 
 		walkVueElements<string | null>([ast], null, (node, parentId) => {
-			if (node.tag !== 'SearchMarker') return;
+			if (node.tag !== "SearchMarker") return;
 
-			const markerIdProp = findAttribute(node.props, 'markerId');
+			const markerIdProp = findAttribute(node.props, "markerId");
 
 			let nodeMarkerId: string;
 			if (markerIdProp != null) {
-				if (markerIdProp.type !== NodeTypes.ATTRIBUTE) return logger.error(`markerId must be a attribute at ${id}:${markerIdProp.loc.start.line}`);
-				if (markerIdProp.value == null) return logger.error(`markerId must have a value at ${id}:${markerIdProp.loc.start.line}`);
+				if (markerIdProp.type !== NodeTypes.ATTRIBUTE)
+					return logger.error(
+						`markerId must be a attribute at ${id}:${markerIdProp.loc.start.line}`,
+					);
+				if (markerIdProp.value == null)
+					return logger.error(
+						`markerId must have a value at ${id}:${markerIdProp.loc.start.line}`,
+					);
 				nodeMarkerId = markerIdProp.value.content;
 			} else {
 				// ファイルパスと行番号からハッシュ値を生成
 				// この際実行環境で差が出ないようにファイルパスを正規化
-				const idKey = id.replace(/\\/g, '/').split('packages/frontend/')[1]
-				const generatedMarkerId = toBase62(hash(`${idKey}:${node.loc.start.line}`));
+				const idKey = id.replace(/\\/g, "/").split("packages/frontend/")[1];
+				const generatedMarkerId = toBase62(
+					hash(`${idKey}:${node.loc.start.line}`),
+				);
 
 				// markerId attribute を追加
 				const endOfStartTag = findEndOfStartTagAttributes(node);
-				s.appendRight(endOfStartTag, ` markerId="${generatedMarkerId}" data-in-app-search-marker-id="${generatedMarkerId}"`);
+				s.appendRight(
+					endOfStartTag,
+					` markerId="${generatedMarkerId}" data-in-app-search-marker-id="${generatedMarkerId}"`,
+				);
 
 				nodeMarkerId = generatedMarkerId;
 			}
@@ -557,14 +658,14 @@ export class MarkerIdAssigner {
 			});
 
 			return nodeMarkerId;
-		})
+		});
 
 		// 2段階目: :children 属性の追加
 		// 最初に親マーカーごとに子マーカーIDを集約する処理を追加
 		const parentChildrenMap = new Map<string, string[]>();
 
 		// 1. まず親ごとのすべての子マーカーIDを収集
-		markerRelations.forEach(relation => {
+		markerRelations.forEach((relation) => {
 			if (relation.parentId) {
 				if (!parentChildrenMap.has(relation.parentId)) {
 					parentChildrenMap.set(relation.parentId, []);
@@ -575,14 +676,18 @@ export class MarkerIdAssigner {
 
 		// 2. 親ごとにまとめて :children 属性を処理
 		for (const [parentId, childIds] of parentChildrenMap.entries()) {
-			const parentRelation = markerRelations.find(r => r.markerId === parentId);
+			const parentRelation = markerRelations.find(
+				(r) => r.markerId === parentId,
+			);
 			if (!parentRelation) continue;
 
 			const parentNode = parentRelation.node;
-			const childrenProp = findAttribute(parentNode.props, 'children');
+			const childrenProp = findAttribute(parentNode.props, "children");
 			if (childrenProp != null) {
 				if (childrenProp.type !== NodeTypes.DIRECTIVE) {
-					console.error(`children prop should be directive (:children) at ${id}:${childrenProp.loc.start.line}`);
+					console.error(
+						`children prop should be directive (:children) at ${id}:${childrenProp.loc.start.line}`,
+					);
 					continue;
 				}
 
@@ -598,13 +703,24 @@ export class MarkerIdAssigner {
 				}
 
 				const expression = JSON.stringify(newValue).replaceAll(/"/g, "'");
-				s.overwrite(childrenProp.exp!.loc.start.offset, childrenProp.exp!.loc.end.offset, expression);
-				logger.info(`Added ${childIds.length} child markerIds to existing :children in ${id}`);
+				s.overwrite(
+					childrenProp.exp!.loc.start.offset,
+					childrenProp.exp!.loc.end.offset,
+					expression,
+				);
+				logger.info(
+					`Added ${childIds.length} child markerIds to existing :children in ${id}`,
+				);
 			} else {
 				// :children 属性がまだない場合、新規作成
 				const endOfParentStartTag = findEndOfStartTagAttributes(parentNode);
-				s.appendRight(endOfParentStartTag, ` :children="${JSON5.stringify(childIds).replace(/"/g, "'")}"`);
-				logger.info(`Created new :children attribute with ${childIds.length} markerIds in ${id}`);
+				s.appendRight(
+					endOfParentStartTag,
+					` :children="${JSON5.stringify(childIds).replace(/"/g, "'")}"`,
+				);
+				logger.info(
+					`Created new :children attribute with ${childIds.length} markerIds in ${id}`,
+				);
 			}
 		}
 
@@ -623,7 +739,7 @@ export class MarkerIdAssigner {
 		}
 
 		// if no cache found, read and parse the file
-		const originalCode = await fs.promises.readFile(id, 'utf-8');
+		const originalCode = await fs.promises.readFile(id, "utf-8");
 
 		// Other code may already parsed the file while we were waiting for the file to be read so re-check the cache
 		code = this.getCached(id)?.code;
@@ -642,33 +758,38 @@ export class MarkerIdAssigner {
 }
 
 // Rollup プラグインとして export
-export default function pluginCreateSearchIndex(options: Options): PluginOption {
+export default function pluginCreateSearchIndex(
+	options: Options,
+): PluginOption {
 	const assigner = new MarkerIdAssigner();
 	return [
 		createSearchIndex(options, assigner),
 		pluginCreateSearchIndexVirtualModule(options, assigner),
-	]
+	];
 }
 
-function createSearchIndex(options: Options, assigner: MarkerIdAssigner): Plugin {
+function createSearchIndex(
+	options: Options,
+	assigner: MarkerIdAssigner,
+): Plugin {
 	initLogger(options); // ロガーを初期化
 	const root = normalizePath(process.cwd());
 
 	function isTargetFile(id: string): boolean {
 		const relativePath = path.posix.relative(root, id);
-		return options.targetFilePaths.some(pat => minimatch(relativePath, pat))
+		return options.targetFilePaths.some((pat) => minimatch(relativePath, pat));
 	}
 
 	return {
-		name: 'autoAssignMarkerId',
-		enforce: 'pre',
+		name: "autoAssignMarkerId",
+		enforce: "pre",
 
 		watchChange(id) {
 			assigner.onInvalidate(id);
 		},
 
 		async transform(code, id) {
-			if (!id.endsWith('.vue')) {
+			if (!id.endsWith(".vue")) {
 				return;
 			}
 
@@ -681,21 +802,30 @@ function createSearchIndex(options: Options, assigner: MarkerIdAssigner): Plugin
 	};
 }
 
-export function pluginCreateSearchIndexVirtualModule(options: Options, asigner: MarkerIdAssigner): Plugin {
-	const searchIndexPrefix = options.fileVirtualModulePrefix ?? 'search-index-individual:';
-	const searchIndexSuffix = options.fileVirtualModuleSuffix ?? '.ts';
+export function pluginCreateSearchIndexVirtualModule(
+	options: Options,
+	asigner: MarkerIdAssigner,
+): Plugin {
+	const searchIndexPrefix =
+		options.fileVirtualModulePrefix ?? "search-index-individual:";
+	const searchIndexSuffix = options.fileVirtualModuleSuffix ?? ".ts";
 	const allSearchIndexFile = options.mainVirtualModule;
 	const root = normalizePath(process.cwd());
 
 	function isTargetFile(id: string): boolean {
 		const relativePath = path.posix.relative(root, id);
-		return options.targetFilePaths.some(pat => minimatch(relativePath, pat))
+		return options.targetFilePaths.some((pat) => minimatch(relativePath, pat));
 	}
 
 	function parseSearchIndexFileId(id: string): string | null {
-		const noQuery = id.split('?')[0];
-		if (noQuery.startsWith(searchIndexPrefix) && noQuery.endsWith(searchIndexSuffix)) {
-			const filePath = id.slice(searchIndexPrefix.length).slice(0, -searchIndexSuffix.length);
+		const noQuery = id.split("?")[0];
+		if (
+			noQuery.startsWith(searchIndexPrefix) &&
+			noQuery.endsWith(searchIndexSuffix)
+		) {
+			const filePath = id
+				.slice(searchIndexPrefix.length)
+				.slice(0, -searchIndexSuffix.length);
 			if (isTargetFile(filePath)) {
 				return filePath;
 			}
@@ -704,13 +834,13 @@ export function pluginCreateSearchIndexVirtualModule(options: Options, asigner: 
 	}
 
 	return {
-		name: 'generateSearchIndexVirtualModule',
+		name: "generateSearchIndexVirtualModule",
 		// hotUpdate hook を vite:vue よりもあとに実行したいため enforce: post
-		enforce: 'post',
+		enforce: "post",
 
 		async resolveId(id) {
 			if (id == allSearchIndexFile) {
-				return '\0' + allSearchIndexFile;
+				return "\0" + allSearchIndexFile;
 			}
 
 			const searchIndexFilePath = parseSearchIndexFileId(id);
@@ -721,14 +851,20 @@ export function pluginCreateSearchIndexVirtualModule(options: Options, asigner: 
 		},
 
 		async load(id) {
-			if (id == '\0' + allSearchIndexFile) {
-				const files = await Promise.all(options.targetFilePaths.map(async (filePathPattern) => await glob(filePathPattern))).then(paths => paths.flat());
-				let generatedFile = '';
-				let arrayElements = '';
+			if (id == "\0" + allSearchIndexFile) {
+				const files = await Promise.all(
+					options.targetFilePaths.map(
+						async (filePathPattern) => await glob(filePathPattern),
+					),
+				).then((paths) => paths.flat());
+				let generatedFile = "";
+				let arrayElements = "";
 				for (let file of files) {
 					const normalizedRelative = normalizePath(file);
-					const absoluteId = normalizePath(path.join(process.cwd(), normalizedRelative)) + searchIndexSuffix;
-					const variableName = normalizedRelative.replace(/[\/.-]/g, '_');
+					const absoluteId =
+						normalizePath(path.join(process.cwd(), normalizedRelative)) +
+						searchIndexSuffix;
+					const variableName = normalizedRelative.replace(/[\/.-]/g, "_");
 					generatedFile += `import { searchIndexes as ${variableName} } from '${searchIndexPrefix}${absoluteId}';\n`;
 					arrayElements += `  ...${variableName},\n`;
 				}
@@ -742,17 +878,28 @@ export function pluginCreateSearchIndexVirtualModule(options: Options, asigner: 
 				this.addWatchFile(searchIndexFilePath);
 
 				const code = await asigner.getOrLoad(searchIndexFilePath);
-				return generateJavaScriptCode(collectFileMarkers(searchIndexFilePath, code));
+				return generateJavaScriptCode(
+					collectFileMarkers(searchIndexFilePath, code),
+				);
 			}
 			return null;
 		},
 
-		hotUpdate(this: { environment: { moduleGraph: EnvironmentModuleGraph } }, { file, modules }) {
+		hotUpdate(
+			this: { environment: { moduleGraph: EnvironmentModuleGraph } },
+			{ file, modules },
+		) {
 			if (isTargetFile(file)) {
-				const updateMods = options.modulesToHmrOnUpdate.map(id => this.environment.moduleGraph.getModuleById(path.posix.join(root, id))).filter(x => x != null);
+				const updateMods = options.modulesToHmrOnUpdate
+					.map((id) =>
+						this.environment.moduleGraph.getModuleById(
+							path.posix.join(root, id),
+						),
+					)
+					.filter((x) => x != null);
 				return [...modules, ...updateMods];
 			}
 			return modules;
-		}
+		},
 	};
 }

@@ -63,7 +63,7 @@ import: "Importer"
 export: "Eksporter"
 files: "Filer"
 download: "Nedlastinger"
-driveFileDeleteConfirm: "Er du sikker på at du vil slette \"{name}\"? Det vil også forsvinne fra alt innhold som bruker det."
+driveFileDeleteConfirm: 'Er du sikker på at du vil slette "{name}"? Det vil også forsvinne fra alt innhold som bruker det.'
 unfollowConfirm: "Er du sikker på at du vil slutte å følge {name}?"
 importRequested: "Du har bedt om import. Dette kan ta en stund."
 lists: "Lister"
@@ -102,7 +102,7 @@ clickToShow: "Klikk for å vise"
 add: "Legg til"
 reaction: "Reaksjon"
 reactions: "Reaksjoner"
-reactionSettingDescription2: "Dra for å endre rekkefølgen, klikk for å slette, trykk \"+\" for å legge til."
+reactionSettingDescription2: 'Dra for å endre rekkefølgen, klikk for å slette, trykk "+" for å legge til.'
 rememberNoteVisibility: "Husk innstillingene for synlighet av Notes"
 attachCancel: "Fjern vedlegg"
 enterFileName: "Skriv inn filnavn"
@@ -193,8 +193,8 @@ noSuchUser: "Bruker ikke funnet"
 announcements: "Kunngjøringer"
 remove: "Slett"
 removed: "Vellykket slettet"
-removeAreYouSure: "Er du sikker på at du vil fjerne \"{x}\"?"
-deleteAreYouSure: "Er du sikker på at du vil slette \"{x}\"?"
+removeAreYouSure: 'Er du sikker på at du vil fjerne "{x}"?'
+deleteAreYouSure: 'Er du sikker på at du vil slette "{x}"?'
 saved: "Lagret"
 upload: "Laste opp"
 keepOriginalUploading: "Behold originalbildet"
@@ -263,7 +263,7 @@ registration: "Registrer"
 invite: "Inviter"
 basicInfo: "Grunnleggende informasjon"
 pinnedUsers: "Festede brukrere"
-pinnedUsersDescription: "Liste over brukernavn atskilt med linjeskift som skal festes i \"Utforsk\" fanen."
+pinnedUsersDescription: 'Liste over brukernavn atskilt med linjeskift som skal festes i "Utforsk" fanen.'
 pinnedPages: "Festede sider"
 pinnedNotes: "Festet Note"
 hcaptcha: "hCaptcha"
@@ -284,7 +284,7 @@ exploreFediverse: "Utforsk Fediverse"
 userList: "Lister"
 about: "Informasjon"
 aboutMisskey: "Om Misskey"
-newPasswordIs: "Det nye passordet er \"{password}\"."
+newPasswordIs: 'Det nye passordet er "{password}".'
 share: "Del"
 notFound: "Ikke funnet"
 markAsReadAllNotifications: "Merk alle varsler som lest"
@@ -372,8 +372,8 @@ yes: "Ja"
 no: "Nei"
 contact: "Kontakt"
 developer: "Utvikler"
-makeExplorable: "Gjør konto synlig i \"Utforsk\""
-makeExplorableDescription: "Hvis du slår av dette, vises ikke kontoen din i \"Utforsk\" delen."
+makeExplorable: 'Gjør konto synlig i "Utforsk"'
+makeExplorableDescription: 'Hvis du slår av dette, vises ikke kontoen din i "Utforsk" delen.'
 left: "Venstre"
 nNotes: "{n} Notes"
 saveAs: "Lagre som"
@@ -521,7 +521,7 @@ _achievements:
     _justPlainLucky:
       title: "Rett og slett heldig"
     _setNameToSyuilo:
-      description: "Du satte navnet ditt til \"syuilo\""
+      description: 'Du satte navnet ditt til "syuilo"'
     _passedSinceAccountCreated1:
       title: "Ett års jubileum"
       description: "Det har gått ett år siden kontoen din ble opprettet"

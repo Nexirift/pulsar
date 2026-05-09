@@ -4,85 +4,131 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div class="_gaps">
-	<MkInfo>{{ i18n.ts._fileViewer.thisPageCanBeSeenFromTheAuthor }}</MkInfo>
-	<MkLoading v-if="fetching"/>
-	<div v-else-if="file" class="_gaps">
-		<div :class="$style.filePreviewRoot">
-			<MkMediaList :mediaList="[file]"></MkMediaList>
-		</div>
-		<div :class="$style.fileQuickActionsRoot">
-			<button class="_button" :class="$style.fileNameEditBtn" @click="rename()">
-				<h2 class="_nowrap" :class="$style.fileName">{{ file.name }}</h2>
-				<i class="ti ti-pencil" :class="$style.fileNameEditIcon"></i>
-			</button>
-			<div :class="$style.fileQuickActionsOthers">
-				<button v-tooltip="i18n.ts.createNoteFromTheFile" class="_button" :class="$style.fileQuickActionsOthersButton" @click="postThis()">
-					<i class="ti ti-pencil"></i>
+	<div class="_gaps">
+		<MkInfo>{{ i18n.ts._fileViewer.thisPageCanBeSeenFromTheAuthor }}</MkInfo>
+		<MkLoading v-if="fetching" />
+		<div v-else-if="file" class="_gaps">
+			<div :class="$style.filePreviewRoot">
+				<MkMediaList :mediaList="[file]"></MkMediaList>
+			</div>
+			<div :class="$style.fileQuickActionsRoot">
+				<button
+					class="_button"
+					:class="$style.fileNameEditBtn"
+					@click="rename()"
+				>
+					<h2 class="_nowrap" :class="$style.fileName">{{ file.name }}</h2>
+					<i class="ti ti-pencil" :class="$style.fileNameEditIcon"></i>
 				</button>
-				<button v-if="isImage" v-tooltip="i18n.ts.cropImage" class="_button" :class="$style.fileQuickActionsOthersButton" @click="crop()">
-					<i class="ti ti-crop"></i>
+				<div :class="$style.fileQuickActionsOthers">
+					<button
+						v-tooltip="i18n.ts.createNoteFromTheFile"
+						class="_button"
+						:class="$style.fileQuickActionsOthersButton"
+						@click="postThis()"
+					>
+						<i class="ti ti-pencil"></i>
+					</button>
+					<button
+						v-if="isImage"
+						v-tooltip="i18n.ts.cropImage"
+						class="_button"
+						:class="$style.fileQuickActionsOthersButton"
+						@click="crop()"
+					>
+						<i class="ti ti-crop"></i>
+					</button>
+					<button
+						v-if="file.isSensitive"
+						v-tooltip="i18n.ts.unmarkAsSensitive"
+						class="_button"
+						:class="$style.fileQuickActionsOthersButton"
+						@click="toggleSensitive()"
+					>
+						<i class="ti ti-eye"></i>
+					</button>
+					<button
+						v-else
+						v-tooltip="i18n.ts.markAsSensitive"
+						class="_button"
+						:class="$style.fileQuickActionsOthersButton"
+						@click="toggleSensitive()"
+					>
+						<i class="ti ti-eye-exclamation"></i>
+					</button>
+					<a
+						v-tooltip="i18n.ts.download"
+						:href="file.url"
+						:download="file.name"
+						class="_button"
+						:class="$style.fileQuickActionsOthersButton"
+					>
+						<i class="ti ti-download"></i>
+					</a>
+					<button
+						v-tooltip="i18n.ts.delete"
+						class="_button"
+						:class="[$style.fileQuickActionsOthersButton, $style.danger]"
+						@click="deleteFile()"
+					>
+						<i class="ti ti-trash"></i>
+					</button>
+				</div>
+			</div>
+			<div class="_gaps_s">
+				<button class="_button" :class="$style.kvEditBtn" @click="move()">
+					<MkKeyValue>
+						<template #key>{{ i18n.ts.folder }}</template>
+						<template #value
+							>{{ folderHierarchy.join(" > ")
+							}}<i class="ti ti-pencil" :class="$style.kvEditIcon"></i
+						></template>
+					</MkKeyValue>
 				</button>
-				<button v-if="file.isSensitive" v-tooltip="i18n.ts.unmarkAsSensitive" class="_button" :class="$style.fileQuickActionsOthersButton" @click="toggleSensitive()">
-					<i class="ti ti-eye"></i>
+				<button class="_button" :class="$style.kvEditBtn" @click="describe()">
+					<MkKeyValue :class="$style.multiline">
+						<template #key>{{ i18n.ts.caption }}</template>
+						<template #value
+							>{{ file.comment ? file.comment : `(${i18n.ts.none})`
+							}}<i class="ti ti-pencil" :class="$style.kvEditIcon"></i
+						></template>
+					</MkKeyValue>
 				</button>
-				<button v-else v-tooltip="i18n.ts.markAsSensitive" class="_button" :class="$style.fileQuickActionsOthersButton" @click="toggleSensitive()">
-					<i class="ti ti-eye-exclamation"></i>
-				</button>
-				<a v-tooltip="i18n.ts.download" :href="file.url" :download="file.name" class="_button" :class="$style.fileQuickActionsOthersButton">
-					<i class="ti ti-download"></i>
-				</a>
-				<button v-tooltip="i18n.ts.delete" class="_button" :class="[$style.fileQuickActionsOthersButton, $style.danger]" @click="deleteFile()">
-					<i class="ti ti-trash"></i>
-				</button>
+				<MkKeyValue :class="$style.fileMetaDataChildren">
+					<template #key>{{ i18n.ts._fileViewer.uploadedAt }}</template>
+					<template #value
+						><MkTime :time="file.createdAt" mode="detail"
+					/></template>
+				</MkKeyValue>
+				<MkKeyValue :class="$style.fileMetaDataChildren">
+					<template #key>{{ i18n.ts._fileViewer.type }}</template>
+					<template #value>{{ file.type }}</template>
+				</MkKeyValue>
+				<MkKeyValue :class="$style.fileMetaDataChildren">
+					<template #key>{{ i18n.ts._fileViewer.size }}</template>
+					<template #value>{{ bytes(file.size) }}</template>
+				</MkKeyValue>
+				<MkKeyValue :class="$style.fileMetaDataChildren" :copy="file.url">
+					<template #key>URL</template>
+					<template #value>{{ file.url }}</template>
+				</MkKeyValue>
 			</div>
 		</div>
-		<div class="_gaps_s">
-			<button class="_button" :class="$style.kvEditBtn" @click="move()">
-				<MkKeyValue>
-					<template #key>{{ i18n.ts.folder }}</template>
-					<template #value>{{ folderHierarchy.join(' > ') }}<i class="ti ti-pencil" :class="$style.kvEditIcon"></i></template>
-				</MkKeyValue>
-			</button>
-			<button class="_button" :class="$style.kvEditBtn" @click="describe()">
-				<MkKeyValue :class="$style.multiline">
-					<template #key>{{ i18n.ts.caption }}</template>
-					<template #value>{{ file.comment ? file.comment : `(${i18n.ts.none})` }}<i class="ti ti-pencil" :class="$style.kvEditIcon"></i></template>
-				</MkKeyValue>
-			</button>
-			<MkKeyValue :class="$style.fileMetaDataChildren">
-				<template #key>{{ i18n.ts._fileViewer.uploadedAt }}</template>
-				<template #value><MkTime :time="file.createdAt" mode="detail"/></template>
-			</MkKeyValue>
-			<MkKeyValue :class="$style.fileMetaDataChildren">
-				<template #key>{{ i18n.ts._fileViewer.type }}</template>
-				<template #value>{{ file.type }}</template>
-			</MkKeyValue>
-			<MkKeyValue :class="$style.fileMetaDataChildren">
-				<template #key>{{ i18n.ts._fileViewer.size }}</template>
-				<template #value>{{ bytes(file.size) }}</template>
-			</MkKeyValue>
-			<MkKeyValue :class="$style.fileMetaDataChildren" :copy="file.url">
-				<template #key>URL</template>
-				<template #value>{{ file.url }}</template>
-			</MkKeyValue>
-		</div>
+		<MkResult v-else type="empty" />
 	</div>
-	<MkResult v-else type="empty"/>
-</div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent, onMounted } from 'vue';
-import * as Misskey from 'misskey-js';
-import MkInfo from '@/components/MkInfo.vue';
-import MkMediaList from '@/components/MkMediaList.vue';
-import MkKeyValue from '@/components/MkKeyValue.vue';
-import bytes from '@/filters/bytes.js';
-import { i18n } from '@/i18n.js';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { useRouter } from '@/router.js';
+import { ref, computed, defineAsyncComponent, onMounted } from "vue";
+import * as Misskey from "misskey-js";
+import MkInfo from "@/components/MkInfo.vue";
+import MkMediaList from "@/components/MkMediaList.vue";
+import MkKeyValue from "@/components/MkKeyValue.vue";
+import bytes from "@/filters/bytes.js";
+import { i18n } from "@/i18n.js";
+import * as os from "@/os.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { useRouter } from "@/router.js";
 
 const router = useRouter();
 
@@ -104,12 +150,12 @@ const folderHierarchy = computed(() => {
 	if (file.value.folder) get(file.value.folder);
 	return folderNames;
 });
-const isImage = computed(() => file.value?.type.startsWith('image/'));
+const isImage = computed(() => file.value?.type.startsWith("image/"));
 
 async function fetch() {
 	fetching.value = true;
 
-	file.value = await misskeyApi('drive/files/show', {
+	file.value = await misskeyApi("drive/files/show", {
 		fileId: props.fileId,
 	}).catch((err) => {
 		console.error(err);
@@ -139,8 +185,8 @@ function crop() {
 function move() {
 	if (!file.value) return;
 
-	os.selectDriveFolder(false).then(folder => {
-		misskeyApi('drive/files/update', {
+	os.selectDriveFolder(false).then((folder) => {
+		misskeyApi("drive/files/update", {
 			fileId: file.value.id,
 			folderId: folder[0] ? folder[0].id : null,
 		}).then(async () => {
@@ -152,18 +198,20 @@ function move() {
 function toggleSensitive() {
 	if (!file.value) return;
 
-	os.apiWithDialog('drive/files/update', {
+	os.apiWithDialog("drive/files/update", {
 		fileId: file.value.id,
 		isSensitive: !file.value.isSensitive,
-	}).then(async () => {
-		await fetch();
-	}).catch(err => {
-		os.alert({
-			type: 'error',
-			title: i18n.ts.error,
-			text: err.message,
+	})
+		.then(async () => {
+			await fetch();
+		})
+		.catch((err) => {
+			os.alert({
+				type: "error",
+				title: i18n.ts.error,
+				text: err.message,
+			});
 		});
-	});
 }
 
 function rename() {
@@ -175,7 +223,7 @@ function rename() {
 		default: file.value.name,
 	}).then(({ canceled, result: name }) => {
 		if (canceled) return;
-		os.apiWithDialog('drive/files/update', {
+		os.apiWithDialog("drive/files/update", {
 			fileId: file.value.id,
 			name: name,
 		}).then(async () => {
@@ -187,36 +235,42 @@ function rename() {
 function describe() {
 	if (!file.value) return;
 
-	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkFileCaptionEditWindow.vue')), {
-		default: file.value.comment ?? '',
-		file: file.value,
-	}, {
-		done: caption => {
-			os.apiWithDialog('drive/files/update', {
-				fileId: file.value.id,
-				comment: caption.length === 0 ? null : caption,
-			}).then(async () => {
-				await fetch();
-			});
+	const { dispose } = os.popup(
+		defineAsyncComponent(
+			() => import("@/components/MkFileCaptionEditWindow.vue"),
+		),
+		{
+			default: file.value.comment ?? "",
+			file: file.value,
 		},
-		closed: () => dispose(),
-	});
+		{
+			done: (caption) => {
+				os.apiWithDialog("drive/files/update", {
+					fileId: file.value.id,
+					comment: caption.length === 0 ? null : caption,
+				}).then(async () => {
+					await fetch();
+				});
+			},
+			closed: () => dispose(),
+		},
+	);
 }
 
 async function deleteFile() {
 	if (!file.value) return;
 
 	const { canceled } = await os.confirm({
-		type: 'warning',
+		type: "warning",
 		text: i18n.tsx.driveFileDeleteConfirm({ name: file.value.name }),
 	});
 
 	if (canceled) return;
-	await os.apiWithDialog('drive/files/delete', {
+	await os.apiWithDialog("drive/files/delete", {
 		fileId: file.value.id,
 	});
 
-	router.push('/my/drive');
+	router.push("/my/drive");
 }
 
 onMounted(async () => {
@@ -225,7 +279,6 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" module>
-
 .filePreviewRoot {
 	background: var(--MI_THEME-panel);
 	border-radius: var(--MI-radius);
@@ -253,7 +306,7 @@ onMounted(async () => {
 	gap: 8px;
 
 	.fileQuickActionsOthersButton {
-		padding: .5rem;
+		padding: 0.5rem;
 		border-radius: var(--MI-radius-ellipse);
 
 		&:hover,
@@ -270,35 +323,35 @@ onMounted(async () => {
 
 		&.danger:hover,
 		&.danger:focus-visible {
-			background-color: rgba(255, 42, 42, .15);
+			background-color: rgba(255, 42, 42, 0.15);
 		}
 	}
 }
 
 .fileNameEditBtn {
-	padding: .5rem 1rem;
+	padding: 0.5rem 1rem;
 	display: flex;
 	align-items: center;
 	min-width: 0;
 	font-weight: 700;
 	border-radius: var(--MI-radius);
-	font-size: .8rem;
+	font-size: 0.8rem;
 
-	>.fileNameEditIcon {
+	> .fileNameEditIcon {
 		color: transparent;
 		visibility: hidden;
-		padding-left: .5rem;
+		padding-left: 0.5rem;
 	}
 
-	>.fileName {
+	> .fileName {
 		margin: 0;
 	}
 
 	&:hover {
 		background-color: var(--MI_THEME-accentedBg);
 
-		>.fileName,
-		>.fileNameEditIcon {
+		> .fileName,
+		> .fileNameEditIcon {
 			visibility: visible;
 			color: var(--MI_THEME-accent);
 		}
@@ -306,7 +359,7 @@ onMounted(async () => {
 }
 
 .fileMetaDataChildren {
-	padding: .5rem 1rem;
+	padding: 0.5rem 1rem;
 }
 
 .multiline {
@@ -317,14 +370,14 @@ onMounted(async () => {
 	text-align: start;
 	display: block;
 	width: 100%;
-	padding: .5rem 1rem;
+	padding: 0.5rem 1rem;
 	border-radius: var(--MI-radius);
 
 	.kvEditIcon {
 		display: inline-block;
 		color: transparent;
 		visibility: hidden;
-		padding-left: .5rem;
+		padding-left: 0.5rem;
 	}
 
 	&:hover {

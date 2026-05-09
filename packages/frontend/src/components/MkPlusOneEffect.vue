@@ -4,30 +4,36 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root" :style="{ zIndex, top: `${y - 64}px`, left: `${x - 64}px` }">
-	<span class="text" :class="{ up }">+{{ value }}</span>
-</div>
+	<div
+		:class="$style.root"
+		:style="{ zIndex, top: `${y - 64}px`, left: `${x - 64}px` }"
+	>
+		<span class="text" :class="{ up }">+{{ value }}</span>
+	</div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
-import * as os from '@/os.js';
+import { onMounted, ref } from "vue";
+import * as os from "@/os.js";
 
-const props = withDefaults(defineProps<{
-	x: number;
-	y: number;
-	value?: number | string;
-}>(), {
-	value: 1,
-});
+const props = withDefaults(
+	defineProps<{
+		x: number;
+		y: number;
+		value?: number | string;
+	}>(),
+	{
+		value: 1,
+	},
+);
 
 const emit = defineEmits<{
-	(ev: 'end'): void;
+	(ev: "end"): void;
 }>();
 
 const up = ref(false);
-const zIndex = os.claimZIndex('middle');
-const angle = (45 - (Math.random() * 90)) + 'deg';
+const zIndex = os.claimZIndex("middle");
+const angle = 45 - Math.random() * 90 + "deg";
 
 onMounted(() => {
 	window.setTimeout(() => {
@@ -35,7 +41,7 @@ onMounted(() => {
 	}, 10);
 
 	window.setTimeout(() => {
-		emit('end');
+		emit("end");
 	}, 1100);
 });
 </script>
@@ -64,7 +70,9 @@ onMounted(() => {
 			font-size: 18px;
 			font-weight: bold;
 			transform: translateY(0px);
-			transition: transform 1s cubic-bezier(0,.5,0,1), opacity 1s cubic-bezier(.5,0,1,.5);
+			transition:
+				transform 1s cubic-bezier(0, 0.5, 0, 1),
+				opacity 1s cubic-bezier(0.5, 0, 1, 0.5);
 			will-change: opacity, transform;
 
 			&.up {

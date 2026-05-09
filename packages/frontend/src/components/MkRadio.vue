@@ -4,28 +4,27 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div
-	v-adaptive-border
-	:class="[$style.root, { [$style.disabled]: disabled, [$style.checked]: checked }]"
-	:aria-checked="checked"
-	:aria-disabled="disabled"
-	role="checkbox"
-	@click="toggle"
->
-	<input
-		type="radio"
-		:disabled="disabled"
-		:class="$style.input"
+	<div
+		v-adaptive-border
+		:class="[
+			$style.root,
+			{ [$style.disabled]: disabled, [$style.checked]: checked },
+		]"
+		:aria-checked="checked"
+		:aria-disabled="disabled"
+		role="checkbox"
+		@click="toggle"
 	>
-	<span :class="$style.button">
-		<span></span>
-	</span>
-	<span :class="$style.label"><slot></slot></span>
-</div>
+		<input type="radio" :disabled="disabled" :class="$style.input" />
+		<span :class="$style.button">
+			<span></span>
+		</span>
+		<span :class="$style.label"><slot></slot></span>
+	</div>
 </template>
 
 <script lang="ts" setup generic="T extends unknown">
-import { computed } from 'vue';
+import { computed } from "vue";
 
 const props = defineProps<{
 	modelValue: T;
@@ -34,14 +33,14 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'update:modelValue', value: T): void;
+	(ev: "update:modelValue", value: T): void;
 }>();
 
 const checked = computed(() => props.modelValue === props.value);
 
 function toggle(): void {
 	if (props.disabled) return;
-	emit('update:modelValue', props.value);
+	emit("update:modelValue", props.value);
 }
 </script>
 
@@ -111,7 +110,7 @@ function toggle(): void {
 	transition: inherit;
 
 	&::after {
-		content: '';
+		content: "";
 		display: block;
 		position: absolute;
 		top: 3px;

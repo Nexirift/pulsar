@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { FastifyReply } from 'fastify';
+import { FastifyReply } from "fastify";
 
 export type RateLimit = BucketRateLimit | LegacyRateLimit;
 export type Keyed<T> = T & { key: string };
@@ -22,7 +22,7 @@ export interface BucketRateLimit {
 	/**
 	 * Constant value identifying the type of rate limit.
 	 */
-	type: 'bucket';
+	type: "bucket";
 
 	/**
 	 * Size of the bucket, in number of requests.
@@ -130,7 +130,10 @@ export function isLegacyRateLimit(limit: RateLimit): limit is LegacyRateLimit {
 	return limit.type === undefined;
 }
 
-export type MaxLegacyLimit = LegacyRateLimit & { duration: number, max: number };
+export type MaxLegacyLimit = LegacyRateLimit & {
+	duration: number;
+	max: number;
+};
 export function hasMaxLimit(limit: LegacyRateLimit): limit is MaxLegacyLimit {
 	return limit.max != null && limit.duration != null;
 }
@@ -140,22 +143,25 @@ export function hasMinLimit(limit: LegacyRateLimit): limit is MinLegacyLimit {
 	return limit.minInterval != null;
 }
 
-export function sendRateLimitHeaders(reply: FastifyReply, info: LimitInfo): void {
+export function sendRateLimitHeaders(
+	reply: FastifyReply,
+	info: LimitInfo,
+): void {
 	// Number of seconds until the limit has fully reset.
 	const clear = (info.fullResetMs / 1000).toFixed(3);
-	reply.header('X-RateLimit-Clear', clear);
+	reply.header("X-RateLimit-Clear", clear);
 
 	// Number of calls that can be made before being limited.
 	const remaining = info.remaining.toString();
-	reply.header('X-RateLimit-Remaining', remaining);
+	reply.header("X-RateLimit-Remaining", remaining);
 
 	if (info.blocked) {
 		// Number of seconds to wait before trying again. Left for backwards compatibility.
 		const retry = info.resetSec.toString();
-		reply.header('Retry-After', retry);
+		reply.header("Retry-After", retry);
 
 		// Number of milliseconds to wait before trying again.
 		const reset = (info.resetMs / 1000).toFixed(3);
-		reply.header('X-RateLimit-Reset', reset);
+		reply.header("X-RateLimit-Reset", reset);
 	}
 }

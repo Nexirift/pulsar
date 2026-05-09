@@ -2,7 +2,7 @@
 _lang_: "Nederlands"
 headlineMisskey: "Netwerk verbonden door notities"
 introMisskey: "Welkom! Misskey is een open source, gedecentraliseerde microblogdienst.\nMaak \"notities\" om je gedachten te delen met iedereen om je heen. 📡\nMet \"reacties\" kun je ook snel je mening geven over berichten van anderen. 👍\nLaten we een nieuwe wereld verkennen! 🚀"
-poweredByMisskeyDescription: "{name} is één van de services die door het open source platform <b>Misskey</b> wordt geleverd (het wordt ook wel een \"Misskey server genmoemd\")."
+poweredByMisskeyDescription: '{name} is één van de services die door het open source platform <b>Misskey</b> wordt geleverd (het wordt ook wel een "Misskey server genmoemd").'
 monthAndDay: "{day} {month}"
 search: "Zoeken"
 reset: "Herstellen"
@@ -81,7 +81,7 @@ import: "Import"
 export: "Export"
 files: "Bestanden"
 download: "Downloaden"
-driveFileDeleteConfirm: "Weet je zeker dat je het bestand \"{name}\" wilt verwijderen? Notities met dit bestand als bijlage worden ook verwijderd."
+driveFileDeleteConfirm: 'Weet je zeker dat je het bestand "{name}" wilt verwijderen? Notities met dit bestand als bijlage worden ook verwijderd.'
 unfollowConfirm: "Weet je zeker dat je {name} wilt ontvolgen?"
 exportRequested: "Je hebt een export aangevraagd. Dit kan een tijdje duren. Het wordt toegevoegd aan je Drive zodra het is voltooid."
 importRequested: "Je hebt een import aangevraagd. Dit kan even duren."
@@ -136,7 +136,7 @@ pinnedEmojisSettingDescription: "Kies de emojis die als eerste getoond worden ti
 emojiPickerDisplay: "Emoji kiezer weergave"
 overwriteFromPinnedEmojisForReaction: "Overschrijven met reactieinstellingen"
 overwriteFromPinnedEmojis: "Overschrijven met algemene instellingen"
-reactionSettingDescription2: "Sleep om opnieuw te ordenen, Klik om te verwijderen, Druk op \"+\" om toe te voegen"
+reactionSettingDescription2: 'Sleep om opnieuw te ordenen, Klik om te verwijderen, Druk op "+" om toe te voegen'
 rememberNoteVisibility: "Vergeet niet de notitie zichtbaarheidsinstellingen"
 attachCancel: "Verwijder bijlage"
 deleteFile: "Bestand verwijderen"
@@ -284,8 +284,8 @@ announcements: "Aankondigingen"
 imageUrl: "AfbeeldingsURL"
 remove: "Verwijderen"
 removed: "Succesvol verwijderd"
-removeAreYouSure: "Weet je zeker dat je \"{x}\" wil verwijderen?"
-deleteAreYouSure: "Weet je zeker dat je \"{x}\" wil verwijderen?"
+removeAreYouSure: 'Weet je zeker dat je "{x}" wil verwijderen?'
+deleteAreYouSure: 'Weet je zeker dat je "{x}" wil verwijderen?'
 resetAreYouSure: "Resetten?"
 areYouSure: "Weet je het zeker?"
 saved: "Opgeslagen"

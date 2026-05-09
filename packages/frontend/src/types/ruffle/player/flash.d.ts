@@ -7,11 +7,11 @@
  * It may even overwrite existing methods or properties.
  */
 export interface FlashAPI {
-    /**
-     * Returns the movies loaded process, in a percent from 0 to 100.
-     * Ruffle may just return 0 or 100.
-     *
-     * @returns a value from 0 to 100, inclusive.
-     */
-    PercentLoaded(): number;
+	/**
+	 * Returns the movies loaded process, in a percent from 0 to 100.
+	 * Ruffle may just return 0 or 100.
+	 *
+	 * @returns a value from 0 to 100, inclusive.
+	 */
+	PercentLoaded(): number;
 }

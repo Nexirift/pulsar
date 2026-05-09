@@ -4,12 +4,12 @@
  */
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { action } from '@storybook/addon-actions';
-import { StoryObj } from '@storybook/vue3';
-import { HttpResponse, http } from 'msw';
-import { abuseUserReport } from '../packages/frontend/.storybook/fakes.js';
-import { commonHandlers } from '../packages/frontend/.storybook/mocks.js';
-import MkAbuseReport from './MkAbuseReport.vue';
+import { action } from "@storybook/addon-actions";
+import { StoryObj } from "@storybook/vue3";
+import { HttpResponse, http } from "msw";
+import { abuseUserReport } from "../packages/frontend/.storybook/fakes.js";
+import { commonHandlers } from "../packages/frontend/.storybook/mocks.js";
+import MkAbuseReport from "./MkAbuseReport.vue";
 export const Default = {
 	render(args) {
 		return {
@@ -29,7 +29,7 @@ export const Default = {
 				},
 				events() {
 					return {
-						resolved: action('resolved'),
+						resolved: action("resolved"),
 					};
 				},
 			},
@@ -40,14 +40,19 @@ export const Default = {
 		report: abuseUserReport(),
 	},
 	parameters: {
-		layout: 'fullscreen',
+		layout: "fullscreen",
 		msw: {
 			handlers: [
 				...commonHandlers,
-				http.post('/api/admin/resolve-abuse-user-report', async ({ request }) => {
-					action('POST /api/admin/resolve-abuse-user-report')(await request.json());
-					return HttpResponse.json({});
-				}),
+				http.post(
+					"/api/admin/resolve-abuse-user-report",
+					async ({ request }) => {
+						action("POST /api/admin/resolve-abuse-user-report")(
+							await request.json(),
+						);
+						return HttpResponse.json({});
+					},
+				),
 			],
 		},
 	},

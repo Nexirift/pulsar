@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as Misskey from 'misskey-js';
-import { appendContentWarning } from '@@/js/append-content-warning.js';
+import * as Misskey from "misskey-js";
+import { appendContentWarning } from "@@/js/append-content-warning.js";
 
 export function computeMergedCw(note: Misskey.entities.Note): string | null {
 	let cw = note.cw;

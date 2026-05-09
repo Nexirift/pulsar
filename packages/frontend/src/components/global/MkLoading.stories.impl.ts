@@ -4,9 +4,9 @@
  */
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import type { StoryObj } from '@storybook/vue3';
-import isChromatic from 'chromatic/isChromatic';
-import MkLoading from './MkLoading.vue';
+import type { StoryObj } from "@storybook/vue3";
+import isChromatic from "chromatic/isChromatic";
+import MkLoading from "./MkLoading.vue";
 export const Default = {
 	render(args) {
 		return {
@@ -32,7 +32,7 @@ export const Default = {
 		static: isChromatic(),
 	},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkLoading>;
 export const Inline = {

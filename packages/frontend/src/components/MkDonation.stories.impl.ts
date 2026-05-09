@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { action } from '@storybook/addon-actions';
-import type { StoryObj } from '@storybook/vue3';
-import { onBeforeUnmount } from 'vue';
-import MkDonation from './MkDonation.vue';
-import { instance } from '@/instance.js';
+import { action } from "@storybook/addon-actions";
+import type { StoryObj } from "@storybook/vue3";
+import { onBeforeUnmount } from "vue";
+import MkDonation from "./MkDonation.vue";
+import { instance } from "@/instance.js";
 export const Default = {
 	render(args) {
 		return {
@@ -27,7 +27,7 @@ export const Default = {
 				},
 				events() {
 					return {
-						closed: action('closed'),
+						closed: action("closed"),
 					};
 				},
 			},
@@ -36,19 +36,19 @@ export const Default = {
 	},
 	args: {
 		// @ts-expect-error name is used for mocking instance
-		name: 'Misskey Hub',
+		name: "Misskey Hub",
 	},
 	decorators: [
 		(_, { args }) => ({
 			setup() {
 				// @ts-expect-error name is used for mocking instance
 				instance.name = args.name;
-				onBeforeUnmount(() => instance.name = null);
+				onBeforeUnmount(() => (instance.name = null));
 			},
-			template: '<story/>',
+			template: "<story/>",
 		}),
 	],
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkDonation>;

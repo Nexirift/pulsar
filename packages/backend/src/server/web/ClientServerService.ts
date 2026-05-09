@@ -3,30 +3,30 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { randomUUID } from 'node:crypto';
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { Inject, Injectable } from '@nestjs/common';
-import ms from 'ms';
-import sharp from 'sharp';
-import pug from 'pug';
-import { In, IsNull } from 'typeorm';
-import fastifyStatic from '@fastify/static';
-import fastifyView from '@fastify/view';
-import fastifyProxy from '@fastify/http-proxy';
-import vary from 'vary';
-import htmlSafeJsonStringify from 'htmlescape';
-import type { Config } from '@/config.js';
-import { getNoteSummary } from '@/misc/get-note-summary.js';
-import { DI } from '@/di-symbols.js';
-import * as Acct from '@/misc/acct.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import { PageEntityService } from '@/core/entities/PageEntityService.js';
-import { MetaEntityService } from '@/core/entities/MetaEntityService.js';
-import { GalleryPostEntityService } from '@/core/entities/GalleryPostEntityService.js';
-import { ClipEntityService } from '@/core/entities/ClipEntityService.js';
-import { ChannelEntityService } from '@/core/entities/ChannelEntityService.js';
+import { randomUUID } from "node:crypto";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { Inject, Injectable } from "@nestjs/common";
+import ms from "ms";
+import sharp from "sharp";
+import pug from "pug";
+import { In, IsNull } from "typeorm";
+import fastifyStatic from "@fastify/static";
+import fastifyView from "@fastify/view";
+import fastifyProxy from "@fastify/http-proxy";
+import vary from "vary";
+import htmlSafeJsonStringify from "htmlescape";
+import type { Config } from "@/config.js";
+import { getNoteSummary } from "@/misc/get-note-summary.js";
+import { DI } from "@/di-symbols.js";
+import * as Acct from "@/misc/acct.js";
+import { UserEntityService } from "@/core/entities/UserEntityService.js";
+import { NoteEntityService } from "@/core/entities/NoteEntityService.js";
+import { PageEntityService } from "@/core/entities/PageEntityService.js";
+import { MetaEntityService } from "@/core/entities/MetaEntityService.js";
+import { GalleryPostEntityService } from "@/core/entities/GalleryPostEntityService.js";
+import { ClipEntityService } from "@/core/entities/ClipEntityService.js";
+import { ChannelEntityService } from "@/core/entities/ChannelEntityService.js";
 import type {
 	AnnouncementsRepository,
 	ChannelsRepository,
@@ -39,19 +39,23 @@ import type {
 	ReversiGamesRepository,
 	UserProfilesRepository,
 	UsersRepository,
-} from '@/models/_.js';
-import type Logger from '@/logger.js';
-import { handleRequestRedirectToOmitSearch } from '@/misc/fastify-hook-handlers.js';
-import { bindThis } from '@/decorators.js';
-import { FlashEntityService } from '@/core/entities/FlashEntityService.js';
-import { RoleService } from '@/core/RoleService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { ReversiGameEntityService } from '@/core/entities/ReversiGameEntityService.js';
-import { AnnouncementEntityService } from '@/core/entities/AnnouncementEntityService.js';
-import { FeedService } from './FeedService.js';
-import { UrlPreviewService } from './UrlPreviewService.js';
-import { ClientLoggerService } from './ClientLoggerService.js';
-import type { FastifyInstance, FastifyPluginOptions, FastifyReply } from 'fastify';
+} from "@/models/_.js";
+import type Logger from "@/logger.js";
+import { handleRequestRedirectToOmitSearch } from "@/misc/fastify-hook-handlers.js";
+import { bindThis } from "@/decorators.js";
+import { FlashEntityService } from "@/core/entities/FlashEntityService.js";
+import { RoleService } from "@/core/RoleService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { ReversiGameEntityService } from "@/core/entities/ReversiGameEntityService.js";
+import { AnnouncementEntityService } from "@/core/entities/AnnouncementEntityService.js";
+import { FeedService } from "./FeedService.js";
+import { UrlPreviewService } from "./UrlPreviewService.js";
+import { ClientLoggerService } from "./ClientLoggerService.js";
+import type {
+	FastifyInstance,
+	FastifyPluginOptions,
+	FastifyReply,
+} from "fastify";
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
@@ -128,113 +132,138 @@ export class ClientServerService {
 	private async manifestHandler(reply: FastifyReply) {
 		let manifest = {
 			// 空文字列の場合右辺を使いたいため
-			 
-			'short_name': this.meta.shortName || this.meta.name || this.config.host,
+
+			short_name: this.meta.shortName || this.meta.name || this.config.host,
 			// 空文字列の場合右辺を使いたいため
-			 
-			'name': this.meta.name || this.config.host,
-			'start_url': '/',
-			'display': 'standalone',
-			'background_color': '#313a42',
+
+			name: this.meta.name || this.config.host,
+			start_url: "/",
+			display: "standalone",
+			background_color: "#313a42",
 			// 空文字列の場合右辺を使いたいため
-			 
-			'theme_color': this.meta.themeColor || '#86b300',
-			'icons': [{
-				// 空文字列の場合右辺を使いたいため
-				 
-				'src': this.meta.app192IconUrl || '/static-assets/icons/192.png',
-				'sizes': '192x192',
-				'type': 'image/png',
-				'purpose': 'maskable',
-			}, {
-				// 空文字列の場合右辺を使いたいため
-				 
-				'src': this.meta.app300IconUrl || '/static-assets/icons/512.png',
-				'sizes': '300x300',
-				'type': 'image/png',
-				'purpose': 'any',
-			}, {
-				// 空文字列の場合右辺を使いたいため
-				 
-				'src': this.meta.app512IconUrl || '/static-assets/icons/512.png',
-				'sizes': '512x512',
-				'type': 'image/png',
-				'purpose': 'maskable',
-			}],
-			'shortcuts': [
+
+			theme_color: this.meta.themeColor || "#86b300",
+			icons: [
 				{
-					'name': 'Notifications',
-					'short_name': 'Notifications',
-					'description': 'View your notifications',
-					'url': '/my/notifications',
-					'icons': [{
-						'src': this.meta.app192IconUrl || '/static-assets/icons/192.png',
-						'sizes': '192x192',
-					}],
+					// 空文字列の場合右辺を使いたいため
+
+					src: this.meta.app192IconUrl || "/static-assets/icons/192.png",
+					sizes: "192x192",
+					type: "image/png",
+					purpose: "maskable",
 				},
 				{
-					'name': 'Compose',
-					'short_name': 'Compose',
-					'description': 'Create a new post',
-					'url': '/share',
-					'icons': [{
-						'src': this.meta.app192IconUrl || '/static-assets/icons/192.png',
-						'sizes': '192x192',
-					}],
+					// 空文字列の場合右辺を使いたいため
+
+					src: this.meta.app300IconUrl || "/static-assets/icons/512.png",
+					sizes: "300x300",
+					type: "image/png",
+					purpose: "any",
+				},
+				{
+					// 空文字列の場合右辺を使いたいため
+
+					src: this.meta.app512IconUrl || "/static-assets/icons/512.png",
+					sizes: "512x512",
+					type: "image/png",
+					purpose: "maskable",
 				},
 			],
-			'launch_handler': {
-				'client_mode': 'navigate-existing',
+			shortcuts: [
+				{
+					name: "Notifications",
+					short_name: "Notifications",
+					description: "View your notifications",
+					url: "/my/notifications",
+					icons: [
+						{
+							src: this.meta.app192IconUrl || "/static-assets/icons/192.png",
+							sizes: "192x192",
+						},
+					],
+				},
+				{
+					name: "Compose",
+					short_name: "Compose",
+					description: "Create a new post",
+					url: "/share",
+					icons: [
+						{
+							src: this.meta.app192IconUrl || "/static-assets/icons/192.png",
+							sizes: "192x192",
+						},
+					],
+				},
+			],
+			launch_handler: {
+				client_mode: "navigate-existing",
 			},
-			'display_override': ['window-controls-overlay', 'standalone'],
-			'edge_side_panel': {
-				'preferred_width': 400,
+			display_override: ["window-controls-overlay", "standalone"],
+			edge_side_panel: {
+				preferred_width: 400,
 			},
-			'note_taking': {
-				'new_note_url': '/share',
+			note_taking: {
+				new_note_url: "/share",
 			},
-			'share_target': {
-				'action': '/share/',
-				'method': 'GET',
-				'enctype': 'application/x-www-form-urlencoded',
-				'params': {
-					'title': 'title',
-					'text': 'text',
-					'url': 'url',
+			share_target: {
+				action: "/share/",
+				method: "GET",
+				enctype: "application/x-www-form-urlencoded",
+				params: {
+					title: "title",
+					text: "text",
+					url: "url",
 				},
 			},
 		};
 
 		manifest = {
 			...manifest,
-			...JSON.parse(this.meta.manifestJsonOverride === '' ? '{}' : this.meta.manifestJsonOverride),
+			...JSON.parse(
+				this.meta.manifestJsonOverride === ""
+					? "{}"
+					: this.meta.manifestJsonOverride,
+			),
 		};
 
-		reply.header('Cache-Control', 'max-age=300');
-		return (manifest);
+		reply.header("Cache-Control", "max-age=300");
+		return manifest;
 	}
 
 	@bindThis
 	private async generateCommonPugData(meta: MiMeta) {
 		return {
-			instanceName: meta.name ?? 'Pulsar',
+			instanceName: meta.name ?? "Pulsar",
 			icon: meta.iconUrl,
 			appleTouchIcon: meta.app512IconUrl,
 			themeColor: meta.themeColor,
-			serverErrorImageUrl: meta.serverErrorImageUrl ?? '/client-assets/status/error.png',
-			infoImageUrl: meta.infoImageUrl ?? '/client-assets/status/nothinghere.png',
-			notFoundImageUrl: meta.notFoundImageUrl ?? '/client-assets/status/missingpage.webp',
+			serverErrorImageUrl:
+				meta.serverErrorImageUrl ?? "/client-assets/status/error.png",
+			infoImageUrl:
+				meta.infoImageUrl ?? "/client-assets/status/nothinghere.png",
+			notFoundImageUrl:
+				meta.notFoundImageUrl ?? "/client-assets/status/missingpage.webp",
 			instanceUrl: this.config.url,
-			randomMOTD: this.config.customMOTD ? this.config.customMOTD[Math.floor(Math.random() * this.config.customMOTD.length)] : undefined,
-			metaJson: htmlSafeJsonStringify(await this.metaEntityService.packDetailed(meta)),
+			randomMOTD: this.config.customMOTD
+				? this.config.customMOTD[
+						Math.floor(Math.random() * this.config.customMOTD.length)
+					]
+				: undefined,
+			metaJson: htmlSafeJsonStringify(
+				await this.metaEntityService.packDetailed(meta),
+			),
 			now: this.timeService.now,
 		};
 	}
 
 	@bindThis
-	public createServer(fastify: FastifyInstance, options: FastifyPluginOptions, done: (err?: Error) => void) {
+	public createServer(
+		fastify: FastifyInstance,
+		options: FastifyPluginOptions,
+		done: (err?: Error) => void,
+	) {
 		fastify.register(fastifyView, {
-			root: _dirname + '/views',
+			root: _dirname + "/views",
 			engine: {
 				pug: pug,
 			},
@@ -244,9 +273,9 @@ export class ClientServerService {
 			},
 		});
 
-		fastify.addHook('onRequest', (request, reply, done) => {
+		fastify.addHook("onRequest", (request, reply, done) => {
 			// クリックジャッキング防止のためiFrameの中に入れられないようにする
-			reply.header('X-Frame-Options', 'DENY');
+			reply.header("X-Frame-Options", "DENY");
 			done();
 		});
 
@@ -255,34 +284,34 @@ export class ClientServerService {
 			fastify.register((fastify, options, done) => {
 				fastify.register(fastifyStatic, {
 					root: frontendViteOut,
-					prefix: '/vite/',
-					maxAge: ms('30 days'),
+					prefix: "/vite/",
+					maxAge: ms("30 days"),
 					immutable: true,
 					decorateReply: false,
 				});
 				fastify.register(fastifyStatic, {
 					root: frontendEmbedViteOut,
-					prefix: '/embed_vite/',
-					maxAge: ms('30 days'),
+					prefix: "/embed_vite/",
+					maxAge: ms("30 days"),
 					immutable: true,
 					decorateReply: false,
 				});
-				fastify.addHook('onRequest', handleRequestRedirectToOmitSearch);
+				fastify.addHook("onRequest", handleRequestRedirectToOmitSearch);
 				done();
 			});
 		} else {
-			const port = (process.env.VITE_PORT ?? '5173');
+			const port = process.env.VITE_PORT ?? "5173";
 			fastify.register(fastifyProxy, {
 				upstream: `http://localhost:${port}`,
-				prefix: '/vite',
-				rewritePrefix: '/vite',
+				prefix: "/vite",
+				rewritePrefix: "/vite",
 			});
 
-			const embedPort = (process.env.EMBED_VITE_PORT ?? '5174');
+			const embedPort = process.env.EMBED_VITE_PORT ?? "5174";
 			fastify.register(fastifyProxy, {
 				upstream: `http://localhost:${embedPort}`,
-				prefix: '/embed_vite',
-				rewritePrefix: '/embed_vite',
+				prefix: "/embed_vite",
+				rewritePrefix: "/embed_vite",
 			});
 		}
 		//#endregion
@@ -291,192 +320,243 @@ export class ClientServerService {
 
 		fastify.register(fastifyStatic, {
 			root: staticAssets,
-			prefix: '/static-assets/',
-			maxAge: ms('7 days'),
+			prefix: "/static-assets/",
+			maxAge: ms("7 days"),
 			decorateReply: false,
 		});
 
 		fastify.register(fastifyStatic, {
 			root: clientAssets,
-			prefix: '/client-assets/',
-			maxAge: ms('7 days'),
+			prefix: "/client-assets/",
+			maxAge: ms("7 days"),
 			decorateReply: false,
 		});
 
 		fastify.register(fastifyStatic, {
 			root: assets,
-			prefix: '/assets/',
-			maxAge: ms('7 days'),
+			prefix: "/assets/",
+			maxAge: ms("7 days"),
 			decorateReply: false,
 		});
 
 		fastify.register((fastify, options, done) => {
 			fastify.register(fastifyStatic, {
 				root: tarball,
-				prefix: '/tarball/',
-				maxAge: ms('30 days'),
+				prefix: "/tarball/",
+				maxAge: ms("30 days"),
 				immutable: true,
 				decorateReply: false,
 			});
-			fastify.addHook('onRequest', handleRequestRedirectToOmitSearch);
+			fastify.addHook("onRequest", handleRequestRedirectToOmitSearch);
 			done();
 		});
 
-		fastify.get('/favicon.ico', async (request, reply) => {
-			return reply.sendFile('/favicon.ico', staticAssets);
+		fastify.get("/favicon.ico", async (request, reply) => {
+			return reply.sendFile("/favicon.ico", staticAssets);
 		});
 
-		fastify.get('/apple-touch-icon.png', async (request, reply) => {
-			return reply.sendFile('/apple-touch-icon.png', staticAssets);
+		fastify.get("/apple-touch-icon.png", async (request, reply) => {
+			return reply.sendFile("/apple-touch-icon.png", staticAssets);
 		});
 
-		fastify.get<{ Params: { path: string } }>('/fluent-emoji/:path(.*)', async (request, reply) => {
-			const path = request.params.path;
+		fastify.get<{ Params: { path: string } }>(
+			"/fluent-emoji/:path(.*)",
+			async (request, reply) => {
+				const path = request.params.path;
 
-			if (!path.match(/^[0-9a-f-]+\.png$/)) {
-				reply.code(404);
-				return;
-			}
+				if (!path.match(/^[0-9a-f-]+\.png$/)) {
+					reply.code(404);
+					return;
+				}
 
-			reply.header('Content-Security-Policy', 'default-src \'none\'; style-src \'unsafe-inline\'');
+				reply.header(
+					"Content-Security-Policy",
+					"default-src 'none'; style-src 'unsafe-inline'",
+				);
 
-			return await reply.sendFile(path, `${_dirname}/../../../../../fluent-emojis/dist/`, {
-				maxAge: ms('30 days'),
-			});
-		});
+				return await reply.sendFile(
+					path,
+					`${_dirname}/../../../../../fluent-emojis/dist/`,
+					{
+						maxAge: ms("30 days"),
+					},
+				);
+			},
+		);
 
-		fastify.get<{ Params: { path: string } }>('/twemoji/:path(.*)', async (request, reply) => {
-			const path = request.params.path;
+		fastify.get<{ Params: { path: string } }>(
+			"/twemoji/:path(.*)",
+			async (request, reply) => {
+				const path = request.params.path;
 
-			if (!path.match(/^[0-9a-f-]+\.svg$/)) {
-				reply.code(404);
-				return;
-			}
+				if (!path.match(/^[0-9a-f-]+\.svg$/)) {
+					reply.code(404);
+					return;
+				}
 
-			reply.header('Content-Security-Policy', 'default-src \'none\'; style-src \'unsafe-inline\'');
+				reply.header(
+					"Content-Security-Policy",
+					"default-src 'none'; style-src 'unsafe-inline'",
+				);
 
-			return await reply.sendFile(path, `${_dirname}/../../../node_modules/@discordapp/twemoji/dist/svg/`, {
-				maxAge: ms('30 days'),
-			});
-		});
+				return await reply.sendFile(
+					path,
+					`${_dirname}/../../../node_modules/@discordapp/twemoji/dist/svg/`,
+					{
+						maxAge: ms("30 days"),
+					},
+				);
+			},
+		);
 
-		fastify.get<{ Params: { path: string } }>('/tossface/:path(.*)', async (request, reply) => {
-			const path = request.params.path;
+		fastify.get<{ Params: { path: string } }>(
+			"/tossface/:path(.*)",
+			async (request, reply) => {
+				const path = request.params.path;
 
-			if (!path.match(/^[0-9a-f-]+\.svg$/)) {
-				reply.code(404);
-				return;
-			}
+				if (!path.match(/^[0-9a-f-]+\.svg$/)) {
+					reply.code(404);
+					return;
+				}
 
-			reply.header('Content-Security-Policy', 'default-src \'none\'; style-src \'unsafe-inline\'');
+				reply.header(
+					"Content-Security-Policy",
+					"default-src 'none'; style-src 'unsafe-inline'",
+				);
 
-			return await reply.sendFile(path, `${_dirname}/../../../../../tossface-emojis/dist`, {
-				maxAge: ms('30 days'),
-			});
-		});
+				return await reply.sendFile(
+					path,
+					`${_dirname}/../../../../../tossface-emojis/dist`,
+					{
+						maxAge: ms("30 days"),
+					},
+				);
+			},
+		);
 
-		fastify.get<{ Params: { path: string } }>('/twemoji-badge/:path(.*)', async (request, reply) => {
-			const path = request.params.path;
+		fastify.get<{ Params: { path: string } }>(
+			"/twemoji-badge/:path(.*)",
+			async (request, reply) => {
+				const path = request.params.path;
 
-			if (!path.match(/^[0-9a-f-]+\.png$/)) {
-				reply.code(404);
-				return;
-			}
+				if (!path.match(/^[0-9a-f-]+\.png$/)) {
+					reply.code(404);
+					return;
+				}
 
-			const mask = await sharp(
-				`${_dirname}/../../../node_modules/@discordapp/twemoji/dist/svg/${path.replace('.png', '')}.svg`,
-				{ density: 1000 },
-			)
-				.resize(488, 488)
-				.greyscale()
-				.normalise()
-				.linear(1.75, -(128 * 1.75) + 128) // 1.75x contrast
-				.flatten({ background: '#000' })
-				.extend({
-					top: 12,
-					bottom: 12,
-					left: 12,
-					right: 12,
-					background: '#000',
+				const mask = await sharp(
+					`${_dirname}/../../../node_modules/@discordapp/twemoji/dist/svg/${path.replace(".png", "")}.svg`,
+					{ density: 1000 },
+				)
+					.resize(488, 488)
+					.greyscale()
+					.normalise()
+					.linear(1.75, -(128 * 1.75) + 128) // 1.75x contrast
+					.flatten({ background: "#000" })
+					.extend({
+						top: 12,
+						bottom: 12,
+						left: 12,
+						right: 12,
+						background: "#000",
+					})
+					.toColorspace("b-w")
+					.png()
+					.toBuffer();
+
+				const buffer = await sharp({
+					create: {
+						width: 512,
+						height: 512,
+						channels: 4,
+						background: { r: 0, g: 0, b: 0, alpha: 0 },
+					},
 				})
-				.toColorspace('b-w')
-				.png()
-				.toBuffer();
+					.pipelineColorspace("b-w")
+					.boolean(mask, "eor")
+					.resize(96, 96)
+					.png()
+					.toBuffer();
 
-			const buffer = await sharp({
-				create: { width: 512, height: 512, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
-			})
-				.pipelineColorspace('b-w')
-				.boolean(mask, 'eor')
-				.resize(96, 96)
-				.png()
-				.toBuffer();
-
-			reply.header('Content-Security-Policy', 'default-src \'none\'; style-src \'unsafe-inline\'');
-			reply.header('Cache-Control', 'max-age=2592000');
-			reply.header('Content-Type', 'image/png');
-			return buffer;
-		});
+				reply.header(
+					"Content-Security-Policy",
+					"default-src 'none'; style-src 'unsafe-inline'",
+				);
+				reply.header("Cache-Control", "max-age=2592000");
+				reply.header("Content-Type", "image/png");
+				return buffer;
+			},
+		);
 
 		// ServiceWorker
-		fastify.get('/sw.js', async (request, reply) => {
-			return await reply.sendFile('/sw.js', swAssets, {
-				maxAge: ms('10 minutes'),
+		fastify.get("/sw.js", async (request, reply) => {
+			return await reply.sendFile("/sw.js", swAssets, {
+				maxAge: ms("10 minutes"),
 			});
 		});
 
 		// Manifest
-		fastify.get('/manifest.json', async (request, reply) => await this.manifestHandler(reply));
+		fastify.get(
+			"/manifest.json",
+			async (request, reply) => await this.manifestHandler(reply),
+		);
 
 		// Embed Javascript
-		fastify.get('/embed.js', async (request, reply) => {
-			return await reply.sendFile('/embed.js', staticAssets, {
-				maxAge: ms('1 day'),
+		fastify.get("/embed.js", async (request, reply) => {
+			return await reply.sendFile("/embed.js", staticAssets, {
+				maxAge: ms("1 day"),
 			});
 		});
 
-		fastify.get('/robots.txt', async (request, reply) => {
+		fastify.get("/robots.txt", async (request, reply) => {
 			if (this.meta.robotsTxt) {
-				reply.header('Content-Type', 'text/plain');
+				reply.header("Content-Type", "text/plain");
 				return reply.send(this.meta.robotsTxt);
 			} else {
-				return await reply.sendFile('/robots.txt', staticAssets);
+				return await reply.sendFile("/robots.txt", staticAssets);
 			}
 		});
 
 		// OpenSearch XML
-		fastify.get('/opensearch.xml', async (request, reply) => {
-			const name = this.meta.name ?? 'Pulsar';
-			let content = '';
-			content += '<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">';
+		fastify.get("/opensearch.xml", async (request, reply) => {
+			const name = this.meta.name ?? "Pulsar";
+			let content = "";
+			content +=
+				'<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">';
 			content += `<ShortName>${name}</ShortName>`;
 			content += `<Description>${name} Search</Description>`;
-			content += '<InputEncoding>UTF-8</InputEncoding>';
+			content += "<InputEncoding>UTF-8</InputEncoding>";
 			content += `<Image width="16" height="16" type="image/x-icon">${this.config.url}/favicon.ico</Image>`;
 			content += `<Url type="text/html" template="${this.config.url}/search?q={searchTerms}"/>`;
-			content += '</OpenSearchDescription>';
+			content += "</OpenSearchDescription>";
 
-			reply.header('Content-Type', 'application/opensearchdescription+xml');
+			reply.header("Content-Type", "application/opensearchdescription+xml");
 			return await reply.send(content);
 		});
 
 		//#endregion
 
-		const renderBase = async (reply: FastifyReply, data: { [key: string]: any } = {}) => {
-			reply.header('Cache-Control', 'public, max-age=30');
-			return await reply.view('base', {
+		const renderBase = async (
+			reply: FastifyReply,
+			data: { [key: string]: any } = {},
+		) => {
+			reply.header("Cache-Control", "public, max-age=30");
+			return await reply.view("base", {
 				img: this.meta.bannerUrl,
 				url: this.config.url,
-				title: this.meta.name ?? 'Pulsar',
+				title: this.meta.name ?? "Pulsar",
 				desc: this.meta.description,
 				customHead: this.config.customHtml.head,
-				...await this.generateCommonPugData(this.meta),
+				...(await this.generateCommonPugData(this.meta)),
 				...data,
 			});
 		};
 
 		// URL preview endpoint
-		fastify.get<{ Querystring: { url: string; lang: string; } }>('/url', (request, reply) => this.urlPreviewService.handle(request, reply));
+		fastify.get<{ Querystring: { url: string; lang: string } }>(
+			"/url",
+			(request, reply) => this.urlPreviewService.handle(request, reply),
+		);
 
 		const getFeed = async (acct: string) => {
 			const { username, host } = Acct.parse(acct);
@@ -488,471 +568,566 @@ export class ClientServerService {
 				requireSigninToViewContents: false,
 			});
 
-			return user && await this.feedService.packFeed(user);
+			return user && (await this.feedService.packFeed(user));
 		};
 
 		// Atom
-		fastify.get<{ Params: { user?: string; } }>('/@:user.atom', async (request, reply) => {
-			if (request.params.user == null) return await renderBase(reply);
+		fastify.get<{ Params: { user?: string } }>(
+			"/@:user.atom",
+			async (request, reply) => {
+				if (request.params.user == null) return await renderBase(reply);
 
-			const feed = await getFeed(request.params.user);
+				const feed = await getFeed(request.params.user);
 
-			if (feed) {
-				reply.header('Content-Type', 'application/atom+xml; charset=utf-8');
-				return feed.atom1();
-			} else {
-				reply.code(404);
-				return;
-			}
-		});
+				if (feed) {
+					reply.header("Content-Type", "application/atom+xml; charset=utf-8");
+					return feed.atom1();
+				} else {
+					reply.code(404);
+					return;
+				}
+			},
+		);
 
 		// RSS
-		fastify.get<{ Params: { user?: string; } }>('/@:user.rss', async (request, reply) => {
-			if (request.params.user == null) return await renderBase(reply);
+		fastify.get<{ Params: { user?: string } }>(
+			"/@:user.rss",
+			async (request, reply) => {
+				if (request.params.user == null) return await renderBase(reply);
 
-			const feed = await getFeed(request.params.user);
+				const feed = await getFeed(request.params.user);
 
-			if (feed) {
-				reply.header('Content-Type', 'application/rss+xml; charset=utf-8');
-				return feed.rss2();
-			} else {
-				reply.code(404);
-				return;
-			}
-		});
+				if (feed) {
+					reply.header("Content-Type", "application/rss+xml; charset=utf-8");
+					return feed.rss2();
+				} else {
+					reply.code(404);
+					return;
+				}
+			},
+		);
 
 		// JSON
-		fastify.get<{ Params: { user?: string; } }>('/@:user.json', async (request, reply) => {
-			if (request.params.user == null) return await renderBase(reply);
+		fastify.get<{ Params: { user?: string } }>(
+			"/@:user.json",
+			async (request, reply) => {
+				if (request.params.user == null) return await renderBase(reply);
 
-			const feed = await getFeed(request.params.user);
+				const feed = await getFeed(request.params.user);
 
-			if (feed) {
-				reply.header('Content-Type', 'application/json; charset=utf-8');
-				return feed.json1();
-			} else {
-				reply.code(404);
-				return;
-			}
-		});
+				if (feed) {
+					reply.header("Content-Type", "application/json; charset=utf-8");
+					return feed.json1();
+				} else {
+					reply.code(404);
+					return;
+				}
+			},
+		);
 
 		//#region SSR
 		// User
-		fastify.get<{ Params: { user: string; sub?: string; } }>('/@:user/:sub?', async (request, reply) => {
-			const { username, host } = Acct.parse(request.params.user);
-			const user = await this.usersRepository.findOneBy({
-				usernameLower: username.toLowerCase(),
-				host: host ?? IsNull(),
-				isSuspended: false,
-			});
+		fastify.get<{ Params: { user: string; sub?: string } }>(
+			"/@:user/:sub?",
+			async (request, reply) => {
+				const { username, host } = Acct.parse(request.params.user);
+				const user = await this.usersRepository.findOneBy({
+					usernameLower: username.toLowerCase(),
+					host: host ?? IsNull(),
+					isSuspended: false,
+				});
 
-			vary(reply.raw, 'Accept');
+				vary(reply.raw, "Accept");
 
-			if (user != null) {
-				const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
-				const me = profile.fields
-					? profile.fields
-						.filter(filed => filed.value != null && filed.value.match(/^https?:/))
-						.map(field => field.value)
-					: [];
+				if (user != null) {
+					const profile = await this.userProfilesRepository.findOneByOrFail({
+						userId: user.id,
+					});
+					const me = profile.fields
+						? profile.fields
+								.filter(
+									(filed) =>
+										filed.value != null && filed.value.match(/^https?:/),
+								)
+								.map((field) => field.value)
+						: [];
 
-				reply.header('Cache-Control', 'public, max-age=15');
-				if (profile.preventAiLearning) {
-					reply.header('X-Robots-Tag', 'noimageai');
-					reply.header('X-Robots-Tag', 'noai');
+					reply.header("Cache-Control", "public, max-age=15");
+					if (profile.preventAiLearning) {
+						reply.header("X-Robots-Tag", "noimageai");
+						reply.header("X-Robots-Tag", "noai");
+					}
+
+					const _user = await this.userEntityService.pack(user, null, {
+						schema: "UserDetailed",
+						userProfile: profile,
+					});
+
+					return await reply.view("user", {
+						user,
+						profile,
+						me,
+						avatarUrl: _user.avatarUrl,
+						sub: request.params.sub,
+						...(await this.generateCommonPugData(this.meta)),
+						clientCtx: htmlSafeJsonStringify({
+							user: _user,
+						}),
+					});
+				} else {
+					// リモートユーザーなので
+					// モデレータがAPI経由で参照可能にするために404にはしない
+					return await renderBase(reply);
+				}
+			},
+		);
+
+		fastify.get<{ Params: { user: string } }>(
+			"/users/:user",
+			async (request, reply) => {
+				const user = await this.usersRepository.findOneBy({
+					id: request.params.user,
+					host: IsNull(),
+					isSuspended: false,
+				});
+
+				if (user == null) {
+					reply.code(404);
+					return;
 				}
 
-				const _user = await this.userEntityService.pack(user, null, {
-					schema: 'UserDetailed',
-					userProfile: profile,
-				});
+				vary(reply.raw, "Accept");
 
-				return await reply.view('user', {
-					user, profile, me,
-					avatarUrl: _user.avatarUrl,
-					sub: request.params.sub,
-					...await this.generateCommonPugData(this.meta),
-					clientCtx: htmlSafeJsonStringify({
-						user: _user,
-					}),
-				});
-			} else {
-				// リモートユーザーなので
-				// モデレータがAPI経由で参照可能にするために404にはしない
-				return await renderBase(reply);
-			}
-		});
-
-		fastify.get<{ Params: { user: string; } }>('/users/:user', async (request, reply) => {
-			const user = await this.usersRepository.findOneBy({
-				id: request.params.user,
-				host: IsNull(),
-				isSuspended: false,
-			});
-
-			if (user == null) {
-				reply.code(404);
-				return;
-			}
-
-			vary(reply.raw, 'Accept');
-
-			reply.redirect(`/@${user.username}${ user.host == null ? '' : '@' + user.host}`);
-		});
+				reply.redirect(
+					`/@${user.username}${user.host == null ? "" : "@" + user.host}`,
+				);
+			},
+		);
 
 		// Note
-		fastify.get<{ Params: { note: string; } }>('/notes/:note', async (request, reply) => {
-			vary(reply.raw, 'Accept');
+		fastify.get<{ Params: { note: string } }>(
+			"/notes/:note",
+			async (request, reply) => {
+				vary(reply.raw, "Accept");
 
-			const note = await this.notesRepository.findOne({
-				where: {
-					id: request.params.note,
-					visibility: In(['public', 'home']),
-				},
-				relations: ['user'],
-			});
-
-			// TODO pack with current user, or the frontend can get bad data
-			if (note && !note.user!.requireSigninToViewContents) {
-				const _note = await this.noteEntityService.pack(note);
-				const profile = await this.userProfilesRepository.findOneByOrFail({ userId: note.userId });
-				reply.header('Cache-Control', 'public, max-age=15');
-				if (profile.preventAiLearning) {
-					reply.header('X-Robots-Tag', 'noimageai');
-					reply.header('X-Robots-Tag', 'noai');
-				}
-				return await reply.view('note', {
-					note: _note,
-					profile,
-					avatarUrl: _note.user.avatarUrl,
-					// TODO: Let locale changeable by instance setting
-					summary: getNoteSummary(_note),
-					...await this.generateCommonPugData(this.meta),
-					clientCtx: htmlSafeJsonStringify({
-						note: _note,
-					}),
+				const note = await this.notesRepository.findOne({
+					where: {
+						id: request.params.note,
+						visibility: In(["public", "home"]),
+					},
+					relations: ["user"],
 				});
-			} else {
-				return await renderBase(reply);
-			}
-		});
+
+				// TODO pack with current user, or the frontend can get bad data
+				if (note && !note.user!.requireSigninToViewContents) {
+					const _note = await this.noteEntityService.pack(note);
+					const profile = await this.userProfilesRepository.findOneByOrFail({
+						userId: note.userId,
+					});
+					reply.header("Cache-Control", "public, max-age=15");
+					if (profile.preventAiLearning) {
+						reply.header("X-Robots-Tag", "noimageai");
+						reply.header("X-Robots-Tag", "noai");
+					}
+					return await reply.view("note", {
+						note: _note,
+						profile,
+						avatarUrl: _note.user.avatarUrl,
+						// TODO: Let locale changeable by instance setting
+						summary: getNoteSummary(_note),
+						...(await this.generateCommonPugData(this.meta)),
+						clientCtx: htmlSafeJsonStringify({
+							note: _note,
+						}),
+					});
+				} else {
+					return await renderBase(reply);
+				}
+			},
+		);
 
 		// Page
-		fastify.get<{ Params: { user: string; page: string; } }>('/@:user/pages/:page', async (request, reply) => {
-			const { username, host } = Acct.parse(request.params.user);
-			const user = await this.usersRepository.findOneBy({
-				usernameLower: username.toLowerCase(),
-				host: host ?? IsNull(),
-			});
-
-			if (user == null) return;
-
-			const page = await this.pagesRepository.findOneBy({
-				name: request.params.page,
-				userId: user.id,
-			});
-
-			if (page) {
-				const _page = await this.pageEntityService.pack(page);
-				const profile = await this.userProfilesRepository.findOneByOrFail({ userId: page.userId });
-				if (['public'].includes(page.visibility)) {
-					reply.header('Cache-Control', 'public, max-age=15');
-				} else {
-					reply.header('Cache-Control', 'private, max-age=0, must-revalidate');
-				}
-				if (profile.preventAiLearning) {
-					reply.header('X-Robots-Tag', 'noimageai');
-					reply.header('X-Robots-Tag', 'noai');
-				}
-				return await reply.view('page', {
-					page: _page,
-					profile,
-					avatarUrl: _page.user.avatarUrl,
-					...await this.generateCommonPugData(this.meta),
+		fastify.get<{ Params: { user: string; page: string } }>(
+			"/@:user/pages/:page",
+			async (request, reply) => {
+				const { username, host } = Acct.parse(request.params.user);
+				const user = await this.usersRepository.findOneBy({
+					usernameLower: username.toLowerCase(),
+					host: host ?? IsNull(),
 				});
-			} else {
-				return await renderBase(reply);
-			}
-		});
+
+				if (user == null) return;
+
+				const page = await this.pagesRepository.findOneBy({
+					name: request.params.page,
+					userId: user.id,
+				});
+
+				if (page) {
+					const _page = await this.pageEntityService.pack(page);
+					const profile = await this.userProfilesRepository.findOneByOrFail({
+						userId: page.userId,
+					});
+					if (["public"].includes(page.visibility)) {
+						reply.header("Cache-Control", "public, max-age=15");
+					} else {
+						reply.header(
+							"Cache-Control",
+							"private, max-age=0, must-revalidate",
+						);
+					}
+					if (profile.preventAiLearning) {
+						reply.header("X-Robots-Tag", "noimageai");
+						reply.header("X-Robots-Tag", "noai");
+					}
+					return await reply.view("page", {
+						page: _page,
+						profile,
+						avatarUrl: _page.user.avatarUrl,
+						...(await this.generateCommonPugData(this.meta)),
+					});
+				} else {
+					return await renderBase(reply);
+				}
+			},
+		);
 
 		// Flash
-		fastify.get<{ Params: { id: string; } }>('/play/:id', async (request, reply) => {
-			const flash = await this.flashsRepository.findOneBy({
-				id: request.params.id,
-			});
-
-			if (flash) {
-				const _flash = await this.flashEntityService.pack(flash);
-				const profile = await this.userProfilesRepository.findOneByOrFail({ userId: flash.userId });
-				reply.header('Cache-Control', 'public, max-age=15');
-				if (profile.preventAiLearning) {
-					reply.header('X-Robots-Tag', 'noimageai');
-					reply.header('X-Robots-Tag', 'noai');
-				}
-				return await reply.view('flash', {
-					flash: _flash,
-					profile,
-					avatarUrl: _flash.user.avatarUrl,
-					...await this.generateCommonPugData(this.meta),
+		fastify.get<{ Params: { id: string } }>(
+			"/play/:id",
+			async (request, reply) => {
+				const flash = await this.flashsRepository.findOneBy({
+					id: request.params.id,
 				});
-			} else {
-				return await renderBase(reply);
-			}
-		});
+
+				if (flash) {
+					const _flash = await this.flashEntityService.pack(flash);
+					const profile = await this.userProfilesRepository.findOneByOrFail({
+						userId: flash.userId,
+					});
+					reply.header("Cache-Control", "public, max-age=15");
+					if (profile.preventAiLearning) {
+						reply.header("X-Robots-Tag", "noimageai");
+						reply.header("X-Robots-Tag", "noai");
+					}
+					return await reply.view("flash", {
+						flash: _flash,
+						profile,
+						avatarUrl: _flash.user.avatarUrl,
+						...(await this.generateCommonPugData(this.meta)),
+					});
+				} else {
+					return await renderBase(reply);
+				}
+			},
+		);
 
 		// Clip
-		fastify.get<{ Params: { clip: string; } }>('/clips/:clip', async (request, reply) => {
-			const clip = await this.clipsRepository.findOneBy({
-				id: request.params.clip,
-			});
-
-			if (clip && clip.isPublic) {
-				const _clip = await this.clipEntityService.pack(clip);
-				const profile = await this.userProfilesRepository.findOneByOrFail({ userId: clip.userId });
-				reply.header('Cache-Control', 'public, max-age=15');
-				if (profile.preventAiLearning) {
-					reply.header('X-Robots-Tag', 'noimageai');
-					reply.header('X-Robots-Tag', 'noai');
-				}
-				return await reply.view('clip', {
-					clip: _clip,
-					profile,
-					avatarUrl: _clip.user.avatarUrl,
-					...await this.generateCommonPugData(this.meta),
-					clientCtx: htmlSafeJsonStringify({
-						clip: _clip,
-					}),
+		fastify.get<{ Params: { clip: string } }>(
+			"/clips/:clip",
+			async (request, reply) => {
+				const clip = await this.clipsRepository.findOneBy({
+					id: request.params.clip,
 				});
-			} else {
-				return await renderBase(reply);
-			}
-		});
+
+				if (clip && clip.isPublic) {
+					const _clip = await this.clipEntityService.pack(clip);
+					const profile = await this.userProfilesRepository.findOneByOrFail({
+						userId: clip.userId,
+					});
+					reply.header("Cache-Control", "public, max-age=15");
+					if (profile.preventAiLearning) {
+						reply.header("X-Robots-Tag", "noimageai");
+						reply.header("X-Robots-Tag", "noai");
+					}
+					return await reply.view("clip", {
+						clip: _clip,
+						profile,
+						avatarUrl: _clip.user.avatarUrl,
+						...(await this.generateCommonPugData(this.meta)),
+						clientCtx: htmlSafeJsonStringify({
+							clip: _clip,
+						}),
+					});
+				} else {
+					return await renderBase(reply);
+				}
+			},
+		);
 
 		// Gallery post
-		fastify.get<{ Params: { post: string; } }>('/gallery/:post', async (request, reply) => {
-			const post = await this.galleryPostsRepository.findOneBy({ id: request.params.post });
-
-			if (post) {
-				const _post = await this.galleryPostEntityService.pack(post);
-				const profile = await this.userProfilesRepository.findOneByOrFail({ userId: post.userId });
-				reply.header('Cache-Control', 'public, max-age=15');
-				if (profile.preventAiLearning) {
-					reply.header('X-Robots-Tag', 'noimageai');
-					reply.header('X-Robots-Tag', 'noai');
-				}
-				return await reply.view('gallery-post', {
-					post: _post,
-					profile,
-					avatarUrl: _post.user.avatarUrl,
-					...await this.generateCommonPugData(this.meta),
+		fastify.get<{ Params: { post: string } }>(
+			"/gallery/:post",
+			async (request, reply) => {
+				const post = await this.galleryPostsRepository.findOneBy({
+					id: request.params.post,
 				});
-			} else {
-				return await renderBase(reply);
-			}
-		});
+
+				if (post) {
+					const _post = await this.galleryPostEntityService.pack(post);
+					const profile = await this.userProfilesRepository.findOneByOrFail({
+						userId: post.userId,
+					});
+					reply.header("Cache-Control", "public, max-age=15");
+					if (profile.preventAiLearning) {
+						reply.header("X-Robots-Tag", "noimageai");
+						reply.header("X-Robots-Tag", "noai");
+					}
+					return await reply.view("gallery-post", {
+						post: _post,
+						profile,
+						avatarUrl: _post.user.avatarUrl,
+						...(await this.generateCommonPugData(this.meta)),
+					});
+				} else {
+					return await renderBase(reply);
+				}
+			},
+		);
 
 		// Channel
-		fastify.get<{ Params: { channel: string; } }>('/channels/:channel', async (request, reply) => {
-			const channel = await this.channelsRepository.findOneBy({
-				id: request.params.channel,
-			});
-
-			if (channel) {
-				const _channel = await this.channelEntityService.pack(channel);
-				reply.header('Cache-Control', 'public, max-age=15');
-				return await reply.view('channel', {
-					channel: _channel,
-					...await this.generateCommonPugData(this.meta),
+		fastify.get<{ Params: { channel: string } }>(
+			"/channels/:channel",
+			async (request, reply) => {
+				const channel = await this.channelsRepository.findOneBy({
+					id: request.params.channel,
 				});
-			} else {
-				return await renderBase(reply);
-			}
-		});
+
+				if (channel) {
+					const _channel = await this.channelEntityService.pack(channel);
+					reply.header("Cache-Control", "public, max-age=15");
+					return await reply.view("channel", {
+						channel: _channel,
+						...(await this.generateCommonPugData(this.meta)),
+					});
+				} else {
+					return await renderBase(reply);
+				}
+			},
+		);
 
 		// Reversi game
-		fastify.get<{ Params: { game: string; } }>('/reversi/g/:game', async (request, reply) => {
-			const game = await this.reversiGamesRepository.findOneBy({
-				id: request.params.game,
-			});
-
-			if (game) {
-				const _game = await this.reversiGameEntityService.packDetail(game);
-				reply.header('Cache-Control', 'public, max-age=3600');
-				return await reply.view('reversi-game', {
-					game: _game,
-					...await this.generateCommonPugData(this.meta),
+		fastify.get<{ Params: { game: string } }>(
+			"/reversi/g/:game",
+			async (request, reply) => {
+				const game = await this.reversiGamesRepository.findOneBy({
+					id: request.params.game,
 				});
-			} else {
-				return await renderBase(reply);
-			}
-		});
+
+				if (game) {
+					const _game = await this.reversiGameEntityService.packDetail(game);
+					reply.header("Cache-Control", "public, max-age=3600");
+					return await reply.view("reversi-game", {
+						game: _game,
+						...(await this.generateCommonPugData(this.meta)),
+					});
+				} else {
+					return await renderBase(reply);
+				}
+			},
+		);
 
 		// 個別お知らせページ
-		fastify.get<{ Params: { announcementId: string; } }>('/announcements/:announcementId', async (request, reply) => {
-			const announcement = await this.announcementsRepository.findOneBy({
-				id: request.params.announcementId,
-				userId: IsNull(),
-			});
-
-			if (announcement) {
-				const _announcement = await this.announcementEntityService.pack(announcement);
-				reply.header('Cache-Control', 'public, max-age=3600');
-				return await reply.view('announcement', {
-					announcement: _announcement,
-					...await this.generateCommonPugData(this.meta),
+		fastify.get<{ Params: { announcementId: string } }>(
+			"/announcements/:announcementId",
+			async (request, reply) => {
+				const announcement = await this.announcementsRepository.findOneBy({
+					id: request.params.announcementId,
+					userId: IsNull(),
 				});
-			} else {
-				return await renderBase(reply);
-			}
-		});
+
+				if (announcement) {
+					const _announcement =
+						await this.announcementEntityService.pack(announcement);
+					reply.header("Cache-Control", "public, max-age=3600");
+					return await reply.view("announcement", {
+						announcement: _announcement,
+						...(await this.generateCommonPugData(this.meta)),
+					});
+				} else {
+					return await renderBase(reply);
+				}
+			},
+		);
 		//#endregion
 
 		//#region noindex pages
 		// Tags
-		fastify.get<{ Params: { clip: string; } }>('/tags/:tag', async (request, reply) => {
-			return await renderBase(reply, { noindex: true });
-		});
+		fastify.get<{ Params: { clip: string } }>(
+			"/tags/:tag",
+			async (request, reply) => {
+				return await renderBase(reply, { noindex: true });
+			},
+		);
 
 		// User with Tags
-		fastify.get<{ Params: { clip: string; } }>('/user-tags/:tag', async (request, reply) => {
-			return await renderBase(reply, { noindex: true });
-		});
+		fastify.get<{ Params: { clip: string } }>(
+			"/user-tags/:tag",
+			async (request, reply) => {
+				return await renderBase(reply, { noindex: true });
+			},
+		);
 		//#endregion
 
 		//#region embed pages
-		fastify.get<{ Params: { user: string; } }>('/embed/user-timeline/:user', async (request, reply) => {
-			reply.removeHeader('X-Frame-Options');
+		fastify.get<{ Params: { user: string } }>(
+			"/embed/user-timeline/:user",
+			async (request, reply) => {
+				reply.removeHeader("X-Frame-Options");
 
-			const user = await this.usersRepository.findOneBy({
-				id: request.params.user,
-			});
+				const user = await this.usersRepository.findOneBy({
+					id: request.params.user,
+				});
 
-			if (user == null) return;
-			if (user.host != null) return;
+				if (user == null) return;
+				if (user.host != null) return;
 
-			const _user = await this.userEntityService.pack(user);
+				const _user = await this.userEntityService.pack(user);
 
-			reply.header('Cache-Control', 'public, max-age=3600');
-			return await reply.view('base-embed', {
-				title: this.meta.name ?? 'Pulsar',
-				...await this.generateCommonPugData(this.meta),
-				embedCtx: htmlSafeJsonStringify({
-					user: _user,
-				}),
+				reply.header("Cache-Control", "public, max-age=3600");
+				return await reply.view("base-embed", {
+					title: this.meta.name ?? "Pulsar",
+					...(await this.generateCommonPugData(this.meta)),
+					embedCtx: htmlSafeJsonStringify({
+						user: _user,
+					}),
+				});
+			},
+		);
+
+		fastify.get<{ Params: { note: string } }>(
+			"/embed/notes/:note",
+			async (request, reply) => {
+				reply.removeHeader("X-Frame-Options");
+
+				const note = await this.notesRepository.findOneBy({
+					id: request.params.note,
+				});
+
+				if (note == null) return;
+				if (["specified", "followers"].includes(note.visibility)) return;
+				if (note.userHost != null) return;
+
+				const _note = await this.noteEntityService.pack(note, null, {
+					detail: true,
+				});
+
+				reply.header("Cache-Control", "public, max-age=3600");
+				return await reply.view("base-embed", {
+					title: this.meta.name ?? "Pulsar",
+					...(await this.generateCommonPugData(this.meta)),
+					embedCtx: htmlSafeJsonStringify({
+						note: _note,
+					}),
+				});
+			},
+		);
+
+		fastify.get<{ Params: { clip: string } }>(
+			"/embed/clips/:clip",
+			async (request, reply) => {
+				reply.removeHeader("X-Frame-Options");
+
+				const clip = await this.clipsRepository.findOneBy({
+					id: request.params.clip,
+				});
+
+				if (clip == null) return;
+
+				const _clip = await this.clipEntityService.pack(clip);
+
+				reply.header("Cache-Control", "public, max-age=3600");
+				return await reply.view("base-embed", {
+					title: this.meta.name ?? "Pulsar",
+					...(await this.generateCommonPugData(this.meta)),
+					embedCtx: htmlSafeJsonStringify({
+						clip: _clip,
+					}),
+				});
+			},
+		);
+
+		fastify.get("/embed/*", async (request, reply) => {
+			reply.removeHeader("X-Frame-Options");
+
+			reply.header("Cache-Control", "public, max-age=3600");
+			return await reply.view("base-embed", {
+				title: this.meta.name ?? "Pulsar",
+				...(await this.generateCommonPugData(this.meta)),
 			});
 		});
 
-		fastify.get<{ Params: { note: string; } }>('/embed/notes/:note', async (request, reply) => {
-			reply.removeHeader('X-Frame-Options');
+		fastify.get("/_info_card_", async (request, reply) => {
+			reply.removeHeader("X-Frame-Options");
 
-			const note = await this.notesRepository.findOneBy({
-				id: request.params.note,
-			});
-
-			if (note == null) return;
-			if (['specified', 'followers'].includes(note.visibility)) return;
-			if (note.userHost != null) return;
-
-			const _note = await this.noteEntityService.pack(note, null, { detail: true });
-
-			reply.header('Cache-Control', 'public, max-age=3600');
-			return await reply.view('base-embed', {
-				title: this.meta.name ?? 'Pulsar',
-				...await this.generateCommonPugData(this.meta),
-				embedCtx: htmlSafeJsonStringify({
-					note: _note,
-				}),
-			});
-		});
-
-		fastify.get<{ Params: { clip: string; } }>('/embed/clips/:clip', async (request, reply) => {
-			reply.removeHeader('X-Frame-Options');
-
-			const clip = await this.clipsRepository.findOneBy({
-				id: request.params.clip,
-			});
-
-			if (clip == null) return;
-
-			const _clip = await this.clipEntityService.pack(clip);
-
-			reply.header('Cache-Control', 'public, max-age=3600');
-			return await reply.view('base-embed', {
-				title: this.meta.name ?? 'Pulsar',
-				...await this.generateCommonPugData(this.meta),
-				embedCtx: htmlSafeJsonStringify({
-					clip: _clip,
-				}),
-			});
-		});
-
-		fastify.get('/embed/*', async (request, reply) => {
-			reply.removeHeader('X-Frame-Options');
-
-			reply.header('Cache-Control', 'public, max-age=3600');
-			return await reply.view('base-embed', {
-				title: this.meta.name ?? 'Pulsar',
-				...await this.generateCommonPugData(this.meta),
-			});
-		});
-
-		fastify.get('/_info_card_', async (request, reply) => {
-			reply.removeHeader('X-Frame-Options');
-
-			return await reply.view('info-card', {
+			return await reply.view("info-card", {
 				version: this.config.version,
 				host: this.config.host,
 				url: this.config.url,
 				meta: this.meta,
-				originalUsersCount: await this.usersRepository.countBy({ host: IsNull() }),
-				originalNotesCount: await this.notesRepository.countBy({ userHost: IsNull() }),
+				originalUsersCount: await this.usersRepository.countBy({
+					host: IsNull(),
+				}),
+				originalNotesCount: await this.notesRepository.countBy({
+					userHost: IsNull(),
+				}),
 			});
 		});
 		//#endregion
 
-		fastify.get('/bios', async (request, reply) => {
-			return await reply.view('bios', {
+		fastify.get("/bios", async (request, reply) => {
+			return await reply.view("bios", {
 				version: this.config.version,
 			});
 		});
 
-		fastify.get('/cli', async (request, reply) => {
-			return await reply.view('cli', {
+		fastify.get("/cli", async (request, reply) => {
+			return await reply.view("cli", {
 				version: this.config.version,
 			});
 		});
 
 		const override = (source: string, target: string, depth = 0) =>
-			[, ...target.split('/').filter(x => x), ...source.split('/').filter(x => x).splice(depth)].join('/');
+			[
+				,
+				...target.split("/").filter((x) => x),
+				...source
+					.split("/")
+					.filter((x) => x)
+					.splice(depth),
+			].join("/");
 
-		fastify.get('/flush', async (request, reply) => {
-			return await reply.view('flush');
+		fastify.get("/flush", async (request, reply) => {
+			return await reply.view("flush");
 		});
 
 		// streamingに非WebSocketリクエストが来た場合にbase htmlをキャシュ付きで返すと、Proxy等でそのパスがキャッシュされておかしくなる
-		fastify.get('/streaming', async (request, reply) => {
+		fastify.get("/streaming", async (request, reply) => {
 			reply.code(503);
-			reply.header('Cache-Control', 'private, max-age=0');
+			reply.header("Cache-Control", "private, max-age=0");
 		});
 
 		// Render base html for all requests
-		fastify.get('*', async (request, reply) => {
+		fastify.get("*", async (request, reply) => {
 			return await renderBase(reply);
 		});
 
 		fastify.setErrorHandler(async (error, request, reply) => {
 			const errId = randomUUID();
-			this.clientLoggerService.logger.error(`Internal error occurred in ${request.routeOptions.url}: ${error.message}`, {
-				path: request.routeOptions.url,
-				params: request.params,
-				query: request.query,
-				code: error.name,
-				stack: error.stack,
-				id: errId,
-			});
+			this.clientLoggerService.logger.error(
+				`Internal error occurred in ${request.routeOptions.url}: ${error.message}`,
+				{
+					path: request.routeOptions.url,
+					params: request.params,
+					query: request.query,
+					code: error.name,
+					stack: error.stack,
+					id: errId,
+				},
+			);
 			reply.code(500);
-			reply.header('Cache-Control', 'max-age=10, must-revalidate');
-			return await reply.view('error', {
+			reply.header("Cache-Control", "max-age=10, must-revalidate");
+			return await reply.view("error", {
 				code: error.code,
 				id: errId,
 			});

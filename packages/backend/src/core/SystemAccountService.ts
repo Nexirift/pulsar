@@ -3,28 +3,38 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { randomUUID } from 'node:crypto';
-import { Inject, Injectable } from '@nestjs/common';
-import type { OnApplicationShutdown } from '@nestjs/common';
-import { DataSource, IsNull } from 'typeorm';
-import * as Redis from 'ioredis';
-import bcrypt from 'bcryptjs';
-import { MiLocalUser, MiUser } from '@/models/User.js';
-import { MiSystemAccount, MiUsedUsername, MiUserKeypair, MiUserProfile, type UsersRepository, type SystemAccountsRepository } from '@/models/_.js';
-import type { MiMeta, UserProfilesRepository } from '@/models/_.js';
-import type { GlobalEvents } from '@/core/GlobalEventService.js';
-import { MemoryKVCache } from '@/misc/cache.js';
-import { DI } from '@/di-symbols.js';
-import { bindThis } from '@/decorators.js';
-import { generateNativeUserToken } from '@/misc/token.js';
-import { IdService } from '@/core/IdService.js';
-import { genRsaKeyPair } from '@/misc/gen-key-pair.js';
-import { CacheManagementService, type ManagedMemoryKVCache } from '@/global/CacheManagementService.js';
-import { CacheService } from '@/core/CacheService.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
-import { TimeService } from '@/global/TimeService.js';
+import { randomUUID } from "node:crypto";
+import { Inject, Injectable } from "@nestjs/common";
+import type { OnApplicationShutdown } from "@nestjs/common";
+import { DataSource, IsNull } from "typeorm";
+import * as Redis from "ioredis";
+import bcrypt from "bcryptjs";
+import { MiLocalUser, MiUser } from "@/models/User.js";
+import {
+	MiSystemAccount,
+	MiUsedUsername,
+	MiUserKeypair,
+	MiUserProfile,
+	type UsersRepository,
+	type SystemAccountsRepository,
+} from "@/models/_.js";
+import type { MiMeta, UserProfilesRepository } from "@/models/_.js";
+import type { GlobalEvents } from "@/core/GlobalEventService.js";
+import { MemoryKVCache } from "@/misc/cache.js";
+import { DI } from "@/di-symbols.js";
+import { bindThis } from "@/decorators.js";
+import { generateNativeUserToken } from "@/misc/token.js";
+import { IdService } from "@/core/IdService.js";
+import { genRsaKeyPair } from "@/misc/gen-key-pair.js";
+import {
+	CacheManagementService,
+	type ManagedMemoryKVCache,
+} from "@/global/CacheManagementService.js";
+import { CacheService } from "@/core/CacheService.js";
+import { InternalEventService } from "@/global/InternalEventService.js";
+import { TimeService } from "@/global/TimeService.js";
 
-export const SYSTEM_ACCOUNT_TYPES = ['actor', 'relay', 'proxy'] as const;
+export const SYSTEM_ACCOUNT_TYPES = ["actor", "relay", "proxy"] as const;
 
 @Injectable()
 export class SystemAccountService implements OnApplicationShutdown {
@@ -56,19 +66,22 @@ export class SystemAccountService implements OnApplicationShutdown {
 
 		cacheManagementService: CacheManagementService,
 	) {
-		this.cache = cacheManagementService.createMemoryKVCache<string>('systemAccount', 1000 * 60 * 10); // 10m
+		this.cache = cacheManagementService.createMemoryKVCache<string>(
+			"systemAccount",
+			1000 * 60 * 10,
+		); // 10m
 
-		this.redisForSub.on('message', this.onMessage);
+		this.redisForSub.on("message", this.onMessage);
 	}
 
 	@bindThis
 	private async onMessage(_: string, data: string): Promise<void> {
 		const obj = JSON.parse(data);
 
-		if (obj.channel === 'internal') {
-			const { type, body } = obj.message as GlobalEvents['internal']['payload'];
+		if (obj.channel === "internal") {
+			const { type, body } = obj.message as GlobalEvents["internal"]["payload"];
 			switch (type) {
-				case 'metaUpdated': {
+				case "metaUpdated": {
 					if (body.before != null && body.before.name !== body.after.name) {
 						for (const account of SYSTEM_ACCOUNT_TYPES) {
 							await this.updateCorrespondingUserProfile(account, {
@@ -92,13 +105,15 @@ export class SystemAccountService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async fetch(type: typeof SYSTEM_ACCOUNT_TYPES[number]): Promise<MiLocalUser> {
+	public async fetch(
+		type: (typeof SYSTEM_ACCOUNT_TYPES)[number],
+	): Promise<MiLocalUser> {
 		// Use local cache to find userId for type
 		const userId = await this.cache.fetch(type, async () => {
-			const systemAccount = await this.systemAccountsRepository.findOne({
+			const systemAccount = (await this.systemAccountsRepository.findOne({
 				where: { type: type },
 				select: { userId: true },
-			}) as { userId: string } | null;
+			})) as { userId: string } | null;
 
 			if (systemAccount) {
 				return systemAccount.userId;
@@ -116,10 +131,13 @@ export class SystemAccountService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	private async createCorrespondingUser(type: typeof SYSTEM_ACCOUNT_TYPES[number], extra: {
-		username: MiUser['username'];
-		name?: MiUser['name'];
-	}): Promise<MiLocalUser> {
+	private async createCorrespondingUser(
+		type: (typeof SYSTEM_ACCOUNT_TYPES)[number],
+		extra: {
+			username: MiUser["username"];
+			name?: MiUser["name"];
+		},
+	): Promise<MiLocalUser> {
 		const password = randomUUID();
 
 		// Generate hash of password
@@ -134,7 +152,7 @@ export class SystemAccountService implements OnApplicationShutdown {
 		let account!: MiUser;
 
 		// Start transaction
-		await this.db.transaction(async transactionalEntityManager => {
+		await this.db.transaction(async (transactionalEntityManager) => {
 			const exist = await transactionalEntityManager.findOneBy(MiUser, {
 				usernameLower: extra.username.toLowerCase(),
 				host: IsNull(),
@@ -145,23 +163,27 @@ export class SystemAccountService implements OnApplicationShutdown {
 				return;
 			}
 
-			account = await transactionalEntityManager.insert(MiUser, {
-				id: this.idService.gen(),
-				username: extra.username,
-				usernameLower: extra.username.toLowerCase(),
-				host: null,
-				token: secret,
-				isLocked: true,
-				isExplorable: false,
-				isBot: true,
-				name: extra.name,
-				// System accounts are automatically approved.
-				approved: true,
-				// We always allow requests to system accounts to avoid federation infinite loop.
-				// When a remote instance needs to check our signature on a request we sent, it will need to fetch information about the user that signed it (which is our instance actor).
-				// If we try to check their signature on *that* request, we'll fetch *their* instance actor... leading to an infinite recursion
-				allowUnsignedFetch: 'always',
-			}).then(x => transactionalEntityManager.findOneByOrFail(MiUser, x.identifiers[0]));
+			account = await transactionalEntityManager
+				.insert(MiUser, {
+					id: this.idService.gen(),
+					username: extra.username,
+					usernameLower: extra.username.toLowerCase(),
+					host: null,
+					token: secret,
+					isLocked: true,
+					isExplorable: false,
+					isBot: true,
+					name: extra.name,
+					// System accounts are automatically approved.
+					approved: true,
+					// We always allow requests to system accounts to avoid federation infinite loop.
+					// When a remote instance needs to check our signature on a request we sent, it will need to fetch information about the user that signed it (which is our instance actor).
+					// If we try to check their signature on *that* request, we'll fetch *their* instance actor... leading to an infinite recursion
+					allowUnsignedFetch: "always",
+				})
+				.then((x) =>
+					transactionalEntityManager.findOneByOrFail(MiUser, x.identifiers[0]),
+				);
 
 			await transactionalEntityManager.insert(MiUserKeypair, {
 				publicKey: keyPair.publicKey,
@@ -191,10 +213,13 @@ export class SystemAccountService implements OnApplicationShutdown {
 	}
 
 	@bindThis
-	public async updateCorrespondingUserProfile(type: typeof SYSTEM_ACCOUNT_TYPES[number], extra: {
-		name?: string | null;
-		description?: MiUserProfile['description'];
-	}): Promise<MiLocalUser> {
+	public async updateCorrespondingUserProfile(
+		type: (typeof SYSTEM_ACCOUNT_TYPES)[number],
+		extra: {
+			name?: string | null;
+			description?: MiUserProfile["description"];
+		},
+	): Promise<MiLocalUser> {
 		const user = await this.fetch(type);
 
 		const updates = {} as Partial<MiUser>;
@@ -202,35 +227,38 @@ export class SystemAccountService implements OnApplicationShutdown {
 
 		if (Object.keys(updates).length > 0) {
 			await this.usersRepository.update(user.id, updates);
-			await this.internalEventService.emit('localUserUpdated', { id: user.id });
+			await this.internalEventService.emit("localUserUpdated", { id: user.id });
 		}
 
 		const profileUpdates = {} as Partial<MiUserProfile>;
-		if (extra.description !== undefined) profileUpdates.description = extra.description;
+		if (extra.description !== undefined)
+			profileUpdates.description = extra.description;
 
 		if (Object.keys(profileUpdates).length > 0) {
 			await this.userProfilesRepository.update(user.id, profileUpdates);
-			await this.internalEventService.emit('updateUserProfile', { userId: user.id });
+			await this.internalEventService.emit("updateUserProfile", {
+				userId: user.id,
+			});
 		}
 
 		return await this.cacheService.findLocalUserById(user.id);
 	}
 
 	public async getInstanceActor() {
-		return await this.fetch('actor');
+		return await this.fetch("actor");
 	}
 
 	public async getRelayActor() {
-		return await this.fetch('relay');
+		return await this.fetch("relay");
 	}
 
 	public async getProxyActor() {
-		return await this.fetch('proxy');
+		return await this.fetch("proxy");
 	}
 
 	@bindThis
 	public dispose(): void {
-		this.redisForSub.off('message', this.onMessage);
+		this.redisForSub.off("message", this.onMessage);
 	}
 
 	@bindThis

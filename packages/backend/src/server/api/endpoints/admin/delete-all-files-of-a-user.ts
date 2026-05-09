@@ -3,32 +3,33 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { DriveFilesRepository } from '@/models/_.js';
-import { DriveService } from '@/core/DriveService.js';
-import { DI } from '@/di-symbols.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { CacheService } from '@/core/CacheService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { DriveFilesRepository } from "@/models/_.js";
+import { DriveService } from "@/core/DriveService.js";
+import { DI } from "@/di-symbols.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
+import { CacheService } from "@/core/CacheService.js";
 
 export const meta = {
-	tags: ['admin'],
+	tags: ["admin"],
 
 	requireCredential: true,
 	requireAdmin: true,
-	kind: 'write:admin:delete-all-files-of-a-user',
+	kind: "write:admin:delete-all-files-of-a-user",
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		userId: { type: 'string', format: 'misskey:id' },
+		userId: { type: "string", format: "misskey:id" },
 	},
-	required: ['userId'],
+	required: ["userId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.driveFilesRepository)
 		private driveFilesRepository: DriveFilesRepository,
@@ -42,7 +43,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				userId: ps.userId,
 			});
 
-			await this.moderationLogService.log(me, 'clearUserFiles', {
+			await this.moderationLogService.log(me, "clearUserFiles", {
 				userId: ps.userId,
 				userUsername: user.username,
 				userHost: user.host,

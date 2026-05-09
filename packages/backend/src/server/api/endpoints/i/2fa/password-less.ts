@@ -3,14 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import ms from 'ms';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { UserEntityService } from '@/core/entities/UserEntityService.js';
-import type { UserProfilesRepository, UserSecurityKeysRepository } from '@/models/_.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { DI } from '@/di-symbols.js';
-import { ApiError } from '../../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import ms from "ms";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { UserEntityService } from "@/core/entities/UserEntityService.js";
+import type {
+	UserProfilesRepository,
+	UserSecurityKeysRepository,
+} from "@/models/_.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { DI } from "@/di-symbols.js";
+import { ApiError } from "../../../error.js";
 
 export const meta = {
 	requireCredential: true,
@@ -19,29 +22,30 @@ export const meta = {
 
 	errors: {
 		noKey: {
-			message: 'No security key.',
-			code: 'NO_SECURITY_KEY',
-			id: 'f9c54d7f-d4c2-4d3c-9a8g-a70daac86512',
+			message: "No security key.",
+			code: "NO_SECURITY_KEY",
+			id: "f9c54d7f-d4c2-4d3c-9a8g-a70daac86512",
 		},
 	},
 
 	limit: {
-		duration: ms('1hour'),
+		duration: ms("1hour"),
 		max: 10,
-		minInterval: ms('1sec'),
+		minInterval: ms("1sec"),
 	},
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		value: { type: 'boolean' },
+		value: { type: "boolean" },
 	},
-	required: ['value'],
+	required: ["value"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.userProfilesRepository)
 		private userProfilesRepository: UserProfilesRepository,
@@ -80,10 +84,14 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			});
 
 			// Publish meUpdated event
-			this.globalEventService.publishMainStream(me.id, 'meUpdated', await this.userEntityService.pack(me.id, me, {
-				schema: 'MeDetailed',
-				includeSecrets: true,
-			}));
+			this.globalEventService.publishMainStream(
+				me.id,
+				"meUpdated",
+				await this.userEntityService.pack(me.id, me, {
+					schema: "MeDetailed",
+					includeSecrets: true,
+				}),
+			);
 		});
 	}
 }

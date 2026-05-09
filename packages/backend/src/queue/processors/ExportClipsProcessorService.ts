@@ -3,27 +3,36 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as fs from 'node:fs';
-import { Writable } from 'node:stream';
-import { Inject, Injectable, StreamableFile } from '@nestjs/common';
-import { MoreThan } from 'typeorm';
-import { format as dateFormat } from 'date-fns';
-import { DI } from '@/di-symbols.js';
-import type { ClipNotesRepository, ClipsRepository, MiClip, MiClipNote, MiUser, NotesRepository, PollsRepository, UsersRepository } from '@/models/_.js';
-import type Logger from '@/logger.js';
-import { DriveService } from '@/core/DriveService.js';
-import { createTemp } from '@/misc/create-temp.js';
-import type { MiPoll } from '@/models/Poll.js';
-import type { MiNote } from '@/models/Note.js';
-import { bindThis } from '@/decorators.js';
-import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
-import { Packed } from '@/misc/json-schema.js';
-import { IdService } from '@/core/IdService.js';
-import { NotificationService } from '@/core/NotificationService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type * as Bull from 'bullmq';
-import type { DbJobDataWithUser } from '../types.js';
+import * as fs from "node:fs";
+import { Writable } from "node:stream";
+import { Inject, Injectable, StreamableFile } from "@nestjs/common";
+import { MoreThan } from "typeorm";
+import { format as dateFormat } from "date-fns";
+import { DI } from "@/di-symbols.js";
+import type {
+	ClipNotesRepository,
+	ClipsRepository,
+	MiClip,
+	MiClipNote,
+	MiUser,
+	NotesRepository,
+	PollsRepository,
+	UsersRepository,
+} from "@/models/_.js";
+import type Logger from "@/logger.js";
+import { DriveService } from "@/core/DriveService.js";
+import { createTemp } from "@/misc/create-temp.js";
+import type { MiPoll } from "@/models/Poll.js";
+import type { MiNote } from "@/models/Note.js";
+import { bindThis } from "@/decorators.js";
+import { DriveFileEntityService } from "@/core/entities/DriveFileEntityService.js";
+import { Packed } from "@/misc/json-schema.js";
+import { IdService } from "@/core/IdService.js";
+import { NotificationService } from "@/core/NotificationService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { QueueLoggerService } from "../QueueLoggerService.js";
+import type * as Bull from "bullmq";
+import type { DbJobDataWithUser } from "../types.js";
 
 @Injectable()
 export class ExportClipsProcessorService {
@@ -48,7 +57,8 @@ export class ExportClipsProcessorService {
 		private notificationService: NotificationService,
 		private readonly timeService: TimeService,
 	) {
-		this.logger = this.queueLoggerService.logger.createSubLogger('export-clips');
+		this.logger =
+			this.queueLoggerService.logger.createSubLogger("export-clips");
 	}
 
 	@bindThis
@@ -67,26 +77,35 @@ export class ExportClipsProcessorService {
 		this.logger.debug(`Temp file is ${path}`);
 
 		try {
-			const stream = Writable.toWeb(fs.createWriteStream(path, { flags: 'a' }));
+			const stream = Writable.toWeb(fs.createWriteStream(path, { flags: "a" }));
 			const writer = stream.getWriter();
 			writer.closed.catch(this.logger.error);
 
-			await writer.write('[');
+			await writer.write("[");
 
 			await this.processClips(writer, user, job);
 
-			await writer.write(']');
+			await writer.write("]");
 			await writer.close();
 
 			this.logger.debug(`Exported to: ${path}`);
 
-			const fileName = 'clips-' + dateFormat(this.timeService.date, 'yyyy-MM-dd-HH-mm-ss') + '.json';
-			const driveFile = await this.driveService.addFile({ user, path, name: fileName, force: true, ext: 'json' });
+			const fileName =
+				"clips-" +
+				dateFormat(this.timeService.date, "yyyy-MM-dd-HH-mm-ss") +
+				".json";
+			const driveFile = await this.driveService.addFile({
+				user,
+				path,
+				name: fileName,
+				force: true,
+				ext: "json",
+			});
 
 			this.logger.debug(`Exported to: ${driveFile.id}`);
 
-			this.notificationService.createNotification(user.id, 'exportCompleted', {
-				exportedEntity: 'clip',
+			this.notificationService.createNotification(user.id, "exportCompleted", {
+				exportedEntity: "clip",
 				fileId: driveFile.id,
 			});
 		} finally {
@@ -94,9 +113,13 @@ export class ExportClipsProcessorService {
 		}
 	}
 
-	async processClips(writer: WritableStreamDefaultWriter, user: MiUser, job: Bull.Job<DbJobDataWithUser>) {
+	async processClips(
+		writer: WritableStreamDefaultWriter,
+		user: MiUser,
+		job: Bull.Job<DbJobDataWithUser>,
+	) {
 		let exportedClipsCount = 0;
-		let cursor: MiClip['id'] | null = null;
+		let cursor: MiClip["id"] | null = null;
 
 		while (true) {
 			const clips = await this.clipsRepository.find({
@@ -121,11 +144,11 @@ export class ExportClipsProcessorService {
 				// Stringify but remove the last `]}`
 				const content = JSON.stringify(this.serializeClip(clip)).slice(0, -2);
 				const isFirst = exportedClipsCount === 0;
-				await writer.write(isFirst ? content : ',\n' + content);
+				await writer.write(isFirst ? content : ",\n" + content);
 
 				await this.processClipNotes(writer, clip.id);
 
-				await writer.write(']}');
+				await writer.write("]}");
 				exportedClipsCount++;
 			}
 
@@ -137,12 +160,15 @@ export class ExportClipsProcessorService {
 		}
 	}
 
-	async processClipNotes(writer: WritableStreamDefaultWriter, clipId: string): Promise<void> {
+	async processClipNotes(
+		writer: WritableStreamDefaultWriter,
+		clipId: string,
+	): Promise<void> {
 		let exportedClipNotesCount = 0;
-		let cursor: MiClipNote['id'] | null = null;
+		let cursor: MiClipNote["id"] | null = null;
 
 		while (true) {
-			const clipNotes = await this.clipNotesRepository.find({
+			const clipNotes = (await this.clipNotesRepository.find({
 				where: {
 					clipId,
 					...(cursor ? { id: MoreThan(cursor) } : {}),
@@ -151,8 +177,8 @@ export class ExportClipsProcessorService {
 				order: {
 					id: 1,
 				},
-				relations: ['note', 'note.user'],
-			}) as (MiClipNote & { note: MiNote & { user: MiUser } })[];
+				relations: ["note", "note.user"],
+			})) as (MiClipNote & { note: MiNote & { user: MiUser } })[];
 
 			if (clipNotes.length === 0) {
 				break;
@@ -163,11 +189,13 @@ export class ExportClipsProcessorService {
 			for (const clipNote of clipNotes) {
 				let poll: MiPoll | undefined;
 				if (clipNote.note.hasPoll) {
-					poll = await this.pollsRepository.findOneByOrFail({ noteId: clipNote.note.id });
+					poll = await this.pollsRepository.findOneByOrFail({
+						noteId: clipNote.note.id,
+					});
 				}
 				const content = JSON.stringify(this.serializeClipNote(clipNote, poll));
 				const isFirst = exportedClipNotesCount === 0;
-				await writer.write(isFirst ? content : ',\n' + content);
+				await writer.write(isFirst ? content : ",\n" + content);
 
 				exportedClipNotesCount++;
 			}
@@ -184,7 +212,10 @@ export class ExportClipsProcessorService {
 		};
 	}
 
-	private serializeClipNote(clip: MiClipNote & { note: MiNote & { user: MiUser } }, poll: MiPoll | undefined): Record<string, unknown> {
+	private serializeClipNote(
+		clip: MiClipNote & { note: MiNote & { user: MiUser } },
+		poll: MiPoll | undefined,
+	): Record<string, unknown> {
 		return {
 			id: clip.id,
 			createdAt: this.idService.parse(clip.id).date.toISOString(),

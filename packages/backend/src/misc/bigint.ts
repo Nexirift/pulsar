@@ -3,7 +3,12 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-function parseBigIntChunked(str: string, base: number, chunkSize: number, powerOfChunkSize: bigint): bigint {
+function parseBigIntChunked(
+	str: string,
+	base: number,
+	chunkSize: number,
+	powerOfChunkSize: bigint,
+): bigint {
 	const chunks: string[] = [];
 	while (str.length > 0) {
 		chunks.unshift(str.slice(-chunkSize));
@@ -14,7 +19,7 @@ function parseBigIntChunked(str: string, base: number, chunkSize: number, powerO
 		result *= powerOfChunkSize;
 		const int = parseInt(chunk, base);
 		if (Number.isNaN(int)) {
-			throw new Error('Invalid base36 string');
+			throw new Error("Invalid base36 string");
 		}
 		result += BigInt(int);
 	}

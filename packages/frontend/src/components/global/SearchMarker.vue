@@ -4,9 +4,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div ref="root" :class="[$style.root, { [$style.highlighted]: highlighted }]">
-	<slot :isParentOfTarget="isParentOfTarget"></slot>
-</div>
+	<div ref="root" :class="[$style.root, { [$style.highlighted]: highlighted }]">
+		<slot :isParentOfTarget="isParentOfTarget"></slot>
+	</div>
 </template>
 
 <script lang="ts" setup>
@@ -20,8 +20,8 @@ import {
 	ref,
 	useTemplateRef,
 	inject,
-} from 'vue';
-import { DI } from '@/di.js';
+} from "vue";
+import { DI } from "@/di.js";
 
 const props = defineProps<{
 	markerId?: string;
@@ -32,38 +32,45 @@ const props = defineProps<{
 	inlining?: string[];
 }>();
 
-const rootEl = useTemplateRef('root');
+const rootEl = useTemplateRef("root");
 const rootElMutationObserver = new MutationObserver(() => {
 	checkChildren();
 });
 const injectedSearchMarkerId = inject(DI.inAppSearchMarkerId, null);
-const searchMarkerId = computed(() => injectedSearchMarkerId?.value ?? window.location.hash.slice(1));
+const searchMarkerId = computed(
+	() => injectedSearchMarkerId?.value ?? window.location.hash.slice(1),
+);
 const highlighted = ref(props.markerId === searchMarkerId.value);
-const isParentOfTarget = computed(() => props.children?.includes(searchMarkerId.value));
+const isParentOfTarget = computed(() =>
+	props.children?.includes(searchMarkerId.value),
+);
 
 function checkChildren() {
 	if (isParentOfTarget.value) {
-		const el = window.document.querySelector(`[data-in-app-search-marker-id="${searchMarkerId.value}"]`);
+		const el = window.document.querySelector(
+			`[data-in-app-search-marker-id="${searchMarkerId.value}"]`,
+		);
 		highlighted.value = el == null;
 	}
 }
 
-watch([
-	searchMarkerId,
-	() => props.children,
-], () => {
-	if (props.children != null && props.children.length > 0) {
-		checkChildren();
-	}
-}, { flush: 'post' });
+watch(
+	[searchMarkerId, () => props.children],
+	() => {
+		if (props.children != null && props.children.length > 0) {
+			checkChildren();
+		}
+	},
+	{ flush: "post" },
+);
 
 function init() {
 	checkChildren();
 
 	if (highlighted.value) {
 		rootEl.value?.scrollIntoView({
-			behavior: 'smooth',
-			block: 'center',
+			behavior: "smooth",
+			block: "center",
 		});
 	}
 
@@ -92,7 +99,7 @@ onBeforeUnmount(dispose);
 
 .highlighted {
 	&::after {
-		content: '';
+		content: "";
 		position: absolute;
 		top: -8px;
 		left: -8px;
@@ -105,7 +112,8 @@ onBeforeUnmount(dispose);
 }
 
 @keyframes blink {
-	0%, 100% {
+	0%,
+	100% {
 		background: color(from var(--MI_THEME-accent) srgb r g b / 0.1);
 		border: 1px solid color(from var(--MI_THEME-accent) srgb r g b / 0.75);
 	}

@@ -27,7 +27,7 @@ npm i @nexirift/pulsar-js
 It is convenient to import everything together as follows:
 
 ```ts
-import * as Misskey from '@nexirift/pulsar-js';
+import * as Misskey from "@nexirift/pulsar-js";
 ```
 
 For convenience, subsequent code examples assume that you have imported `* as Misskey` as shown above.
@@ -35,7 +35,7 @@ For convenience, subsequent code examples assume that you have imported `* as Mi
 However, this import method prevents tree-shaking, so for use cases where code size is important, we recommend individual imports like the following:
 
 ```ts
-import { api as misskeyApi } from '@nexirift/pulsar-js';
+import { api as misskeyApi } from "@nexirift/pulsar-js";
 ```
 
 ## Authenticate
@@ -48,11 +48,11 @@ When using the API, initialize an instance of the `APIClient` class with the ser
 
 ```ts
 const cli = new Misskey.api.APIClient({
-	origin: 'https://pulsar.test',
-	credential: 'TOKEN',
+	origin: "https://pulsar.test",
+	credential: "TOKEN",
 });
 
-const meta = await cli.request('meta', { detail: true });
+const meta = await cli.request("meta", { detail: true });
 ```
 
 The first argument to `request` is the endpoint name to call, and the second argument is the parameter object. The response is returned as a Promise.
@@ -64,10 +64,10 @@ One is the `Stream` class, which manages the streaming connection itself, and th
 When using streaming, first initialize an instance of the `Stream` class, then use the methods of the `Stream` instance to obtain instances of the `Channel` class.
 
 ```ts
-const stream = new Misskey.Stream('https://pulsar.test', { token: 'TOKEN' });
-const mainChannel = stream.useChannel('main');
-mainChannel.on('notification', notification => {
-	console.log('notification received', notification);
+const stream = new Misskey.Stream("https://pulsar.test", { token: "TOKEN" });
+const mainChannel = stream.useChannel("main");
+mainChannel.on("notification", (notification) => {
+	console.log("notification received", notification);
 });
 ```
 
@@ -80,18 +80,18 @@ To connect to a channel, use the `useChannel` method of the `Stream` class.
 Without parameters
 
 ```ts
-const stream = new Misskey.Stream('https://pulsar.test', { token: 'TOKEN' });
+const stream = new Misskey.Stream("https://pulsar.test", { token: "TOKEN" });
 
-const mainChannel = stream.useChannel('main');
+const mainChannel = stream.useChannel("main");
 ```
 
 With parameters
 
 ```ts
-const stream = new Misskey.Stream('https://pulsar.test', { token: 'TOKEN' });
+const stream = new Misskey.Stream("https://pulsar.test", { token: "TOKEN" });
 
-const chatChannel = stream.useChannel('chat', {
-	other: 'xxxxxxxxxx',
+const chatChannel = stream.useChannel("chat", {
+	other: "xxxxxxxxxx",
 });
 ```
 
@@ -100,9 +100,9 @@ const chatChannel = stream.useChannel('chat', {
 Call the `dispose` method of the `Channel` class.
 
 ```ts
-const stream = new Misskey.Stream('https://pulsar.test', { token: 'TOKEN' });
+const stream = new Misskey.Stream("https://pulsar.test", { token: "TOKEN" });
 
-const mainChannel = stream.useChannel('main');
+const mainChannel = stream.useChannel("main");
 
 mainChannel.dispose();
 ```
@@ -112,10 +112,10 @@ mainChannel.dispose();
 The `Channel` class extends EventEmitter, and when a message is received from the server, it emits the payload with the received event name.
 
 ```ts
-const stream = new Misskey.Stream('https://pulsar.test', { token: 'TOKEN' });
-const mainChannel = stream.useChannel('main');
-mainChannel.on('notification', notification => {
-	console.log('notification received', notification);
+const stream = new Misskey.Stream("https://pulsar.test", { token: "TOKEN" });
+const mainChannel = stream.useChannel("main");
+mainChannel.on("notification", (notification) => {
+	console.log("notification received", notification);
 });
 ```
 
@@ -124,13 +124,13 @@ mainChannel.on('notification', notification => {
 You can use the `send` method of the `Channel` class to send messages to the server.
 
 ```ts
-const stream = new Misskey.Stream('https://pulsar.test', { token: 'TOKEN' });
-const chatChannel = stream.useChannel('chat', {
-	other: 'xxxxxxxxxx',
+const stream = new Misskey.Stream("https://pulsar.test", { token: "TOKEN" });
+const chatChannel = stream.useChannel("chat", {
+	other: "xxxxxxxxxx",
 });
 
-chatChannel.send('read', {
-	id: 'xxxxxxxxxx'
+chatChannel.send("read", {
+	id: "xxxxxxxxxx",
 });
 ```
 
@@ -139,9 +139,9 @@ chatChannel.send('read', {
 The `_connected_` event of the `Stream` class is available.
 
 ```ts
-const stream = new Misskey.Stream('https://pulsar.test', { token: 'TOKEN' });
-stream.on('_connected_', () => {
-	console.log('connected');
+const stream = new Misskey.Stream("https://pulsar.test", { token: "TOKEN" });
+stream.on("_connected_", () => {
+	console.log("connected");
 });
 ```
 
@@ -150,9 +150,9 @@ stream.on('_connected_', () => {
 The `_disconnected_` event of the `Stream` class is available.
 
 ```ts
-const stream = new Misskey.Stream('https://pulsar.test', { token: 'TOKEN' });
-stream.on('_disconnected_', () => {
-	console.log('disconnected');
+const stream = new Misskey.Stream("https://pulsar.test", { token: "TOKEN" });
+stream.on("_disconnected_", () => {
+	console.log("disconnected");
 });
 ```
 
@@ -167,5 +167,5 @@ You can check it with the `state` property of the `Stream` class.
 ---
 
 <div align="center">
-	<a href="https://code.nexirift.com/Nexirift/pulsar/src/branch/develop/CONTRIBUTING.md"><img src="https://assets.misskey-hub.net/public/i-want-you.png" width="300"></a>
+	<a href="https://git.codeguilds.org/Nexirift/pulsar/src/branch/develop/CONTRIBUTING.md"><img src="https://assets.misskey-hub.net/public/i-want-you.png" width="300"></a>
 </div>

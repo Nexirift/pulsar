@@ -3,25 +3,29 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { DI } from '@/di-symbols.js';
-import type { NotesRepository, UserPublickeysRepository, UsersRepository } from '@/models/_.js';
-import type { Config } from '@/config.js';
-import { MemoryKVCache } from '@/misc/cache.js';
-import type { MiUserPublickey } from '@/models/UserPublickey.js';
-import { CacheService } from '@/core/CacheService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import type { MiNote } from '@/models/Note.js';
-import { bindThis } from '@/decorators.js';
-import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
-import { ApLoggerService } from '@/core/activitypub/ApLoggerService.js';
-import { IdService } from '@/core/IdService.js';
-import { getApId } from './type.js';
-import { ApPersonService } from './models/ApPersonService.js';
-import type { IObject } from './type.js';
+import { Inject, Injectable, OnApplicationShutdown } from "@nestjs/common";
+import { DI } from "@/di-symbols.js";
+import type {
+	NotesRepository,
+	UserPublickeysRepository,
+	UsersRepository,
+} from "@/models/_.js";
+import type { Config } from "@/config.js";
+import { MemoryKVCache } from "@/misc/cache.js";
+import type { MiUserPublickey } from "@/models/UserPublickey.js";
+import { CacheService } from "@/core/CacheService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { UtilityService } from "@/core/UtilityService.js";
+import type { MiNote } from "@/models/Note.js";
+import { bindThis } from "@/decorators.js";
+import type { MiLocalUser, MiRemoteUser } from "@/models/User.js";
+import { ApLoggerService } from "@/core/activitypub/ApLoggerService.js";
+import { IdService } from "@/core/IdService.js";
+import { getApId } from "./type.js";
+import { ApPersonService } from "./models/ApPersonService.js";
+import type { IObject } from "./type.js";
 
-export type { UriParseResult } from '@/core/UtilityService.js';
+export type { UriParseResult } from "@/core/UtilityService.js";
 
 @Injectable()
 export class ApDbResolverService implements OnApplicationShutdown {
@@ -58,11 +62,13 @@ export class ApDbResolverService implements OnApplicationShutdown {
 	 * AP Note => Misskey Note in DB
 	 */
 	@bindThis
-	public async getNoteFromApId(value: string | IObject | [string | IObject]): Promise<MiNote | null> {
+	public async getNoteFromApId(
+		value: string | IObject | [string | IObject],
+	): Promise<MiNote | null> {
 		const parsed = this.parseUri(value);
 
 		if (parsed.local) {
-			if (parsed.type !== 'notes') return null;
+			if (parsed.type !== "notes") return null;
 
 			return await this.notesRepository.findOneBy({
 				id: parsed.id,
@@ -78,7 +84,9 @@ export class ApDbResolverService implements OnApplicationShutdown {
 	 * AP Person => Misskey User in DB
 	 */
 	@bindThis
-	public async getUserFromApId(value: string | IObject | [string | IObject]): Promise<MiLocalUser | MiRemoteUser | null> {
+	public async getUserFromApId(
+		value: string | IObject | [string | IObject],
+	): Promise<MiLocalUser | MiRemoteUser | null> {
 		const uri = getApId(value);
 		return await this.apPersonService.fetchPerson(uri);
 	}
@@ -112,7 +120,9 @@ export class ApDbResolverService implements OnApplicationShutdown {
 		user: MiRemoteUser;
 		key: MiUserPublickey | null;
 	} | null> {
-		const user = await this.apPersonService.resolvePerson(uri) as MiRemoteUser;
+		const user = (await this.apPersonService.resolvePerson(
+			uri,
+		)) as MiRemoteUser;
 		if (user.isDeleted) return null;
 
 		const key = await this.apPersonService.findPublicKeyByUserId(user.id);
@@ -127,20 +137,27 @@ export class ApDbResolverService implements OnApplicationShutdown {
 	 * Sharkey User -> Refetched Key
 	 */
 	@bindThis
-	public async refetchPublicKeyForApId(user: MiRemoteUser): Promise<MiUserPublickey | null> {
+	public async refetchPublicKeyForApId(
+		user: MiRemoteUser,
+	): Promise<MiUserPublickey | null> {
 		const oldKey = await this.apPersonService.findPublicKeyByUserId(user.id);
 
 		// Don't re-fetch if we've updated the user recently
-		const maxUpdatedTime = this.timeService.now - (1000 * 60 * 60); // 1 hour
-		if ((user.lastFetchedAt && user.lastFetchedAt.valueOf() > maxUpdatedTime) ||
+		const maxUpdatedTime = this.timeService.now - 1000 * 60 * 60; // 1 hour
+		if (
+			(user.lastFetchedAt && user.lastFetchedAt.valueOf() > maxUpdatedTime) ||
 			(user.updatedAt && user.updatedAt.valueOf() > maxUpdatedTime) ||
 			this.idService.parse(user.id).date.valueOf() > maxUpdatedTime
 		) {
-			this.apLoggerService.logger.debug(`Not updating public key for user ${user.id} (${user.uri}): already checked recently`);
+			this.apLoggerService.logger.debug(
+				`Not updating public key for user ${user.id} (${user.uri}): already checked recently`,
+			);
 			return oldKey;
 		}
 
-		this.apLoggerService.logger.debug(`Updating public key for user ${user.id} (${user.uri})`);
+		this.apLoggerService.logger.debug(
+			`Updating public key for user ${user.id} (${user.uri})`,
+		);
 
 		// updatePerson will update the public key cache if there's any changes.
 		await this.apPersonService.updatePerson(user.uri);
@@ -148,24 +165,33 @@ export class ApDbResolverService implements OnApplicationShutdown {
 
 		if (newKey && oldKey) {
 			if (newKey.keyPem === oldKey.keyPem) {
-				this.apLoggerService.logger.debug(`Public key is up-to-date for user ${user.id} (${user.uri})`);
+				this.apLoggerService.logger.debug(
+					`Public key is up-to-date for user ${user.id} (${user.uri})`,
+				);
 			} else {
-				this.apLoggerService.logger.info(`Updated public key for user ${user.id} (${user.uri})`);
+				this.apLoggerService.logger.info(
+					`Updated public key for user ${user.id} (${user.uri})`,
+				);
 			}
 		} else if (newKey) {
-			this.apLoggerService.logger.info(`Registered public key for user ${user.id} (${user.uri})`);
+			this.apLoggerService.logger.info(
+				`Registered public key for user ${user.id} (${user.uri})`,
+			);
 		} else if (oldKey) {
-			this.apLoggerService.logger.info(`Deleted public key for user ${user.id} (${user.uri})`);
+			this.apLoggerService.logger.info(
+				`Deleted public key for user ${user.id} (${user.uri})`,
+			);
 		} else {
-			this.apLoggerService.logger.warn(`Could not find any public key for user ${user.id} (${user.uri})`);
+			this.apLoggerService.logger.warn(
+				`Could not find any public key for user ${user.id} (${user.uri})`,
+			);
 		}
 
 		return newKey ?? oldKey;
 	}
 
 	@bindThis
-	public dispose(): void {
-	}
+	public dispose(): void {}
 
 	@bindThis
 	public onApplicationShutdown(signal?: string | undefined): void {

@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { Meta } from '@storybook/vue3';
-import MkError from './MkError.vue';
+import type { Meta } from "@storybook/vue3";
+import MkError from "./MkError.vue";
 
 export const argTypes = {
 	onRetry: {
-		action: 'retry',
+		action: "retry",
 	},
-} satisfies Meta<typeof MkError>['argTypes'];
+} satisfies Meta<typeof MkError>["argTypes"];

@@ -3,33 +3,55 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { IsNull, Not } from 'typeorm';
-import type { MiLocalUser, MiRemoteUser } from '@/models/User.js';
-import type { NotesRepository, PollsRepository, NoteReactionsRepository, UsersRepository, FollowRequestsRepository, MiMeta, SkApFetchLog } from '@/models/_.js';
-import type { Config } from '@/config.js';
-import { HttpRequestService } from '@/core/HttpRequestService.js';
-import { DI } from '@/di-symbols.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import { bindThis } from '@/decorators.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import type Logger from '@/logger.js';
-import { fromTuple } from '@/misc/from-tuple.js';
-import { ApLogService, calculateDurationSince, extractObjectContext } from '@/core/ApLogService.js';
-import { ApUtilityService } from '@/core/activitypub/ApUtilityService.js';
-import { SystemAccountService } from '@/core/SystemAccountService.js';
-import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { toArray } from '@/misc/prelude/array.js';
-import { isPureRenote } from '@/misc/is-renote.js';
-import { CacheService } from '@/core/CacheService.js';
-import { promiseMap } from '@/misc/promise-map.js';
-import { trackPromise } from '@/misc/promise-tracker.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
-import { AnyCollection, getApId, getNullableApId, IObjectWithId, isCollection, isCollectionOrOrderedCollection, isCollectionPage, isOrderedCollection, isOrderedCollectionPage } from './type.js';
-import { ApDbResolverService } from './ApDbResolverService.js';
-import { ApRendererService } from './ApRendererService.js';
-import { ApRequestService } from './ApRequestService.js';
-import type { IObject, ApObject, IAnonymousObject } from './type.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { IsNull, Not } from "typeorm";
+import type { MiLocalUser, MiRemoteUser } from "@/models/User.js";
+import type {
+	NotesRepository,
+	PollsRepository,
+	NoteReactionsRepository,
+	UsersRepository,
+	FollowRequestsRepository,
+	MiMeta,
+	SkApFetchLog,
+} from "@/models/_.js";
+import type { Config } from "@/config.js";
+import { HttpRequestService } from "@/core/HttpRequestService.js";
+import { DI } from "@/di-symbols.js";
+import { UtilityService } from "@/core/UtilityService.js";
+import { bindThis } from "@/decorators.js";
+import { LoggerService } from "@/core/LoggerService.js";
+import type Logger from "@/logger.js";
+import { fromTuple } from "@/misc/from-tuple.js";
+import {
+	ApLogService,
+	calculateDurationSince,
+	extractObjectContext,
+} from "@/core/ApLogService.js";
+import { ApUtilityService } from "@/core/activitypub/ApUtilityService.js";
+import { SystemAccountService } from "@/core/SystemAccountService.js";
+import { IdentifiableError } from "@/misc/identifiable-error.js";
+import { toArray } from "@/misc/prelude/array.js";
+import { isPureRenote } from "@/misc/is-renote.js";
+import { CacheService } from "@/core/CacheService.js";
+import { promiseMap } from "@/misc/promise-map.js";
+import { trackPromise } from "@/misc/promise-tracker.js";
+import { renderInlineError } from "@/misc/render-inline-error.js";
+import {
+	AnyCollection,
+	getApId,
+	getNullableApId,
+	IObjectWithId,
+	isCollection,
+	isCollectionOrOrderedCollection,
+	isCollectionPage,
+	isOrderedCollection,
+	isOrderedCollectionPage,
+} from "./type.js";
+import { ApDbResolverService } from "./ApDbResolverService.js";
+import { ApRendererService } from "./ApRendererService.js";
+import { ApRequestService } from "./ApRequestService.js";
+import type { IObject, ApObject, IAnonymousObject } from "./type.js";
 
 export class Resolver {
 	protected readonly history: Set<string>;
@@ -57,7 +79,7 @@ export class Resolver {
 		protected readonly recursionLimit = 256,
 	) {
 		this.history = new Set();
-		this.logger = this.loggerService.getLogger('ap-resolve');
+		this.logger = this.loggerService.getLogger("ap-resolve");
 	}
 
 	@bindThis
@@ -71,7 +93,11 @@ export class Resolver {
 	}
 
 	@bindThis
-	public async resolveCollection(value: string | IObject, allowAnonymous?: boolean, sentFromUri?: string): Promise<AnyCollection> {
+	public async resolveCollection(
+		value: string | IObject,
+		allowAnonymous?: boolean,
+		sentFromUri?: string,
+	): Promise<AnyCollection> {
 		const collection = sentFromUri
 			? await this.secureResolve(value, sentFromUri, allowAnonymous)
 			: allowAnonymous
@@ -81,7 +107,10 @@ export class Resolver {
 		if (isCollectionOrOrderedCollection(collection)) {
 			return collection;
 		} else {
-			throw new IdentifiableError('f100eccf-f347-43fb-9b45-96a0831fb635', `collection ${getNullableApId(value)} has unsupported type: ${collection.type}`);
+			throw new IdentifiableError(
+				"f100eccf-f347-43fb-9b45-96a0831fb635",
+				`collection ${getNullableApId(value)} has unsupported type: ${collection.type}`,
+			);
 		}
 	}
 
@@ -98,18 +127,37 @@ export class Resolver {
 	 * @param ignoreErrors If true (default), inaccessible items will be skipped instead of causing an exception. Inaccessible collections will still throw.
 	 */
 	@bindThis
-	public async resolveCollectionItems(collection: string | IObject, allowAnonymous = false, sentFromUri?: string, limit?: number | null, concurrency = 4, ignoreErrors = true): Promise<IObject[]> {
+	public async resolveCollectionItems(
+		collection: string | IObject,
+		allowAnonymous = false,
+		sentFromUri?: string,
+		limit?: number | null,
+		concurrency = 4,
+		ignoreErrors = true,
+	): Promise<IObject[]> {
 		const resolvedItems: IObject[] = [];
 
 		// This is pulled up to avoid code duplication below
-		const iterate = async(items: ApObject, current: AnyCollection) => {
+		const iterate = async (items: ApObject, current: AnyCollection) => {
 			const sentFrom = current.id;
 			const itemArr = toArray(items);
 			const itemLimit = limit ?? Number.MAX_SAFE_INTEGER;
-			await this.resolveItemArray(itemArr, sentFrom, itemLimit, concurrency, allowAnonymous, resolvedItems, ignoreErrors);
+			await this.resolveItemArray(
+				itemArr,
+				sentFrom,
+				itemLimit,
+				concurrency,
+				allowAnonymous,
+				resolvedItems,
+				ignoreErrors,
+			);
 		};
 
-		let current: AnyCollection | null = await this.resolveCollection(collection, allowAnonymous, sentFromUri);
+		let current: AnyCollection | null = await this.resolveCollection(
+			collection,
+			allowAnonymous,
+			sentFromUri,
+		);
 		do {
 			// Iterate all items in the current page
 			if (current.items) {
@@ -127,10 +175,25 @@ export class Resolver {
 				current = null;
 			} else if (isCollection(current) || isOrderedCollection(current)) {
 				// Continue to first page
-				current = current.first ? await this.resolveCollection(current.first, allowAnonymous, current.id) : null;
-			} else if (isCollectionPage(current) || isOrderedCollectionPage(current)) {
+				current = current.first
+					? await this.resolveCollection(
+							current.first,
+							allowAnonymous,
+							current.id,
+						)
+					: null;
+			} else if (
+				isCollectionPage(current) ||
+				isOrderedCollectionPage(current)
+			) {
 				// Continue to next page
-				current = current.next ? await this.resolveCollection(current.next, allowAnonymous, current.id) : null;
+				current = current.next
+					? await this.resolveCollection(
+							current.next,
+							allowAnonymous,
+							current.id,
+						)
+					: null;
 			} else {
 				// Stop in all other conditions
 				current = null;
@@ -140,39 +203,57 @@ export class Resolver {
 		return resolvedItems;
 	}
 
-	private async resolveItemArray(source: (string | IObject)[], sentFrom: string | undefined, itemLimit: number, concurrency: number, allowAnonymousItems: boolean, destination: IObject[], ignoreErrors?: boolean): Promise<void> {
+	private async resolveItemArray(
+		source: (string | IObject)[],
+		sentFrom: string | undefined,
+		itemLimit: number,
+		concurrency: number,
+		allowAnonymousItems: boolean,
+		destination: IObject[],
+		ignoreErrors?: boolean,
+	): Promise<void> {
 		const recursionLimit = this.recursionLimit - this.history.size;
 		const batchLimit = Math.min(source.length, recursionLimit, itemLimit);
 
-		const batch = await promiseMap(source.slice(0, batchLimit), async item => {
-			try {
-				if (sentFrom) {
-					// Use secureResolve to avoid re-fetching items that were included inline.
-					return await this.secureResolve(item, sentFrom, allowAnonymousItems);
-				} else if (allowAnonymousItems) {
-					return await this.resolveAnonymous(item);
-				} else {
-					// ID is required if we have neither sentFrom not allowAnonymousItems
-					const id = getApId(item);
-					return await this.resolve(id);
+		const batch = await promiseMap(
+			source.slice(0, batchLimit),
+			async (item) => {
+				try {
+					if (sentFrom) {
+						// Use secureResolve to avoid re-fetching items that were included inline.
+						return await this.secureResolve(
+							item,
+							sentFrom,
+							allowAnonymousItems,
+						);
+					} else if (allowAnonymousItems) {
+						return await this.resolveAnonymous(item);
+					} else {
+						// ID is required if we have neither sentFrom not allowAnonymousItems
+						const id = getApId(item);
+						return await this.resolve(id);
+					}
+				} catch (err) {
+					if (ignoreErrors) {
+						this.logger.warn(
+							`Ignoring error in collection item ${getNullableApId(item)}: ${renderInlineError(err)}`,
+						);
+						return null;
+					} else {
+						throw err;
+					}
 				}
-			} catch (err) {
-				if (ignoreErrors) {
-					this.logger.warn(`Ignoring error in collection item ${getNullableApId(item)}: ${renderInlineError(err)}`);
-					return null;
-				} else {
-					throw err;
-				}
-			}
-		}, {
-			limit: concurrency,
-		});
+			},
+			{
+				limit: concurrency,
+			},
+		);
 
 		// Items will be null if a request fails and ignoreErrors is true
-		const batchItems = batch.filter(item => item != null);
+		const batchItems = batch.filter((item) => item != null);
 
 		destination.push(...batchItems);
-	};
+	}
 
 	/**
 	 * Securely resolves an AP object or URL that has been sent from another instance.
@@ -183,13 +264,17 @@ export class Resolver {
 	 * @param allowAnonymous If true, anonymous objects are allowed and will have their ID set to sentFromUri. If false (default) then anonymous objects will be rejected with an error.
 	 */
 	@bindThis
-	public async secureResolve(input: string | IObject | [string | IObject], sentFromUri: string, allowAnonymous?: boolean): Promise<IObjectWithId> {
+	public async secureResolve(
+		input: string | IObject | [string | IObject],
+		sentFromUri: string,
+		allowAnonymous?: boolean,
+	): Promise<IObjectWithId> {
 		// Unpack arrays to get the value element.
 		const value = fromTuple(input);
 
 		// If anonymous input is allowed, then any object is automatically valid if we set the ID.
 		// We can short-circuit here and avoid un-necessary checks.
-		if (allowAnonymous && typeof(value) === 'object' && value.id == null) {
+		if (allowAnonymous && typeof value === "object" && value.id == null) {
 			value.id = sentFromUri;
 			return value as IObjectWithId;
 		}
@@ -200,7 +285,10 @@ export class Resolver {
 		// Check if we can use the provided object as-is.
 		// Our security requires that the object ID matches the host authority that sent it, otherwise it can't be trusted.
 		// A mismatch isn't necessarily malicious, it just means we can't use the object we were given.
-		if (typeof(value) === 'object' && this.apUtilityService.haveSameAuthority(id, sentFromUri)) {
+		if (
+			typeof value === "object" &&
+			this.apUtilityService.haveSameAuthority(id, sentFromUri)
+		) {
 			return value as IObjectWithId;
 		}
 
@@ -214,7 +302,9 @@ export class Resolver {
 	 * If one is provided in the response, it will be removed automatically.
 	 */
 	@bindThis
-	public async resolveAnonymous(value: string | IObject | [string | IObject]): Promise<IAnonymousObject> {
+	public async resolveAnonymous(
+		value: string | IObject | [string | IObject],
+	): Promise<IAnonymousObject> {
 		value = fromTuple(value);
 
 		const object = await this.resolve(value);
@@ -223,9 +313,18 @@ export class Resolver {
 		return object as IAnonymousObject;
 	}
 
-	public async resolve(value: string | [string], allowAnonymous?: boolean): Promise<IObjectWithId>;
-	public async resolve(value: string | IObjectWithId | [string | IObjectWithId], allowAnonymous?: boolean): Promise<IObjectWithId>;
-	public async resolve(value: string | IObject | [string | IObject], allowAnonymous?: boolean): Promise<IObject>;
+	public async resolve(
+		value: string | [string],
+		allowAnonymous?: boolean,
+	): Promise<IObjectWithId>;
+	public async resolve(
+		value: string | IObjectWithId | [string | IObjectWithId],
+		allowAnonymous?: boolean,
+	): Promise<IObjectWithId>;
+	public async resolve(
+		value: string | IObject | [string | IObject],
+		allowAnonymous?: boolean,
+	): Promise<IObject>;
 	/**
 	 * Resolves a URL or object to an AP object.
 	 * Tuples are expanded to their first element before anything else, and non-string inputs are returned as-is.
@@ -234,23 +333,33 @@ export class Resolver {
 	 * @param allowAnonymous Determines what to do if a response object lacks an ID field. If false (default), then an exception is thrown. If true, then the ID is populated from the final response URL.
 	 */
 	@bindThis
-	public async resolve(value: string | IObject | [string | IObject], allowAnonymous = false): Promise<IObject> {
+	public async resolve(
+		value: string | IObject | [string | IObject],
+		allowAnonymous = false,
+	): Promise<IObject> {
 		value = fromTuple(value);
 
 		// TODO try and remove this eventually, as it's a major security foot-gun
-		if (typeof value !== 'string') {
+		if (typeof value !== "string") {
 			return value;
 		}
 
 		const host = this.utilityService.extractDbHost(value);
-		if (this.config.activityLogging.enabled && !this.utilityService.isSelfHost(host)) {
+		if (
+			this.config.activityLogging.enabled &&
+			!this.utilityService.isSelfHost(host)
+		) {
 			return await this._resolveLogged(value, host, allowAnonymous);
 		} else {
 			return await this._resolve(value, host, allowAnonymous);
 		}
 	}
 
-	private async _resolveLogged(requestUri: string, host: string, allowAnonymous: boolean): Promise<IObjectWithId> {
+	private async _resolveLogged(
+		requestUri: string,
+		host: string,
+		allowAnonymous: boolean,
+	): Promise<IObjectWithId> {
 		const startTime = process.hrtime.bigint();
 
 		const log = await this.apLogService.createFetchLog({
@@ -262,7 +371,7 @@ export class Resolver {
 			const result = await this._resolve(requestUri, host, allowAnonymous, log);
 
 			log.accepted = true;
-			log.result = 'ok';
+			log.result = "ok";
 
 			return result;
 		} catch (err) {
@@ -274,47 +383,77 @@ export class Resolver {
 			log.duration = calculateDurationSince(startTime);
 
 			// Save or finalize asynchronously
-			trackPromise(this.apLogService.saveFetchLog(log)
-				.catch(err => this.logger.error('Failed to record AP object fetch:', err)));
+			trackPromise(
+				this.apLogService
+					.saveFetchLog(log)
+					.catch((err) =>
+						this.logger.error("Failed to record AP object fetch:", err),
+					),
+			);
 		}
 	}
 
-	private async _resolve(value: string, host: string, allowAnonymous: boolean, log?: SkApFetchLog): Promise<IObjectWithId> {
-		if (value.includes('#')) {
+	private async _resolve(
+		value: string,
+		host: string,
+		allowAnonymous: boolean,
+		log?: SkApFetchLog,
+	): Promise<IObjectWithId> {
+		if (value.includes("#")) {
 			// URLs with fragment parts cannot be resolved correctly because
 			// the fragment part does not get transmitted over HTTP(S).
 			// Avoid strange behaviour by not trying to resolve these at all.
-			throw new IdentifiableError('b94fd5b1-0e3b-4678-9df2-dad4cd515ab2', `failed to resolve ${value}: URL contains fragment`);
+			throw new IdentifiableError(
+				"b94fd5b1-0e3b-4678-9df2-dad4cd515ab2",
+				`failed to resolve ${value}: URL contains fragment`,
+			);
 		}
 
 		if (this.history.has(value)) {
-			throw new IdentifiableError('0dc86cf6-7cd6-4e56-b1e6-5903d62d7ea5', `failed to resolve ${value}: recursive resolution blocked`);
+			throw new IdentifiableError(
+				"0dc86cf6-7cd6-4e56-b1e6-5903d62d7ea5",
+				`failed to resolve ${value}: recursive resolution blocked`,
+			);
 		}
 
 		if (this.history.size > this.recursionLimit) {
-			throw new IdentifiableError('d592da9f-822f-4d91-83d7-4ceefabcf3d2', `failed to resolve ${value}: hit recursion limit`);
+			throw new IdentifiableError(
+				"d592da9f-822f-4d91-83d7-4ceefabcf3d2",
+				`failed to resolve ${value}: hit recursion limit`,
+			);
 		}
 
 		this.history.add(value);
 
 		if (this.utilityService.isSelfHost(host)) {
-			return await this.resolveLocal(value) as IObjectWithId;
+			return (await this.resolveLocal(value)) as IObjectWithId;
 		}
 
 		if (!this.utilityService.isFederationAllowedHost(host)) {
-			throw new IdentifiableError('09d79f9e-64f1-4316-9cfa-e75c4d091574', `failed to resolve ${value}: instance ${host} is blocked`);
+			throw new IdentifiableError(
+				"09d79f9e-64f1-4316-9cfa-e75c4d091574",
+				`failed to resolve ${value}: instance ${host} is blocked`,
+			);
 		}
 
 		if (this.config.signToActivityPubGet && !this.user) {
-			this.user = await this.systemAccountService.fetch('actor');
+			this.user = await this.systemAccountService.fetch("actor");
 		}
 
-		const object = (this.user
+		const object = this.user
 			? await this.apRequestService.signedGet(value, this.user, allowAnonymous)
-			: await this.httpRequestService.getActivityJson(value, false, allowAnonymous));
+			: await this.httpRequestService.getActivityJson(
+					value,
+					false,
+					allowAnonymous,
+				);
 
 		if (log) {
-			const { object: objectOnly, context, contextHash } = extractObjectContext(object);
+			const {
+				object: objectOnly,
+				context,
+				contextHash,
+			} = extractObjectContext(object);
 			const objectUri = getNullableApId(object);
 
 			if (objectUri) {
@@ -328,11 +467,16 @@ export class Resolver {
 		}
 
 		if (
-			Array.isArray(object['@context']) ?
-				!(object['@context'] as unknown[]).includes('https://www.w3.org/ns/activitystreams') :
-				object['@context'] !== 'https://www.w3.org/ns/activitystreams'
+			Array.isArray(object["@context"])
+				? !(object["@context"] as unknown[]).includes(
+						"https://www.w3.org/ns/activitystreams",
+					)
+				: object["@context"] !== "https://www.w3.org/ns/activitystreams"
 		) {
-			throw new IdentifiableError('72180409-793c-4973-868e-5a118eb5519b', `failed to resolve ${value}: response does not have ActivityStreams context`);
+			throw new IdentifiableError(
+				"72180409-793c-4973-868e-5a118eb5519b",
+				`failed to resolve ${value}: response does not have ActivityStreams context`,
+			);
 		}
 
 		// The object ID is already validated to match the final URL's authority by signedGet / getActivityJson.
@@ -348,7 +492,10 @@ export class Resolver {
 
 			// Check if the redirect bounce from [allowed domain] to [blocked domain].
 			if (!this.utilityService.isFederationAllowedHost(finalHost)) {
-				throw new IdentifiableError('0a72bf24-2d9b-4f1d-886b-15aaa31adeda', `failed to resolve ${value}: redirected to blocked instance ${finalHost}`);
+				throw new IdentifiableError(
+					"0a72bf24-2d9b-4f1d-886b-15aaa31adeda",
+					`failed to resolve ${value}: redirected to blocked instance ${finalHost}`,
+				);
 			}
 		}
 
@@ -359,54 +506,113 @@ export class Resolver {
 	@bindThis
 	private resolveLocal(url: string): Promise<IObjectWithId> {
 		const parsed = this.apDbResolverService.parseUri(url);
-		if (!parsed.local) throw new IdentifiableError('02b40cd0-fa92-4b0c-acc9-fb2ada952ab8', `failed to resolve local ${url}: not a local URL`);
+		if (!parsed.local)
+			throw new IdentifiableError(
+				"02b40cd0-fa92-4b0c-acc9-fb2ada952ab8",
+				`failed to resolve local ${url}: not a local URL`,
+			);
 
 		switch (parsed.type) {
-			case 'notes':
-				return this.notesRepository.findOneOrFail({ where: { id: parsed.id, userHost: IsNull() }, relations: { user: true, renote: true } })
-					.then(async note => {
-						const author = note.user ?? await this.cacheService.findUserById(note.userId);
-						if (parsed.rest === 'activity') {
-							return await this.apRendererService.renderNoteOrRenoteActivity(note, author);
+			case "notes":
+				return this.notesRepository
+					.findOneOrFail({
+						where: { id: parsed.id, userHost: IsNull() },
+						relations: { user: true, renote: true },
+					})
+					.then(async (note) => {
+						const author =
+							note.user ?? (await this.cacheService.findUserById(note.userId));
+						if (parsed.rest === "activity") {
+							return await this.apRendererService.renderNoteOrRenoteActivity(
+								note,
+								author,
+							);
 						} else if (!isPureRenote(note)) {
-							const apNote = await this.apRendererService.renderNote(note, author);
+							const apNote = await this.apRendererService.renderNote(
+								note,
+								author,
+							);
 							return this.apRendererService.addContext(apNote);
 						} else {
-							throw new IdentifiableError('732c2633-3395-4d51-a9b7-c7084774e3e7', `Failed to resolve local ${url}: cannot resolve a boost as note`);
+							throw new IdentifiableError(
+								"732c2633-3395-4d51-a9b7-c7084774e3e7",
+								`Failed to resolve local ${url}: cannot resolve a boost as note`,
+							);
 						}
 					}) as Promise<IObjectWithId>;
-			case 'users':
-				return this.cacheService.findLocalUserById(parsed.id)
-					.then(user => this.apRendererService.renderPerson(user as MiLocalUser));
-			case 'questions':
+			case "users":
+				return this.cacheService
+					.findLocalUserById(parsed.id)
+					.then((user) =>
+						this.apRendererService.renderPerson(user as MiLocalUser),
+					);
+			case "questions":
 				// Polls are indexed by the note they are attached to.
 				return Promise.all([
-					this.notesRepository.findOneByOrFail({ id: parsed.id, userHost: IsNull() }),
-					this.pollsRepository.findOneByOrFail({ noteId: parsed.id, userHost: IsNull() }),
-				])
-					.then(([note, poll]) => this.apRendererService.renderQuestion({ id: note.userId }, note, poll)) as Promise<IObjectWithId>;
-			case 'likes':
-				return this.noteReactionsRepository.findOneOrFail({ where: { id: parsed.id }, relations: { user: true } }).then(async reaction => {
-					if (reaction.user?.host != null) {
-						throw new IdentifiableError('02b40cd0-fa92-4b0c-acc9-fb2ada952ab8', `failed to resolve local ${url}: not a local reaction`);
-					}
-					return this.apRendererService.addContext(await this.apRendererService.renderLike(reaction, { uri: null }));
-				});
-			case 'follows':
-				return this.followRequestsRepository.findOneBy({ id: parsed.id })
-					.then(async followRequest => {
-						if (followRequest == null) throw new IdentifiableError('a9d946e5-d276-47f8-95fb-f04230289bb0', `failed to resolve local ${url}: invalid follow request ID`);
+					this.notesRepository.findOneByOrFail({
+						id: parsed.id,
+						userHost: IsNull(),
+					}),
+					this.pollsRepository.findOneByOrFail({
+						noteId: parsed.id,
+						userHost: IsNull(),
+					}),
+				]).then(([note, poll]) =>
+					this.apRendererService.renderQuestion(
+						{ id: note.userId },
+						note,
+						poll,
+					),
+				) as Promise<IObjectWithId>;
+			case "likes":
+				return this.noteReactionsRepository
+					.findOneOrFail({
+						where: { id: parsed.id },
+						relations: { user: true },
+					})
+					.then(async (reaction) => {
+						if (reaction.user?.host != null) {
+							throw new IdentifiableError(
+								"02b40cd0-fa92-4b0c-acc9-fb2ada952ab8",
+								`failed to resolve local ${url}: not a local reaction`,
+							);
+						}
+						return this.apRendererService.addContext(
+							await this.apRendererService.renderLike(reaction, { uri: null }),
+						);
+					});
+			case "follows":
+				return this.followRequestsRepository
+					.findOneBy({ id: parsed.id })
+					.then(async (followRequest) => {
+						if (followRequest == null)
+							throw new IdentifiableError(
+								"a9d946e5-d276-47f8-95fb-f04230289bb0",
+								`failed to resolve local ${url}: invalid follow request ID`,
+							);
 						const [follower, followee] = await Promise.all([
 							this.cacheService.findLocalUserById(followRequest.followerId),
 							this.cacheService.findLocalUserById(followRequest.followeeId),
 						]);
 						if (follower == null || followee == null) {
-							throw new IdentifiableError('06ae3170-1796-4d93-a697-2611ea6d83b6', `failed to resolve local ${url}: follower or followee does not exist`);
+							throw new IdentifiableError(
+								"06ae3170-1796-4d93-a697-2611ea6d83b6",
+								`failed to resolve local ${url}: follower or followee does not exist`,
+							);
 						}
-						return this.apRendererService.addContext(this.apRendererService.renderFollow(follower as MiLocalUser | MiRemoteUser, followee as MiLocalUser | MiRemoteUser, url));
+						return this.apRendererService.addContext(
+							this.apRendererService.renderFollow(
+								follower as MiLocalUser | MiRemoteUser,
+								followee as MiLocalUser | MiRemoteUser,
+								url,
+							),
+						);
 					});
 			default:
-				throw new IdentifiableError('7a5d2fc0-94bc-4db6-b8b8-1bf24a2e23d0', `failed to resolve local ${url}: unsupported type ${parsed.type}`);
+				throw new IdentifiableError(
+					"7a5d2fc0-94bc-4db6-b8b8-1bf24a2e23d0",
+					`failed to resolve local ${url}: unsupported type ${parsed.type}`,
+				);
 		}
 	}
 }
@@ -445,13 +651,12 @@ export class ApResolverService {
 		protected readonly apLogService: ApLogService,
 		protected readonly apUtilityService: ApUtilityService,
 		protected readonly cacheService: CacheService,
-	) {
-	}
+	) {}
 
 	@bindThis
 	public createResolver(opts?: {
 		// Override the recursion limit
-		recursionLimit?: number,
+		recursionLimit?: number;
 	}): Resolver {
 		return new Resolver(
 			this.config,

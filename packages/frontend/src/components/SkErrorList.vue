@@ -6,15 +6,16 @@ List of errors for a viewed note.
 -->
 
 <template>
-<!-- Match appearance of MkRemoteCaution.vue -->
-<div v-for="error of displayErrors" :key="error" :class="$style.root">
-	<i :class="$style.icon" class="ti ti-alert-triangle"></i>{{ i18n.ts._processErrors[error] ?? error }}
-</div>
+	<!-- Match appearance of MkRemoteCaution.vue -->
+	<div v-for="error of displayErrors" :key="error" :class="$style.root">
+		<i :class="$style.icon" class="ti ti-alert-triangle"></i
+		>{{ i18n.ts._processErrors[error] ?? error }}
+	</div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { i18n } from '@/i18n.js';
+import { computed } from "vue";
+import { i18n } from "@/i18n.js";
 
 const props = defineProps<{
 	errors?: string[] | null;

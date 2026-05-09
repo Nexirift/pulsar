@@ -4,10 +4,10 @@
  */
 
 export const postMessageEventTypes = [
-	'misskey:shareForm:shareCompleted',
+	"misskey:shareForm:shareCompleted",
 ] as const;
 
-export type PostMessageEventType = typeof postMessageEventTypes[number];
+export type PostMessageEventType = (typeof postMessageEventTypes)[number];
 
 export type MiPostMessageEvent = {
 	type: PostMessageEventType;
@@ -17,9 +17,15 @@ export type MiPostMessageEvent = {
 /**
  * 親フレームにイベントを送信
  */
-export function postMessageToParentWindow(type: PostMessageEventType, payload?: any): void {
-	window.parent.postMessage({
-		type,
-		payload,
-	}, '*');
+export function postMessageToParentWindow(
+	type: PostMessageEventType,
+	payload?: any,
+): void {
+	window.parent.postMessage(
+		{
+			type,
+			payload,
+		},
+		"*",
+	);
 }

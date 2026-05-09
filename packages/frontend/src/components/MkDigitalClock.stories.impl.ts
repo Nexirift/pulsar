@@ -4,9 +4,9 @@
  */
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import type { StoryObj } from '@storybook/vue3';
-import isChromatic from 'chromatic/isChromatic';
-import MkDigitalClock from './MkDigitalClock.vue';
+import type { StoryObj } from "@storybook/vue3";
+import isChromatic from "chromatic/isChromatic";
+import MkDigitalClock from "./MkDigitalClock.vue";
 export const Default = {
 	render(args) {
 		return {
@@ -29,9 +29,9 @@ export const Default = {
 		};
 	},
 	args: {
-		now: isChromatic() ? () => new Date('2023-01-01T10:10:30') : undefined,
+		now: isChromatic() ? () => new Date("2023-01-01T10:10:30") : undefined,
 	},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkDigitalClock>;

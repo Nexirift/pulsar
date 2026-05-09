@@ -3,22 +3,22 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { URL } from 'node:url';
-import { Inject, Injectable } from '@nestjs/common';
-import tinycolor from 'tinycolor2';
-import * as Redis from 'ioredis';
-import { load as cheerio } from 'cheerio/slim';
-import type { MiInstance } from '@/models/Instance.js';
-import type Logger from '@/logger.js';
-import { DI } from '@/di-symbols.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import { HttpRequestService } from '@/core/HttpRequestService.js';
-import { bindThis } from '@/decorators.js';
-import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
-import { QueueService } from '@/core/QueueService.js';
-import type { CheerioAPI } from 'cheerio/slim';
+import { URL } from "node:url";
+import { Inject, Injectable } from "@nestjs/common";
+import tinycolor from "tinycolor2";
+import * as Redis from "ioredis";
+import { load as cheerio } from "cheerio/slim";
+import type { MiInstance } from "@/models/Instance.js";
+import type Logger from "@/logger.js";
+import { DI } from "@/di-symbols.js";
+import { LoggerService } from "@/core/LoggerService.js";
+import { HttpRequestService } from "@/core/HttpRequestService.js";
+import { bindThis } from "@/decorators.js";
+import { FederatedInstanceService } from "@/core/FederatedInstanceService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { renderInlineError } from "@/misc/render-inline-error.js";
+import { QueueService } from "@/core/QueueService.js";
+import type { CheerioAPI } from "cheerio/slim";
 
 type NodeInfo = {
 	openRegistrations?: unknown;
@@ -53,7 +53,7 @@ export class FetchInstanceMetadataService {
 		private readonly timeService: TimeService,
 		private readonly queueService: QueueService,
 	) {
-		this.logger = this.loggerService.getLogger('metadata', 'cyan');
+		this.logger = this.loggerService.getLogger("metadata", "cyan");
 	}
 
 	@bindThis
@@ -63,9 +63,11 @@ export class FetchInstanceMetadataService {
 		this.redisClient.del(`fetchInstanceMetadata:mutex:${host}`);
 
 		return await this.redisClient.set(
-			`fetchInstanceMetadata:mutex:v2:${host}`, '1',
-			'EX', 30, // 30秒したら自動でロック解除 https://github.com/misskey-dev/misskey/issues/13506#issuecomment-1975375395
-			'GET' // 古い値を返す（なかったらnull）
+			`fetchInstanceMetadata:mutex:v2:${host}`,
+			"1",
+			"EX",
+			30, // 30秒したら自動でロック解除 https://github.com/misskey-dev/misskey/issues/13506#issuecomment-1975375395
+			"GET", // 古い値を返す（なかったらnull）
 		);
 	}
 
@@ -87,23 +89,31 @@ export class FetchInstanceMetadataService {
 	}
 
 	@bindThis
-	public async fetchInstanceMetadata(instance: MiInstance, force = false): Promise<void> {
+	public async fetchInstanceMetadata(
+		instance: MiInstance,
+		force = false,
+	): Promise<void> {
 		if (instance.isBlocked) return;
 
 		const host = instance.host;
 
 		// finallyでunlockされてしまうのでtry内でロックチェックをしない
 		// （returnであってもfinallyは実行される）
-		if (!force && await this.tryLock(host) === '1') {
+		if (!force && (await this.tryLock(host)) === "1") {
 			// 1が返ってきていたらロックされているという意味なので、何もしない
 			return;
 		}
 
 		try {
 			if (!force) {
-				const _instance = await this.federatedInstanceService.fetchOrRegister(host);
+				const _instance =
+					await this.federatedInstanceService.fetchOrRegister(host);
 				const now = this.timeService.now;
-				if (_instance && _instance.infoUpdatedAt && (now - _instance.infoUpdatedAt.getTime() < 1000 * 60 * 60 * 24)) {
+				if (
+					_instance &&
+					_instance.infoUpdatedAt &&
+					now - _instance.infoUpdatedAt.getTime() < 1000 * 60 * 60 * 24
+				) {
 					// unlock at the finally caluse
 					return;
 				}
@@ -132,20 +142,41 @@ export class FetchInstanceMetadataService {
 			} as Record<string, any>;
 
 			if (info) {
-				const softwareName = typeof info.software?.name === 'string' ? info.software.name.toLowerCase() : '?';
-				if (softwareName !== instance.softwareName) updates.softwareName = softwareName;
-				const softwareVersion = typeof info.software?.version === 'string' ? info.software.version.toLowerCase() : '?';
-				if (softwareVersion !== instance.softwareVersion) updates.softwareVersion = softwareVersion;
-				if (info.openRegistrations !== instance.openRegistrations) updates.openRegistrations = info.openRegistrations;
-				const maintainerName = info.metadata ? info.metadata.maintainer ? (info.metadata.maintainer.name ?? null) : null : null;
-				if (maintainerName !== instance.maintainerName) updates.maintainerName = maintainerName;
-				const maintainerEmail = info.metadata ? info.metadata.maintainer ? (info.metadata.maintainer.email ?? null) : null : null;
-				if (maintainerEmail !== instance.maintainerEmail) updates.maintainerEmail = maintainerEmail;
+				const softwareName =
+					typeof info.software?.name === "string"
+						? info.software.name.toLowerCase()
+						: "?";
+				if (softwareName !== instance.softwareName)
+					updates.softwareName = softwareName;
+				const softwareVersion =
+					typeof info.software?.version === "string"
+						? info.software.version.toLowerCase()
+						: "?";
+				if (softwareVersion !== instance.softwareVersion)
+					updates.softwareVersion = softwareVersion;
+				if (info.openRegistrations !== instance.openRegistrations)
+					updates.openRegistrations = info.openRegistrations;
+				const maintainerName = info.metadata
+					? info.metadata.maintainer
+						? (info.metadata.maintainer.name ?? null)
+						: null
+					: null;
+				if (maintainerName !== instance.maintainerName)
+					updates.maintainerName = maintainerName;
+				const maintainerEmail = info.metadata
+					? info.metadata.maintainer
+						? (info.metadata.maintainer.email ?? null)
+						: null
+					: null;
+				if (maintainerEmail !== instance.maintainerEmail)
+					updates.maintainerEmail = maintainerEmail;
 			}
 
 			if (name !== instance.name) updates.name = name;
-			if (description !== instance.description) updates.description = description;
-			const iconUrl = (icon && !icon.includes('data:image/png;base64')) ? icon : favicon;
+			if (description !== instance.description)
+				updates.description = description;
+			const iconUrl =
+				icon && !icon.includes("data:image/png;base64") ? icon : favicon;
 			if (iconUrl !== instance.iconUrl) updates.iconUrl = iconUrl;
 			if (favicon !== instance.faviconUrl) updates.faviconUrl = favicon;
 			if (themeColor !== instance.themeColor) updates.themeColor = themeColor;
@@ -154,7 +185,9 @@ export class FetchInstanceMetadataService {
 
 			this.logger.info(`Successfully updated metadata of ${instance.host}`);
 		} catch (e) {
-			this.logger.error(`Failed to update metadata of ${instance.host}: ${renderInlineError(e)}`);
+			this.logger.error(
+				`Failed to update metadata of ${instance.host}: ${renderInlineError(e)}`,
+			);
 		} finally {
 			await this.unlock(host);
 		}
@@ -165,28 +198,38 @@ export class FetchInstanceMetadataService {
 		this.logger.debug(`Fetching nodeinfo of ${instance.host} ...`);
 
 		try {
-			const wellknown = await this.httpRequestService.getJson('https://' + instance.host + '/.well-known/nodeinfo')
-				.catch(err => {
+			const wellknown = (await this.httpRequestService
+				.getJson("https://" + instance.host + "/.well-known/nodeinfo")
+				.catch((err) => {
 					if (err.statusCode === 404) {
-						throw new Error('No nodeinfo provided');
+						throw new Error("No nodeinfo provided");
 					} else {
 						throw err.statusCode ?? err.message;
 					}
-				}) as Record<string, unknown>;
+				})) as Record<string, unknown>;
 
 			if (wellknown.links == null || !Array.isArray(wellknown.links)) {
-				throw new Error('No wellknown links');
+				throw new Error("No wellknown links");
 			}
 
-			const links = wellknown.links as ({ rel: string, href: string; })[];
+			const links = wellknown.links as { rel: string; href: string }[];
 
-			const link1_0 = links.find(link => link.rel === 'http://nodeinfo.diaspora.software/ns/schema/1.0');
-			const link2_0 = links.find(link => link.rel === 'http://nodeinfo.diaspora.software/ns/schema/2.0');
-			const link2_1 = links.find(link => link.rel === 'http://nodeinfo.diaspora.software/ns/schema/2.1');
+			const link1_0 = links.find(
+				(link) =>
+					link.rel === "http://nodeinfo.diaspora.software/ns/schema/1.0",
+			);
+			const link2_0 = links.find(
+				(link) =>
+					link.rel === "http://nodeinfo.diaspora.software/ns/schema/2.0",
+			);
+			const link2_1 = links.find(
+				(link) =>
+					link.rel === "http://nodeinfo.diaspora.software/ns/schema/2.1",
+			);
 			const link = link2_1 ?? link2_0 ?? link1_0;
 
 			if (link == null) {
-				throw new Error('No nodeinfo link provided');
+				throw new Error("No nodeinfo link provided");
 			}
 
 			const info = await this.httpRequestService.getJson(link.href);
@@ -195,7 +238,9 @@ export class FetchInstanceMetadataService {
 
 			return info as NodeInfo;
 		} catch (err) {
-			this.logger.warn(`Failed to fetch nodeinfo of ${instance.host}: ${renderInlineError(err)}`);
+			this.logger.warn(
+				`Failed to fetch nodeinfo of ${instance.host}: ${renderInlineError(err)}`,
+			);
 
 			throw err;
 		}
@@ -205,7 +250,7 @@ export class FetchInstanceMetadataService {
 	private async fetchDom(instance: MiInstance): Promise<CheerioAPI> {
 		this.logger.debug(`Fetching HTML of ${instance.host} ...`);
 
-		const url = 'https://' + instance.host;
+		const url = "https://" + instance.host;
 
 		const html = await this.httpRequestService.getHtml(url);
 
@@ -213,37 +258,48 @@ export class FetchInstanceMetadataService {
 	}
 
 	@bindThis
-	private async fetchManifest(instance: MiInstance): Promise<Record<string, unknown> | null> {
-		const url = 'https://' + instance.host;
+	private async fetchManifest(
+		instance: MiInstance,
+	): Promise<Record<string, unknown> | null> {
+		const url = "https://" + instance.host;
 
-		const manifestUrl = url + '/manifest.json';
+		const manifestUrl = url + "/manifest.json";
 
-		const manifest = await this.httpRequestService.getJson(manifestUrl) as Record<string, unknown>;
+		const manifest = (await this.httpRequestService.getJson(
+			manifestUrl,
+		)) as Record<string, unknown>;
 
 		return manifest;
 	}
 
 	@bindThis
-	private async fetchFaviconUrl(instance: MiInstance, doc: CheerioAPI | null): Promise<string | null> {
-		const url = 'https://' + instance.host;
+	private async fetchFaviconUrl(
+		instance: MiInstance,
+		doc: CheerioAPI | null,
+	): Promise<string | null> {
+		const url = "https://" + instance.host;
 
 		if (doc) {
 			// https://github.com/misskey-dev/misskey/pull/8220#issuecomment-1025104043
-			const href = doc('link[rel][href]')
-				.filter((_, link) => link.attribs.rel.split(' ').includes('icon'))
+			const href = doc("link[rel][href]")
+				.filter((_, link) => link.attribs.rel.split(" ").includes("icon"))
 				.last()
-				.attr('href');
+				.attr("href");
 
 			if (href) {
-				return (new URL(href, url)).href;
+				return new URL(href, url).href;
 			}
 		}
 
-		const faviconUrl = url + '/favicon.ico';
+		const faviconUrl = url + "/favicon.ico";
 
-		const favicon = await this.httpRequestService.send(faviconUrl, {
-			method: 'HEAD',
-		}, { throwErrorWhenResponseNotOk: false });
+		const favicon = await this.httpRequestService.send(
+			faviconUrl,
+			{
+				method: "HEAD",
+			},
+			{ throwErrorWhenResponseNotOk: false },
+		);
 
 		if (favicon.ok) {
 			return faviconUrl;
@@ -253,31 +309,41 @@ export class FetchInstanceMetadataService {
 	}
 
 	@bindThis
-	private async fetchIconUrl(instance: MiInstance, doc: CheerioAPI | null, manifest: Record<string, any> | null): Promise<string | null> {
-		if (manifest && manifest.icons && manifest.icons.length > 0 && manifest.icons[0].src) {
-			const url = 'https://' + instance.host;
-			return (new URL(manifest.icons[0].src, url)).href;
+	private async fetchIconUrl(
+		instance: MiInstance,
+		doc: CheerioAPI | null,
+		manifest: Record<string, any> | null,
+	): Promise<string | null> {
+		if (
+			manifest &&
+			manifest.icons &&
+			manifest.icons.length > 0 &&
+			manifest.icons[0].src
+		) {
+			const url = "https://" + instance.host;
+			return new URL(manifest.icons[0].src, url).href;
 		}
 
 		if (doc) {
-			const url = 'https://' + instance.host;
+			const url = "https://" + instance.host;
 
 			// https://github.com/misskey-dev/misskey/pull/8220#issuecomment-1025104043
-			const links = Array.from(doc('link[rel][href]')).reverse().map(link => ({
-				rel: link.attribs.rel.split(' '),
-				href: link.attribs.href,
-			}));
+			const links = Array.from(doc("link[rel][href]"))
+				.reverse()
+				.map((link) => ({
+					rel: link.attribs.rel.split(" "),
+					href: link.attribs.href,
+				}));
 			// https://github.com/misskey-dev/misskey/pull/8220/files/0ec4eba22a914e31b86874f12448f88b3e58dd5a#r796487559
-			const href =
-				[
-					links.find(link => link.rel.includes('apple-touch-icon-precomposed'))?.href,
-					links.find(link => link.rel.includes('apple-touch-icon'))?.href,
-					links.find(link => link.rel.includes('icon'))?.href,
-				]
-					.find(href => href);
+			const href = [
+				links.find((link) => link.rel.includes("apple-touch-icon-precomposed"))
+					?.href,
+				links.find((link) => link.rel.includes("apple-touch-icon"))?.href,
+				links.find((link) => link.rel.includes("icon"))?.href,
+			].find((href) => href);
 
 			if (href) {
-				return (new URL(href, url)).href;
+				return new URL(href, url).href;
 			}
 		}
 
@@ -285,8 +351,15 @@ export class FetchInstanceMetadataService {
 	}
 
 	@bindThis
-	private async getThemeColor(info: NodeInfo | null, doc: CheerioAPI | null, manifest: Record<string, any> | null): Promise<string | null> {
-		const themeColor = info?.metadata?.themeColor ?? doc?.('meta[name="theme-color"][content]').attr('content') ?? manifest?.theme_color;
+	private async getThemeColor(
+		info: NodeInfo | null,
+		doc: CheerioAPI | null,
+		manifest: Record<string, any> | null,
+	): Promise<string | null> {
+		const themeColor =
+			info?.metadata?.themeColor ??
+			doc?.('meta[name="theme-color"][content]').attr("content") ??
+			manifest?.theme_color;
 
 		if (themeColor) {
 			const color = new tinycolor(themeColor);
@@ -297,17 +370,21 @@ export class FetchInstanceMetadataService {
 	}
 
 	@bindThis
-	private async getSiteName(info: NodeInfo | null, doc: CheerioAPI | null, manifest: Record<string, any> | null): Promise<string | null> {
+	private async getSiteName(
+		info: NodeInfo | null,
+		doc: CheerioAPI | null,
+		manifest: Record<string, any> | null,
+	): Promise<string | null> {
 		if (info && info.metadata) {
-			if (typeof info.metadata.nodeName === 'string') {
+			if (typeof info.metadata.nodeName === "string") {
 				return info.metadata.nodeName;
-			} else if (typeof info.metadata.name === 'string') {
+			} else if (typeof info.metadata.name === "string") {
 				return info.metadata.name;
 			}
 		}
 
 		if (doc) {
-			const og = doc('meta[property="og:title"][content]').attr('content');
+			const og = doc('meta[property="og:title"][content]').attr("content");
 
 			if (og) {
 				return og;
@@ -322,22 +399,28 @@ export class FetchInstanceMetadataService {
 	}
 
 	@bindThis
-	private async getDescription(info: NodeInfo | null, doc: CheerioAPI | null, manifest: Record<string, any> | null): Promise<string | null> {
+	private async getDescription(
+		info: NodeInfo | null,
+		doc: CheerioAPI | null,
+		manifest: Record<string, any> | null,
+	): Promise<string | null> {
 		if (info && info.metadata) {
-			if (typeof info.metadata.nodeDescription === 'string') {
+			if (typeof info.metadata.nodeDescription === "string") {
 				return info.metadata.nodeDescription;
-			} else if (typeof info.metadata.description === 'string') {
+			} else if (typeof info.metadata.description === "string") {
 				return info.metadata.description;
 			}
 		}
 
 		if (doc) {
-			const meta = doc('meta[name="description"][content]').attr('content');
+			const meta = doc('meta[name="description"][content]').attr("content");
 			if (meta) {
 				return meta;
 			}
 
-			const og = doc('meta[property="og:description"][content]').attr('content');
+			const og = doc('meta[property="og:description"][content]').attr(
+				"content",
+			);
 			if (og) {
 				return og;
 			}

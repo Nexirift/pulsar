@@ -4,30 +4,50 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="$style.root">
-	<MkAvatar :class="$style.avatar" :user="user"/>
-	<div :class="$style.main">
-		<div :class="$style.header">
-			<MkUserName :user="user" :nowrap="true"/>
-		</div>
-		<div>
-			<p v-if="useCw" :class="$style.cw">
-				<Mfm v-if="cw != null && cw != ''" :text="cw" :isBlock="true" :author="user" :nyaize="'respect'" :i="user" style="margin-right: 8px;"/>
-				<MkCwButton v-model="showContent" :text="text.trim()" :files="files" :poll="poll" style="margin: 4px 0;"/>
-			</p>
-			<div v-show="!useCw || showContent">
-				<Mfm :text="text.trim()" :isBlock="true" :author="user" :nyaize="'respect'" :i="user"/>
+	<div :class="$style.root">
+		<MkAvatar :class="$style.avatar" :user="user" />
+		<div :class="$style.main">
+			<div :class="$style.header">
+				<MkUserName :user="user" :nowrap="true" />
+			</div>
+			<div>
+				<p v-if="useCw" :class="$style.cw">
+					<Mfm
+						v-if="cw != null && cw != ''"
+						:text="cw"
+						:isBlock="true"
+						:author="user"
+						:nyaize="'respect'"
+						:i="user"
+						style="margin-right: 8px"
+					/>
+					<MkCwButton
+						v-model="showContent"
+						:text="text.trim()"
+						:files="files"
+						:poll="poll"
+						style="margin: 4px 0"
+					/>
+				</p>
+				<div v-show="!useCw || showContent">
+					<Mfm
+						:text="text.trim()"
+						:isBlock="true"
+						:author="user"
+						:nyaize="'respect'"
+						:i="user"
+					/>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import type { PollEditorModelValue } from '@/components/MkPollEditor.vue';
-import MkCwButton from '@/components/MkCwButton.vue';
+import { ref } from "vue";
+import * as Misskey from "misskey-js";
+import type { PollEditorModelValue } from "@/components/MkPollEditor.vue";
+import MkCwButton from "@/components/MkCwButton.vue";
 
 const showContent = ref(false);
 
@@ -78,7 +98,7 @@ const props = defineProps<{
 	font-weight: bold;
 	width: 100%;
 	overflow: clip;
-    text-overflow: ellipsis;
+	text-overflow: ellipsis;
 }
 
 @container (min-width: 350px) {

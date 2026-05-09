@@ -3,15 +3,15 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Entity, Column, PrimaryColumn } from 'typeorm';
-import { id } from './util/id.js';
+import { Entity, Column, PrimaryColumn } from "typeorm";
+import { id } from "./util/id.js";
 
 /**
  * ～かつ～
  * 複数の条件を同時に満たす場合のみ成立とする
  */
 type CondFormulaValueAnd = {
-	type: 'and';
+	type: "and";
 	values: RoleCondFormulaValue[];
 };
 
@@ -20,7 +20,7 @@ type CondFormulaValueAnd = {
  * 複数の条件のうち、いずれかを満たす場合のみ成立とする
  */
 type CondFormulaValueOr = {
-	type: 'or';
+	type: "or";
 	values: RoleCondFormulaValue[];
 };
 
@@ -29,7 +29,7 @@ type CondFormulaValueOr = {
  * 条件を満たさない場合のみ成立とする
  */
 type CondFormulaValueNot = {
-	type: 'not';
+	type: "not";
 	value: RoleCondFormulaValue;
 };
 
@@ -37,21 +37,21 @@ type CondFormulaValueNot = {
  * ローカルユーザーのみ成立とする
  */
 type CondFormulaValueIsLocal = {
-	type: 'isLocal';
+	type: "isLocal";
 };
 
 /**
  * リモートユーザーのみ成立とする
  */
 type CondFormulaValueIsRemote = {
-	type: 'isRemote';
+	type: "isRemote";
 };
 
 /**
  * User is from a specific instance
  */
 type CondFormulaValueIsFromInstance = {
-	type: 'isFromInstance';
+	type: "isFromInstance";
 	host: string;
 	subdomains: boolean;
 };
@@ -60,14 +60,14 @@ type CondFormulaValueIsFromInstance = {
  * Is the user from a local bubble instance
  */
 type CondFormulaValueFromBubbleInstance = {
-	type: 'fromBubbleInstance';
+	type: "fromBubbleInstance";
 };
 
 /**
  * 既に指定のマニュアルロールにアサインされている場合のみ成立とする
  */
 type CondFormulaValueRoleAssignedTo = {
-	type: 'roleAssignedTo';
+	type: "roleAssignedTo";
 	roleId: string;
 };
 
@@ -75,42 +75,42 @@ type CondFormulaValueRoleAssignedTo = {
  * サスペンド済みアカウントの場合のみ成立とする
  */
 type CondFormulaValueIsSuspended = {
-	type: 'isSuspended';
+	type: "isSuspended";
 };
 
 /**
  * 鍵アカウントの場合のみ成立とする
  */
 type CondFormulaValueIsLocked = {
-	type: 'isLocked';
+	type: "isLocked";
 };
 
 /**
  * botアカウントの場合のみ成立とする
  */
 type CondFormulaValueIsBot = {
-	type: 'isBot';
+	type: "isBot";
 };
 
 /**
  * 猫アカウントの場合のみ成立とする
  */
 type CondFormulaValueIsCat = {
-	type: 'isCat';
+	type: "isCat";
 };
 
 /**
  * 「ユーザを見つけやすくする」が有効なアカウントの場合のみ成立とする
  */
 type CondFormulaValueIsExplorable = {
-	type: 'isExplorable';
+	type: "isExplorable";
 };
 
 /**
  * ユーザが作成されてから指定期間経過した場合のみ成立とする
  */
 type CondFormulaValueCreatedLessThan = {
-	type: 'createdLessThan';
+	type: "createdLessThan";
 	sec: number;
 };
 
@@ -118,7 +118,7 @@ type CondFormulaValueCreatedLessThan = {
  * ユーザが作成されてから指定期間経っていない場合のみ成立とする
  */
 type CondFormulaValueCreatedMoreThan = {
-	type: 'createdMoreThan';
+	type: "createdMoreThan";
 	sec: number;
 };
 
@@ -126,7 +126,7 @@ type CondFormulaValueCreatedMoreThan = {
  * フォロワー数が指定値以下の場合のみ成立とする
  */
 type CondFormulaValueFollowersLessThanOrEq = {
-	type: 'followersLessThanOrEq';
+	type: "followersLessThanOrEq";
 	value: number;
 };
 
@@ -134,7 +134,7 @@ type CondFormulaValueFollowersLessThanOrEq = {
  * フォロワー数が指定値以上の場合のみ成立とする
  */
 type CondFormulaValueFollowersMoreThanOrEq = {
-	type: 'followersMoreThanOrEq';
+	type: "followersMoreThanOrEq";
 	value: number;
 };
 
@@ -142,7 +142,7 @@ type CondFormulaValueFollowersMoreThanOrEq = {
  * フォロー数が指定値以下の場合のみ成立とする
  */
 type CondFormulaValueFollowingLessThanOrEq = {
-	type: 'followingLessThanOrEq';
+	type: "followingLessThanOrEq";
 	value: number;
 };
 
@@ -150,7 +150,7 @@ type CondFormulaValueFollowingLessThanOrEq = {
  * フォロー数が指定値以上の場合のみ成立とする
  */
 type CondFormulaValueFollowingMoreThanOrEq = {
-	type: 'followingMoreThanOrEq';
+	type: "followingMoreThanOrEq";
 	value: number;
 };
 
@@ -158,7 +158,7 @@ type CondFormulaValueFollowingMoreThanOrEq = {
  * Is followed by at most N local users
  */
 type CondFormulaValueLocalFollowersLessThanOrEq = {
-	type: 'localFollowersLessThanOrEq';
+	type: "localFollowersLessThanOrEq";
 	value: number;
 };
 
@@ -166,7 +166,7 @@ type CondFormulaValueLocalFollowersLessThanOrEq = {
  * Is followed by at least N local users
  */
 type CondFormulaValueLocalFollowersMoreThanOrEq = {
-	type: 'localFollowersMoreThanOrEq';
+	type: "localFollowersMoreThanOrEq";
 	value: number;
 };
 
@@ -174,7 +174,7 @@ type CondFormulaValueLocalFollowersMoreThanOrEq = {
  * Is following at most N local users
  */
 type CondFormulaValueLocalFollowingLessThanOrEq = {
-	type: 'localFollowingLessThanOrEq';
+	type: "localFollowingLessThanOrEq";
 	value: number;
 };
 
@@ -182,7 +182,7 @@ type CondFormulaValueLocalFollowingLessThanOrEq = {
  * Is following at least N local users
  */
 type CondFormulaValueLocalFollowingMoreThanOrEq = {
-	type: 'localFollowingMoreThanOrEq';
+	type: "localFollowingMoreThanOrEq";
 	value: number;
 };
 
@@ -190,7 +190,7 @@ type CondFormulaValueLocalFollowingMoreThanOrEq = {
  * Is followed by at most N remote users
  */
 type CondFormulaValueRemoteFollowersLessThanOrEq = {
-	type: 'remoteFollowersLessThanOrEq';
+	type: "remoteFollowersLessThanOrEq";
 	value: number;
 };
 
@@ -198,7 +198,7 @@ type CondFormulaValueRemoteFollowersLessThanOrEq = {
  * Is followed by at least N remote users
  */
 type CondFormulaValueRemoteFollowersMoreThanOrEq = {
-	type: 'remoteFollowersMoreThanOrEq';
+	type: "remoteFollowersMoreThanOrEq";
 	value: number;
 };
 
@@ -206,7 +206,7 @@ type CondFormulaValueRemoteFollowersMoreThanOrEq = {
  * Is following at most N remote users
  */
 type CondFormulaValueRemoteFollowingLessThanOrEq = {
-	type: 'remoteFollowingLessThanOrEq';
+	type: "remoteFollowingLessThanOrEq";
 	value: number;
 };
 
@@ -214,7 +214,7 @@ type CondFormulaValueRemoteFollowingLessThanOrEq = {
  * Is following at least N remote users
  */
 type CondFormulaValueRemoteFollowingMoreThanOrEq = {
-	type: 'remoteFollowingMoreThanOrEq';
+	type: "remoteFollowingMoreThanOrEq";
 	value: number;
 };
 
@@ -222,7 +222,7 @@ type CondFormulaValueRemoteFollowingMoreThanOrEq = {
  * 投稿数が指定値以下の場合のみ成立とする
  */
 type CondFormulaValueNotesLessThanOrEq = {
-	type: 'notesLessThanOrEq';
+	type: "notesLessThanOrEq";
 	value: number;
 };
 
@@ -230,136 +230,141 @@ type CondFormulaValueNotesLessThanOrEq = {
  * 投稿数が指定値以上の場合のみ成立とする
  */
 type CondFormulaValueNotesMoreThanOrEq = {
-	type: 'notesMoreThanOrEq';
+	type: "notesMoreThanOrEq";
 	value: number;
 };
 
 export type RoleCondFormulaValue = { id: string } & (
-	CondFormulaValueAnd |
-	CondFormulaValueOr |
-	CondFormulaValueNot |
-	CondFormulaValueIsLocal |
-	CondFormulaValueIsRemote |
-	CondFormulaValueIsFromInstance |
-	CondFormulaValueFromBubbleInstance |
-	CondFormulaValueIsSuspended |
-	CondFormulaValueIsLocked |
-	CondFormulaValueIsBot |
-	CondFormulaValueIsCat |
-	CondFormulaValueIsExplorable |
-	CondFormulaValueRoleAssignedTo |
-	CondFormulaValueCreatedLessThan |
-	CondFormulaValueCreatedMoreThan |
-	CondFormulaValueFollowersLessThanOrEq |
-	CondFormulaValueFollowersMoreThanOrEq |
-	CondFormulaValueFollowingLessThanOrEq |
-	CondFormulaValueFollowingMoreThanOrEq |
-	CondFormulaValueLocalFollowersLessThanOrEq |
-	CondFormulaValueLocalFollowersMoreThanOrEq |
-	CondFormulaValueLocalFollowingLessThanOrEq |
-	CondFormulaValueLocalFollowingMoreThanOrEq |
-	CondFormulaValueRemoteFollowersLessThanOrEq |
-	CondFormulaValueRemoteFollowersMoreThanOrEq |
-	CondFormulaValueRemoteFollowingLessThanOrEq |
-	CondFormulaValueRemoteFollowingMoreThanOrEq |
-	CondFormulaValueNotesLessThanOrEq |
-	CondFormulaValueNotesMoreThanOrEq
+	| CondFormulaValueAnd
+	| CondFormulaValueOr
+	| CondFormulaValueNot
+	| CondFormulaValueIsLocal
+	| CondFormulaValueIsRemote
+	| CondFormulaValueIsFromInstance
+	| CondFormulaValueFromBubbleInstance
+	| CondFormulaValueIsSuspended
+	| CondFormulaValueIsLocked
+	| CondFormulaValueIsBot
+	| CondFormulaValueIsCat
+	| CondFormulaValueIsExplorable
+	| CondFormulaValueRoleAssignedTo
+	| CondFormulaValueCreatedLessThan
+	| CondFormulaValueCreatedMoreThan
+	| CondFormulaValueFollowersLessThanOrEq
+	| CondFormulaValueFollowersMoreThanOrEq
+	| CondFormulaValueFollowingLessThanOrEq
+	| CondFormulaValueFollowingMoreThanOrEq
+	| CondFormulaValueLocalFollowersLessThanOrEq
+	| CondFormulaValueLocalFollowersMoreThanOrEq
+	| CondFormulaValueLocalFollowingLessThanOrEq
+	| CondFormulaValueLocalFollowingMoreThanOrEq
+	| CondFormulaValueRemoteFollowersLessThanOrEq
+	| CondFormulaValueRemoteFollowersMoreThanOrEq
+	| CondFormulaValueRemoteFollowingLessThanOrEq
+	| CondFormulaValueRemoteFollowingMoreThanOrEq
+	| CondFormulaValueNotesLessThanOrEq
+	| CondFormulaValueNotesMoreThanOrEq
 );
 
-@Entity('role')
+@Entity("role")
 export class MiRole {
 	@PrimaryColumn(id())
 	public id: string;
 
-	@Column('timestamp with time zone', {
-		comment: 'The updated date of the Role.',
+	@Column("timestamp with time zone", {
+		comment: "The updated date of the Role.",
 	})
 	public updatedAt: Date;
 
-	@Column('timestamp with time zone', {
-		comment: 'The last used date of the Role.',
+	@Column("timestamp with time zone", {
+		comment: "The last used date of the Role.",
 	})
 	public lastUsedAt: Date;
 
-	@Column('varchar', {
+	@Column("varchar", {
 		length: 256,
 	})
 	public name: string;
 
-	@Column('varchar', {
+	@Column("varchar", {
 		length: 1024,
 	})
 	public description: string;
 
-	@Column('varchar', {
-		length: 256, nullable: true,
+	@Column("varchar", {
+		length: 256,
+		nullable: true,
 	})
 	public color: string | null;
 
-	@Column('varchar', {
-		length: 512, nullable: true,
+	@Column("varchar", {
+		length: 512,
+		nullable: true,
 	})
 	public iconUrl: string | null;
 
-	@Column('enum', {
-		enum: ['manual', 'conditional'],
-		default: 'manual',
+	@Column("enum", {
+		enum: ["manual", "conditional"],
+		default: "manual",
 	})
-	public target: 'manual' | 'conditional';
+	public target: "manual" | "conditional";
 
-	@Column('jsonb', {
-		default: { },
+	@Column("jsonb", {
+		default: {},
 	})
 	public condFormula: RoleCondFormulaValue;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public isPublic: boolean;
 
 	// trueの場合ユーザー名の横にバッジとして表示
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public asBadge: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public isModerator: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public isAdministrator: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public isExplorable: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public preserveAssignmentOnMoveAccount: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public canEditMembersByModerator: boolean;
 
 	// UIに表示する際の並び順用(大きいほど先頭)
-	@Column('integer', {
+	@Column("integer", {
 		default: 0,
 	})
 	public displayOrder: number;
 
-	@Column('jsonb', {
-		default: { },
+	@Column("jsonb", {
+		default: {},
 	})
-	public policies: Record<string, {
-		useDefault: boolean;
-		priority: number;
-		value: any;
-	}>;
+	public policies: Record<
+		string,
+		{
+			useDefault: boolean;
+			priority: number;
+			value: any;
+		}
+	>;
 }

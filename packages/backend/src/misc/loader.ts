@@ -20,7 +20,7 @@ export class DebounceLoader<K, V> {
 
 	public load(key: K): Promise<V> {
 		const promise = this.promiseMap.get(key);
-		if (typeof promise !== 'undefined') {
+		if (typeof promise !== "undefined") {
 			return promise;
 		}
 

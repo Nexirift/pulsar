@@ -4,20 +4,25 @@
  */
 
 export const postMessageEventTypes = [
-	'misskey:embed:ready',
-	'misskey:embed:changeHeight',
+	"misskey:embed:ready",
+	"misskey:embed:changeHeight",
 ] as const;
 
-export type PostMessageEventType = typeof postMessageEventTypes[number];
+export type PostMessageEventType = (typeof postMessageEventTypes)[number];
 
-export interface PostMessageEventPayload extends Record<PostMessageEventType, any> {
-	'misskey:embed:ready': undefined;
-	'misskey:embed:changeHeight': {
+export interface PostMessageEventPayload extends Record<
+	PostMessageEventType,
+	any
+> {
+	"misskey:embed:ready": undefined;
+	"misskey:embed:changeHeight": {
 		height: number;
 	};
 }
 
-export type MiPostMessageEvent<T extends PostMessageEventType = PostMessageEventType> = {
+export type MiPostMessageEvent<
+	T extends PostMessageEventType = PostMessageEventType,
+> = {
 	type: T;
 	iframeId?: string;
 	payload?: PostMessageEventPayload[T];
@@ -28,22 +33,32 @@ let defaultIframeId: string | null = null;
 export function setIframeId(id: string): void {
 	if (defaultIframeId != null) return;
 
-	if (_DEV_) console.debug('setIframeId', id);
+	if (_DEV_) console.debug("setIframeId", id);
 	defaultIframeId = id;
 }
 
 /**
  * 親フレームにイベントを送信
  */
-export function postMessageToParentWindow<T extends PostMessageEventType = PostMessageEventType>(type: T, payload?: PostMessageEventPayload[T], iframeId: string | null = null): void {
+export function postMessageToParentWindow<
+	T extends PostMessageEventType = PostMessageEventType,
+>(
+	type: T,
+	payload?: PostMessageEventPayload[T],
+	iframeId: string | null = null,
+): void {
 	let _iframeId = iframeId;
 	if (_iframeId == null) {
 		_iframeId = defaultIframeId;
 	}
-	if (_DEV_) console.debug('postMessageToParentWindow', type, _iframeId, payload);
-	window.parent.postMessage({
-		type,
-		iframeId: _iframeId,
-		payload,
-	}, '*');
+	if (_DEV_)
+		console.debug("postMessageToParentWindow", type, _iframeId, payload);
+	window.parent.postMessage(
+		{
+			type,
+			iframeId: _iframeId,
+			payload,
+		},
+		"*",
+	);
 }

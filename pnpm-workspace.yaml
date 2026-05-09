@@ -13,12 +13,12 @@ packages:
 ignorePatchFailures: false
 
 onlyBuiltDependencies:
-  - '@nestjs/core'
-  - '@parcel/watcher'
-  - '@sentry-internal/node-cpu-profiler'
-  - '@sentry/profiling-node'
-  - '@swc/core'
-  - '@tensorflow/tfjs-node'
+  - "@nestjs/core"
+  - "@parcel/watcher"
+  - "@sentry-internal/node-cpu-profiler"
+  - "@sentry/profiling-node"
+  - "@swc/core"
+  - "@tensorflow/tfjs-node"
   - argon2
   - bufferutil
   - canvas

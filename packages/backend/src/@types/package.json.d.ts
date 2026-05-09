@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-declare module '*/package.json' {
+declare module "*/package.json" {
 	interface IRepository {
 		type: string;
 		url: string;

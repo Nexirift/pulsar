@@ -4,109 +4,153 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkModalWindow
-	ref="dialogEl"
-	:withOkButton="true"
-	:okButtonDisabled="selected == null"
-	@click="cancel()"
-	@close="cancel()"
-	@ok="ok()"
-	@closed="emit('closed')"
->
-	<template #header>{{ i18n.ts.selectUser }}</template>
-	<div>
-		<div :class="$style.form">
-			<MkInput v-if="computedLocalOnly" v-model="username" :autofocus="true" debounce @update:modelValue="search">
-				<template #label>{{ i18n.ts.username }}</template>
-				<template #prefix>@</template>
-			</MkInput>
-			<FormSplit v-else :minWidth="170">
-				<MkInput v-model="username" :autofocus="true" debounce @update:modelValue="search">
+	<MkModalWindow
+		ref="dialogEl"
+		:withOkButton="true"
+		:okButtonDisabled="selected == null"
+		@click="cancel()"
+		@close="cancel()"
+		@ok="ok()"
+		@closed="emit('closed')"
+	>
+		<template #header>{{ i18n.ts.selectUser }}</template>
+		<div>
+			<div :class="$style.form">
+				<MkInput
+					v-if="computedLocalOnly"
+					v-model="username"
+					:autofocus="true"
+					debounce
+					@update:modelValue="search"
+				>
 					<template #label>{{ i18n.ts.username }}</template>
 					<template #prefix>@</template>
 				</MkInput>
-				<MkInput v-model="host" :datalist="[hostname]" debounce @update:modelValue="search">
-					<template #label>{{ i18n.ts.host }}</template>
-					<template #prefix>@</template>
-				</MkInput>
-			</FormSplit>
-		</div>
-		<div v-if="username != '' || host != ''" :class="[$style.result, { [$style.hit]: users.length > 0 }]">
-			<div v-if="users.length > 0" :class="$style.users">
-				<div v-for="user in users" :key="user.id" class="_button" :class="[$style.user, { [$style.selected]: selected && selected.id === user.id }]" @click="selected = user" @dblclick="ok()">
-					<MkAvatar :user="user" :class="$style.avatar" indicator/>
-					<div :class="$style.userBody">
-						<MkUserName :user="user" :class="$style.userName"/>
-						<MkAcct :user="user" :class="$style.userAcct"/>
+				<FormSplit v-else :minWidth="170">
+					<MkInput
+						v-model="username"
+						:autofocus="true"
+						debounce
+						@update:modelValue="search"
+					>
+						<template #label>{{ i18n.ts.username }}</template>
+						<template #prefix>@</template>
+					</MkInput>
+					<MkInput
+						v-model="host"
+						:datalist="[hostname]"
+						debounce
+						@update:modelValue="search"
+					>
+						<template #label>{{ i18n.ts.host }}</template>
+						<template #prefix>@</template>
+					</MkInput>
+				</FormSplit>
+			</div>
+			<div
+				v-if="username != '' || host != ''"
+				:class="[$style.result, { [$style.hit]: users.length > 0 }]"
+			>
+				<div v-if="users.length > 0" :class="$style.users">
+					<div
+						v-for="user in users"
+						:key="user.id"
+						class="_button"
+						:class="[
+							$style.user,
+							{ [$style.selected]: selected && selected.id === user.id },
+						]"
+						@click="selected = user"
+						@dblclick="ok()"
+					>
+						<MkAvatar :user="user" :class="$style.avatar" indicator />
+						<div :class="$style.userBody">
+							<MkUserName :user="user" :class="$style.userName" />
+							<MkAcct :user="user" :class="$style.userAcct" />
+						</div>
+					</div>
+				</div>
+				<div v-else :class="$style.empty">
+					<span>{{ i18n.ts.noUsers }}</span>
+				</div>
+			</div>
+			<div v-if="username == '' && host == ''" :class="$style.recent">
+				<div :class="$style.users">
+					<div
+						v-for="user in recentUsers"
+						:key="user.id"
+						class="_button"
+						:class="[
+							$style.user,
+							{ [$style.selected]: selected && selected.id === user.id },
+						]"
+						@click="selected = user"
+						@dblclick="ok()"
+					>
+						<MkAvatar :user="user" :class="$style.avatar" indicator />
+						<div :class="$style.userBody">
+							<MkUserName :user="user" :class="$style.userName" />
+							<MkAcct :user="user" :class="$style.userAcct" />
+						</div>
 					</div>
 				</div>
 			</div>
-			<div v-else :class="$style.empty">
-				<span>{{ i18n.ts.noUsers }}</span>
-			</div>
 		</div>
-		<div v-if="username == '' && host == ''" :class="$style.recent">
-			<div :class="$style.users">
-				<div v-for="user in recentUsers" :key="user.id" class="_button" :class="[$style.user, { [$style.selected]: selected && selected.id === user.id }]" @click="selected = user" @dblclick="ok()">
-					<MkAvatar :user="user" :class="$style.avatar" indicator/>
-					<div :class="$style.userBody">
-						<MkUserName :user="user" :class="$style.userName"/>
-						<MkAcct :user="user" :class="$style.userAcct"/>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</MkModalWindow>
+	</MkModalWindow>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, computed, useTemplateRef } from 'vue';
-import * as Misskey from 'misskey-js';
-import { host as currentHost, hostname } from '@@/js/config.js';
-import MkInput from '@/components/MkInput.vue';
-import FormSplit from '@/components/form/split.vue';
-import MkModalWindow from '@/components/MkModalWindow.vue';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { store } from '@/store.js';
-import { i18n } from '@/i18n.js';
-import { $i } from '@/i.js';
-import { instance } from '@/instance.js';
+import { onMounted, ref, computed, useTemplateRef } from "vue";
+import * as Misskey from "misskey-js";
+import { host as currentHost, hostname } from "@@/js/config.js";
+import MkInput from "@/components/MkInput.vue";
+import FormSplit from "@/components/form/split.vue";
+import MkModalWindow from "@/components/MkModalWindow.vue";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { store } from "@/store.js";
+import { i18n } from "@/i18n.js";
+import { $i } from "@/i.js";
+import { instance } from "@/instance.js";
 
 const emit = defineEmits<{
-	(ev: 'ok', selected: Misskey.entities.UserDetailed): void;
-	(ev: 'cancel'): void;
-	(ev: 'closed'): void;
+	(ev: "ok", selected: Misskey.entities.UserDetailed): void;
+	(ev: "cancel"): void;
+	(ev: "closed"): void;
 }>();
 
-const props = withDefaults(defineProps<{
-	includeSelf?: boolean;
-	localOnly?: boolean;
-}>(), {
-	includeSelf: false,
-	localOnly: false,
-});
+const props = withDefaults(
+	defineProps<{
+		includeSelf?: boolean;
+		localOnly?: boolean;
+	}>(),
+	{
+		includeSelf: false,
+		localOnly: false,
+	},
+);
 
-const computedLocalOnly = computed(() => props.localOnly || instance.federation === 'none');
+const computedLocalOnly = computed(
+	() => props.localOnly || instance.federation === "none",
+);
 
-const username = ref('');
-const host = ref('');
+const username = ref("");
+const host = ref("");
 const users = ref<Misskey.entities.UserLite[]>([]);
 const recentUsers = ref<Misskey.entities.UserDetailed[]>([]);
 const selected = ref<Misskey.entities.UserLite | null>(null);
-const dialogEl = useTemplateRef('dialogEl');
+const dialogEl = useTemplateRef("dialogEl");
 
 function search() {
-	if (username.value === '' && host.value === '') {
+	if (username.value === "" && host.value === "") {
 		users.value = [];
 		return;
 	}
-	misskeyApi('users/search-by-username-and-host', {
+	misskeyApi("users/search-by-username-and-host", {
 		username: username.value,
-		host: computedLocalOnly.value ? '.' : host.value,
+		host: computedLocalOnly.value ? "." : host.value,
 		limit: 10,
 		detail: false,
-	}).then(_users => {
+	}).then((_users) => {
 		users.value = _users.filter((u) => {
 			if (props.includeSelf) {
 				return true;
@@ -120,29 +164,29 @@ function search() {
 async function ok() {
 	if (selected.value == null) return;
 
-	const user = await misskeyApi('users/show', {
+	const user = await misskeyApi("users/show", {
 		userId: selected.value.id,
 	});
-	emit('ok', user);
+	emit("ok", user);
 
 	dialogEl.value?.close();
 
 	// 最近使ったユーザー更新
 	let recents = store.s.recentlyUsedUsers;
-	recents = recents.filter(x => x !== selected.value?.id);
+	recents = recents.filter((x) => x !== selected.value?.id);
 	recents.unshift(selected.value.id);
-	store.set('recentlyUsedUsers', recents.splice(0, 16));
+	store.set("recentlyUsedUsers", recents.splice(0, 16));
 }
 
 function cancel() {
-	emit('cancel');
+	emit("cancel");
 	dialogEl.value?.close();
 }
 
 onMounted(() => {
-	misskeyApi('users/show', {
+	misskeyApi("users/show", {
 		userIds: store.s.recentlyUsedUsers,
-	}).then(foundUsers => {
+	}).then((foundUsers) => {
 		let _users = foundUsers;
 		_users = _users.filter((u) => {
 			if (computedLocalOnly.value) {
@@ -164,7 +208,6 @@ onMounted(() => {
 </script>
 
 <style lang="scss" module>
-
 .form {
 	padding: calc(var(--root-margin) / 2) var(--root-margin);
 }

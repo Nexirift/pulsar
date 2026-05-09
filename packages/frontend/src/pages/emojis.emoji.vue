@@ -4,25 +4,25 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<button class="_button" :class="$style.root" @click="menu">
-	<img :src="emoji.url" :class="$style.img" loading="lazy"/>
-	<div :class="$style.body">
-		<div :class="$style.name" class="_monospace">{{ emoji.name }}</div>
-		<div :class="$style.info">{{ emoji.aliases.join(' ') }}</div>
-	</div>
-</button>
+	<button class="_button" :class="$style.root" @click="menu">
+		<img :src="emoji.url" :class="$style.img" loading="lazy" />
+		<div :class="$style.body">
+			<div :class="$style.name" class="_monospace">{{ emoji.name }}</div>
+			<div :class="$style.info">{{ emoji.aliases.join(" ") }}</div>
+		</div>
+	</button>
 </template>
 
 <script lang="ts" setup>
-import * as Misskey from 'misskey-js';
-import { defineAsyncComponent } from 'vue';
-import type { MenuItem } from '@/types/menu.js';
-import * as os from '@/os.js';
-import { misskeyApiGet } from '@/utility/misskey-api.js';
-import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
-import { i18n } from '@/i18n.js';
-import MkCustomEmojiDetailedDialog from '@/components/MkCustomEmojiDetailedDialog.vue';
-import { $i } from '@/i.js';
+import * as Misskey from "misskey-js";
+import { defineAsyncComponent } from "vue";
+import type { MenuItem } from "@/types/menu.js";
+import * as os from "@/os.js";
+import { misskeyApiGet } from "@/utility/misskey-api.js";
+import { copyToClipboard } from "@/utility/copy-to-clipboard.js";
+import { i18n } from "@/i18n.js";
+import MkCustomEmojiDetailedDialog from "@/components/MkCustomEmojiDetailedDialog.vue";
+import { $i } from "@/i.js";
 
 const props = defineProps<{
 	emoji: Misskey.entities.EmojiSimple;
@@ -30,33 +30,41 @@ const props = defineProps<{
 
 function menu(ev) {
 	const menuItems: MenuItem[] = [];
-	menuItems.push({
-		type: 'label',
-		text: ':' + props.emoji.name + ':',
-	}, {
-		text: i18n.ts.copy,
-		icon: 'ti ti-copy',
-		action: () => {
-			copyToClipboard(`:${props.emoji.name}:`);
+	menuItems.push(
+		{
+			type: "label",
+			text: ":" + props.emoji.name + ":",
 		},
-	}, {
-		text: i18n.ts.info,
-		icon: 'ti ti-info-circle',
-		action: async () => {
-			const { dispose } = os.popup(MkCustomEmojiDetailedDialog, {
-				emoji: await misskeyApiGet('emoji', {
-					name: props.emoji.name,
-				}),
-			}, {
-				closed: () => dispose(),
-			});
+		{
+			text: i18n.ts.copy,
+			icon: "ti ti-copy",
+			action: () => {
+				copyToClipboard(`:${props.emoji.name}:`);
+			},
 		},
-	});
+		{
+			text: i18n.ts.info,
+			icon: "ti ti-info-circle",
+			action: async () => {
+				const { dispose } = os.popup(
+					MkCustomEmojiDetailedDialog,
+					{
+						emoji: await misskeyApiGet("emoji", {
+							name: props.emoji.name,
+						}),
+					},
+					{
+						closed: () => dispose(),
+					},
+				);
+			},
+		},
+	);
 
 	if ($i?.isModerator ?? $i?.isAdmin) {
 		menuItems.push({
 			text: i18n.ts.edit,
-			icon: 'ti ti-pencil',
+			icon: "ti ti-pencil",
 			action: () => {
 				edit(props.emoji);
 			},
@@ -67,11 +75,15 @@ function menu(ev) {
 }
 
 const edit = async (emoji) => {
-	const { dispose } = os.popup(defineAsyncComponent(() => import('@/pages/emoji-edit-dialog.vue')), {
-		emoji: emoji,
-	}, {
-		closed: () => dispose(),
-	});
+	const { dispose } = os.popup(
+		defineAsyncComponent(() => import("@/pages/emoji-edit-dialog.vue")),
+		{
+			emoji: emoji,
+		},
+		{
+			closed: () => dispose(),
+		},
+	);
 };
 </script>
 

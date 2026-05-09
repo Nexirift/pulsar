@@ -4,14 +4,15 @@
  */
 
 export const captchaErrorCodes = {
-	invalidProvider: Symbol('invalidProvider'),
-	invalidParameters: Symbol('invalidParameters'),
-	noResponseProvided: Symbol('noResponseProvided'),
-	requestFailed: Symbol('requestFailed'),
-	verificationFailed: Symbol('verificationFailed'),
-	unknown: Symbol('unknown'),
+	invalidProvider: Symbol("invalidProvider"),
+	invalidParameters: Symbol("invalidParameters"),
+	noResponseProvided: Symbol("noResponseProvided"),
+	requestFailed: Symbol("requestFailed"),
+	verificationFailed: Symbol("verificationFailed"),
+	unknown: Symbol("unknown"),
 } as const;
-export type CaptchaErrorCode = typeof captchaErrorCodes[keyof typeof captchaErrorCodes];
+export type CaptchaErrorCode =
+	(typeof captchaErrorCodes)[keyof typeof captchaErrorCodes];
 
 export class CaptchaError extends Error {
 	// Fix the error name in stack traces - https://stackoverflow.com/a/71573071
@@ -24,6 +25,6 @@ export class CaptchaError extends Error {
 		super(message, cause ? { cause } : undefined);
 		this.code = code;
 		this.cause = cause;
-		this.name = 'CaptchaError';
+		this.name = "CaptchaError";
 	}
 }

@@ -3,39 +3,41 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import * as Redis from 'ioredis';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { NotesRepository, RolesRepository } from '@/models/_.js';
-import { QueryService } from '@/core/QueryService.js';
-import { DI } from '@/di-symbols.js';
-import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import { IdService } from '@/core/IdService.js';
-import { FanoutTimelineService } from '@/core/FanoutTimelineService.js';
-import ActiveUsersChart from '@/core/chart/charts/active-users.js';
-import { ApiError } from '../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import * as Redis from "ioredis";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { NotesRepository, RolesRepository } from "@/models/_.js";
+import { QueryService } from "@/core/QueryService.js";
+import { DI } from "@/di-symbols.js";
+import { NoteEntityService } from "@/core/entities/NoteEntityService.js";
+import { IdService } from "@/core/IdService.js";
+import { FanoutTimelineService } from "@/core/FanoutTimelineService.js";
+import ActiveUsersChart from "@/core/chart/charts/active-users.js";
+import { ApiError } from "../../error.js";
 
 export const meta = {
-	tags: ['role', 'notes'],
+	tags: ["role", "notes"],
 
 	requireCredential: true,
-	kind: 'read:account',
+	kind: "read:account",
 
 	errors: {
 		noSuchRole: {
-			message: 'No such role.',
-			code: 'NO_SUCH_ROLE',
-			id: 'eb70323a-df61-4dd4-ad90-89c83c7cf26e',
+			message: "No such role.",
+			code: "NO_SUCH_ROLE",
+			id: "eb70323a-df61-4dd4-ad90-89c83c7cf26e",
 		},
 	},
 
 	res: {
-		type: 'array',
-		optional: false, nullable: false,
+		type: "array",
+		optional: false,
+		nullable: false,
 		items: {
-			type: 'object',
-			optional: false, nullable: false,
-			ref: 'Note',
+			type: "object",
+			optional: false,
+			nullable: false,
+			ref: "Note",
 		},
 	},
 
@@ -47,20 +49,21 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		roleId: { type: 'string', format: 'misskey:id' },
-		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
-		sinceId: { type: 'string', format: 'misskey:id' },
-		untilId: { type: 'string', format: 'misskey:id' },
-		sinceDate: { type: 'integer' },
-		untilDate: { type: 'integer' },
+		roleId: { type: "string", format: "misskey:id" },
+		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+		sinceId: { type: "string", format: "misskey:id" },
+		untilId: { type: "string", format: "misskey:id" },
+		sinceDate: { type: "integer" },
+		untilDate: { type: "integer" },
 	},
-	required: ['roleId'],
+	required: ["roleId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.redisForTimelines)
 		private redisForTimelines: Redis.Redis,
@@ -78,8 +81,10 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly activeUsersChart: ActiveUsersChart,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const untilId = ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
-			const sinceId = ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : null);
+			const untilId =
+				ps.untilId ?? (ps.untilDate ? this.idService.gen(ps.untilDate!) : null);
+			const sinceId =
+				ps.sinceId ?? (ps.sinceDate ? this.idService.gen(ps.sinceDate!) : null);
 
 			const role = await this.rolesRepository.findOneBy({
 				id: ps.roleId,
@@ -93,22 +98,27 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				return [];
 			}
 
-			let noteIds = await this.fanoutTimelineService.get(`roleTimeline:${role.id}`, untilId, sinceId);
+			let noteIds = await this.fanoutTimelineService.get(
+				`roleTimeline:${role.id}`,
+				untilId,
+				sinceId,
+			);
 			noteIds = noteIds.slice(0, ps.limit);
 
 			if (noteIds.length === 0) {
 				return [];
 			}
 
-			const query = this.notesRepository.createQueryBuilder('note')
-				.where('note.id IN (:...noteIds)', { noteIds: noteIds })
-				.andWhere('(note.visibility = \'public\')')
-				.orderBy('note.id', 'DESC')
-				.innerJoinAndSelect('note.user', 'user')
-				.leftJoinAndSelect('note.reply', 'reply')
-				.leftJoinAndSelect('note.renote', 'renote')
-				.leftJoinAndSelect('reply.user', 'replyUser')
-				.leftJoinAndSelect('renote.user', 'renoteUser');
+			const query = this.notesRepository
+				.createQueryBuilder("note")
+				.where("note.id IN (:...noteIds)", { noteIds: noteIds })
+				.andWhere("(note.visibility = 'public')")
+				.orderBy("note.id", "DESC")
+				.innerJoinAndSelect("note.user", "user")
+				.leftJoinAndSelect("note.reply", "reply")
+				.leftJoinAndSelect("note.renote", "renote")
+				.leftJoinAndSelect("reply.user", "replyUser")
+				.leftJoinAndSelect("renote.user", "renoteUser");
 
 			this.queryService.generateExcludedRepliesQueryForNotes(query, me);
 			this.queryService.generateBlockedHostQueryForNote(query);

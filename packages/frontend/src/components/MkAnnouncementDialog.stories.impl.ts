@@ -4,11 +4,11 @@
  */
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { action } from '@storybook/addon-actions';
-import type { StoryObj } from '@storybook/vue3';
-import { HttpResponse, http } from 'msw';
-import { commonHandlers } from '../../.storybook/mocks.js';
-import MkAnnouncementDialog from './MkAnnouncementDialog.vue';
+import { action } from "@storybook/addon-actions";
+import type { StoryObj } from "@storybook/vue3";
+import { HttpResponse, http } from "msw";
+import { commonHandlers } from "../../.storybook/mocks.js";
+import MkAnnouncementDialog from "./MkAnnouncementDialog.vue";
 export const Default = {
 	render(args) {
 		return {
@@ -28,7 +28,7 @@ export const Default = {
 				},
 				events() {
 					return {
-						closed: action('closed'),
+						closed: action("closed"),
 					};
 				},
 			},
@@ -37,26 +37,26 @@ export const Default = {
 	},
 	args: {
 		announcement: {
-			id: '1',
-			title: 'Title',
-			text: 'Text',
+			id: "1",
+			title: "Title",
+			text: "Text",
 			createdAt: new Date().toISOString(),
 			updatedAt: null,
-			icon: 'info',
+			icon: "info",
 			imageUrl: null,
-			display: 'dialog',
+			display: "dialog",
 			needConfirmationToRead: false,
 			silence: false,
 			forYou: true,
 		},
 	},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 		msw: {
 			handlers: [
 				...commonHandlers,
-				http.post('/api/i/read-announcement', async ({ request }) => {
-					action('POST /api/i/read-announcement')(await request.json());
+				http.post("/api/i/read-announcement", async ({ request }) => {
+					action("POST /api/i/read-announcement")(await request.json());
 					return HttpResponse.json();
 				}),
 			],

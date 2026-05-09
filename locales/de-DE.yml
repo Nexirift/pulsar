@@ -392,7 +392,7 @@ bannerUrl: "Banner-URL"
 backgroundImageUrl: "Hintergrundbild-URL"
 basicInfo: "Grundlegende Informationen"
 pinnedUsers: "Angeheftete Benutzer"
-pinnedUsersDescription: "Gib durch Leerzeichen getrennte Benutzer an, die an die \"Erkunden\"-Seite angeheftet werden sollen."
+pinnedUsersDescription: 'Gib durch Leerzeichen getrennte Benutzer an, die an die "Erkunden"-Seite angeheftet werden sollen.'
 pinnedPages: "Angeheftete Seiten"
 pinnedPagesDescription: "Gib durch Leerzeilen getrennte Pfade zu Seiten an, die an die Startseite dieser Instanz angeheftet werden sollen."
 pinnedClipId: "ID des anzuheftenden Clips"
@@ -422,7 +422,7 @@ antennaSource: "Antennenquelle"
 antennaKeywords: "Zu beobachtende Schlüsselwörter"
 antennaExcludeKeywords: "Zu ignorierende Schlüsselwörter"
 antennaExcludeBots: "Bot-Accounts ausschließen"
-antennaKeywordsDescription: "Zum Nutzen einer \"UND\"-Verknüpfung Einträge mit Leerzeichen trennen, zum Nutzen einer \"ODER\"-Verknüpfung Einträge mit einem Zeilenumbruch trennen"
+antennaKeywordsDescription: 'Zum Nutzen einer "UND"-Verknüpfung Einträge mit Leerzeichen trennen, zum Nutzen einer "ODER"-Verknüpfung Einträge mit einem Zeilenumbruch trennen'
 notifyAntenna: "Über neue Notizen benachrichtigen"
 withFileAntenna: "Nur Notizen mit Dateien"
 excludeNotesInSensitiveChannel: "Schließe Notizen von sensitive Kanäle aus"
@@ -568,7 +568,7 @@ objectStorageUseSSL: "SSL verwenden"
 objectStorageUseSSLDesc: "Deaktiviere dies, falls du für API-Verbindungen kein HTTPS verwenden wirst"
 objectStorageUseProxy: "Über Proxy verbinden"
 objectStorageUseProxyDesc: "Deaktiviere dies, falls du für Verbindungen zur API keinen Proxy verwenden wirst"
-objectStorageSetPublicRead: "Bei Upload auf \"public-read\" stellen"
+objectStorageSetPublicRead: 'Bei Upload auf "public-read" stellen'
 s3ForcePathStyleDesc: "Ist s3ForcePathStyle aktiviert, so muss der Bucketname nicht im Hostnamen der URL, sondern im Pfad der URL angeben werden. Diese Option muss eventuell aktiviert werden, wenn Dienste wie z.B. eine selbstbetriebene Minio-Instanz verwendet werden."
 serverLogs: "Serverprotokolle"
 deleteAll: "Alle löschen"
@@ -742,7 +742,7 @@ createNew: "Neu erstellen"
 optional: "Optional"
 createNewClip: "Neuen Clip erstellen"
 unclip: "Aus Clip entfernen"
-confirmToUnclipAlreadyClippedNote: "Diese Notiz ist bereits im \"{name}\" Clip enthalten. Möchtest du sie aus diesem Clip entfernen?"
+confirmToUnclipAlreadyClippedNote: 'Diese Notiz ist bereits im "{name}" Clip enthalten. Möchtest du sie aus diesem Clip entfernen?'
 public: "Öffentlich"
 private: "Privat"
 i18nInfo: "Misskey wird durch freiwillige Helfer in viele verschiedene Sprachen übersetzt. Auf {link} kannst du mithelfen."
@@ -765,7 +765,7 @@ driveFilesCount: "Anzahl der Dateien in Drive"
 driveUsage: "Drive-Auslastung"
 noCrawle: "Crawler-Indexierung ablehnen"
 noCrawleDescription: "Suchmaschinen bitten, die eigene Profilseite, Notizen, Seiten usw. nicht zu indexieren."
-lockedAccountInfo: "Auch wenn du Follow-Anfragen auf manuelle Bestätigung setzt, wird jede deiner Notizen öffentlich sichtbar sein, sofern du ihre Notizsichtbarkeit nicht auf \"Nur Follower\" setzt."
+lockedAccountInfo: 'Auch wenn du Follow-Anfragen auf manuelle Bestätigung setzt, wird jede deiner Notizen öffentlich sichtbar sein, sofern du ihre Notizsichtbarkeit nicht auf "Nur Follower" setzt.'
 alwaysMarkSensitive: "Medien standardmäßig als sensibel markieren"
 loadRawImages: "Anstatt Vorschaubilder immer Originalbilder anzeigen"
 disableShowingAnimatedImages: "Animierte Bilder nicht abspielen"
@@ -774,8 +774,8 @@ verificationEmailSent: "Eine Bestätigungsmail wurde an deine Email-Adresse vers
 notSet: "Nicht konfiguriert"
 emailVerified: "Email-Adresse bestätigt"
 noteFavoritesCount: "Anzahl an als Favorit markierter Notizen"
-pageLikesCount: "Anzahl an als \"Gefällt mir\" markierter Seiten"
-pageLikedCount: "Anzahl erhaltener \"Gefällt mir\" auf Seiten"
+pageLikesCount: 'Anzahl an als "Gefällt mir" markierter Seiten'
+pageLikedCount: 'Anzahl erhaltener "Gefällt mir" auf Seiten'
 contact: "Kontakt"
 useSystemFont: "Standardschriftart des Systems verwenden"
 clips: "Clips"
@@ -835,11 +835,11 @@ showingPastTimeline: "Es wird eine alte Chronik angezeigt"
 clear: "Zurückkehren"
 markAllAsRead: "Alle als gelesen markieren"
 goBack: "Zurück"
-unlikeConfirm: "\"Gefällt mir\" wirklich entfernen?"
+unlikeConfirm: '"Gefällt mir" wirklich entfernen?'
 fullView: "Vollansicht"
 quitFullView: "Vollansicht verlassen"
 addDescription: "Beschreibung hinzufügen"
-userPagePinTip: "Um Notizen hier erscheinen zu lassen, drücke \"An dein Profil anheften\" im Menü individueller Notizen."
+userPagePinTip: 'Um Notizen hier erscheinen zu lassen, drücke "An dein Profil anheften" im Menü individueller Notizen.'
 notSpecifiedMentionWarning: "Diese Notiz enthält Erwähnungen von Nutzern, die nicht als Empfänger ausgewählt sind"
 info: "Über"
 userInfo: "Benutzerinformation"
@@ -1023,8 +1023,8 @@ tools: "Werkzeuge"
 cannotLoad: "Kann nicht geladen werden"
 numberOfProfileView: "Profilaufrufe"
 like: "Gefällt mir"
-unlike: "\"Gefällt mir\" entfernen"
-numberOfLikes: "\"Gefällt mir\"-Anzahl"
+unlike: '"Gefällt mir" entfernen'
+numberOfLikes: '"Gefällt mir"-Anzahl'
 show: "Anzeigen"
 neverShow: "Nicht wieder anzeigen"
 remindMeLater: "Vielleicht später"
@@ -1073,14 +1073,14 @@ emailNotSupported: "Diese Instanz unterstützt das Versenden von Emails nicht"
 postToTheChannel: "In Kanal senden"
 cannotBeChangedLater: "Kann später nicht mehr geändert werden."
 reactionAcceptance: "Reaktionsannahme"
-likeOnly: "Nur \"Gefällt mir\""
-likeOnlyForRemote: "Alle (Nur \"Gefällt mir\" für fremde Instanzen)"
+likeOnly: 'Nur "Gefällt mir"'
+likeOnlyForRemote: 'Alle (Nur "Gefällt mir" für fremde Instanzen)'
 nonSensitiveOnly: "Keine Sensitiven"
-nonSensitiveOnlyForLocalLikeOnlyForRemote: "Keine Sensitiven (Nur \"Gefällt mir\" von fremden Instanzen)"
+nonSensitiveOnlyForLocalLikeOnlyForRemote: 'Keine Sensitiven (Nur "Gefällt mir" von fremden Instanzen)'
 rolesAssignedToMe: "Mir zugewiesene Rollen"
 resetPasswordConfirm: "Wirklich Passwort zurücksetzen?"
 sensitiveWords: "Sensible Wörter"
-sensitiveWordsDescription: "Die Notizsichtbarkeit aller Notizen, die diese Wörter enthalten, wird automatisch auf \"Startseite\" gesetzt. Durch Zeilenumbrüche können mehrere konfiguriert werden."
+sensitiveWordsDescription: 'Die Notizsichtbarkeit aller Notizen, die diese Wörter enthalten, wird automatisch auf "Startseite" gesetzt. Durch Zeilenumbrüche können mehrere konfiguriert werden.'
 sensitiveWordsDescription2: "Durch die Verwendung von Leerzeichen können AND-Verknüpfungen angegeben werden und durch das Umgeben von Schrägstrichen können reguläre Ausdrücke verwendet werden."
 prohibitedWords: "Verbotene Wörter"
 prohibitedWordsDescription: "Aktiviert eine Fehlermeldung, wenn versucht wird, eine Notiz zu veröffentlichen, die das/die eingestellte(n) Wort(e) enthält. Mehrere Begriffe können durch Zeilenumbrüche getrennt festgelegt werden."
@@ -1098,7 +1098,7 @@ retryAllQueuesConfirmText: "Dies wird zu einer temporären Erhöhung der Serverl
 enableChartsForRemoteUser: "Diagramme für Nutzer fremder Instanzen erstellen"
 enableChartsForFederatedInstances: "Diagramme für fremde Instanzen erstellen"
 enableStatsForFederatedInstances: "Abruf von Informationen über förderierte Server"
-showClipButtonInNoteFooter: "\"Clip\" zum Notizmenu hinzufügen"
+showClipButtonInNoteFooter: '"Clip" zum Notizmenu hinzufügen'
 reactionsDisplaySize: "Reaktionsanzeigegröße"
 limitWidthOfReaction: "Begrenze die Breite der Reaktion und zeige sie verkleinert an"
 noteIdOrUrl: "Notiz-ID oder URL"
@@ -1142,7 +1142,7 @@ displayOfNote: "Darstellung von Notizen"
 initialAccountSetting: "Kontoeinrichtung"
 youFollowing: "Gefolgt"
 preventAiLearning: "Verwendung in machinellem Lernen (Generative bzw. Prediktive AI/KI) ablehnen"
-preventAiLearningDescription: "Fordert Crawler auf, gepostetes Text- oder Bildmaterial usw. nicht in Datensätzen für maschinelles Lernen (Generative bzw. Prediktive AI/KI) zu verwenden. Dies wird durch das Hinzufügen einer \"noai\"-Flag in der HTML-Antwort des jeweiligen Inhalts erreicht. Da diese Flag jedoch ignoriert werden kann, ist eine vollständige Verhinderung hierdurch nicht möglich."
+preventAiLearningDescription: 'Fordert Crawler auf, gepostetes Text- oder Bildmaterial usw. nicht in Datensätzen für maschinelles Lernen (Generative bzw. Prediktive AI/KI) zu verwenden. Dies wird durch das Hinzufügen einer "noai"-Flag in der HTML-Antwort des jeweiligen Inhalts erreicht. Da diese Flag jedoch ignoriert werden kann, ist eine vollständige Verhinderung hierdurch nicht möglich.'
 options: "Optionen"
 specifyUser: "Spezifischer Benutzer"
 lookupConfirm: "Bist du sicher, dass du das nachschlagen möchtest?"
@@ -1182,7 +1182,7 @@ used: "Benutzt"
 expired: "Abgelaufen"
 doYouAgree: "Zustimmen?"
 beSureToReadThisAsItIsImportant: "Lies bitte diese wichtige Informationen."
-iHaveReadXCarefullyAndAgree: "Ich habe den Text \"{x}\" gelesen und stimme zu."
+iHaveReadXCarefullyAndAgree: 'Ich habe den Text "{x}" gelesen und stimme zu.'
 dialog: "Dialogfeld"
 icon: "Symbol"
 forYou: "Für dich"
@@ -1241,7 +1241,7 @@ pullDownToRefresh: "Zum Aktualisieren ziehen"
 disableStreamingTimeline: "Echtzeitaktualisierung der Chronik deaktivieren"
 useGroupedNotifications: "Benachrichtigungen gruppieren"
 signupPendingError: "Beim Überprüfen der Mailadresse ist etwas schiefgelaufen. Der Link könnte abgelaufen sein."
-cwNotationRequired: "Ist \"Inhaltswarnung verwenden\" aktiviert, muss eine Beschreibung gegeben werden."
+cwNotationRequired: 'Ist "Inhaltswarnung verwenden" aktiviert, muss eine Beschreibung gegeben werden.'
 doReaction: "Reagieren"
 code: "Code"
 reloadRequiredToApplySettings: "Eine Aktualisierung ist erforderlich, um die Einstellungen zu übernehmen."
@@ -1263,7 +1263,7 @@ ranking: "Rangliste"
 lastNDays: "Letzte {n} Tage"
 backToTitle: "Zurück zum Startbildschirm"
 hemisphere: "Hemisphäre"
-withSensitive: "Zeige \"sensitive Inhalte\" an"
+withSensitive: 'Zeige "sensitive Inhalte" an'
 userSaysSomethingSensitive: "{name} sagt etwas mit sensiblem Inhalt."
 enableHorizontalSwipe: "Wischen, um zwischen Tabs zu wechseln"
 loading: "Laden"
@@ -1311,7 +1311,7 @@ acknowledgeNotesAndEnable: "Schalten Sie dies erst ein, wenn Sie die Vorsichtsma
 federationSpecified: "Dieser Server arbeitet mit Whitelist-Föderation. Er kann nicht mit anderen als den vom Administrator angegebenen Servern interagieren."
 federationDisabled: "Föderation ist auf diesem Server deaktiviert. Es ist nicht möglich, mit Benutzern auf anderen Servern zu interagieren."
 confirmOnReact: "Reagieren bestätigen"
-reactAreYouSure: "Willst du eine \"{emoji}\"-Reaktion hinzufügen?"
+reactAreYouSure: 'Willst du eine "{emoji}"-Reaktion hinzufügen?'
 markAsSensitiveConfirm: "Möchtest du dieses Medium als sensibel kennzeichnen?"
 unmarkAsSensitiveConfirm: "Möchtest du die Kennzeichnung dieses Mediums als sensibel aufheben?"
 preferences: "Einstellungen"
@@ -1433,7 +1433,7 @@ _settings:
 _preferencesProfile:
   profileName: "Profilname"
   profileNameDescription: "Lege einen Namen fest, der dieses Gerät identifiziert."
-  profileNameDescription2: "Beispiel: \"Haupt-PC\", \"Smartphone\""
+  profileNameDescription2: 'Beispiel: "Haupt-PC", "Smartphone"'
 _preferencesBackup:
   autoBackup: "Automatische Sicherung"
   restoreFromBackup: "Wiederherstellen aus der Sicherung"
@@ -1492,15 +1492,15 @@ _announcement:
   forExistingUsers: "Nur für existierende Nutzer"
   forExistingUsersDescription: "Ist diese Option aktiviert, wird diese Ankündigung nur Nutzern angezeigt, die zum Zeitpunkt der Ankündigung bereits registriert sind. Ist sie deaktiviert, wird sie auch Nutzern, die sich nach dessen Veröffentlichung registrieren, angezeigt."
   needConfirmationToRead: "Separate Lesebestätigung erfordern"
-  needConfirmationToReadDescription: "Ist dies aktiviert, so wird beim Markieren dieser Ankündigung als gelesen ein separates Bestätigungsfenster angezeigt. Auch wird sie von der \"Alle als gelesen markieren\"-Funktion ausgenommen."
+  needConfirmationToReadDescription: 'Ist dies aktiviert, so wird beim Markieren dieser Ankündigung als gelesen ein separates Bestätigungsfenster angezeigt. Auch wird sie von der "Alle als gelesen markieren"-Funktion ausgenommen.'
   end: "Ankündigung archivieren"
   tooManyActiveAnnouncementDescription: "Zu viele aktive Ankündigungen können die Benutzerfreundlichkeit verschlechtern. Es wird empfohlen, veraltete Ankündigungen zu archivieren."
   readConfirmTitle: "Als gelesen markieren?"
-  readConfirmText: "Dies markiert den Inhalt von \"{title}\" als gelesen."
+  readConfirmText: 'Dies markiert den Inhalt von "{title}" als gelesen.'
   shouldNotBeUsedToPresentPermanentInfo: "Es wird empfohlen, Ankündigungen für aktuelle und zeitlich begrenzte Neuigkeiten zu nutzen, statt für Informationen, die langfristig relevant sind."
   dialogAnnouncementUxWarn: "Bei der Verwendung von mehr als zwei Meldungen im Dialog-Format wird um Vorsicht geboten, da dies negative Auswirkungen auf die UX haben kann."
   silence: "Keine Benachrichtigung"
-  silenceDescription: "Wenn aktiviert, gibt diese Meldung keine Nachricht aus und muss nicht als \"gelesen\" markiert werden."
+  silenceDescription: 'Wenn aktiviert, gibt diese Meldung keine Nachricht aus und muss nicht als "gelesen" markiert werden.'
 _initialAccountSetting:
   accountCreated: "Dein Konto wurde erfolgreich erstellt!"
   letsStartAccountSetup: "Lass uns nun dein Konto einrichten."
@@ -1527,7 +1527,7 @@ _initialTutorial:
     description: "Hier kannst du sehen, wie Misskey funktioniert"
   _note:
     title: "Was sind Notizen?"
-    description: "Beiträge auf Misskey heißen \"Notizen\". Notizen werden chronologisch in der Chronik angeordnet und in Echtzeit aktualisiert."
+    description: 'Beiträge auf Misskey heißen "Notizen". Notizen werden chronologisch in der Chronik angeordnet und in Echtzeit aktualisiert.'
     reply: "Klicke auf diesen Button, um auf eine Nachricht zu antworten. Es ist auch möglich, auf Antworten zu antworten und die Unterhaltung wie einen Thread fortzusetzen."
     renote: "Du kannst diese Notiz in deiner eigenen Chronik teilen. Du kannst sie auch mit deinen Kommentaren zitieren."
     reaction: "Du kannst der Notiz Reaktionen hinzufügen. Weitere Einzelheiten werden auf der nächsten Seite erläutert."
@@ -1784,7 +1784,7 @@ _achievements:
       description: "Schau dir die Liste deiner Errungenschaften für mindestens 3 Minuten an"
     _iLoveMisskey:
       title: "I Love Misskey"
-      description: "Sende \"I ❤ #Misskey\""
+      description: 'Sende "I ❤ #Misskey"'
       flavor: "Danke, dass du Misskey verwendest! - vom Entwicklerteam"
     _foundTreasure:
       title: "Schatzsuche"
@@ -1817,7 +1817,7 @@ _achievements:
       description: "Schau dir die Messwerte der Instanz an"
     _outputHelloWorldOnScratchpad:
       title: "Hallo Welt!"
-      description: "Gib \"hello world\" in der Testumgebung aus"
+      description: 'Gib "hello world" in der Testumgebung aus'
     _open3windows:
       title: "Splitscreen"
       description: "Habe zur gleichen Zeit mindestens 3 Fenster offen"
@@ -1835,7 +1835,7 @@ _achievements:
       description: "Kann alle 10 Sekunden mit einer Warscheinlichkeit von 0.005% erhalten werden"
     _setNameToSyuilo:
       title: "Gottkomplex"
-      description: "Setze deinen Namen auf \"syuilo\""
+      description: 'Setze deinen Namen auf "syuilo"'
     _passedSinceAccountCreated1:
       title: "Einjahresjubiläum"
       description: "Seit der Erstellung deines Kontos ist 1 Jahr vergangen"
@@ -1954,7 +1954,7 @@ _role:
     isBot: "Bot-Benutzer"
     isSuspended: "Gesperrter Benutzer"
     isLocked: "Private Konten"
-    isExplorable: "Benutzer, die ihr Konto im \"Erkunden\"-Bereich sichtbar machen"
+    isExplorable: 'Benutzer, die ihr Konto im "Erkunden"-Bereich sichtbar machen'
     createdLessThan: "Kontoerstellung liegt weniger als X zurück"
     createdMoreThan: "Kontoerstellung liegt mehr als X zurück"
     followersLessThanOrEq: "Hat X oder weniger Follower"
@@ -2011,9 +2011,9 @@ _forgotPassword:
   contactAdmin: "Diese Instanz unterstützt die Verwendung von Email-Adressen nicht. Wende dich an den Administrator, um dein Passwort zurückzusetzen."
 _gallery:
   my: "Meine Galerie"
-  liked: "Mit \"Gefällt mir\" markierte Beiträge"
+  liked: 'Mit "Gefällt mir" markierte Beiträge'
   like: "Gefällt mir"
-  unlike: "\"Gefällt mir\" entfernen"
+  unlike: '"Gefällt mir" entfernen'
 _email:
   _follow:
     title: "Du hast einen neuen Follower"
@@ -2033,12 +2033,12 @@ _preferencesBackups:
   save: "Speichern"
   inputName: "Gib einen Namen für dieses Backup ein"
   cannotSave: "Speichern fehlgeschlagen"
-  nameAlreadyExists: "Es existiert bereits ein Backup unter dem Namen \"{name}\". Bitte gib einen anderen Namen ein."
-  applyConfirm: "Wirklich das Backup \"{name}\" auf dieses Gerät anwenden? Bestehende Einstellungen darauf werden überschrieben."
+  nameAlreadyExists: 'Es existiert bereits ein Backup unter dem Namen "{name}". Bitte gib einen anderen Namen ein.'
+  applyConfirm: 'Wirklich das Backup "{name}" auf dieses Gerät anwenden? Bestehende Einstellungen darauf werden überschrieben.'
   saveConfirm: "Als {name} speichern?"
   deleteConfirm: "Das Backup {name} löschen?"
-  renameConfirm: "Soll dieses Backup von \"{old}\" zu \"{new}\" umbenannt werden?"
-  noBackups: "Keine Backups existieren. Backups können über \"Neu erstellen\" erstelllt werden."
+  renameConfirm: 'Soll dieses Backup von "{old}" zu "{new}" umbenannt werden?'
+  noBackups: 'Keine Backups existieren. Backups können über "Neu erstellen" erstelllt werden.'
   createdAt: "Erstellt am: {date} {time}"
   updatedAt: "Aktualisiert am: {date} {time}"
   cannotLoad: "Laden fehlgeschlagen"
@@ -2093,7 +2093,7 @@ _menuDisplay:
   hide: "Ausblenden"
 _wordMute:
   muteWords: "Stummgeschaltete Wörter"
-  muteWordsDescription: "Zum Nutzen einer \"UND\"-Verknüpfung Einträge mit Leerzeichen trennen, zum Nutzen einer \"ODER\"-Verknüpfung Einträge mit einem Zeilenumbruch trennen."
+  muteWordsDescription: 'Zum Nutzen einer "UND"-Verknüpfung Einträge mit Leerzeichen trennen, zum Nutzen einer "ODER"-Verknüpfung Einträge mit einem Zeilenumbruch trennen.'
   muteWordsDescription2: "Umgib Schlüsselworter mit Schrägstrichen, um Reguläre Ausdrücke zu verwenden."
 _instanceMute:
   instanceMuteDescription: "Schaltet alle Notizen/Renotes stumm, die von den gelisteten Instanzen stammen, inklusive Antworten von Benutzern an einen Benutzer einer stummgeschalteten Instanz."
@@ -2265,8 +2265,8 @@ _permissions:
   "write:channels": "Kanäle bedienen"
   "read:gallery": "Beiträge deiner Galerie lesen"
   "write:gallery": "Deine Galerie bearbeiten"
-  "read:gallery-likes": "Liste deiner mit \"Gefällt mir\" markierten Galerie-Beiträge lesen"
-  "write:gallery-likes": "Liste deiner mit \"Gefällt mir\" markierten Galerie-Beiträge bearbeiten"
+  "read:gallery-likes": 'Liste deiner mit "Gefällt mir" markierten Galerie-Beiträge lesen'
+  "write:gallery-likes": 'Liste deiner mit "Gefällt mir" markierten Galerie-Beiträge bearbeiten'
   "read:flash": "Deine Plays lesen"
   "write:flash": "Deine Plays bearbeiten oder löschen"
   "read:flash-likes": "Liste der Plays, die mir gefallen, lesen"
@@ -2498,7 +2498,7 @@ _play:
   editThisPage: "Dieses Play bearbeiten"
   viewSource: "Quelltext anzeigen"
   my: "Meine Plays"
-  liked: "Mit \"Gefällt mir\" markierte Plays"
+  liked: 'Mit "Gefällt mir" markierte Plays'
   featured: "Beliebt"
   title: "Titel"
   script: "Skript"
@@ -2516,7 +2516,7 @@ _pages:
   viewSource: "Quelltext anzeigen"
   viewPage: "Seite anschauen"
   like: "Gefällt mir"
-  unlike: "\"Gefällt mir\" entfernen"
+  unlike: '"Gefällt mir" entfernen'
   my: "Meine Seiten"
   liked: "Seiten, die mir gefallen"
   featured: "Beliebt"
@@ -2585,7 +2585,7 @@ _notification:
   exportOfXCompleted: "Der Export von {x} ist abgeschlossen"
   login: "Neue Anmeldung erfolgt"
   createToken: "Ein Zugangstoken wurde erstellt"
-  createTokenDescription: "Wenn Sie keine Ahnung haben, löschen Sie das Zugriffstoken über \"{text}\""
+  createTokenDescription: 'Wenn Sie keine Ahnung haben, löschen Sie das Zugriffstoken über "{text}"'
   _types:
     all: "Alle"
     note: "Neue Notizen"
@@ -2630,9 +2630,9 @@ _deck:
   deleteProfile: "Profil löschen"
   introduction: "Erstelle eine auf dich zugeschneiderte Benutzeroberfläche durch das Aneinanderreihen von Spalten!"
   introduction2: "Klicke auf das + rechts um wann immer du möchtest neue Spalten hinzuzufügen."
-  widgetsIntroduction: "Drücke bitte \"Widgets bearbeiten\" im Spaltenmenü und füge ein Widget hinzu."
+  widgetsIntroduction: 'Drücke bitte "Widgets bearbeiten" im Spaltenmenü und füge ein Widget hinzu.'
   useSimpleUiForNonRootPages: "Simple Benutzeroberfläche für navigierte Seiten verwenden"
-  usedAsMinWidthWhenFlexible: "Ist \"Automatische Breitenanpassung\" aktiviert, wird hierfür die minimale Breite verwendet"
+  usedAsMinWidthWhenFlexible: 'Ist "Automatische Breitenanpassung" aktiviert, wird hierfür die minimale Breite verwendet'
   flexible: "Automatische Breitenanpassung"
   enableSyncBetweenDevicesForProfiles: "Aktivieren der Synchronisierung von Profilinformationen zwischen Geräten"
   _columns:
@@ -2882,7 +2882,7 @@ _contextMenu:
 _gridComponent:
   _error:
     requiredValue: "Dieser Wert ist ein Pflichtfeld"
-    columnTypeNotSupport: "Die Validierung regulärer Ausdrücke wird nur für Spalten vom Typ \"Text\" unterstützt."
+    columnTypeNotSupport: 'Die Validierung regulärer Ausdrücke wird nur für Spalten vom Typ "Text" unterstützt.'
     patternNotMatch: "Dieser Wert stimmt nicht mit dem Schema in {pattern} überein"
     notUnique: "Dieser Wert muss eindeutig sein"
 _roleSelectDialog:

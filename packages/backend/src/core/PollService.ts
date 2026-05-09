@@ -3,18 +3,24 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { DI } from '@/di-symbols.js';
-import type { NotesRepository, UsersRepository, PollsRepository, PollVotesRepository, MiUser } from '@/models/_.js';
-import type { MiNote } from '@/models/Note.js';
-import { RelayService } from '@/core/RelayService.js';
-import { IdService } from '@/core/IdService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { ApRendererService } from '@/core/activitypub/ApRendererService.js';
-import { ApDeliverManagerService } from '@/core/activitypub/ApDeliverManagerService.js';
-import { bindThis } from '@/decorators.js';
-import { UserBlockingService } from '@/core/UserBlockingService.js';
-import { isLocalUser } from '@/models/User.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { DI } from "@/di-symbols.js";
+import type {
+	NotesRepository,
+	UsersRepository,
+	PollsRepository,
+	PollVotesRepository,
+	MiUser,
+} from "@/models/_.js";
+import type { MiNote } from "@/models/Note.js";
+import { RelayService } from "@/core/RelayService.js";
+import { IdService } from "@/core/IdService.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { ApRendererService } from "@/core/activitypub/ApRendererService.js";
+import { ApDeliverManagerService } from "@/core/activitypub/ApDeliverManagerService.js";
+import { bindThis } from "@/decorators.js";
+import { UserBlockingService } from "@/core/UserBlockingService.js";
+import { isLocalUser } from "@/models/User.js";
 
 @Injectable()
 export class PollService {
@@ -37,23 +43,25 @@ export class PollService {
 		private userBlockingService: UserBlockingService,
 		private apRendererService: ApRendererService,
 		private apDeliverManagerService: ApDeliverManagerService,
-	) {
-	}
+	) {}
 
 	@bindThis
 	public async vote(user: MiUser, note: MiNote, choice: number) {
 		const poll = await this.pollsRepository.findOneBy({ noteId: note.id });
 
-		if (poll == null) throw new Error('poll not found');
+		if (poll == null) throw new Error("poll not found");
 
 		// Check whether is valid choice
-		if (poll.choices[choice] == null) throw new Error('invalid choice param');
+		if (poll.choices[choice] == null) throw new Error("invalid choice param");
 
 		// Check blocking
 		if (note.userId !== user.id) {
-			const blocked = await this.userBlockingService.checkBlocked(note.userId, user.id);
+			const blocked = await this.userBlockingService.checkBlocked(
+				note.userId,
+				user.id,
+			);
 			if (blocked) {
-				throw new Error('blocked');
+				throw new Error("blocked");
 			}
 		}
 
@@ -64,11 +72,11 @@ export class PollService {
 		});
 
 		if (poll.multiple) {
-			if (exist.some(x => x.choice === choice)) {
-				throw new Error('already voted');
+			if (exist.some((x) => x.choice === choice)) {
+				throw new Error("already voted");
 			}
 		} else if (exist.length !== 0) {
-			throw new Error('already voted');
+			throw new Error("already voted");
 		}
 
 		await this.pollVotesRepository.insert({
@@ -80,9 +88,11 @@ export class PollService {
 
 		// Increment votes count
 		const index = choice + 1; // In SQL, array index is 1 based
-		await this.pollsRepository.query(`UPDATE poll SET votes[${index}] = votes[${index}] + 1 WHERE "noteId" = '${poll.noteId}'`);
+		await this.pollsRepository.query(
+			`UPDATE poll SET votes[${index}] = votes[${index}] + 1 WHERE "noteId" = '${poll.noteId}'`,
+		);
 
-		this.globalEventService.publishNoteStream(note.id, 'pollVoted', {
+		this.globalEventService.publishNoteStream(note.id, "pollVoted", {
 			choice: choice,
 			userId: user.id,
 		});
@@ -92,11 +102,17 @@ export class PollService {
 	public async deliverQuestionUpdate(note: MiNote) {
 		if (note.localOnly) return;
 
-		const user = note.user ?? await this.usersRepository.findOneBy({ id: note.userId });
-		if (user == null) throw new Error('note not found');
+		const user =
+			note.user ?? (await this.usersRepository.findOneBy({ id: note.userId }));
+		if (user == null) throw new Error("note not found");
 
 		if (isLocalUser(user)) {
-			const content = this.apRendererService.addContext(this.apRendererService.renderUpdate(await this.apRendererService.renderNote(note, user, false), user));
+			const content = this.apRendererService.addContext(
+				this.apRendererService.renderUpdate(
+					await this.apRendererService.renderNote(note, user, false),
+					user,
+				),
+			);
 			await this.apDeliverManagerService.deliverToFollowers(user, content);
 			await this.relayService.deliverToRelays(user, content);
 		}

@@ -1,11 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Not } from 'typeorm';
-import { isPureRenote, MinimalNote } from '@/misc/is-renote.js';
-import { SkLatestNote } from '@/models/LatestNote.js';
-import { DI } from '@/di-symbols.js';
-import type { LatestNotesRepository, MiNote, NotesRepository } from '@/models/_.js';
-import { QueryService } from '@/core/QueryService.js';
-import { QueueService } from '@/core/QueueService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Not } from "typeorm";
+import { isPureRenote, MinimalNote } from "@/misc/is-renote.js";
+import { SkLatestNote } from "@/models/LatestNote.js";
+import { DI } from "@/di-symbols.js";
+import type {
+	LatestNotesRepository,
+	MiNote,
+	NotesRepository,
+} from "@/models/_.js";
+import { QueryService } from "@/core/QueryService.js";
+import { QueueService } from "@/core/QueueService.js";
 
 @Injectable()
 export class LatestNoteService {
@@ -32,7 +36,10 @@ export class LatestNoteService {
 		await this.queueService.createUpdateLatestNoteJob(note);
 	}
 
-	async handleUpdatedNote(before: MinimalNote, after: MinimalNote): Promise<void> {
+	async handleUpdatedNote(
+		before: MinimalNote,
+		after: MinimalNote,
+	): Promise<void> {
 		// If the key didn't change, then there's nothing to update.
 		if (SkLatestNote.areEquivalent(before, after)) return;
 
@@ -44,7 +51,7 @@ export class LatestNoteService {
 	async handleCreatedNote(note: MinimalNote): Promise<void> {
 		// Ignore DMs.
 		// Followers-only posts are *included*, as this table is used to back the "following" feed.
-		if (note.visibility === 'specified') return;
+		if (note.visibility === "specified") return;
 
 		// Ignore pure renotes
 		if (isPureRenote(note)) return;
@@ -62,12 +69,17 @@ export class LatestNoteService {
 			...key,
 			noteId: note.id,
 		});
-		await this.latestNotesRepository.upsert(latestNote, ['userId', 'isPublic', 'isReply', 'isQuote']);
+		await this.latestNotesRepository.upsert(latestNote, [
+			"userId",
+			"isPublic",
+			"isReply",
+			"isQuote",
+		]);
 	}
 
 	async handleDeletedNote(note: MinimalNote): Promise<void> {
 		// If it's a DM, then it can't possibly be the latest note so we can safely skip this.
-		if (note.visibility === 'specified') return;
+		if (note.visibility === "specified") return;
 
 		// If it's a pure renote, then it can't possibly be the latest note so we can safely skip this.
 		if (isPureRenote(note)) return;
@@ -82,23 +94,17 @@ export class LatestNoteService {
 		// Find the newest remaining note for the user.
 		// We exclude DMs and pure renotes.
 		const query = this.notesRepository
-			.createQueryBuilder('note')
+			.createQueryBuilder("note")
 			.select()
 			.where({
 				userId: key.userId,
-				visibility: key.isPublic
-					? 'public'
-					: Not('specified'),
-				replyId: key.isReply
-					? Not(null)
-					: null,
-				renoteId: key.isQuote
-					? Not(null)
-					: null,
+				visibility: key.isPublic ? "public" : Not("specified"),
+				replyId: key.isReply ? Not(null) : null,
+				renoteId: key.isQuote ? Not(null) : null,
 			})
-			.orderBy({ id: 'DESC' });
+			.orderBy({ id: "DESC" });
 
-		this.queryService.andIsNotRenote(query, 'note');
+		this.queryService.andIsNotRenote(query, "note");
 
 		const nextLatest = await query.getOne();
 		if (!nextLatest) return;
@@ -112,7 +118,7 @@ export class LatestNoteService {
 		// When inserting the latest note, it's possible that another worker has "raced" the insert and already added a newer note.
 		// We must use orIgnore() to ensure that the query ignores conflicts, otherwise an exception may be thrown.
 		await this.latestNotesRepository
-			.createQueryBuilder('latest')
+			.createQueryBuilder("latest")
 			.insert()
 			.into(SkLatestNote)
 			.values(latestNote)

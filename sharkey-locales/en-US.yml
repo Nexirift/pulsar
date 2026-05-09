@@ -1,6 +1,6 @@
 ---
 introMisskey: "Welcome! Sharkey is an open source, decentralized microblogging service.\nCreate \"notes\" to share your thoughts with everyone around you. 📡\nWith \"reactions\", you can also quickly express your feelings about everyone's notes. 👍\nLet's explore a new world! 🚀"
-poweredByMisskeyDescription: "{name} is one of the services powered by the open source platform <b>Sharkey</b> which is based on Misskey (referred to as a \"Misskey instance\")."
+poweredByMisskeyDescription: '{name} is one of the services powered by the open source platform <b>Sharkey</b> which is based on Misskey (referred to as a "Misskey instance").'
 renotedBy: "Boosted by {user}"
 approvals: "Approvals"
 copyLinkRenote: "Copy boost link"
@@ -37,9 +37,9 @@ userSaysSomethingInMutedNote: "{name} said something in a muted post"
 userSaysSomethingInMutedThread: "{name} said something in a muted thread"
 silencedUserSaysSomething: "{name} has been silenced by {host} staff"
 silencedInstanceSaysSomething: "{name} has been silenced by {host} staff"
-userIsFlaggedAs: "{name} is flagged: \"{cw}\""
-noteIsFlaggedAs: "Note is flagged: \"{cw}\""
-instanceIsFlaggedAs: "{name} is flagged: \"{cw}\""
+userIsFlaggedAs: '{name} is flagged: "{cw}"'
+noteIsFlaggedAs: 'Note is flagged: "{cw}"'
+instanceIsFlaggedAs: '{name} is flagged: "{cw}"'
 markAsNSFW: "Mark all media from user as NSFW"
 markInstanceAsNSFW: "Mark as NSFW"
 nsfwConfirm: "Are you sure that you want to mark all media from this account as NSFW?"
@@ -67,7 +67,7 @@ mediaSilencedByBase: "This host's media is silenced implicitly because a base do
 driveSearchbarPlaceholder: "Search drive"
 fileNotSelected: "No file selected"
 background: "Background"
-antennaUsersDescription: "List one username per line. Use \"*@instance.com\" to specify all users of an instance"
+antennaUsersDescription: 'List one username per line. Use "*@instance.com" to specify all users of an instance'
 aboutMisskey: "About Sharkey"
 expandAllCws: "Show content for all replies"
 collapseAllCws: "Hide content for all replies"
@@ -222,7 +222,7 @@ _timelineDescription:
 _serverSettings:
   sidebarLogoUrl: "Logo URL"
   sidebarLogoDescription: "Specifies the logo to use instead of the regular icon in high definition, dynamic-width scenarios."
-  sidebarLogoUsageExample: "E.g. In the sidebar, to visitors and in the \"About\" page."
+  sidebarLogoUsageExample: 'E.g. In the sidebar, to visitors and in the "About" page.'
   inquiryUrl: "Contact URL"
   inquiryUrlDescription: "Specify the URL of a web page that contains a contact form or the instance operators' contact information."
   aboutInstance: "About instance"
@@ -239,12 +239,12 @@ _achievements:
       flavor: "Thank you for using Sharkey!"
     _iLoveMisskey:
       title: "I Love Sharkey"
-      description: "Post \"I ❤ #Sharkey\""
+      description: 'Post "I ❤ #Sharkey"'
       flavor: "Sharkey's development team greatly appreciates your support!"
     _client30min:
       description: "Keep Sharkey opened for at least 30 minutes"
     _client60min:
-      title: "No \"Miss\" in Sharkey"
+      title: 'No "Miss" in Sharkey'
       description: "Keep Sharkey opened for at least 60 minutes"
     _brainDiver:
       flavor: "Sharkey-Sharkey La-Tu-Ma"
@@ -418,7 +418,7 @@ _mfm:
   jelly: "Animation (Jelly)"
   jellyDescription: "Gives content a jelly-like animation."
   tada: "Animation (Tada)"
-  tadaDescription: "Gives content a \"Tada!\"-like animation."
+  tadaDescription: 'Gives content a "Tada!"-like animation.'
   jump: "Animation (Jump)"
   jumpDescription: "Gives content a jumping animation."
   bounce: "Animation (Bounce)"
@@ -455,8 +455,8 @@ _mfm:
   scaleDescription: "Scale content by a specified amount."
   foreground: "Foreground color"
   foregroundDescription: "Change the foreground color of text."
-  fade: 'Fade'
-  fadeDescription: 'Fade text in and out.'
+  fade: "Fade"
+  fadeDescription: "Fade text in and out."
   background: "Background color"
   backgroundDescription: "Change the background color of text."
   border: "Border"
@@ -565,7 +565,7 @@ mandatoryCWForNoteDescription: "Applies an additional content warning to this po
 mandatoryCWForInstance: "Force content warning"
 mandatoryCWForInstanceDescription: "Applies a content warning to all posts originating from this instance. The forced warnings will appear like a word mute to distinguish them from the notes' own content warnings."
 fetchLinkedNote: "Fetch linked note"
-showTranslationButtonInNoteFooter: "Add \"Translate\" to note action menu"
+showTranslationButtonInNoteFooter: 'Add "Translate" to note action menu'
 translationFailed: "Failed to translate note. Please try again later or contact an administrator for assistance."
 
 _processErrors:
@@ -583,8 +583,8 @@ _authorizedFetchValue:
 _authorizedFetchValueDescription:
   never: "Block all unsigned requests. Improves privacy and makes blocks more effective, but is not compatible with some very old or uncommon instance software."
   always: "Allow all unsigned requests. Provides the greatest compatibility with other instances, but reduces privacy and weakens blocks."
-  essential: "Allow some limited unsigned requests. Provides a hybrid between \"Never\" and \"Always\" by exposing only the minimum profile metadata that is required for federation with older software."
-  staff: "Use the default value of \"{value}\" recommended by the instance staff."
+  essential: 'Allow some limited unsigned requests. Provides a hybrid between "Never" and "Always" by exposing only the minimum profile metadata that is required for federation with older software.'
+  staff: 'Use the default value of "{value}" recommended by the instance staff.'
 authorizedFetchLegacyWarning: "The configuration property 'checkActivityPubGetSignature' has been deprecated and replaced with the new Authorized Fetch setting. Please remove it from your configuration file."
 
 _followRequest:
@@ -604,7 +604,7 @@ wordMuteTestLabel: "Test patterns"
 wordMuteTestDescription: "Enter some text here to test your word patterns. The matched words, if any, will be displayed below."
 wordMuteTestTest: "Test"
 wordMuteTestMatch: "Matched words: {words}"
-wordMuteTestNoResults: "No results yet, enter some text and click \"Test\" to check it."
+wordMuteTestNoResults: 'No results yet, enter some text and click "Test" to check it.'
 wordMuteTestNoMatch: "Text does not match any patterns."
 wordMuteWarning: "All word mutes are *case-sensitive* and match on any substring, including part of a longer word or name. You can use regular expressions for more precise control."
 
@@ -662,7 +662,7 @@ hibernated: "Hibernated"
 keepCwDescription: "When replying to a post with a Content Warning, automatically use the same CW for the reply."
 keepCwDisabled: "Disabled (do not copy CWs)"
 keepCwEnabled: "Enabled (copy CWs verbatim)"
-keepCwPrependRe: "Enabled (copy CW and prepend \"RE:\")"
+keepCwPrependRe: 'Enabled (copy CW and prepend "RE:")'
 
 noteFooterLabel: "Note controls"
 
@@ -717,7 +717,7 @@ confirmRevokeToken: "Are you sure you want to revoke this token?"
 confirmRevokeSharedToken: "Are you sure you want to revoke this token? {num} shared other users will lose shared access."
 grantSharedAccessButton: "Grant shared access"
 grantSharedAccessNoSelection: "No shared access listed"
-grantSharedAccessNoSelection2: "No shared access users were selected. Please add at least one user in the \"shared access\" section."
+grantSharedAccessNoSelection2: 'No shared access users were selected. Please add at least one user in the "shared access" section.'
 grantSharedAccessSuccess: "Shared access granted"
 grantSharedAccessSuccess2: "Shared access has been granted to {num} users."
 tokenHasNoPermissionsConfirm: "Are you sure you want to create a token with no permissions?"

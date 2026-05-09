@@ -1,53 +1,59 @@
-import globals from 'globals';
-import pluginMisskey from '@misskey-dev/eslint-plugin';
+import globals from "globals";
+import pluginMisskey from "@misskey-dev/eslint-plugin";
 
 export default [
-	...pluginMisskey.configs['recommended'],
+	...pluginMisskey.configs["recommended"],
 	{
-		files: ['**/*.cjs'],
+		files: ["**/*.cjs"],
 		languageOptions: {
-			sourceType: 'commonjs',
+			sourceType: "commonjs",
 			parserOptions: {
-				sourceType: 'commonjs',
+				sourceType: "commonjs",
 			},
 		},
 	},
 	{
-		files: ['**/*.js', '**/*.jsx'],
+		files: ["**/*.js", "**/*.jsx"],
 		languageOptions: {
 			parserOptions: {
-				sourceType: 'module',
+				sourceType: "module",
 			},
 		},
 	},
 	{
-		files: ['build.js'],
+		files: ["build.js"],
 		languageOptions: {
 			globals: globals.node,
 		},
 	},
 	{
-		files: ['**/*.js', '**/*.cjs'],
+		files: ["**/*.js", "**/*.cjs"],
 		rules: {
-			'@typescript-eslint/no-var-requires': 'off',
+			"@typescript-eslint/no-var-requires": "off",
 		},
 	},
 	{
 		rules: {
-			'no-restricted-imports': ['error', {
-				paths: [{ name: 'punycode' }],
-			}],
+			"no-restricted-imports": [
+				"error",
+				{
+					paths: [{ name: "punycode" }],
+				},
+			],
 			// https://typescript-eslint.io/rules/prefer-nullish-coalescing/
-			'@typescript-eslint/prefer-nullish-coalescing': ['warn', {
-				ignorePrimitives: true,
-			}],
-			'no-param-reassign': 'off',
+			"@typescript-eslint/prefer-nullish-coalescing": [
+				"warn",
+				{
+					ignorePrimitives: true,
+				},
+			],
+			"no-param-reassign": "off",
 		},
 	},
 	{
-		files: ['src/**/*.stories.ts'],
+		files: ["src/**/*.stories.ts"],
 		rules: {
-			'no-restricted-globals': 'off',
-		}
+			"no-restricted-globals": "off",
+		},
 	},
 ];

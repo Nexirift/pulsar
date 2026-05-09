@@ -3,16 +3,16 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import Redis from 'ioredis';
-import { DI } from '@/di-symbols.js';
-import type { ChannelFollowingsRepository } from '@/models/_.js';
-import { MiChannel } from '@/models/_.js';
-import { IdService } from '@/core/IdService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { bindThis } from '@/decorators.js';
-import type { MiLocalUser } from '@/models/User.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
+import { Inject, Injectable, OnModuleInit } from "@nestjs/common";
+import Redis from "ioredis";
+import { DI } from "@/di-symbols.js";
+import type { ChannelFollowingsRepository } from "@/models/_.js";
+import { MiChannel } from "@/models/_.js";
+import { IdService } from "@/core/IdService.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { bindThis } from "@/decorators.js";
+import type { MiLocalUser } from "@/models/User.js";
+import { InternalEventService } from "@/global/InternalEventService.js";
 
 @Injectable()
 export class ChannelFollowingService {
@@ -39,7 +39,7 @@ export class ChannelFollowingService {
 			followeeId: targetChannel.id,
 		});
 
-		await this.internalEventService.emit('followChannel', {
+		await this.internalEventService.emit("followChannel", {
 			userId: requestUser.id,
 			channelId: targetChannel.id,
 		});
@@ -55,7 +55,7 @@ export class ChannelFollowingService {
 			followeeId: targetChannel.id,
 		});
 
-		await this.internalEventService.emit('unfollowChannel', {
+		await this.internalEventService.emit("unfollowChannel", {
 			userId: requestUser.id,
 			channelId: targetChannel.id,
 		});

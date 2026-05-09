@@ -14,10 +14,26 @@
  * @param additional Content warning to append
  * @param reverse If true, then the additional CW will be prepended instead of appended.
  */
-export function appendContentWarning(original: string | null | undefined, additional: string, reverse?: boolean): string;
-export function appendContentWarning(original: string, additional: string | null | undefined, reverse?: boolean): string;
-export function appendContentWarning(original: string | null | undefined, additional: string | null | undefined, reverse?: boolean): string | null;
-export function appendContentWarning(original: string | null | undefined, additional: string | null | undefined, reverse = false): string | null {
+export function appendContentWarning(
+	original: string | null | undefined,
+	additional: string,
+	reverse?: boolean,
+): string;
+export function appendContentWarning(
+	original: string,
+	additional: string | null | undefined,
+	reverse?: boolean,
+): string;
+export function appendContentWarning(
+	original: string | null | undefined,
+	additional: string | null | undefined,
+	reverse?: boolean,
+): string | null;
+export function appendContentWarning(
+	original: string | null | undefined,
+	additional: string | null | undefined,
+	reverse = false,
+): string | null {
 	// Easy case - if original is empty, then additional replaces it.
 	if (!original) {
 		return additional ?? null;
@@ -33,9 +49,7 @@ export function appendContentWarning(original: string | null | undefined, additi
 		return original;
 	}
 
-	return reverse
-		? `${additional}, ${original}`
-		: `${original}, ${additional}`;
+	return reverse ? `${additional}, ${original}` : `${original}, ${additional}`;
 }
 
 /**

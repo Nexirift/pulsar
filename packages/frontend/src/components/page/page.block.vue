@@ -4,52 +4,64 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<component :is="getComponent(block.type)" :key="block.id" :page="page" :block="block" :h="h" @expandMute="n => onExpandNote(n)"/>
+	<component
+		:is="getComponent(block.type)"
+		:key="block.id"
+		:page="page"
+		:block="block"
+		:h="h"
+		@expandMute="(n) => onExpandNote(n)"
+	/>
 </template>
 
 <script lang="ts" setup>
-import { } from 'vue';
-import * as Misskey from 'misskey-js';
-import XText from './page.text.vue';
-import XSection from './page.section.vue';
-import XImage from './page.image.vue';
-import XNote from './page.note.vue';
-import XDynamic from './page.dynamic.vue';
-import { deepAssign } from '@/utility/merge';
-import { useMuteOverrides } from '@/utility/check-word-mute';
+import {} from "vue";
+import * as Misskey from "misskey-js";
+import XText from "./page.text.vue";
+import XSection from "./page.section.vue";
+import XImage from "./page.image.vue";
+import XNote from "./page.note.vue";
+import XDynamic from "./page.dynamic.vue";
+import { deepAssign } from "@/utility/merge";
+import { useMuteOverrides } from "@/utility/check-word-mute";
 
 function getComponent(type: string) {
 	switch (type) {
-		case 'text': return XText;
-		case 'section': return XSection;
-		case 'image': return XImage;
-		case 'note': return XNote;
+		case "text":
+			return XText;
+		case "section":
+			return XSection;
+		case "image":
+			return XImage;
+		case "note":
+			return XNote;
 
 		// 動的ページの代替用ブロック
-		case 'button':
-		case 'if':
-		case 'textarea':
-		case 'post':
-		case 'canvas':
-		case 'numberInput':
-		case 'textInput':
-		case 'switch':
-		case 'radioButton':
-		case 'counter':
+		case "button":
+		case "if":
+		case "textarea":
+		case "post":
+		case "canvas":
+		case "numberInput":
+		case "textInput":
+		case "switch":
+		case "radioButton":
+		case "counter":
 			return XDynamic;
 
-		default: return null;
+		default:
+			return null;
 	}
 }
 
 defineProps<{
-	block: Misskey.entities.PageBlock,
-	h: number,
-	page: Misskey.entities.Page,
+	block: Misskey.entities.PageBlock;
+	h: number;
+	page: Misskey.entities.Page;
 }>();
 
 const emit = defineEmits<{
-	(ev: 'expandMute', note: Misskey.entities.Note): void;
+	(ev: "expandMute", note: Misskey.entities.Note): void;
 }>();
 
 const muteOverrides = useMuteOverrides();
@@ -64,13 +76,13 @@ function onExpandNote(note: Misskey.entities.Note) {
 			},
 		},
 		instance: {
-			[note.user.host ?? '']: {
+			[note.user.host ?? ""]: {
 				instanceMandatoryCW: null,
 				instanceSilenced: false,
 			},
 		},
 	});
 
-	emit('expandMute', note);
+	emit("expandMute", note);
 }
 </script>

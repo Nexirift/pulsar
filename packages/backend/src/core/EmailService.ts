@@ -3,21 +3,25 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { URLSearchParams } from 'node:url';
-import * as nodemailer from 'nodemailer';
-import juice from 'juice';
-import { nanoid } from 'nanoid';
-import { Inject, Injectable } from '@nestjs/common';
-import { validate as validateEmail } from 'deep-email-validator';
-import { UtilityService } from '@/core/UtilityService.js';
-import { DI } from '@/di-symbols.js';
-import type { Config } from '@/config.js';
-import type Logger from '@/logger.js';
-import type { MiMeta, MiUserProfile, UserProfilesRepository } from '@/models/_.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import { CacheService } from '@/core/CacheService.js';
-import { bindThis } from '@/decorators.js';
-import { HttpRequestService } from '@/core/HttpRequestService.js';
+import { URLSearchParams } from "node:url";
+import * as nodemailer from "nodemailer";
+import juice from "juice";
+import { nanoid } from "nanoid";
+import { Inject, Injectable } from "@nestjs/common";
+import { validate as validateEmail } from "deep-email-validator";
+import { UtilityService } from "@/core/UtilityService.js";
+import { DI } from "@/di-symbols.js";
+import type { Config } from "@/config.js";
+import type Logger from "@/logger.js";
+import type {
+	MiMeta,
+	MiUserProfile,
+	UserProfilesRepository,
+} from "@/models/_.js";
+import { LoggerService } from "@/core/LoggerService.js";
+import { CacheService } from "@/core/CacheService.js";
+import { bindThis } from "@/decorators.js";
+import { HttpRequestService } from "@/core/HttpRequestService.js";
 
 @Injectable()
 export class EmailService {
@@ -38,17 +42,23 @@ export class EmailService {
 		private httpRequestService: HttpRequestService,
 		private cacheService: CacheService,
 	) {
-		this.logger = this.loggerService.getLogger('email');
+		this.logger = this.loggerService.getLogger("email");
 	}
 
 	@bindThis
-	public async sendEmail(to: string, subject: string, html: string, text: string, opts?: { announcementFor?: MiUserProfile } | undefined) {
+	public async sendEmail(
+		to: string,
+		subject: string,
+		html: string,
+		text: string,
+		opts?: { announcementFor?: MiUserProfile } | undefined,
+	) {
 		if (!this.meta.enableEmail) return;
 
 		const iconUrl = `${this.config.url}/static-assets/mi-white.png`;
 		const emailSettingUrl = `${this.config.url}/settings/email`;
 
-		const enableAuth = this.meta.smtpUser != null && this.meta.smtpUser !== '';
+		const enableAuth = this.meta.smtpUser != null && this.meta.smtpUser !== "";
 
 		const transporter = nodemailer.createTransport({
 			host: this.meta.smtpHost,
@@ -56,17 +66,19 @@ export class EmailService {
 			secure: this.meta.smtpSecure,
 			ignoreTLS: !enableAuth,
 			proxy: this.config.proxySmtp,
-			auth: enableAuth ? {
-				user: this.meta.smtpUser,
-				pass: this.meta.smtpPass,
-			} : undefined,
+			auth: enableAuth
+				? {
+						user: this.meta.smtpUser,
+						pass: this.meta.smtpPass,
+					}
+				: undefined,
 		} as any);
 
 		const htmlContent = `<!doctype html>
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>${ subject }</title>
+		<title>${subject}</title>
 		<style>
 			html {
 				background: #eee;
@@ -127,18 +139,18 @@ export class EmailService {
 	<body>
 		<main>
 			<header>
-				<img src="${ this.meta.logoImageUrl ?? this.meta.iconUrl ?? iconUrl }"/>
+				<img src="${this.meta.logoImageUrl ?? this.meta.iconUrl ?? iconUrl}"/>
 			</header>
 			<article>
-				<h1>${ subject }</h1>
-				<div>${ html }</div>
+				<h1>${subject}</h1>
+				<div>${html}</div>
 			</article>
 			<footer>
-				<a href="${ emailSettingUrl }">${ 'Email setting' }</a>
+				<a href="${emailSettingUrl}">${"Email setting"}</a>
 			</footer>
 		</main>
 		<nav>
-			<a href="${ this.config.url }">${ this.config.host }</a>
+			<a href="${this.config.url}">${this.config.host}</a>
 		</nav>
 	</body>
 </html>`;
@@ -151,11 +163,15 @@ export class EmailService {
 			let { oneClickUnsubscribeToken } = opts.announcementFor;
 			if (!oneClickUnsubscribeToken) {
 				oneClickUnsubscribeToken = nanoid();
-				await this.userProfilesRepository.update({ userId }, { oneClickUnsubscribeToken });
+				await this.userProfilesRepository.update(
+					{ userId },
+					{ oneClickUnsubscribeToken },
+				);
 				await this.cacheService.userProfileCache.delete(userId);
 			}
-			headers['List-Unsubscribe'] = `<${this.config.apiUrl}/unsubscribe/${userId}/${oneClickUnsubscribeToken}>`;
-			headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+			headers["List-Unsubscribe"] =
+				`<${this.config.apiUrl}/unsubscribe/${userId}/${oneClickUnsubscribeToken}>`;
+			headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
 		}
 
 		try {
@@ -179,12 +195,21 @@ export class EmailService {
 	@bindThis
 	public async validateEmailForAccount(emailAddress: string): Promise<{
 		available: boolean;
-		reason: null | 'used' | 'format' | 'disposable' | 'mx' | 'smtp' | 'banned' | 'network' | 'blacklist';
+		reason:
+			| null
+			| "used"
+			| "format"
+			| "disposable"
+			| "mx"
+			| "smtp"
+			| "banned"
+			| "network"
+			| "blacklist";
 	}> {
 		if (!this.utilityService.validateEmailFormat(emailAddress)) {
 			return {
 				available: false,
-				reason: 'format',
+				reason: "format",
 			};
 		}
 
@@ -196,20 +221,34 @@ export class EmailService {
 		if (exist !== 0) {
 			return {
 				available: false,
-				reason: 'used',
+				reason: "used",
 			};
 		}
 
 		let validated: {
-			valid: boolean,
-			reason?: string | null,
+			valid: boolean;
+			reason?: string | null;
 		} = { valid: true, reason: null };
 
 		if (this.meta.enableActiveEmailValidation) {
-			if (this.meta.enableVerifymailApi && this.meta.verifymailAuthKey != null) {
-				validated = await this.verifyMail(emailAddress, this.meta.verifymailAuthKey);
-			} else if (this.meta.enableTruemailApi && this.meta.truemailInstance && this.meta.truemailAuthKey != null) {
-				validated = await this.trueMail(this.meta.truemailInstance, emailAddress, this.meta.truemailAuthKey);
+			if (
+				this.meta.enableVerifymailApi &&
+				this.meta.verifymailAuthKey != null
+			) {
+				validated = await this.verifyMail(
+					emailAddress,
+					this.meta.verifymailAuthKey,
+				);
+			} else if (
+				this.meta.enableTruemailApi &&
+				this.meta.truemailInstance &&
+				this.meta.truemailAuthKey != null
+			) {
+				validated = await this.trueMail(
+					this.meta.truemailInstance,
+					emailAddress,
+					this.meta.truemailAuthKey,
+				);
 			} else {
 				validated = await validateEmail({
 					email: emailAddress,
@@ -223,28 +262,42 @@ export class EmailService {
 		}
 
 		if (!validated.valid) {
-			const formatReason: Record<string, 'format' | 'disposable' | 'mx' | 'smtp' | 'network' | 'blacklist' | undefined> = {
-				regex: 'format',
-				disposable: 'disposable',
-				mx: 'mx',
-				smtp: 'smtp',
-				network: 'network',
-				blacklist: 'blacklist',
+			const formatReason: Record<
+				string,
+				| "format"
+				| "disposable"
+				| "mx"
+				| "smtp"
+				| "network"
+				| "blacklist"
+				| undefined
+			> = {
+				regex: "format",
+				disposable: "disposable",
+				mx: "mx",
+				smtp: "smtp",
+				network: "network",
+				blacklist: "blacklist",
 			};
 
 			return {
 				available: false,
-				reason: validated.reason ? formatReason[validated.reason] ?? null : null,
+				reason: validated.reason
+					? (formatReason[validated.reason] ?? null)
+					: null,
 			};
 		}
 
-		const emailDomain: string = emailAddress.split('@')[1];
-		const isBanned = this.utilityService.isBlockedHost(this.meta.bannedEmailDomains, emailDomain);
+		const emailDomain: string = emailAddress.split("@")[1];
+		const isBanned = this.utilityService.isBlockedHost(
+			this.meta.bannedEmailDomains,
+			emailDomain,
+		);
 
 		if (isBanned) {
 			return {
 				available: false,
-				reason: 'banned',
+				reason: "banned",
 			};
 		}
 
@@ -254,16 +307,20 @@ export class EmailService {
 		};
 	}
 
-	private async verifyMail(emailAddress: string, verifymailAuthKey: string): Promise<{
+	private async verifyMail(
+		emailAddress: string,
+		verifymailAuthKey: string,
+	): Promise<{
 		valid: boolean;
-		reason: 'used' | 'format' | 'disposable' | 'mx' | 'smtp' | null;
+		reason: "used" | "format" | "disposable" | "mx" | "smtp" | null;
 	}> {
-		const endpoint = 'https://verifymail.io/api/' + emailAddress + '?key=' + verifymailAuthKey;
+		const endpoint =
+			"https://verifymail.io/api/" + emailAddress + "?key=" + verifymailAuthKey;
 		const res = await this.httpRequestService.send(endpoint, {
-			method: 'GET',
+			method: "GET",
 			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-				Accept: 'application/json, */*',
+				"Content-Type": "application/x-www-form-urlencoded",
+				Accept: "application/json, */*",
 			},
 		});
 
@@ -286,7 +343,7 @@ export class EmailService {
 		}>;
 
 		/* api error: when there is only one `message` attribute in the returned result */
-		if (Object.keys(json).length === 1 && Reflect.has(json, 'message')) {
+		if (Object.keys(json).length === 1 && Reflect.has(json, "message")) {
 			return {
 				valid: false,
 				reason: null,
@@ -295,25 +352,25 @@ export class EmailService {
 		if (json.email_address === undefined) {
 			return {
 				valid: false,
-				reason: 'format',
+				reason: "format",
 			};
 		}
 		if (json.deliverable_email !== undefined && !json.deliverable_email) {
 			return {
 				valid: false,
-				reason: 'smtp',
+				reason: "smtp",
 			};
 		}
 		if (json.disposable) {
 			return {
 				valid: false,
-				reason: 'disposable',
+				reason: "disposable",
 			};
 		}
 		if (json.mx !== undefined && !json.mx) {
 			return {
 				valid: false,
-				reason: 'mx',
+				reason: "mx",
 			};
 		}
 
@@ -323,17 +380,29 @@ export class EmailService {
 		};
 	}
 
-	private async trueMail<T>(truemailInstance: string, emailAddress: string, truemailAuthKey: string): Promise<{
+	private async trueMail<T>(
+		truemailInstance: string,
+		emailAddress: string,
+		truemailAuthKey: string,
+	): Promise<{
 		valid: boolean;
-		reason: 'used' | 'format' | 'blacklist' | 'mx' | 'smtp' | 'network' | T | null;
+		reason:
+			| "used"
+			| "format"
+			| "blacklist"
+			| "mx"
+			| "smtp"
+			| "network"
+			| T
+			| null;
 	}> {
-		const endpoint = truemailInstance + '?email=' + emailAddress;
+		const endpoint = truemailInstance + "?email=" + emailAddress;
 		try {
 			const res = await this.httpRequestService.send(endpoint, {
-				method: 'POST',
+				method: "POST",
 				headers: {
-					'Content-Type': 'application/json',
-					Accept: 'application/json',
+					"Content-Type": "application/json",
+					Accept: "application/json",
 					Authorization: truemailAuthKey,
 				},
 				isLocalAddressAllowed: true,
@@ -354,25 +423,25 @@ export class EmailService {
 			if (json.email === undefined || json.errors?.regex) {
 				return {
 					valid: false,
-					reason: 'format',
+					reason: "format",
 				};
 			}
 			if (json.errors?.smtp) {
 				return {
 					valid: false,
-					reason: 'smtp',
+					reason: "smtp",
 				};
 			}
 			if (json.errors?.mx) {
 				return {
 					valid: false,
-					reason: 'mx',
+					reason: "mx",
 				};
 			}
 			if (!json.success) {
 				return {
 					valid: false,
-					reason: json.errors?.list_match as T || 'blacklist',
+					reason: (json.errors?.list_match as T) || "blacklist",
 				};
 			}
 
@@ -383,7 +452,7 @@ export class EmailService {
 		} catch (error) {
 			return {
 				valid: false,
-				reason: 'network',
+				reason: "network",
 			};
 		}
 	}

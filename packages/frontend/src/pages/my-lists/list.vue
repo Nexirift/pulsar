@@ -4,77 +4,107 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithHeader :actions="headerActions" :tabs="headerTabs">
-	<div class="_spacer" style="--MI_SPACER-w: 700px;">
-		<div v-if="list" class="_gaps">
-			<MkFolder>
-				<template #label>{{ i18n.ts.settings }}</template>
+	<PageWithHeader :actions="headerActions" :tabs="headerTabs">
+		<div class="_spacer" style="--MI_SPACER-w: 700px">
+			<div v-if="list" class="_gaps">
+				<MkFolder>
+					<template #label>{{ i18n.ts.settings }}</template>
 
-				<div class="_gaps">
-					<MkInput v-model="name">
-						<template #label>{{ i18n.ts.name }}</template>
-					</MkInput>
-					<MkSwitch v-model="isPublic">{{ i18n.ts.public }}</MkSwitch>
-					<div class="_buttons">
-						<MkButton rounded primary @click="updateSettings">{{ i18n.ts.save }}</MkButton>
-						<MkButton rounded danger @click="deleteList()">{{ i18n.ts.delete }}</MkButton>
+					<div class="_gaps">
+						<MkInput v-model="name">
+							<template #label>{{ i18n.ts.name }}</template>
+						</MkInput>
+						<MkSwitch v-model="isPublic">{{ i18n.ts.public }}</MkSwitch>
+						<div class="_buttons">
+							<MkButton rounded primary @click="updateSettings">{{
+								i18n.ts.save
+							}}</MkButton>
+							<MkButton rounded danger @click="deleteList()">{{
+								i18n.ts.delete
+							}}</MkButton>
+						</div>
 					</div>
-				</div>
-			</MkFolder>
+				</MkFolder>
 
-			<MkFolder defaultOpen>
-				<template #label>{{ i18n.ts.members }}</template>
-				<template #caption>{{ i18n.tsx.nUsers({ n: `${list.userIds.length}/${$i.policies['userEachUserListsLimit']}` }) }}</template>
+				<MkFolder defaultOpen>
+					<template #label>{{ i18n.ts.members }}</template>
+					<template #caption>{{
+						i18n.tsx.nUsers({
+							n: `${list.userIds.length}/${$i.policies["userEachUserListsLimit"]}`,
+						})
+					}}</template>
 
-				<div class="_gaps_s">
-					<MkButton rounded primary style="margin: 0 auto;" @click="addUser()">{{ i18n.ts.addUser }}</MkButton>
+					<div class="_gaps_s">
+						<MkButton
+							rounded
+							primary
+							style="margin: 0 auto"
+							@click="addUser()"
+							>{{ i18n.ts.addUser }}</MkButton
+						>
 
-					<MkPagination ref="paginationEl" :pagination="membershipsPagination">
-						<template #default="{ items }">
-							<div class="_gaps_s">
-								<div v-for="item in items" :key="item.id">
-									<div :class="$style.userItem">
-										<MkA :class="$style.userItemBody" :to="`${userPage(item.user)}`">
-											<MkUserCardMini :user="item.user"/>
-										</MkA>
-										<button class="_button" :class="$style.menu" @click="showMembershipMenu(item, $event)"><i class="ti ti-dots"></i></button>
-										<button class="_button" :class="$style.remove" @click="removeUser(item, $event)"><i class="ti ti-x"></i></button>
+						<MkPagination
+							ref="paginationEl"
+							:pagination="membershipsPagination"
+						>
+							<template #default="{ items }">
+								<div class="_gaps_s">
+									<div v-for="item in items" :key="item.id">
+										<div :class="$style.userItem">
+											<MkA
+												:class="$style.userItemBody"
+												:to="`${userPage(item.user)}`"
+											>
+												<MkUserCardMini :user="item.user" />
+											</MkA>
+											<button
+												class="_button"
+												:class="$style.menu"
+												@click="showMembershipMenu(item, $event)"
+											>
+												<i class="ti ti-dots"></i>
+											</button>
+											<button
+												class="_button"
+												:class="$style.remove"
+												@click="removeUser(item, $event)"
+											>
+												<i class="ti ti-x"></i>
+											</button>
+										</div>
 									</div>
 								</div>
-							</div>
-						</template>
-					</MkPagination>
-				</div>
-			</MkFolder>
+							</template>
+						</MkPagination>
+					</div>
+				</MkFolder>
+			</div>
 		</div>
-	</div>
-</PageWithHeader>
+	</PageWithHeader>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue';
-import * as Misskey from 'misskey-js';
-import MkButton from '@/components/MkButton.vue';
-import * as os from '@/os.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { definePage } from '@/page.js';
-import { i18n } from '@/i18n.js';
-import { userPage } from '@/filters/user.js';
-import MkUserCardMini from '@/components/MkUserCardMini.vue';
-import MkSwitch from '@/components/MkSwitch.vue';
-import MkFolder from '@/components/MkFolder.vue';
-import MkInput from '@/components/MkInput.vue';
-import { userListsCache } from '@/cache.js';
-import { ensureSignin } from '@/i.js';
-import MkPagination from '@/components/MkPagination.vue';
-import { mainRouter } from '@/router.js';
-import { prefer } from '@/preferences.js';
+import { computed, ref, watch } from "vue";
+import * as Misskey from "misskey-js";
+import MkButton from "@/components/MkButton.vue";
+import * as os from "@/os.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { definePage } from "@/page.js";
+import { i18n } from "@/i18n.js";
+import { userPage } from "@/filters/user.js";
+import MkUserCardMini from "@/components/MkUserCardMini.vue";
+import MkSwitch from "@/components/MkSwitch.vue";
+import MkFolder from "@/components/MkFolder.vue";
+import MkInput from "@/components/MkInput.vue";
+import { userListsCache } from "@/cache.js";
+import { ensureSignin } from "@/i.js";
+import MkPagination from "@/components/MkPagination.vue";
+import { mainRouter } from "@/router.js";
+import { prefer } from "@/preferences.js";
 
 const $i = ensureSignin();
 
-const {
-	enableInfiniteScroll,
-} = prefer.r;
+const { enableInfiniteScroll } = prefer.r;
 
 const props = defineProps<{
 	listId: string;
@@ -83,9 +113,9 @@ const props = defineProps<{
 const paginationEl = ref<InstanceType<typeof MkPagination>>();
 const list = ref<Misskey.entities.UserList | null>(null);
 const isPublic = ref(false);
-const name = ref('');
+const name = ref("");
 const membershipsPagination = {
-	endpoint: 'users/lists/get-memberships' as const,
+	endpoint: "users/lists/get-memberships" as const,
 	limit: 30,
 	params: computed(() => ({
 		listId: props.listId,
@@ -93,9 +123,9 @@ const membershipsPagination = {
 };
 
 function fetchList() {
-	misskeyApi('users/lists/show', {
+	misskeyApi("users/lists/show", {
 		listId: props.listId,
-	}).then(_list => {
+	}).then((_list) => {
 		list.value = _list;
 		name.value = list.value.name;
 		isPublic.value = list.value.isPublic;
@@ -103,9 +133,9 @@ function fetchList() {
 }
 
 function addUser() {
-	os.selectUser().then(user => {
+	os.selectUser().then((user) => {
 		if (!list.value) return;
-		os.apiWithDialog('users/lists/push', {
+		os.apiWithDialog("users/lists/push", {
 			listId: list.value.id,
 			userId: user.id,
 		}).then(() => {
@@ -115,34 +145,44 @@ function addUser() {
 }
 
 async function removeUser(item, ev) {
-	os.popupMenu([{
-		text: i18n.ts.remove,
-		icon: 'ti ti-x',
-		danger: true,
-		action: async () => {
-			if (!list.value) return;
-			misskeyApi('users/lists/pull', {
-				listId: list.value.id,
-				userId: item.userId,
-			}).then(() => {
-				paginationEl.value?.removeItem(item.id);
-			});
-		},
-	}], ev.currentTarget ?? ev.target);
+	os.popupMenu(
+		[
+			{
+				text: i18n.ts.remove,
+				icon: "ti ti-x",
+				danger: true,
+				action: async () => {
+					if (!list.value) return;
+					misskeyApi("users/lists/pull", {
+						listId: list.value.id,
+						userId: item.userId,
+					}).then(() => {
+						paginationEl.value?.removeItem(item.id);
+					});
+				},
+			},
+		],
+		ev.currentTarget ?? ev.target,
+	);
 }
 
 async function showMembershipMenu(item, ev) {
 	const withRepliesRef = ref(item.withReplies);
 
-	os.popupMenu([{
-		type: 'switch',
-		text: i18n.ts.showRepliesToOthersInTimeline,
-		icon: 'ti ti-messages',
-		ref: withRepliesRef,
-	}], ev.currentTarget ?? ev.target);
+	os.popupMenu(
+		[
+			{
+				type: "switch",
+				text: i18n.ts.showRepliesToOthersInTimeline,
+				icon: "ti ti-messages",
+				ref: withRepliesRef,
+			},
+		],
+		ev.currentTarget ?? ev.target,
+	);
 
-	watch(withRepliesRef, withReplies => {
-		misskeyApi('users/lists/update-membership', {
+	watch(withRepliesRef, (withReplies) => {
+		misskeyApi("users/lists/update-membership", {
 			listId: list.value!.id,
 			userId: item.userId,
 			withReplies,
@@ -158,21 +198,21 @@ async function showMembershipMenu(item, ev) {
 async function deleteList() {
 	if (!list.value) return;
 	const { canceled } = await os.confirm({
-		type: 'warning',
+		type: "warning",
 		text: i18n.tsx.removeAreYouSure({ x: list.value.name }),
 	});
 	if (canceled) return;
 
-	await os.apiWithDialog('users/lists/delete', {
+	await os.apiWithDialog("users/lists/delete", {
 		listId: list.value.id,
 	});
 	userListsCache.delete();
-	mainRouter.push('/my/lists');
+	mainRouter.push("/my/lists");
 }
 
 async function updateSettings() {
 	if (!list.value) return;
-	await os.apiWithDialog('users/lists/update', {
+	await os.apiWithDialog("users/lists/update", {
 		listId: list.value.id,
 		name: name.value,
 		isPublic: isPublic.value,
@@ -192,7 +232,7 @@ const headerTabs = computed(() => []);
 
 definePage(() => ({
 	title: list.value ? list.value.name : i18n.ts.lists,
-	icon: 'ti ti-list',
+	icon: "ti ti-list",
 }));
 </script>
 

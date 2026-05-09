@@ -3,53 +3,54 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import ms from 'ms';
-import type { PagesRepository, UsersRepository } from '@/models/_.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { DI } from '@/di-symbols.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { RoleService } from '@/core/RoleService.js';
-import { ApiError } from '../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import ms from "ms";
+import type { PagesRepository, UsersRepository } from "@/models/_.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { DI } from "@/di-symbols.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
+import { RoleService } from "@/core/RoleService.js";
+import { ApiError } from "../../error.js";
 
 export const meta = {
-	tags: ['pages'],
+	tags: ["pages"],
 
 	requireCredential: true,
 
-	kind: 'write:pages',
+	kind: "write:pages",
 
 	errors: {
 		noSuchPage: {
-			message: 'No such page.',
-			code: 'NO_SUCH_PAGE',
-			id: 'eb0c6e1d-d519-4764-9486-52a7e1c6392a',
+			message: "No such page.",
+			code: "NO_SUCH_PAGE",
+			id: "eb0c6e1d-d519-4764-9486-52a7e1c6392a",
 		},
 
 		accessDenied: {
-			message: 'Access denied.',
-			code: 'ACCESS_DENIED',
-			id: '8b741b3e-2c22-44b3-a15f-29949aa1601e',
+			message: "Access denied.",
+			code: "ACCESS_DENIED",
+			id: "8b741b3e-2c22-44b3-a15f-29949aa1601e",
 		},
 	},
 
 	// 300 calls per hour (match update)
 	limit: {
-		duration: ms('1hour'),
+		duration: ms("1hour"),
 		max: 300,
 	},
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		pageId: { type: 'string', format: 'misskey:id' },
+		pageId: { type: "string", format: "misskey:id" },
 	},
-	required: ['pageId'],
+	required: ["pageId"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.pagesRepository)
 		private pagesRepository: PagesRepository,
@@ -67,15 +68,17 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				throw new ApiError(meta.errors.noSuchPage);
 			}
 
-			if (!await this.roleService.isModerator(me) && page.userId !== me.id) {
+			if (!(await this.roleService.isModerator(me)) && page.userId !== me.id) {
 				throw new ApiError(meta.errors.accessDenied);
 			}
 
 			await this.pagesRepository.delete(page.id);
 
 			if (page.userId !== me.id) {
-				const user = await this.usersRepository.findOneByOrFail({ id: page.userId });
-				this.moderationLogService.log(me, 'deletePage', {
+				const user = await this.usersRepository.findOneByOrFail({
+					id: page.userId,
+				});
+				this.moderationLogService.log(me, "deletePage", {
 					pageId: page.id,
 					pageUserId: page.userId,
 					pageUserUsername: user.username,

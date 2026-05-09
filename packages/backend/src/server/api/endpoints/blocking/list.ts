@@ -3,27 +3,29 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { BlockingsRepository } from '@/models/_.js';
-import { QueryService } from '@/core/QueryService.js';
-import { BlockingEntityService } from '@/core/entities/BlockingEntityService.js';
-import { DI } from '@/di-symbols.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { BlockingsRepository } from "@/models/_.js";
+import { QueryService } from "@/core/QueryService.js";
+import { BlockingEntityService } from "@/core/entities/BlockingEntityService.js";
+import { DI } from "@/di-symbols.js";
 
 export const meta = {
-	tags: ['account'],
+	tags: ["account"],
 
 	requireCredential: true,
 
-	kind: 'read:blocks',
+	kind: "read:blocks",
 
 	res: {
-		type: 'array',
-		optional: false, nullable: false,
+		type: "array",
+		optional: false,
+		nullable: false,
 		items: {
-			type: 'object',
-			optional: false, nullable: false,
-			ref: 'Blocking',
+			type: "object",
+			optional: false,
+			nullable: false,
+			ref: "Blocking",
 		},
 	},
 
@@ -35,17 +37,18 @@ export const meta = {
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		limit: { type: 'integer', minimum: 1, maximum: 100, default: 30 },
-		sinceId: { type: 'string', format: 'misskey:id' },
-		untilId: { type: 'string', format: 'misskey:id' },
+		limit: { type: "integer", minimum: 1, maximum: 100, default: 30 },
+		sinceId: { type: "string", format: "misskey:id" },
+		untilId: { type: "string", format: "misskey:id" },
 	},
 	required: [],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.blockingsRepository)
 		private blockingsRepository: BlockingsRepository,
@@ -54,12 +57,15 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private queryService: QueryService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const query = this.queryService.makePaginationQuery(this.blockingsRepository.createQueryBuilder('blocking'), ps.sinceId, ps.untilId)
-				.andWhere('blocking.blockerId = :meId', { meId: me.id });
+			const query = this.queryService
+				.makePaginationQuery(
+					this.blockingsRepository.createQueryBuilder("blocking"),
+					ps.sinceId,
+					ps.untilId,
+				)
+				.andWhere("blocking.blockerId = :meId", { meId: me.id });
 
-			const blockings = await query
-				.limit(ps.limit)
-				.getMany();
+			const blockings = await query.limit(ps.limit).getMany();
 
 			return await this.blockingEntityService.packMany(blockings, me);
 		});

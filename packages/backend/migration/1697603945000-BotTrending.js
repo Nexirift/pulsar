@@ -4,13 +4,17 @@
  */
 
 export class BotTrending1697603945000 {
-    name = 'BotTrending1697603945000'
+	name = "BotTrending1697603945000";
 
-    async up(queryRunner) {
-        await queryRunner.query(`ALTER TABLE "meta" ADD "enableBotTrending" boolean NOT NULL DEFAULT true`);
-    }
+	async up(queryRunner) {
+		await queryRunner.query(
+			`ALTER TABLE "meta" ADD "enableBotTrending" boolean NOT NULL DEFAULT true`,
+		);
+	}
 
-    async down(queryRunner) {
-        await queryRunner.query(`ALTER TABLE "meta" DROP COLUMN "enableBotTrending"`);
-    }
+	async down(queryRunner) {
+		await queryRunner.query(
+			`ALTER TABLE "meta" DROP COLUMN "enableBotTrending"`,
+		);
+	}
 }

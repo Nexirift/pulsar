@@ -17,7 +17,7 @@ thisPostIsMissingAltTextCancel: "Huỷ"
 thisPostIsMissingAltTextIgnore: "Đăng bài viết vẫn được"
 thisPostIsMissingAltText: "Một trong các tệp đính kèm vào bài viết này bị thiếu văn bản thay thế. Vui lòng đảm bảo tất cả các tệp đính kèm đều có văn bản thay thế."
 _timelineDescription:
-    bubble: "Trong dòng thời gian Điều hảo huyền, bạn có thể xem các bài viết từ các máy chủ được kết nối do quản trị viên của bạn chọn."
+  bubble: "Trong dòng thời gian Điều hảo huyền, bạn có thể xem các bài viết từ các máy chủ được kết nối do quản trị viên của bạn chọn."
 
 scheduleNoteFailed: "Đăng bài viết theo lịch trình không thành công"
 scheduleNotePosted: "Bài viết theo lịch trình đã được đăng"
@@ -28,20 +28,20 @@ postOn: "Đăng vào"
 scheduledNotes: "Bài viết đã lên lịch"
 
 _timelines:
-    bubble: "Điều hảo huyền"
+  bubble: "Điều hảo huyền"
 
 _externalNavigationWarning:
-    title: "Điều hướng đến một trang web bên ngoài"
-    description: "Rời khỏi {host} và đi đến một trang web bên ngoài"
-    trustThisDomain: "Tin tưởng tên miền này trên thiết bị này trong tương lai"
+  title: "Điều hướng đến một trang web bên ngoài"
+  description: "Rời khỏi {host} và đi đến một trang web bên ngoài"
+  trustThisDomain: "Tin tưởng tên miền này trên thiết bị này trong tương lai"
 misskeyUpdated: "Sharkey vừa được cập nhật!"
 mutuals: "Theo dõi nhau"
 
 _moderationLogTypes:
-    approve: "Đã chấp thuận"
-    decline: "Từ chối"
-    setMandatoryCW: "Đặt cảnh báo nội dung cho người dùng"
-    rejectRemoteInstanceReports: "Báo cáo bị từ chối từ máy chủ từ xa"
-    acceptRemoteInstanceReports: "Đã chấp nhận báo cáo từ máy chủ từ xa"
-    rejectQuotesUser: "Đã chặn/Xóa bài đăng trích dẫn của người dùng"
-    allowQuotesUser: "Cho phép trích dẫn bài đăng từ người dùng"
+  approve: "Đã chấp thuận"
+  decline: "Từ chối"
+  setMandatoryCW: "Đặt cảnh báo nội dung cho người dùng"
+  rejectRemoteInstanceReports: "Báo cáo bị từ chối từ máy chủ từ xa"
+  acceptRemoteInstanceReports: "Đã chấp nhận báo cáo từ máy chủ từ xa"
+  rejectQuotesUser: "Đã chặn/Xóa bài đăng trích dẫn của người dùng"
+  allowQuotesUser: "Cho phép trích dẫn bài đăng từ người dùng"

@@ -23,7 +23,7 @@ LimitInfo objects (returned by `SkRateLimitService.limit()`) can be passed to `r
 The defined headers are:
 
 | Header                  | Definition                                                                                                                                                                                                     | Example                    |
-|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------|
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
 | `X-RateLimit-Remaining` | Number of calls that can be made without triggering the rate limit. Will be zero if the limit is already exceeded, or will be exceeded by the next request.                                                    | `X-RateLimit-Remaining: 1` |
 | `X-RateLimit-Clear`     | Time in seconds required to completely clear the rate limit "bucket".                                                                                                                                          | `X-RateLimit-Clear: 1.5`   |
 | `X-RateLimit-Reset`     | Contains the number of seconds to wait before retrying the current request. Clients should delay for at least this long before making another call. Only included if the rate limit has already been exceeded. | `X-RateLimit-Reset: 0.755` |
@@ -78,7 +78,7 @@ The Atomic Leaky Bucket algorithm is described here, in pseudocode:
 # * Drip Size - How much to decrement the counter
 # * Timestamp - UNIX timestamp of last bucket drip
 # * Delta Counter - Difference between current and expected counter value
-# * Delta Timestamp - Difference between current and expected timestamp value 
+# * Delta Timestamp - Difference between current and expected timestamp value
 
 # 0 - Calculations
 dripRate = ceil((limit.dripRate ?? 1000) * factor);
@@ -154,7 +154,7 @@ if (blocked) {
 
 ## Notes, Resources, and Further Reading
 
-* https://en.wikipedia.org/wiki/Leaky_bucket#As_a_meter
-* https://ietf-wg-httpapi.github.io/ratelimit-headers/darrelmiller-policyname/draft-ietf-httpapi-ratelimit-headers.txt
-* https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
-* https://stackoverflow.com/a/16022625
+- https://en.wikipedia.org/wiki/Leaky_bucket#As_a_meter
+- https://ietf-wg-httpapi.github.io/ratelimit-headers/darrelmiller-policyname/draft-ietf-httpapi-ratelimit-headers.txt
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
+- https://stackoverflow.com/a/16022625

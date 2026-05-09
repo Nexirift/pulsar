@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-declare module 'os-utils' {
+declare module "os-utils" {
 	type FreeCommandCallback = (usedmem: number) => void;
 
 	type HarddriveCallback = (total: number, free: number, used: number) => void;
@@ -25,7 +25,10 @@ declare module 'os-utils' {
 	export function harddrive(callback: HarddriveCallback): void;
 
 	export function getProcesses(callback: GetProcessesCallback): void;
-	export function getProcesses(nProcess: number, callback: GetProcessesCallback): void;
+	export function getProcesses(
+		nProcess: number,
+		callback: GetProcessesCallback,
+	): void;
 
 	export function allLoadavg(): string;
 	export function loadavg(_time?: number): number;

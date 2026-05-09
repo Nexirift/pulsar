@@ -4,24 +4,24 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div class="vrvdvrys">
-	<XPie class="pie" :value="usage"/>
-	<div>
-		<p><i class="ti ti-cpu"></i>CPU</p>
-		<p>{{ meta.cpu.cores }} Logical cores</p>
-		<p>{{ meta.cpu.model }}</p>
+	<div class="vrvdvrys">
+		<XPie class="pie" :value="usage" />
+		<div>
+			<p><i class="ti ti-cpu"></i>CPU</p>
+			<p>{{ meta.cpu.cores }} Logical cores</p>
+			<p>{{ meta.cpu.model }}</p>
+		</div>
 	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onBeforeUnmount, ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import XPie from './pie.vue';
+import { onMounted, onBeforeUnmount, ref } from "vue";
+import * as Misskey from "misskey-js";
+import XPie from "./pie.vue";
 
 const props = defineProps<{
-	connection: Misskey.ChannelConnection<Misskey.Channels['serverStats']>,
-	meta: Misskey.entities.ServerInfoResponse
+	connection: Misskey.ChannelConnection<Misskey.Channels["serverStats"]>;
+	meta: Misskey.entities.ServerInfoResponse;
 }>();
 
 const usage = ref<number>(0);
@@ -31,11 +31,11 @@ function onStats(stats: Misskey.entities.ServerStats) {
 }
 
 onMounted(() => {
-	props.connection.on('stats', onStats);
+	props.connection.on("stats", onStats);
 });
 
 onBeforeUnmount(() => {
-	props.connection.off('stats', onStats);
+	props.connection.off("stats", onStats);
 });
 </script>
 

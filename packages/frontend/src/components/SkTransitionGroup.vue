@@ -9,17 +9,21 @@ This component exists because Misskey's implementation of the reduced animation 
 -->
 
 <template>
-<TransitionGroup v-if="animate ?? prefer.s.animation" v-bind="props" :class="props.class">
-	<slot></slot>
-</TransitionGroup>
-<component :is="tag" v-else :class="props.class">
-	<slot></slot>
-</component>
+	<TransitionGroup
+		v-if="animate ?? prefer.s.animation"
+		v-bind="props"
+		:class="props.class"
+	>
+		<slot></slot>
+	</TransitionGroup>
+	<component :is="tag" v-else :class="props.class">
+		<slot></slot>
+	</component>
 </template>
 
 <script setup lang="ts">
-import type { TransitionGroupProps } from 'vue';
-import { prefer } from '@/preferences';
+import type { TransitionGroupProps } from "vue";
+import { prefer } from "@/preferences";
 
 // This is a "best guess" type.
 // If any valid :class binding produces a type error here, then please change this to match.
@@ -41,7 +45,7 @@ interface SkTransitionGroupProps extends TransitionGroupProps {
 }
 
 const props = withDefaults(defineProps<SkTransitionGroupProps>(), {
-	tag: 'div',
+	tag: "div",
 	class: undefined,
 	animate: undefined,
 });

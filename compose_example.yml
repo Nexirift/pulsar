@@ -1,13 +1,13 @@
 services:
   web:
-#   image: code.nexirift.com/nexirift/pulsar:latest
+    #   image: git.codeguilds.org/nexirift/pulsar:latest
     build: .
     restart: always
     links:
       - db
       - redis
-#     - mcaptcha
-#     - meilisearch
+    #     - mcaptcha
+    #     - meilisearch
     depends_on:
       db:
         condition: service_healthy
@@ -94,7 +94,6 @@ services:
 #      - shonk
 #    volumes:
 #      - ./meili_data:/meili_data
-
 
 networks:
   shonk:

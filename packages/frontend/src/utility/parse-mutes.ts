@@ -3,14 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as os from '@/os';
-import { i18n } from '@/i18n';
+import * as os from "@/os";
+import { i18n } from "@/i18n";
 
 export type Mutes = (string | string[])[];
 
 export function parseMutes(mutes: string): Mutes {
 	// split into lines, remove empty lines and unnecessary whitespace
-	const lines = mutes.trim().split('\n').map(line => line.trim()).filter(line => line !== '');
+	const lines = mutes
+		.trim()
+		.split("\n")
+		.map((line) => line.trim())
+		.filter((line) => line !== "");
 	const outLines: Mutes = Array.from(lines);
 
 	// check each line if it is a RegExp or not
@@ -25,15 +29,18 @@ export function parseMutes(mutes: string): Mutes {
 			} catch (err: any) {
 				// invalid syntax: do not save, do not reset changed flag
 				os.alert({
-					type: 'error',
+					type: "error",
 					title: i18n.ts.regexpError,
-					text: i18n.tsx.regexpErrorDescription({ tab: 'word mute', line: i + 1 }) + '\n' + err.toString(),
+					text:
+						i18n.tsx.regexpErrorDescription({ tab: "word mute", line: i + 1 }) +
+						"\n" +
+						err.toString(),
 				});
 				// re-throw error so these invalid settings are not saved
 				throw err;
 			}
 		} else {
-			outLines[i] = line.split(' ');
+			outLines[i] = line.split(" ");
 		}
 	}
 

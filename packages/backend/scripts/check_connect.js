@@ -3,14 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import Redis from 'ioredis';
-import { loadConfig } from '../built/config.js';
-import { createPostgresDataSource } from '../built/postgres.js';
-import { LoggerService } from '../built/core/LoggerService.js';
-import { NativeTimeService } from '../built/global/TimeService.js';
-import { EnvService } from '../built/global/EnvService.js';
+import Redis from "ioredis";
+import { loadConfig } from "../built/config.js";
+import { createPostgresDataSource } from "../built/postgres.js";
+import { LoggerService } from "../built/core/LoggerService.js";
+import { NativeTimeService } from "../built/global/TimeService.js";
+import { EnvService } from "../built/global/EnvService.js";
 
-const loggerService = new LoggerService(console, new NativeTimeService(), new EnvService());
+const loggerService = new LoggerService(
+	console,
+	new NativeTimeService(),
+	new EnvService(),
+);
 const config = loadConfig(loggerService);
 
 // createPostgresDataSource handles primaries and replicas automatically.
@@ -31,7 +35,7 @@ async function connectToRedis(redisOptions) {
 			reconnectOnError: false,
 			showFriendlyErrorStack: true,
 		});
-		redis.on('error', e => reject(e));
+		redis.on("error", (e) => reject(e));
 
 		try {
 			await redis.connect();
@@ -46,18 +50,17 @@ async function connectToRedis(redisOptions) {
 
 // If not all of these are defined, the default one gets reused.
 // so we use a Set to only try connecting once to each **uniq** redis.
-const promises = Array
-	.from(new Set([
+const promises = Array.from(
+	new Set([
 		config.redis,
 		config.redisForPubsub,
 		config.redisForJobQueue,
 		config.redisForTimelines,
 		config.redisForReactions,
 		config.redisForRateLimit,
-	]))
+	]),
+)
 	.map(connectToRedis)
-	.concat([
-		connectToPostgres()
-	]);
+	.concat([connectToPostgres()]);
 
 await Promise.all(promises);

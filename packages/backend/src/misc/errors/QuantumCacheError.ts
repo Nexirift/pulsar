@@ -10,11 +10,7 @@ export class QuantumCacheError extends Error {
 	 */
 	public readonly cacheName: string;
 
-	constructor(
-		cacheName: string,
-		message?: string,
-		options?: ErrorOptions,
-	) {
+	constructor(cacheName: string, message?: string, options?: ErrorOptions) {
 		const actualMessage = message
 			? `Error in cache ${cacheName}: ${message}`
 			: `Error in cache ${cacheName}.`;

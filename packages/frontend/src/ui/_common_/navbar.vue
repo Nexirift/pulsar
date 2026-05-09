@@ -4,60 +4,171 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="[$style.root, { [$style.iconOnly]: iconOnly }]">
-	<div :class="$style.body">
-		<div :class="$style.top">
-			<div :class="$style.banner" :style="{ backgroundImage: `url(${ instance.bannerUrl })` }"></div>
-			<button v-tooltip.noDelay.right="instance.name ?? i18n.ts.instance" class="_button" :class="$style.instance" @click="openInstanceMenu">
-				<img :src="instance.sidebarLogoUrl && !iconOnly ? instance.sidebarLogoUrl : instance.iconUrl || '/favicon.ico'" alt="" :class="instance.sidebarLogoUrl && !iconOnly ? $style.wideInstanceIcon : $style.instanceIcon" style="viewTransitionName: navbar-serverIcon;"/>
-			</button>
-		</div>
-		<div :class="$style.middle">
-			<MkA v-tooltip.noDelay.right="i18n.ts.timeline" :class="$style.item" :activeClass="$style.active" to="/" exact>
-				<i :class="$style.itemIcon" class="ti ti-home ti-fw" style="viewTransitionName: navbar-homeIcon;"></i><span :class="$style.itemText">{{ i18n.ts.timeline }}</span>
-			</MkA>
-			<template v-for="item in prefer.r.menu.value">
-				<div v-if="item === '-'" :class="$style.divider"></div>
-				<component
-					:is="navbarItemDef[item].to ? 'MkA' : 'button'"
-					v-else-if="navbarItemDef[item] && (navbarItemDef[item].show !== false)"
-					v-tooltip.noDelay.right="navbarItemDef[item].title"
+	<div :class="[$style.root, { [$style.iconOnly]: iconOnly }]">
+		<div :class="$style.body">
+			<div :class="$style.top">
+				<div
+					:class="$style.banner"
+					:style="{ backgroundImage: `url(${instance.bannerUrl})` }"
+				></div>
+				<button
+					v-tooltip.noDelay.right="instance.name ?? i18n.ts.instance"
 					class="_button"
-					:class="[$style.item, { [$style.active]: navbarItemDef[item].active }]"
-					:activeClass="$style.active"
-					:to="navbarItemDef[item].to"
-					v-on="item === 'widgets' && onWidgetButtonClick ? { click: onWidgetButtonClick } : navbarItemDef[item].action ? { click: navbarItemDef[item].action } : {}"
+					:class="$style.instance"
+					@click="openInstanceMenu"
 				>
-					<i class="ti-fw" :class="[$style.itemIcon, navbarItemDef[item].icon]" :style="{ viewTransitionName: 'navbar-item-' + item }"></i><span :class="$style.itemText">{{ navbarItemDef[item].title }}</span>
-					<span v-if="navbarItemDef[item].indicated" :class="$style.itemIndicator" class="_blink">
-						<span v-if="navbarItemDef[item].indicateValue" class="_indicateCounter" :class="$style.itemIndicateValueIcon">{{ navbarItemDef[item].indicateValue }}</span>
-						<i v-else class="_indicatorCircle"></i>
-					</span>
-				</component>
-			</template>
-			<div :class="$style.divider"></div>
-			<MkA v-if="$i != null && ($i.isAdmin || $i.isModerator)" v-tooltip.noDelay.right="i18n.ts.controlPanel" :class="$style.item" :activeClass="$style.active" to="/admin">
-				<i :class="$style.itemIcon" class="ti ti-dashboard ti-fw" style="viewTransitionName: navbar-controlPanel;"></i><span :class="$style.itemText">{{ i18n.ts.controlPanel }}</span>
-			</MkA>
-			<button class="_button" :class="$style.item" @click="more">
-				<i :class="$style.itemIcon" class="ti ti-grid-dots ti-fw" style="viewTransitionName: navbar-more;"></i><span :class="$style.itemText">{{ i18n.ts.more }}</span>
-				<span v-if="otherMenuItemIndicated" :class="$style.itemIndicator" class="_blink"><i class="_indicatorCircle"></i></span>
-			</button>
-			<MkA v-tooltip.noDelay.right="i18n.ts.settings" :class="$style.item" :activeClass="$style.active" to="/settings">
-				<i :class="$style.itemIcon" class="ti ti-settings ti-fw" style="viewTransitionName: navbar-settings;"></i><span :class="$style.itemText">{{ i18n.ts.settings }}</span>
-			</MkA>
+					<img
+						:src="
+							instance.sidebarLogoUrl && !iconOnly
+								? instance.sidebarLogoUrl
+								: instance.iconUrl || '/favicon.ico'
+						"
+						alt=""
+						:class="
+							instance.sidebarLogoUrl && !iconOnly
+								? $style.wideInstanceIcon
+								: $style.instanceIcon
+						"
+						style="viewtransitionname: navbar-serverIcon"
+					/>
+				</button>
+			</div>
+			<div :class="$style.middle">
+				<MkA
+					v-tooltip.noDelay.right="i18n.ts.timeline"
+					:class="$style.item"
+					:activeClass="$style.active"
+					to="/"
+					exact
+				>
+					<i
+						:class="$style.itemIcon"
+						class="ti ti-home ti-fw"
+						style="viewtransitionname: navbar-homeIcon"
+					></i
+					><span :class="$style.itemText">{{ i18n.ts.timeline }}</span>
+				</MkA>
+				<template v-for="item in prefer.r.menu.value">
+					<div v-if="item === '-'" :class="$style.divider"></div>
+					<component
+						:is="navbarItemDef[item].to ? 'MkA' : 'button'"
+						v-else-if="
+							navbarItemDef[item] && navbarItemDef[item].show !== false
+						"
+						v-tooltip.noDelay.right="navbarItemDef[item].title"
+						class="_button"
+						:class="[
+							$style.item,
+							{ [$style.active]: navbarItemDef[item].active },
+						]"
+						:activeClass="$style.active"
+						:to="navbarItemDef[item].to"
+						v-on="
+							item === 'widgets' && onWidgetButtonClick
+								? { click: onWidgetButtonClick }
+								: navbarItemDef[item].action
+									? { click: navbarItemDef[item].action }
+									: {}
+						"
+					>
+						<i
+							class="ti-fw"
+							:class="[$style.itemIcon, navbarItemDef[item].icon]"
+							:style="{ viewTransitionName: 'navbar-item-' + item }"
+						></i
+						><span :class="$style.itemText">{{
+							navbarItemDef[item].title
+						}}</span>
+						<span
+							v-if="navbarItemDef[item].indicated"
+							:class="$style.itemIndicator"
+							class="_blink"
+						>
+							<span
+								v-if="navbarItemDef[item].indicateValue"
+								class="_indicateCounter"
+								:class="$style.itemIndicateValueIcon"
+								>{{ navbarItemDef[item].indicateValue }}</span
+							>
+							<i v-else class="_indicatorCircle"></i>
+						</span>
+					</component>
+				</template>
+				<div :class="$style.divider"></div>
+				<MkA
+					v-if="$i != null && ($i.isAdmin || $i.isModerator)"
+					v-tooltip.noDelay.right="i18n.ts.controlPanel"
+					:class="$style.item"
+					:activeClass="$style.active"
+					to="/admin"
+				>
+					<i
+						:class="$style.itemIcon"
+						class="ti ti-dashboard ti-fw"
+						style="viewtransitionname: navbar-controlPanel"
+					></i
+					><span :class="$style.itemText">{{ i18n.ts.controlPanel }}</span>
+				</MkA>
+				<button class="_button" :class="$style.item" @click="more">
+					<i
+						:class="$style.itemIcon"
+						class="ti ti-grid-dots ti-fw"
+						style="viewtransitionname: navbar-more"
+					></i
+					><span :class="$style.itemText">{{ i18n.ts.more }}</span>
+					<span
+						v-if="otherMenuItemIndicated"
+						:class="$style.itemIndicator"
+						class="_blink"
+						><i class="_indicatorCircle"></i
+					></span>
+				</button>
+				<MkA
+					v-tooltip.noDelay.right="i18n.ts.settings"
+					:class="$style.item"
+					:activeClass="$style.active"
+					to="/settings"
+				>
+					<i
+						:class="$style.itemIcon"
+						class="ti ti-settings ti-fw"
+						style="viewtransitionname: navbar-settings"
+					></i
+					><span :class="$style.itemText">{{ i18n.ts.settings }}</span>
+				</MkA>
+			</div>
+			<div :class="$style.bottom">
+				<button
+					v-tooltip.noDelay.right="i18n.ts.note"
+					class="_button"
+					:class="[$style.post]"
+					data-cy-open-post-form
+					@click="
+						() => {
+							os.post();
+						}
+					"
+				>
+					<i class="ti ti-pencil ti-fw" :class="$style.postIcon"></i
+					><span :class="$style.postText">{{ i18n.ts.note }}</span>
+				</button>
+				<button
+					v-if="$i != null"
+					v-tooltip.noDelay.right="`${i18n.ts.account}: @${$i.username}`"
+					class="_button"
+					:class="[$style.account]"
+					@click="openAccountMenu"
+				>
+					<MkAvatar
+						:user="$i"
+						:class="$style.avatar"
+						style="viewtransitionname: navbar-avatar"
+					/><MkAcct class="_nowrap" :class="$style.acct" :user="$i" />
+				</button>
+			</div>
 		</div>
-		<div :class="$style.bottom">
-			<button v-tooltip.noDelay.right="i18n.ts.note" class="_button" :class="[$style.post]" data-cy-open-post-form @click="() => { os.post(); }">
-				<i class="ti ti-pencil ti-fw" :class="$style.postIcon"></i><span :class="$style.postText">{{ i18n.ts.note }}</span>
-			</button>
-			<button v-if="$i != null" v-tooltip.noDelay.right="`${i18n.ts.account}: @${$i.username}`" class="_button" :class="[$style.account]" @click="openAccountMenu">
-				<MkAvatar :user="$i" :class="$style.avatar" style="viewTransitionName: navbar-avatar;"/><MkAcct class="_nowrap" :class="$style.acct" :user="$i"/>
-			</button>
-		</div>
-	</div>
 
-	<!--
+		<!--
 	<svg viewBox="0 0 16 48" :class="$style.subButtonShape">
 		<g transform="matrix(0.333333,0,0,0.222222,0.000895785,13.3333)">
 			<path d="M23.935,-24C37.223,-24 47.995,-7.842 47.995,12.09C47.995,34.077 47.995,62.07 47.995,84.034C47.995,93.573 45.469,102.721 40.972,109.466C36.475,116.211 30.377,120 24.018,120L23.997,120C10.743,120 -0.003,136.118 -0.003,156C-0.003,156 -0.003,156 -0.003,156L-0.003,-60L-0.003,-59.901C-0.003,-50.379 2.519,-41.248 7.007,-34.515C11.496,-27.782 17.584,-24 23.931,-24C23.932,-24 23.934,-24 23.935,-24Z" style="fill:var(--MI_THEME-navBg);"/>
@@ -65,42 +176,72 @@ SPDX-License-Identifier: AGPL-3.0-only
 	</svg>
 	-->
 
-	<div v-if="!forceIconOnly && prefer.r.showNavbarSubButtons.value" :class="$style.subButtons">
-		<div :class="[$style.subButton, $style.menuEditButton]">
-			<svg viewBox="0 0 16 64" :class="$style.subButtonShape">
-				<g transform="matrix(0.333333,0,0,0.222222,0.000895785,21.3333)">
-					<path d="M47.488,7.995C47.79,10.11 47.943,12.266 47.943,14.429C47.997,26.989 47.997,84 47.997,84C47.997,84 44.018,118.246 23.997,133.5C-0.374,152.07 -0.003,192 -0.003,192L-0.003,-96C-0.003,-96 0.151,-56.216 23.997,-37.5C40.861,-24.265 46.043,-1.243 47.488,7.995Z" style="fill:var(--MI_THEME-navBg);"/>
-				</g>
-			</svg>
-			<button class="_button" :class="$style.subButtonClickable" @click="menuEdit"><i :class="$style.subButtonIcon" class="ti ti-settings-2"></i></button>
-		</div>
-		<div :class="$style.subButtonGapFill"></div>
-		<div :class="$style.subButtonGapFillDivider"></div>
-		<div :class="[$style.subButton, $style.toggleButton]">
-			<svg viewBox="0 0 16 64" :class="$style.subButtonShape">
-				<g transform="matrix(0.333333,0,0,0.222222,0.000895785,21.3333)">
-					<path d="M47.488,7.995C47.79,10.11 47.943,12.266 47.943,14.429C47.997,26.989 47.997,84 47.997,84C47.997,84 44.018,118.246 23.997,133.5C-0.374,152.07 -0.003,192 -0.003,192L-0.003,-96C-0.003,-96 0.151,-56.216 23.997,-37.5C40.861,-24.265 46.043,-1.243 47.488,7.995Z" style="fill:var(--MI_THEME-navBg);"/>
-				</g>
-			</svg>
-			<button class="_button" :class="$style.subButtonClickable" @click="toggleIconOnly"><i v-if="iconOnly" class="ti ti-chevron-right" :class="$style.subButtonIcon"></i><i v-else class="ti ti-chevron-left" :class="$style.subButtonIcon"></i></button>
+		<div
+			v-if="!forceIconOnly && prefer.r.showNavbarSubButtons.value"
+			:class="$style.subButtons"
+		>
+			<div :class="[$style.subButton, $style.menuEditButton]">
+				<svg viewBox="0 0 16 64" :class="$style.subButtonShape">
+					<g transform="matrix(0.333333,0,0,0.222222,0.000895785,21.3333)">
+						<path
+							d="M47.488,7.995C47.79,10.11 47.943,12.266 47.943,14.429C47.997,26.989 47.997,84 47.997,84C47.997,84 44.018,118.246 23.997,133.5C-0.374,152.07 -0.003,192 -0.003,192L-0.003,-96C-0.003,-96 0.151,-56.216 23.997,-37.5C40.861,-24.265 46.043,-1.243 47.488,7.995Z"
+							style="fill: var(--MI_THEME-navBg)"
+						/>
+					</g>
+				</svg>
+				<button
+					class="_button"
+					:class="$style.subButtonClickable"
+					@click="menuEdit"
+				>
+					<i :class="$style.subButtonIcon" class="ti ti-settings-2"></i>
+				</button>
+			</div>
+			<div :class="$style.subButtonGapFill"></div>
+			<div :class="$style.subButtonGapFillDivider"></div>
+			<div :class="[$style.subButton, $style.toggleButton]">
+				<svg viewBox="0 0 16 64" :class="$style.subButtonShape">
+					<g transform="matrix(0.333333,0,0,0.222222,0.000895785,21.3333)">
+						<path
+							d="M47.488,7.995C47.79,10.11 47.943,12.266 47.943,14.429C47.997,26.989 47.997,84 47.997,84C47.997,84 44.018,118.246 23.997,133.5C-0.374,152.07 -0.003,192 -0.003,192L-0.003,-96C-0.003,-96 0.151,-56.216 23.997,-37.5C40.861,-24.265 46.043,-1.243 47.488,7.995Z"
+							style="fill: var(--MI_THEME-navBg)"
+						/>
+					</g>
+				</svg>
+				<button
+					class="_button"
+					:class="$style.subButtonClickable"
+					@click="toggleIconOnly"
+				>
+					<i
+						v-if="iconOnly"
+						class="ti ti-chevron-right"
+						:class="$style.subButtonIcon"
+					></i
+					><i
+						v-else
+						class="ti ti-chevron-left"
+						:class="$style.subButtonIcon"
+					></i>
+				</button>
+			</div>
 		</div>
 	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { computed, defineAsyncComponent, ref, watch } from 'vue';
-import { openInstanceMenu } from './common.js';
-import * as os from '@/os.js';
-import { navbarItemDef } from '@/navbar.js';
-import { store } from '@/store.js';
-import { i18n } from '@/i18n.js';
-import { instance } from '@/instance.js';
-import { getHTMLElementOrNull } from '@/utility/get-dom-node-or-null.js';
-import { useRouter } from '@/router.js';
-import { prefer } from '@/preferences.js';
-import { openAccountMenu as openAccountMenu_ } from '@/accounts.js';
-import { $i } from '@/i.js';
+import { computed, defineAsyncComponent, ref, watch } from "vue";
+import { openInstanceMenu } from "./common.js";
+import * as os from "@/os.js";
+import { navbarItemDef } from "@/navbar.js";
+import { store } from "@/store.js";
+import { i18n } from "@/i18n.js";
+import { instance } from "@/instance.js";
+import { getHTMLElementOrNull } from "@/utility/get-dom-node-or-null.js";
+import { useRouter } from "@/router.js";
+import { prefer } from "@/preferences.js";
+import { openAccountMenu as openAccountMenu_ } from "@/accounts.js";
+import { $i } from "@/i.js";
 
 const router = useRouter();
 
@@ -109,12 +250,12 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(ev: 'widgetButtonClick'): void;
+	(ev: "widgetButtonClick"): void;
 }>();
 
 const forceIconOnly = ref(window.innerWidth <= 1279);
 const iconOnly = computed(() => {
-	return forceIconOnly.value || (store.r.menuDisplay.value === 'sideIcon');
+	return forceIconOnly.value || store.r.menuDisplay.value === "sideIcon";
 });
 
 const otherMenuItemIndicated = computed(() => {
@@ -129,7 +270,7 @@ function calcViewState() {
 	forceIconOnly.value = window.innerWidth <= 1279;
 }
 
-window.addEventListener('resize', calcViewState);
+window.addEventListener("resize", calcViewState);
 
 watch(store.r.menuDisplay, () => {
 	calcViewState();
@@ -138,31 +279,38 @@ watch(store.r.menuDisplay, () => {
 function toggleIconOnly() {
 	if (window.document.startViewTransition && prefer.s.animation) {
 		window.document.startViewTransition(() => {
-			store.set('menuDisplay', iconOnly.value ? 'sideFull' : 'sideIcon');
+			store.set("menuDisplay", iconOnly.value ? "sideFull" : "sideIcon");
 		});
 	} else {
-		store.set('menuDisplay', iconOnly.value ? 'sideFull' : 'sideIcon');
+		store.set("menuDisplay", iconOnly.value ? "sideFull" : "sideIcon");
 	}
 }
 
 function openAccountMenu(ev: MouseEvent) {
-	openAccountMenu_({
-		withExtraOperation: true,
-	}, ev);
+	openAccountMenu_(
+		{
+			withExtraOperation: true,
+		},
+		ev,
+	);
 }
 
 function more(ev: MouseEvent) {
 	const target = getHTMLElementOrNull(ev.currentTarget ?? ev.target);
 	if (!target) return;
-	const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkLaunchPad.vue')), {
-		src: target,
-	}, {
-		closed: () => dispose(),
-	});
+	const { dispose } = os.popup(
+		defineAsyncComponent(() => import("@/components/MkLaunchPad.vue")),
+		{
+			src: target,
+		},
+		{
+			closed: () => dispose(),
+		},
+	);
 }
 
 function menuEdit() {
-	router.push('/settings/navbar');
+	router.push("/settings/navbar");
 }
 </script>
 
@@ -305,8 +453,16 @@ function menuEdit() {
 		height: 100%;
 		background-size: cover;
 		background-position: center center;
-		-webkit-mask-image: linear-gradient(0deg, rgba(0,0,0,0) 15%, rgba(0,0,0,0.75) 100%);
-		mask-image: linear-gradient(0deg, rgba(0,0,0,0) 15%, rgba(0,0,0,0.75) 100%);
+		-webkit-mask-image: linear-gradient(
+			0deg,
+			rgba(0, 0, 0, 0) 15%,
+			rgba(0, 0, 0, 0.75) 100%
+		);
+		mask-image: linear-gradient(
+			0deg,
+			rgba(0, 0, 0, 0) 15%,
+			rgba(0, 0, 0, 0.75) 100%
+		);
 	}
 
 	.instance {
@@ -369,7 +525,11 @@ function menuEdit() {
 			right: 0;
 			bottom: 0;
 			border-radius: var(--MI-radius-ellipse);
-			background: linear-gradient(90deg, var(--MI_THEME-buttonGradateA), var(--MI_THEME-buttonGradateB));
+			background: linear-gradient(
+				90deg,
+				var(--MI_THEME-buttonGradateA),
+				var(--MI_THEME-buttonGradateB)
+			);
 		}
 
 		&:focus-visible {
@@ -381,7 +541,8 @@ function menuEdit() {
 			}
 		}
 
-		&:hover, &.active {
+		&:hover,
+		&.active {
 			&::before {
 				background: hsl(from var(--MI_THEME-accent) h s calc(l + 10));
 			}
@@ -457,7 +618,10 @@ function menuEdit() {
 
 		&:hover {
 			text-decoration: none;
-			color: light-dark(hsl(from var(--MI_THEME-navFg) h s calc(l - 17)), hsl(from var(--MI_THEME-navFg) h s calc(l + 17)));
+			color: light-dark(
+				hsl(from var(--MI_THEME-navFg) h s calc(l - 17)),
+				hsl(from var(--MI_THEME-navFg) h s calc(l + 17))
+			);
 		}
 
 		&.active {
@@ -473,7 +637,9 @@ function menuEdit() {
 			}
 		}
 
-		&:hover, &.active, &:focus {
+		&:hover,
+		&.active,
+		&:focus {
 			color: var(--MI_THEME-accent);
 
 			&::before {
@@ -600,7 +766,11 @@ function menuEdit() {
 			width: 52px;
 			aspect-ratio: 1/1;
 			border-radius: var(--MI-radius-full);
-			background: linear-gradient(90deg, var(--MI_THEME-buttonGradateA), var(--MI_THEME-buttonGradateB));
+			background: linear-gradient(
+				90deg,
+				var(--MI_THEME-buttonGradateA),
+				var(--MI_THEME-buttonGradateB)
+			);
 		}
 
 		&:focus-visible {
@@ -612,7 +782,8 @@ function menuEdit() {
 			}
 		}
 
-		&:hover, &.active {
+		&:hover,
+		&.active {
 			&::before {
 				background: hsl(from var(--MI_THEME-accent) h s calc(l + 10));
 			}
@@ -680,7 +851,9 @@ function menuEdit() {
 			}
 		}
 
-		&:hover, &.active, &:focus {
+		&:hover,
+		&.active,
+		&:focus {
 			text-decoration: none;
 			color: var(--MI_THEME-accent);
 

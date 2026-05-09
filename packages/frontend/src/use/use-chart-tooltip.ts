@@ -3,27 +3,36 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { onUnmounted, onDeactivated, ref } from 'vue';
-import * as os from '@/os.js';
-import MkChartTooltip from '@/components/MkChartTooltip.vue';
+import { onUnmounted, onDeactivated, ref } from "vue";
+import * as os from "@/os.js";
+import MkChartTooltip from "@/components/MkChartTooltip.vue";
 
-export function useChartTooltip(opts: { position: 'top' | 'middle' } = { position: 'top' }) {
+export function useChartTooltip(
+	opts: { position: "top" | "middle" } = { position: "top" },
+) {
 	const tooltipShowing = ref(false);
 	const tooltipX = ref(0);
 	const tooltipY = ref(0);
 	const tooltipTitle = ref<string | null>(null);
-	const tooltipSeries = ref<{
-		backgroundColor: string;
-		borderColor: string;
-		text: string;
-	}[] | null>(null);
-	const { dispose: disposeTooltipComponent } = os.popup(MkChartTooltip, {
-		showing: tooltipShowing,
-		x: tooltipX,
-		y: tooltipY,
-		title: tooltipTitle,
-		series: tooltipSeries,
-	}, {});
+	const tooltipSeries = ref<
+		| {
+				backgroundColor: string;
+				borderColor: string;
+				text: string;
+		  }[]
+		| null
+	>(null);
+	const { dispose: disposeTooltipComponent } = os.popup(
+		MkChartTooltip,
+		{
+			showing: tooltipShowing,
+			x: tooltipX,
+			y: tooltipY,
+			title: tooltipTitle,
+			series: tooltipSeries,
+		},
+		{},
+	);
 
 	onUnmounted(() => {
 		disposeTooltipComponent();
@@ -50,9 +59,9 @@ export function useChartTooltip(opts: { position: 'top' | 'middle' } = { positio
 
 		tooltipShowing.value = true;
 		tooltipX.value = rect.left + window.scrollX + context.tooltip.caretX;
-		if (opts.position === 'top') {
+		if (opts.position === "top") {
 			tooltipY.value = rect.top + window.scrollY;
-		} else if (opts.position === 'middle') {
+		} else if (opts.position === "middle") {
 			tooltipY.value = rect.top + window.scrollY + context.tooltip.caretY;
 		}
 	}

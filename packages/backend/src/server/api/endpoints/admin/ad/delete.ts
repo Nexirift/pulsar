@@ -3,39 +3,40 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import type { AdsRepository } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { ApiError } from '../../../error.js';
+import { Inject, Injectable } from "@nestjs/common";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import type { AdsRepository } from "@/models/_.js";
+import { DI } from "@/di-symbols.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
+import { ApiError } from "../../../error.js";
 
 export const meta = {
-	tags: ['admin'],
+	tags: ["admin"],
 
 	requireCredential: true,
 	requireModerator: true,
-	kind: 'write:admin:ad',
+	kind: "write:admin:ad",
 
 	errors: {
 		noSuchAd: {
-			message: 'No such ad.',
-			code: 'NO_SUCH_AD',
-			id: 'ccac9863-3a03-416e-b899-8a64041118b1',
+			message: "No such ad.",
+			code: "NO_SUCH_AD",
+			id: "ccac9863-3a03-416e-b899-8a64041118b1",
 		},
 	},
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		id: { type: 'string', format: 'misskey:id' },
+		id: { type: "string", format: "misskey:id" },
 	},
-	required: ['id'],
+	required: ["id"],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.adsRepository)
 		private adsRepository: AdsRepository,
@@ -49,7 +50,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			await this.adsRepository.delete(ad.id);
 
-			this.moderationLogService.log(me, 'deleteAd', {
+			this.moderationLogService.log(me, "deleteAd", {
 				adId: ad.id,
 				ad: ad,
 			});

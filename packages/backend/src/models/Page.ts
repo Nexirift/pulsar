@@ -3,48 +3,56 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Entity, Index, JoinColumn, Column, PrimaryColumn, ManyToOne } from 'typeorm';
-import { id } from './util/id.js';
-import { MiUser } from './User.js';
-import { MiDriveFile } from './DriveFile.js';
+import {
+	Entity,
+	Index,
+	JoinColumn,
+	Column,
+	PrimaryColumn,
+	ManyToOne,
+} from "typeorm";
+import { id } from "./util/id.js";
+import { MiUser } from "./User.js";
+import { MiDriveFile } from "./DriveFile.js";
 
-@Entity('page')
-@Index(['userId', 'name'], { unique: true })
+@Entity("page")
+@Index(["userId", "name"], { unique: true })
 export class MiPage {
 	@PrimaryColumn(id())
 	public id: string;
 
 	@Index()
-	@Column('timestamp with time zone', {
-		comment: 'The updated date of the Page.',
+	@Column("timestamp with time zone", {
+		comment: "The updated date of the Page.",
 	})
 	public updatedAt: Date;
 
-	@Column('varchar', {
+	@Column("varchar", {
 		length: 256,
 	})
 	public title: string;
 
 	@Index()
-	@Column('varchar', {
+	@Column("varchar", {
 		length: 256,
 	})
 	public name: string;
 
-	@Column('varchar', {
-		length: 256, nullable: true,
+	@Column("varchar", {
+		length: 256,
+		nullable: true,
 	})
 	public summary: string | null;
 
-	@Column('boolean')
+	@Column("boolean")
 	public alignCenter: boolean;
 
-	@Column('boolean', {
+	@Column("boolean", {
 		default: false,
 	})
 	public hideTitleWhenPinned: boolean;
 
-	@Column('varchar', {
+	@Column("varchar", {
 		length: 32,
 	})
 	public font: string;
@@ -52,12 +60,12 @@ export class MiPage {
 	@Index()
 	@Column({
 		...id(),
-		comment: 'The ID of author.',
+		comment: "The ID of author.",
 	})
-	public userId: MiUser['id'];
+	public userId: MiUser["id"];
 
-	@ManyToOne(type => MiUser, {
-		onDelete: 'CASCADE',
+	@ManyToOne((type) => MiUser, {
+		onDelete: "CASCADE",
 	})
 	@JoinColumn()
 	public user: MiUser | null;
@@ -66,27 +74,27 @@ export class MiPage {
 		...id(),
 		nullable: true,
 	})
-	public eyeCatchingImageId: MiDriveFile['id'] | null;
+	public eyeCatchingImageId: MiDriveFile["id"] | null;
 
-	@ManyToOne(type => MiDriveFile, {
-		onDelete: 'SET NULL',
+	@ManyToOne((type) => MiDriveFile, {
+		onDelete: "SET NULL",
 	})
 	@JoinColumn()
 	public eyeCatchingImage: MiDriveFile | null;
 
-	@Column('jsonb', {
+	@Column("jsonb", {
 		default: [],
 	})
 	public content: Record<string, any>[];
 
-	@Column('jsonb', {
+	@Column("jsonb", {
 		default: [],
 	})
 	public variables: Record<string, any>[];
 
-	@Column('varchar', {
+	@Column("varchar", {
 		length: 16384,
-		default: '',
+		default: "",
 	})
 	public script: string;
 
@@ -95,17 +103,18 @@ export class MiPage {
 	 * followers ... フォロワーのみ
 	 * specified ... visibleUserIds で指定したユーザーのみ
 	 */
-	@Column('enum', { enum: ['public', 'followers', 'specified'] })
-	public visibility: 'public' | 'followers' | 'specified';
+	@Column("enum", { enum: ["public", "followers", "specified"] })
+	public visibility: "public" | "followers" | "specified";
 
 	@Index()
 	@Column({
 		...id(),
-		array: true, default: '{}',
+		array: true,
+		default: "{}",
 	})
-	public visibleUserIds: MiUser['id'][];
+	public visibleUserIds: MiUser["id"][];
 
-	@Column('integer', {
+	@Column("integer", {
 		default: 0,
 	})
 	public likedCount: number;
@@ -119,4 +128,7 @@ export class MiPage {
 	}
 }
 
-export const pageNameSchema = { type: 'string', pattern: /^[^\s:\/?#\[\]@!$&'()*+,;=\\%\x00-\x20]{1,256}$/.source } as const;
+export const pageNameSchema = {
+	type: "string",
+	pattern: /^[^\s:\/?#\[\]@!$&'()*+,;=\\%\x00-\x20]{1,256}$/.source,
+} as const;

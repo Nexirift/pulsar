@@ -3,23 +3,27 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import * as fs from 'node:fs';
-import { Inject, Injectable } from '@nestjs/common';
-import { In, MoreThan, Not } from 'typeorm';
-import { format as dateFormat } from 'date-fns';
-import { DI } from '@/di-symbols.js';
-import type { UsersRepository, FollowingsRepository, MutingsRepository } from '@/models/_.js';
-import type Logger from '@/logger.js';
-import { DriveService } from '@/core/DriveService.js';
-import { createTemp } from '@/misc/create-temp.js';
-import type { MiFollowing } from '@/models/Following.js';
-import { UtilityService } from '@/core/UtilityService.js';
-import { NotificationService } from '@/core/NotificationService.js';
-import { TimeService } from '@/global/TimeService.js';
-import { bindThis } from '@/decorators.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type * as Bull from 'bullmq';
-import type { DbExportFollowingData } from '../types.js';
+import * as fs from "node:fs";
+import { Inject, Injectable } from "@nestjs/common";
+import { In, MoreThan, Not } from "typeorm";
+import { format as dateFormat } from "date-fns";
+import { DI } from "@/di-symbols.js";
+import type {
+	UsersRepository,
+	FollowingsRepository,
+	MutingsRepository,
+} from "@/models/_.js";
+import type Logger from "@/logger.js";
+import { DriveService } from "@/core/DriveService.js";
+import { createTemp } from "@/misc/create-temp.js";
+import type { MiFollowing } from "@/models/Following.js";
+import { UtilityService } from "@/core/UtilityService.js";
+import { NotificationService } from "@/core/NotificationService.js";
+import { TimeService } from "@/global/TimeService.js";
+import { bindThis } from "@/decorators.js";
+import { QueueLoggerService } from "../QueueLoggerService.js";
+import type * as Bull from "bullmq";
+import type { DbExportFollowingData } from "../types.js";
 
 @Injectable()
 export class ExportFollowingProcessorService {
@@ -41,7 +45,8 @@ export class ExportFollowingProcessorService {
 		private notificationService: NotificationService,
 		private readonly timeService: TimeService,
 	) {
-		this.logger = this.queueLoggerService.logger.createSubLogger('export-following');
+		this.logger =
+			this.queueLoggerService.logger.createSubLogger("export-following");
 	}
 
 	@bindThis
@@ -60,26 +65,30 @@ export class ExportFollowingProcessorService {
 		this.logger.debug(`Temp file is ${path}`);
 
 		try {
-			const stream = fs.createWriteStream(path, { flags: 'a' });
+			const stream = fs.createWriteStream(path, { flags: "a" });
 
-			let cursor: MiFollowing['id'] | null = null;
+			let cursor: MiFollowing["id"] | null = null;
 
-			const mutings = job.data.excludeMuting ? await this.mutingsRepository.findBy({
-				muterId: user.id,
-			}) : [];
+			const mutings = job.data.excludeMuting
+				? await this.mutingsRepository.findBy({
+						muterId: user.id,
+					})
+				: [];
 
 			while (true) {
-				const followings = await this.followingsRepository.find({
+				const followings = (await this.followingsRepository.find({
 					where: {
 						followerId: user.id,
-						...(mutings.length > 0 ? { followeeId: Not(In(mutings.map(x => x.muteeId))) } : {}),
+						...(mutings.length > 0
+							? { followeeId: Not(In(mutings.map((x) => x.muteeId))) }
+							: {}),
 						...(cursor ? { id: MoreThan(cursor) } : {}),
 					},
 					take: 100,
 					order: {
 						id: 1,
 					},
-				}) as MiFollowing[];
+				})) as MiFollowing[];
 
 				if (followings.length === 0) {
 					break;
@@ -88,20 +97,30 @@ export class ExportFollowingProcessorService {
 				cursor = followings.at(-1)?.id ?? null;
 
 				for (const following of followings) {
-					const u = await this.usersRepository.findOneBy({ id: following.followeeId });
+					const u = await this.usersRepository.findOneBy({
+						id: following.followeeId,
+					});
 					if (u == null) {
 						continue;
 					}
 
-					if (job.data.excludeInactive && u.updatedAt && (this.timeService.now - u.updatedAt.getTime() > 1000 * 60 * 60 * 24 * 90)) {
+					if (
+						job.data.excludeInactive &&
+						u.updatedAt &&
+						this.timeService.now - u.updatedAt.getTime() >
+							1000 * 60 * 60 * 24 * 90
+					) {
 						continue;
 					}
 
-					const content = this.utilityService.getFullApAccount(u.username, u.host);
+					const content = this.utilityService.getFullApAccount(
+						u.username,
+						u.host,
+					);
 					await new Promise<void>((res, rej) => {
-						stream.write(content + '\n', err => {
+						stream.write(content + "\n", (err) => {
 							if (err) {
-								this.logger.error('Error exporting following:', err);
+								this.logger.error("Error exporting following:", err);
 								rej(err);
 							} else {
 								res();
@@ -114,13 +133,22 @@ export class ExportFollowingProcessorService {
 			stream.end();
 			this.logger.debug(`Exported to: ${path}`);
 
-			const fileName = 'following-' + dateFormat(this.timeService.date, 'yyyy-MM-dd-HH-mm-ss') + '.csv';
-			const driveFile = await this.driveService.addFile({ user, path, name: fileName, force: true, ext: 'csv' });
+			const fileName =
+				"following-" +
+				dateFormat(this.timeService.date, "yyyy-MM-dd-HH-mm-ss") +
+				".csv";
+			const driveFile = await this.driveService.addFile({
+				user,
+				path,
+				name: fileName,
+				force: true,
+				ext: "csv",
+			});
 
 			this.logger.debug(`Exported to: ${driveFile.id}`);
 
-			this.notificationService.createNotification(user.id, 'exportCompleted', {
-				exportedEntity: 'following',
+			this.notificationService.createNotification(user.id, "exportCompleted", {
+				exportedEntity: "following",
 				fileId: driveFile.id,
 			});
 		} finally {

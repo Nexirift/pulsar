@@ -2,13 +2,16 @@
  * SPDX-FileCopyrightText: syuilo and misskey-project
  * SPDX-License-Identifier: AGPL-3.0-only
  */
-import { defineAsyncComponent } from 'vue';
-import { v4 as uuid } from 'uuid';
-import { url } from '@@/js/config.js';
-import { defaultEmbedParams, embedRouteWithScrollbar } from '@@/js/embed-page.js';
-import type { EmbedParams, EmbeddableEntity } from '@@/js/embed-page.js';
-import * as os from '@/os.js';
-import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
+import { defineAsyncComponent } from "vue";
+import { v4 as uuid } from "uuid";
+import { url } from "@@/js/config.js";
+import {
+	defaultEmbedParams,
+	embedRouteWithScrollbar,
+} from "@@/js/embed-page.js";
+import type { EmbedParams, EmbeddableEntity } from "@@/js/embed-page.js";
+import * as os from "@/os.js";
+import { copyToClipboard } from "@/utility/copy-to-clipboard.js";
 
 const MOBILE_THRESHOLD = 500;
 
@@ -17,7 +20,9 @@ const MOBILE_THRESHOLD = 500;
  * @param params パラメータ
  * @returns 正規化されたパラメータ
  */
-export function normalizeEmbedParams(params: EmbedParams): Record<string, string> {
+export function normalizeEmbedParams(
+	params: EmbedParams,
+): Record<string, string> {
 	// paramsのvalueをすべてstringに変換。undefinedやnullはプロパティごと消す
 	const normalizedParams: Record<string, string> = {};
 	for (const key in params) {
@@ -26,11 +31,11 @@ export function normalizeEmbedParams(params: EmbedParams): Record<string, string
 			continue;
 		}
 		switch (typeof params[key]) {
-			case 'number':
+			case "number":
 				normalizedParams[key] = params[key].toString();
 				break;
-			case 'boolean':
-				normalizedParams[key] = params[key] ? 'true' : 'false';
+			case "boolean":
+				normalizedParams[key] = params[key] ? "true" : "false";
 				break;
 			default:
 				normalizedParams[key] = params[key];
@@ -44,19 +49,20 @@ export function normalizeEmbedParams(params: EmbedParams): Record<string, string
  * 埋め込みコードを生成（iframe IDの発番もやる）
  */
 export function getEmbedCode(path: string, params?: EmbedParams): string {
-	const iframeId = 'v1_' + uuid(); // 将来embed.jsのバージョンが上がったとき用にv1_を付けておく
+	const iframeId = "v1_" + uuid(); // 将来embed.jsのバージョンが上がったとき用にv1_を付けておく
 
-	let paramString = '';
+	let paramString = "";
 	if (params) {
 		const searchParams = new URLSearchParams(normalizeEmbedParams(params));
-		paramString = searchParams.toString() === '' ? '' : '?' + searchParams.toString();
+		paramString =
+			searchParams.toString() === "" ? "" : "?" + searchParams.toString();
 	}
 
 	const iframeCode = [
 		`<iframe src="${url + path + paramString}" data-misskey-embed-id="${iframeId}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" style="border: none; width: 100%; max-width: 500px; height: 300px; color-scheme: light dark;"></iframe>`,
 		`<script defer src="${url}/embed.js"></script>`,
 	];
-	return iframeCode.join('\n');
+	return iframeCode.join("\n");
 }
 
 /**
@@ -64,7 +70,11 @@ export function getEmbedCode(path: string, params?: EmbedParams): string {
  *
  * カスタマイズ機能がいらない場合（事前にパラメータを指定する場合）は getEmbedCode を直接使ってください
  */
-export function genEmbedCode(entity: EmbeddableEntity, id: string, params?: EmbedParams) {
+export function genEmbedCode(
+	entity: EmbeddableEntity,
+	id: string,
+	params?: EmbedParams,
+) {
 	const _params = { ...params };
 
 	if (embedRouteWithScrollbar.includes(entity) && _params.maxHeight == null) {
@@ -75,12 +85,18 @@ export function genEmbedCode(entity: EmbeddableEntity, id: string, params?: Embe
 	if (window.innerWidth < MOBILE_THRESHOLD) {
 		copyToClipboard(getEmbedCode(`/embed/${entity}/${id}`, _params));
 	} else {
-		const { dispose } = os.popup(defineAsyncComponent(() => import('@/components/MkEmbedCodeGenDialog.vue')), {
-			entity,
-			id,
-			params: _params,
-		}, {
-			closed: () => dispose(),
-		});
+		const { dispose } = os.popup(
+			defineAsyncComponent(
+				() => import("@/components/MkEmbedCodeGenDialog.vue"),
+			),
+			{
+				entity,
+				id,
+				params: _params,
+			},
+			{
+				closed: () => dispose(),
+			},
+		);
 	}
 }

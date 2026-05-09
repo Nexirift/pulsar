@@ -4,50 +4,90 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div v-if="history.length > 0" class="_gaps_s">
-	<MkA
-		v-for="item in history"
-		:key="item.id"
-		:class="[$style.message, { [$style.isMe]: item.isMe, [$style.isRead]: item.message.isRead }]"
-		class="_panel"
-		:to="item.message.toRoomId ? `/chat/room/${item.message.toRoomId}` : `/chat/user/${item.other!.id}`"
-	>
-		<MkAvatar v-if="item.message.toRoomId" :class="$style.messageAvatar" :user="item.message.fromUser" indicator :preview="false"/>
-		<MkAvatar v-else-if="item.other" :class="$style.messageAvatar" :user="item.other" indicator :preview="false"/>
-		<div :class="$style.messageBody">
-			<header v-if="item.message.toRoom" :class="$style.messageHeader">
-				<span :class="$style.messageHeaderName"><i class="ti ti-users"></i> {{ item.message.toRoom.name }}</span>
-				<MkTime :time="item.message.createdAt" :class="$style.messageHeaderTime"/>
-			</header>
-			<header v-else :class="$style.messageHeader">
-				<MkUserName :class="$style.messageHeaderName" :user="item.other!"/>
-				<MkAcct :class="$style.messageHeaderUsername" :user="item.other!"/>
-				<MkTime :time="item.message.createdAt" :class="$style.messageHeaderTime"/>
-			</header>
-			<div :class="$style.messageBodyText"><span v-if="item.isMe" :class="$style.youSaid">{{ i18n.ts.you }}:</span>{{ item.message.text }}</div>
-		</div>
-	</MkA>
-</div>
-<MkResult v-if="!initializing && history.length == 0" type="empty" :text="i18n.ts._chat.noHistory"/>
-<MkLoading v-if="initializing"/>
+	<div v-if="history.length > 0" class="_gaps_s">
+		<MkA
+			v-for="item in history"
+			:key="item.id"
+			:class="[
+				$style.message,
+				{ [$style.isMe]: item.isMe, [$style.isRead]: item.message.isRead },
+			]"
+			class="_panel"
+			:to="
+				item.message.toRoomId
+					? `/chat/room/${item.message.toRoomId}`
+					: `/chat/user/${item.other!.id}`
+			"
+		>
+			<MkAvatar
+				v-if="item.message.toRoomId"
+				:class="$style.messageAvatar"
+				:user="item.message.fromUser"
+				indicator
+				:preview="false"
+			/>
+			<MkAvatar
+				v-else-if="item.other"
+				:class="$style.messageAvatar"
+				:user="item.other"
+				indicator
+				:preview="false"
+			/>
+			<div :class="$style.messageBody">
+				<header v-if="item.message.toRoom" :class="$style.messageHeader">
+					<span :class="$style.messageHeaderName"
+						><i class="ti ti-users"></i> {{ item.message.toRoom.name }}</span
+					>
+					<MkTime
+						:time="item.message.createdAt"
+						:class="$style.messageHeaderTime"
+					/>
+				</header>
+				<header v-else :class="$style.messageHeader">
+					<MkUserName :class="$style.messageHeaderName" :user="item.other!" />
+					<MkAcct :class="$style.messageHeaderUsername" :user="item.other!" />
+					<MkTime
+						:time="item.message.createdAt"
+						:class="$style.messageHeaderTime"
+					/>
+				</header>
+				<div :class="$style.messageBodyText">
+					<span v-if="item.isMe" :class="$style.youSaid"
+						>{{ i18n.ts.you }}:</span
+					>{{ item.message.text }}
+				</div>
+			</div>
+		</MkA>
+	</div>
+	<MkResult
+		v-if="!initializing && history.length == 0"
+		type="empty"
+		:text="i18n.ts._chat.noHistory"
+	/>
+	<MkLoading v-if="initializing" />
 </template>
 
 <script lang="ts" setup>
-import { onActivated, onDeactivated, onMounted, ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import { useInterval } from '@@/js/use-interval.js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { i18n } from '@/i18n.js';
-import { ensureSignin } from '@/i.js';
+import { onActivated, onDeactivated, onMounted, ref } from "vue";
+import * as Misskey from "misskey-js";
+import { useInterval } from "@@/js/use-interval.js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { i18n } from "@/i18n.js";
+import { ensureSignin } from "@/i.js";
 
 const $i = ensureSignin();
 
-const history = ref<{
-	id: string;
-	message: Misskey.entities.ChatMessage;
-	other: Misskey.entities.ChatMessage['fromUser'] | Misskey.entities.ChatMessage['toUser'] | null;
-	isMe: boolean;
-}[]>([]);
+const history = ref<
+	{
+		id: string;
+		message: Misskey.entities.ChatMessage;
+		other:
+			| Misskey.entities.ChatMessage["fromUser"]
+			| Misskey.entities.ChatMessage["toUser"]
+			| null;
+		isMe: boolean;
+	}[]
+>([]);
 
 const initializing = ref(true);
 const fetching = ref(false);
@@ -58,16 +98,24 @@ async function fetchHistory() {
 	fetching.value = true;
 
 	const [userMessages, roomMessages] = await Promise.all([
-		misskeyApi('chat/history', { room: false }),
-		misskeyApi('chat/history', { room: true }),
+		misskeyApi("chat/history", { room: false }),
+		misskeyApi("chat/history", { room: true }),
 	]);
 
 	history.value = [...userMessages, ...roomMessages]
-		.toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-		.map(m => ({
+		.toSorted(
+			(a, b) =>
+				new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+		)
+		.map((m) => ({
 			id: m.id,
 			message: m,
-			other: (!('room' in m) || m.room == null) ? (m.fromUserId === $i.id ? m.toUser : m.fromUser) : null,
+			other:
+				!("room" in m) || m.room == null
+					? m.fromUserId === $i.id
+						? m.toUser
+						: m.fromUser
+					: null,
 			isMe: m.fromUserId === $i.id,
 		}));
 
@@ -85,15 +133,19 @@ onDeactivated(() => {
 	isActivated = false;
 });
 
-useInterval(() => {
-	// TODO: DOM的にバックグラウンドになっていないかどうかも考慮する
-	if (!window.document.hidden && isActivated) {
-		fetchHistory();
-	}
-}, 1000 * 10, {
-	immediate: false,
-	afterMounted: true,
-});
+useInterval(
+	() => {
+		// TODO: DOM的にバックグラウンドになっていないかどうかも考慮する
+		if (!window.document.hidden && isActivated) {
+			fetchHistory();
+		}
+	},
+	1000 * 10,
+	{
+		immediate: false,
+		afterMounted: true,
+	},
+);
 
 onActivated(() => {
 	fetchHistory();
@@ -117,7 +169,7 @@ onMounted(() => {
 
 	&:not(.isMe):not(.isRead) {
 		&::before {
-			content: '';
+			content: "";
 			position: absolute;
 			top: 8px;
 			right: 8px;

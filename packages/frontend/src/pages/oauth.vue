@@ -4,60 +4,72 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<PageWithAnimBg>
-	<div :class="$style.formContainer">
-		<div :class="$style.form">
-			<MkAuthConfirm
-				ref="authRoot"
-				:name="name"
-				:icon="logo"
-				:permissions="permissions"
-				:waitOnDeny="true"
-				@accept="onAccept"
-				@deny="onDeny"
-			/>
+	<PageWithAnimBg>
+		<div :class="$style.formContainer">
+			<div :class="$style.form">
+				<MkAuthConfirm
+					ref="authRoot"
+					:name="name"
+					:icon="logo"
+					:permissions="permissions"
+					:waitOnDeny="true"
+					@accept="onAccept"
+					@deny="onDeny"
+				/>
+			</div>
 		</div>
-	</div>
-</PageWithAnimBg>
+	</PageWithAnimBg>
 </template>
 
 <script lang="ts" setup>
-import * as Misskey from 'misskey-js';
-import { definePage } from '@/page.js';
-import MkAuthConfirm from '@/components/MkAuthConfirm.vue';
+import * as Misskey from "misskey-js";
+import { definePage } from "@/page.js";
+import MkAuthConfirm from "@/components/MkAuthConfirm.vue";
 
-const transactionIdMeta = window.document.querySelector<HTMLMetaElement>('meta[name="misskey:oauth:transaction-id"]');
+const transactionIdMeta = window.document.querySelector<HTMLMetaElement>(
+	'meta[name="misskey:oauth:transaction-id"]',
+);
 if (transactionIdMeta) {
 	transactionIdMeta.remove();
 }
 
-const name = window.document.querySelector<HTMLMetaElement>('meta[name="misskey:oauth:client-name"]')?.content;
-const logo = window.document.querySelector<HTMLMetaElement>('meta[name="misskey:oauth:client-logo"]')?.content;
-const permissions = window.document.querySelector<HTMLMetaElement>('meta[name="misskey:oauth:scope"]')?.content.split(' ').filter((p): p is typeof Misskey.permissions[number] => (Misskey.permissions as readonly string[]).includes(p)) ?? [];
+const name = window.document.querySelector<HTMLMetaElement>(
+	'meta[name="misskey:oauth:client-name"]',
+)?.content;
+const logo = window.document.querySelector<HTMLMetaElement>(
+	'meta[name="misskey:oauth:client-logo"]',
+)?.content;
+const permissions =
+	window.document
+		.querySelector<HTMLMetaElement>('meta[name="misskey:oauth:scope"]')
+		?.content.split(" ")
+		.filter((p): p is (typeof Misskey.permissions)[number] =>
+			(Misskey.permissions as readonly string[]).includes(p),
+		) ?? [];
 
-function doPost(token: string, decision: 'accept' | 'deny') {
-	const form = window.document.createElement('form');
-	form.action = '/oauth/decision';
-	form.method = 'post';
-	form.acceptCharset = 'utf-8';
+function doPost(token: string, decision: "accept" | "deny") {
+	const form = window.document.createElement("form");
+	form.action = "/oauth/decision";
+	form.method = "post";
+	form.acceptCharset = "utf-8";
 
-	const loginToken = window.document.createElement('input');
-	loginToken.type = 'hidden';
-	loginToken.name = 'login_token';
+	const loginToken = window.document.createElement("input");
+	loginToken.type = "hidden";
+	loginToken.name = "login_token";
 	loginToken.value = token;
 	form.appendChild(loginToken);
 
-	const transactionId = window.document.createElement('input');
-	transactionId.type = 'hidden';
-	transactionId.name = 'transaction_id';
-	transactionId.value = transactionIdMeta?.content ?? '';
+	const transactionId = window.document.createElement("input");
+	transactionId.type = "hidden";
+	transactionId.name = "transaction_id";
+	transactionId.value = transactionIdMeta?.content ?? "";
 	form.appendChild(transactionId);
 
-	if (decision === 'deny') {
-		const cancel = window.document.createElement('input');
-		cancel.type = 'hidden';
-		cancel.name = 'cancel';
-		cancel.value = 'cancel';
+	if (decision === "deny") {
+		const cancel = window.document.createElement("input");
+		cancel.type = "hidden";
+		cancel.name = "cancel";
+		cancel.value = "cancel";
 		form.appendChild(cancel);
 	}
 
@@ -66,16 +78,16 @@ function doPost(token: string, decision: 'accept' | 'deny') {
 }
 
 function onAccept(token: string) {
-	doPost(token, 'accept');
+	doPost(token, "accept");
 }
 
 function onDeny(token: string) {
-	doPost(token, 'deny');
+	doPost(token, "deny");
 }
 
 definePage(() => ({
-	title: 'OAuth',
-	icon: 'ti ti-apps',
+	title: "OAuth",
+	icon: "ti ti-apps",
 }));
 </script>
 
@@ -97,7 +109,10 @@ definePage(() => ({
 	overflow: clip;
 	max-width: 500px;
 	width: calc(100vw - 64px);
-	height: min(65svh, calc(100svh - calc(env(safe-area-inset-bottom, 0px) + 64px)));
+	height: min(
+		65svh,
+		calc(100svh - calc(env(safe-area-inset-bottom, 0px) + 64px))
+	);
 	overflow-y: scroll;
 }
 </style>

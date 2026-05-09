@@ -4,38 +4,51 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<button
-	class="_button"
-	:class="[$style.root, { [$style.wait]: wait, [$style.active]: isFollowing, [$style.full]: full }]"
-	:disabled="wait"
-	@click="onClick"
->
-	<template v-if="!wait">
-		<template v-if="isFollowing">
-			<span v-if="full" :class="$style.text">{{ i18n.ts.unfollow }}</span><i class="ti ti-minus"></i>
+	<button
+		class="_button"
+		:class="[
+			$style.root,
+			{
+				[$style.wait]: wait,
+				[$style.active]: isFollowing,
+				[$style.full]: full,
+			},
+		]"
+		:disabled="wait"
+		@click="onClick"
+	>
+		<template v-if="!wait">
+			<template v-if="isFollowing">
+				<span v-if="full" :class="$style.text">{{ i18n.ts.unfollow }}</span
+				><i class="ti ti-minus"></i>
+			</template>
+			<template v-else>
+				<span v-if="full" :class="$style.text">{{ i18n.ts.follow }}</span
+				><i class="ti ti-plus"></i>
+			</template>
 		</template>
 		<template v-else>
-			<span v-if="full" :class="$style.text">{{ i18n.ts.follow }}</span><i class="ti ti-plus"></i>
+			<span v-if="full" :class="$style.text">{{ i18n.ts.processing }}</span
+			><MkLoading :em="true" />
 		</template>
-	</template>
-	<template v-else>
-		<span v-if="full" :class="$style.text">{{ i18n.ts.processing }}</span><MkLoading :em="true"/>
-	</template>
-</button>
+	</button>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import * as Misskey from 'misskey-js';
-import { misskeyApi } from '@/utility/misskey-api.js';
-import { i18n } from '@/i18n.js';
+import { ref } from "vue";
+import * as Misskey from "misskey-js";
+import { misskeyApi } from "@/utility/misskey-api.js";
+import { i18n } from "@/i18n.js";
 
-const props = withDefaults(defineProps<{
-	channel: Misskey.entities.Channel;
-	full?: boolean;
-}>(), {
-	full: false,
-});
+const props = withDefaults(
+	defineProps<{
+		channel: Misskey.entities.Channel;
+		full?: boolean;
+	}>(),
+	{
+		full: false,
+	},
+);
 
 const isFollowing = ref(props.channel.isFollowing);
 const wait = ref(false);
@@ -45,12 +58,12 @@ async function onClick() {
 
 	try {
 		if (isFollowing.value) {
-			await misskeyApi('channels/unfollow', {
+			await misskeyApi("channels/unfollow", {
 				channelId: props.channel.id,
 			});
 			isFollowing.value = false;
 		} else {
-			await misskeyApi('channels/follow', {
+			await misskeyApi("channels/follow", {
 				channelId: props.channel.id,
 			});
 			isFollowing.value = true;

@@ -8,9 +8,9 @@
 // (c) mei23
 // https://misskey.m544.net/notes/71899acdcc9859ec5708ac24
 
-import { customAlphabet } from 'nanoid';
-import { parseBigInt36 } from '@/misc/bigint.js';
-import { IdentifiableError } from '../identifiable-error.js';
+import { customAlphabet } from "nanoid";
+import { parseBigInt36 } from "@/misc/bigint.js";
+import { IdentifiableError } from "../identifiable-error.js";
 
 export const aidxRegExp = /^[0-9a-z]{16}$/;
 
@@ -20,32 +20,42 @@ const NODE_LENGTH = 4;
 const NOISE_LENGTH = 4;
 const AIDX_LENGTH = TIME_LENGTH + NODE_LENGTH + NOISE_LENGTH;
 
-const nodeId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', NODE_LENGTH)();
+const nodeId = customAlphabet(
+	"0123456789abcdefghijklmnopqrstuvwxyz",
+	NODE_LENGTH,
+)();
 let counter = 0;
 
 function getTime(time: number): string {
 	time = time - TIME2000;
 	if (time < 0) time = 0;
 
-	return time.toString(36).padStart(TIME_LENGTH, '0').slice(-TIME_LENGTH);
+	return time.toString(36).padStart(TIME_LENGTH, "0").slice(-TIME_LENGTH);
 }
 
 function getNoise(): string {
-	return counter.toString(36).padStart(NOISE_LENGTH, '0').slice(-NOISE_LENGTH);
+	return counter.toString(36).padStart(NOISE_LENGTH, "0").slice(-NOISE_LENGTH);
 }
 
 export function genAidx(t: number): string {
-	if (isNaN(t)) throw new IdentifiableError('6b73b7d5-9d2b-48b4-821c-ef955efe80ad', 'Failed to create AIDX: Invalid Date');
+	if (isNaN(t))
+		throw new IdentifiableError(
+			"6b73b7d5-9d2b-48b4-821c-ef955efe80ad",
+			"Failed to create AIDX: Invalid Date",
+		);
 	counter++;
 	return getTime(t) + nodeId + getNoise();
 }
 
-export function parseAidx(id: string): { date: Date; } {
+export function parseAidx(id: string): { date: Date } {
 	const time = parseInt(id.slice(0, TIME_LENGTH), 36) + TIME2000;
 	return { date: new Date(time) };
 }
 
-export function parseAidxFull(id: string): { date: number; additional: bigint; } {
+export function parseAidxFull(id: string): {
+	date: number;
+	additional: bigint;
+} {
 	const date = parseInt(id.slice(0, TIME_LENGTH), 36) + TIME2000;
 	const additional = parseBigInt36(id.slice(TIME_LENGTH, AIDX_LENGTH));
 	return { date, additional };

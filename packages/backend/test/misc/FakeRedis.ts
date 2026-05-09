@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Redis as RedisConstructor } from 'ioredis';
-import type * as Redis from 'ioredis';
+import { Redis as RedisConstructor } from "ioredis";
+import type * as Redis from "ioredis";
 
 export type RedisKey = Redis.RedisKey;
 export type RedisString = Buffer | string;
@@ -12,8 +12,8 @@ export type RedisNumber = string | number;
 export type RedisValue = RedisKey | RedisString | RedisNumber;
 export type RedisCallback<T = unknown> = Redis.Callback<T>;
 
-export type Ok = 'OK';
-export const ok = 'OK' as const;
+export type Ok = "OK";
+export const ok = "OK" as const;
 
 export type FakeRedis = RedisConstructor;
 export interface FakeRedisConstructor {
@@ -32,15 +32,25 @@ function createFakeRedis(): FakeRedisConstructor {
 			callback?.(null);
 		}
 
-		async hello(...callbacks: (undefined | string | number | Buffer | RedisCallback<unknown[]>)[]): Promise<unknown[]> {
+		async hello(
+			...callbacks: (
+				| undefined
+				| string
+				| number
+				| Buffer
+				| RedisCallback<unknown[]>
+			)[]
+		): Promise<unknown[]> {
 			// no-op
-			const callback = callbacks.find(c => typeof(c) === 'function');
+			const callback = callbacks.find((c) => typeof c === "function");
 			callback?.(null, []);
 			return [];
 		}
 
-		async auth(...callbacks: (undefined | string | Buffer | RedisCallback<Ok>)[]): Promise<Ok> {
-			const callback = callbacks.find(c => typeof(c) === 'function');
+		async auth(
+			...callbacks: (undefined | string | Buffer | RedisCallback<Ok>)[]
+		): Promise<Ok> {
+			const callback = callbacks.find((c) => typeof c === "function");
 			callback?.(null, ok);
 			return ok;
 		}
@@ -89,7 +99,7 @@ function createFakeRedis(): FakeRedisConstructor {
 				get: property.get ? stub(property.get.name || key) : undefined,
 				set: property.set ? stub(property.set.name || key) : undefined,
 			});
-		} else if (property.value && typeof(property.value) === 'function') {
+		} else if (property.value && typeof property.value === "function") {
 			// Stub methods
 			Reflect.defineProperty(fakeProto, key, {
 				...property,
@@ -104,13 +114,15 @@ function createFakeRedis(): FakeRedisConstructor {
 	// test
 	const test = new FakeRedis();
 	if (!(test instanceof RedisConstructor)) {
-		throw new Error('failed to extend');
+		throw new Error("failed to extend");
 	}
 
 	return FakeRedis as FakeRedisConstructor;
 }
 
-function *allProps(obj: object | null): Generator<[PropertyKey, PropertyDescriptor]> {
+function* allProps(
+	obj: object | null,
+): Generator<[PropertyKey, PropertyDescriptor]> {
 	while (obj != null) {
 		for (const key of Reflect.ownKeys(obj)) {
 			const prop = Reflect.getOwnPropertyDescriptor(obj, key);
@@ -124,9 +136,9 @@ function *allProps(obj: object | null): Generator<[PropertyKey, PropertyDescript
 }
 
 function stub(name: PropertyKey) {
-	if (typeof(name) === 'symbol') {
-		name = `[symbol.${name.description || '<anonymous>'}]`;
-	} else if (typeof(name) === 'number') {
+	if (typeof name === "symbol") {
+		name = `[symbol.${name.description || "<anonymous>"}]`;
+	} else if (typeof name === "number") {
 		name = String(name);
 	}
 
@@ -135,7 +147,7 @@ function stub(name: PropertyKey) {
 	};
 
 	// Make the stub match the original name
-	Object.defineProperty(stub, 'name', {
+	Object.defineProperty(stub, "name", {
 		writable: false,
 		enumerable: false,
 		configurable: true,

@@ -3,35 +3,44 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { AhoCorasick } from 'slacc';
-import RE2 from 're2';
-import type { MiNote } from '@/models/Note.js';
-import type { MiUser } from '@/models/User.js';
+import { AhoCorasick } from "slacc";
+import RE2 from "re2";
+import type { MiNote } from "@/models/Note.js";
+import type { MiUser } from "@/models/User.js";
 
 type NoteLike = {
-	userId: MiNote['userId'];
-	text: MiNote['text'];
-	cw?: MiNote['cw'];
+	userId: MiNote["userId"];
+	text: MiNote["text"];
+	cw?: MiNote["cw"];
 };
 
 type UserLike = {
-	id: MiUser['id'];
+	id: MiUser["id"];
 };
 
 const acCache = new Map<string, AhoCorasick>();
 
-export async function checkWordMute(note: NoteLike, me: UserLike | null | undefined, mutedWords: Array<string | string[]>): Promise<boolean> {
+export async function checkWordMute(
+	note: NoteLike,
+	me: UserLike | null | undefined,
+	mutedWords: Array<string | string[]>,
+): Promise<boolean> {
 	// 自分自身
-	if (me && (note.userId === me.id)) return false;
+	if (me && note.userId === me.id) return false;
 
 	if (mutedWords.length > 0) {
-		const text = ((note.cw ?? '') + '\n' + (note.text ?? '')).trim();
+		const text = ((note.cw ?? "") + "\n" + (note.text ?? "")).trim();
 
-		if (text === '') return false;
+		if (text === "") return false;
 
-		const acable = mutedWords.filter(filter => Array.isArray(filter) && filter.length === 1).map(filter => filter[0]).sort();
-		const unacable = mutedWords.filter(filter => !Array.isArray(filter) || filter.length !== 1);
-		const acCacheKey = acable.join('\n');
+		const acable = mutedWords
+			.filter((filter) => Array.isArray(filter) && filter.length === 1)
+			.map((filter) => filter[0])
+			.sort();
+		const unacable = mutedWords.filter(
+			(filter) => !Array.isArray(filter) || filter.length !== 1,
+		);
+		const acCacheKey = acable.join("\n");
 		const ac = acCache.get(acCacheKey) ?? AhoCorasick.withPatterns(acable);
 		acCache.delete(acCacheKey);
 		for (const obsoleteKeys of acCache.keys()) {
@@ -44,9 +53,9 @@ export async function checkWordMute(note: NoteLike, me: UserLike | null | undefi
 			return true;
 		}
 
-		const matched = unacable.some(filter => {
+		const matched = unacable.some((filter) => {
 			if (Array.isArray(filter)) {
-				return filter.every(keyword => text.includes(keyword));
+				return filter.every((keyword) => text.includes(keyword));
 			} else {
 				// represents RegExp
 				const regexp = filter.match(/^\/(.+)\/(.*)$/);

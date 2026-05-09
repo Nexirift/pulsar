@@ -3,39 +3,45 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { LoggerService } from '@/core/LoggerService.js';
-import type Logger from '@/logger.js';
-import { CollapsedQueue } from '@/misc/collapsed-queue.js';
-import { renderInlineError } from '@/misc/render-inline-error.js';
-import { FederatedInstanceService } from '@/core/FederatedInstanceService.js';
-import { EnvService } from '@/global/EnvService.js';
-import { bindThis } from '@/decorators.js';
-import { InternalEventService } from '@/global/InternalEventService.js';
-import type { UsersRepository, NotesRepository, AccessTokensRepository, MiAntenna, FollowingsRepository } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
-import { AntennaService } from '@/core/AntennaService.js';
-import { CacheService } from '@/core/CacheService.js';
-import { TimeService } from '@/global/TimeService.js';
+import { Inject, Injectable, OnApplicationShutdown } from "@nestjs/common";
+import { LoggerService } from "@/core/LoggerService.js";
+import type Logger from "@/logger.js";
+import { CollapsedQueue } from "@/misc/collapsed-queue.js";
+import { renderInlineError } from "@/misc/render-inline-error.js";
+import { FederatedInstanceService } from "@/core/FederatedInstanceService.js";
+import { EnvService } from "@/global/EnvService.js";
+import { bindThis } from "@/decorators.js";
+import { InternalEventService } from "@/global/InternalEventService.js";
+import type {
+	UsersRepository,
+	NotesRepository,
+	AccessTokensRepository,
+	MiAntenna,
+	FollowingsRepository,
+} from "@/models/_.js";
+import { DI } from "@/di-symbols.js";
+import { AntennaService } from "@/core/AntennaService.js";
+import { CacheService } from "@/core/CacheService.js";
+import { TimeService } from "@/global/TimeService.js";
 
 export type UpdateInstanceJob = {
-	latestRequestReceivedAt?: Date,
-	notRespondingSince?: Date | null,
-	shouldUnsuspend?: boolean,
-	shouldSuspendGone?: boolean,
-	shouldSuspendNotResponding?: boolean,
-	notesCountDelta?: number,
-	usersCountDelta?: number,
-	followingCountDelta?: number,
-	followersCountDelta?: number,
+	latestRequestReceivedAt?: Date;
+	notRespondingSince?: Date | null;
+	shouldUnsuspend?: boolean;
+	shouldSuspendGone?: boolean;
+	shouldSuspendNotResponding?: boolean;
+	notesCountDelta?: number;
+	usersCountDelta?: number;
+	followingCountDelta?: number;
+	followersCountDelta?: number;
 };
 
 export type UpdateUserJob = {
-	updatedAt?: Date,
-	lastActiveDate?: Date,
-	notesCountDelta?: number,
-	followingCountDelta?: number,
-	followersCountDelta?: number,
+	updatedAt?: Date;
+	lastActiveDate?: Date;
+	notesCountDelta?: number;
+	followingCountDelta?: number;
+	followersCountDelta?: number;
 };
 
 export type UpdateNoteJob = {
@@ -49,8 +55,8 @@ export type UpdateAccessTokenJob = {
 };
 
 export type UpdateAntennaJob = {
-	isActive: boolean,
-	lastUsedAt?: Date,
+	isActive: boolean;
+	lastUsedAt?: Date;
 };
 
 @Injectable()
@@ -89,26 +95,40 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 
 		loggerService: LoggerService,
 	) {
-		this.logger = loggerService.getLogger('collapsed-queue');
+		this.logger = loggerService.getLogger("collapsed-queue");
 
-		const fiveMinuteInterval = this.envService.env.NODE_ENV !== 'test' ? 60 * 1000 * 5 : 0;
-		const oneMinuteInterval = this.envService.env.NODE_ENV !== 'test' ? 60 * 1000 : 0;
-		
+		const fiveMinuteInterval =
+			this.envService.env.NODE_ENV !== "test" ? 60 * 1000 * 5 : 0;
+		const oneMinuteInterval =
+			this.envService.env.NODE_ENV !== "test" ? 60 * 1000 : 0;
+
 		this.updateInstanceQueue = new CollapsedQueue(
 			this.internalEventService,
 			this.timeService,
-			'updateInstance',
+			"updateInstance",
 			fiveMinuteInterval,
 			(oldJob, newJob) => ({
-				latestRequestReceivedAt: maxDate(oldJob.latestRequestReceivedAt, newJob.latestRequestReceivedAt),
-				notRespondingSince: maxDate(oldJob.notRespondingSince, newJob.notRespondingSince),
+				latestRequestReceivedAt: maxDate(
+					oldJob.latestRequestReceivedAt,
+					newJob.latestRequestReceivedAt,
+				),
+				notRespondingSince: maxDate(
+					oldJob.notRespondingSince,
+					newJob.notRespondingSince,
+				),
 				shouldUnsuspend: oldJob.shouldUnsuspend || newJob.shouldUnsuspend,
 				shouldSuspendGone: oldJob.shouldSuspendGone || newJob.shouldSuspendGone,
-				shouldSuspendNotResponding: oldJob.shouldSuspendNotResponding || newJob.shouldSuspendNotResponding,
-				notesCountDelta: (oldJob.notesCountDelta ?? 0) + (newJob.notesCountDelta ?? 0),
-				usersCountDelta: (oldJob.usersCountDelta ?? 0) + (newJob.usersCountDelta ?? 0),
-				followingCountDelta: (oldJob.followingCountDelta ?? 0) + (newJob.followingCountDelta ?? 0),
-				followersCountDelta: (oldJob.followersCountDelta ?? 0) + (newJob.followersCountDelta ?? 0),
+				shouldSuspendNotResponding:
+					oldJob.shouldSuspendNotResponding ||
+					newJob.shouldSuspendNotResponding,
+				notesCountDelta:
+					(oldJob.notesCountDelta ?? 0) + (newJob.notesCountDelta ?? 0),
+				usersCountDelta:
+					(oldJob.usersCountDelta ?? 0) + (newJob.usersCountDelta ?? 0),
+				followingCountDelta:
+					(oldJob.followingCountDelta ?? 0) + (newJob.followingCountDelta ?? 0),
+				followersCountDelta:
+					(oldJob.followersCountDelta ?? 0) + (newJob.followersCountDelta ?? 0),
 			}),
 			async (id, job) => {
 				// Have to check this because all properties are optional
@@ -141,32 +161,42 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 
 						// gone > none > auto
 						suspensionState: job.shouldSuspendGone
-							? 'goneSuspended'
+							? "goneSuspended"
 							: job.shouldUnsuspend
-								? 'none'
+								? "none"
 								: job.shouldSuspendNotResponding
-									? 'autoSuspendedForNotResponding'
+									? "autoSuspendedForNotResponding"
 									: undefined,
 
 						// Increment if defined
-						notesCount: job.notesCountDelta ? () => `"notesCount" + ${job.notesCountDelta}` : undefined,
-						usersCount: job.usersCountDelta ? () => `"usersCount" + ${job.usersCountDelta}` : undefined,
-						followingCount: job.followingCountDelta ? () => `"followingCount" + ${job.followingCountDelta}` : undefined,
-						followersCount: job.followersCountDelta ? () => `"followersCount" + ${job.followersCountDelta}` : undefined,
+						notesCount: job.notesCountDelta
+							? () => `"notesCount" + ${job.notesCountDelta}`
+							: undefined,
+						usersCount: job.usersCountDelta
+							? () => `"usersCount" + ${job.usersCountDelta}`
+							: undefined,
+						followingCount: job.followingCountDelta
+							? () => `"followingCount" + ${job.followingCountDelta}`
+							: undefined,
+						followersCount: job.followersCountDelta
+							? () => `"followersCount" + ${job.followersCountDelta}`
+							: undefined,
 					});
 				}
 			},
 			{
 				onError: this.onQueueError,
 				concurrency: 2, // Low concurrency, this table is slow for some reason
-				redisParser: data => ({
+				redisParser: (data) => ({
 					...data,
-					latestRequestReceivedAt: data.latestRequestReceivedAt != null
-						? new Date(data.latestRequestReceivedAt)
-						: data.latestRequestReceivedAt,
-					notRespondingSince: data.notRespondingSince != null
-						? new Date(data.notRespondingSince)
-						: data.notRespondingSince,
+					latestRequestReceivedAt:
+						data.latestRequestReceivedAt != null
+							? new Date(data.latestRequestReceivedAt)
+							: data.latestRequestReceivedAt,
+					notRespondingSince:
+						data.notRespondingSince != null
+							? new Date(data.notRespondingSince)
+							: data.notRespondingSince,
 				}),
 			},
 		);
@@ -174,55 +204,80 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		this.updateUserQueue = new CollapsedQueue(
 			this.internalEventService,
 			this.timeService,
-			'updateUser',
+			"updateUser",
 			oneMinuteInterval,
 			(oldJob, newJob) => ({
 				updatedAt: maxDate(oldJob.updatedAt, newJob.updatedAt),
 				lastActiveDate: maxDate(oldJob.lastActiveDate, newJob.lastActiveDate),
-				notesCountDelta: (oldJob.notesCountDelta ?? 0) + (newJob.notesCountDelta ?? 0),
-				followingCountDelta: (oldJob.followingCountDelta ?? 0) + (newJob.followingCountDelta ?? 0),
-				followersCountDelta: (oldJob.followersCountDelta ?? 0) + (newJob.followersCountDelta ?? 0),
+				notesCountDelta:
+					(oldJob.notesCountDelta ?? 0) + (newJob.notesCountDelta ?? 0),
+				followingCountDelta:
+					(oldJob.followingCountDelta ?? 0) + (newJob.followingCountDelta ?? 0),
+				followersCountDelta:
+					(oldJob.followersCountDelta ?? 0) + (newJob.followersCountDelta ?? 0),
 			}),
 			async (id, job) => {
 				// Have to check this because all properties are optional
-				if (job.updatedAt || job.lastActiveDate || job.notesCountDelta || job.followingCountDelta || job.followersCountDelta) {
-					this.logger.debug(`Processing updateUser for ${id}: notesCountDelta=${job.notesCountDelta}, followingCountDelta=${job.followingCountDelta}, followersCountDelta=${job.followersCountDelta}`);
-					
+				if (
+					job.updatedAt ||
+					job.lastActiveDate ||
+					job.notesCountDelta ||
+					job.followingCountDelta ||
+					job.followersCountDelta
+				) {
+					this.logger.debug(
+						`Processing updateUser for ${id}: notesCountDelta=${job.notesCountDelta}, followingCountDelta=${job.followingCountDelta}, followersCountDelta=${job.followersCountDelta}`,
+					);
+
 					// Updating the user should implicitly mark them as active
 					const lastActiveDate = job.lastActiveDate ?? job.updatedAt;
-					const isWakingUp = lastActiveDate && (await this.cacheService.findUserById(id)).isHibernated;
+					const isWakingUp =
+						lastActiveDate &&
+						(await this.cacheService.findUserById(id)).isHibernated;
 
 					// Update user before the hibernation cache, because the latter may refresh from DB
-					await this.usersRepository.update({ id }, {
-						updatedAt: job.updatedAt,
-						lastActiveDate,
-						isHibernated: isWakingUp ? false : undefined,
-						notesCount: job.notesCountDelta ? () => `"notesCount" + ${job.notesCountDelta}` : undefined,
-						followingCount: job.followingCountDelta ? () => `"followingCount" + ${job.followingCountDelta}` : undefined,
-						followersCount: job.followersCountDelta ? () => `"followersCount" + ${job.followersCountDelta}` : undefined,
-					});
-					await this.internalEventService.emit('userUpdated', { id });
+					await this.usersRepository.update(
+						{ id },
+						{
+							updatedAt: job.updatedAt,
+							lastActiveDate,
+							isHibernated: isWakingUp ? false : undefined,
+							notesCount: job.notesCountDelta
+								? () => `"notesCount" + ${job.notesCountDelta}`
+								: undefined,
+							followingCount: job.followingCountDelta
+								? () => `"followingCount" + ${job.followingCountDelta}`
+								: undefined,
+							followersCount: job.followersCountDelta
+								? () => `"followersCount" + ${job.followersCountDelta}`
+								: undefined,
+						},
+					);
+					await this.internalEventService.emit("userUpdated", { id });
 
 					// Wake up hibernated users
 					if (isWakingUp) {
-						await this.followingsRepository.update({ followerId: id }, { isFollowerHibernated: false });
+						await this.followingsRepository.update(
+							{ followerId: id },
+							{ isFollowerHibernated: false },
+						);
 						await this.cacheService.hibernatedUserCache.set(id, false);
 					}
-					
+
 					this.logger.debug(`Completed updateUser for ${id}`);
 				}
 			},
 			{
 				onError: this.onQueueError,
 				concurrency: 4, // High concurrency - this queue gets a lot of activity
-				redisParser: data => ({
+				redisParser: (data) => ({
 					...data,
-					updatedAt: data.updatedAt != null
-						? new Date(data.updatedAt)
-						: data.updatedAt,
-					lastActiveDate: data.lastActiveDate != null
-						? new Date(data.lastActiveDate)
-						: data.lastActiveDate,
+					updatedAt:
+						data.updatedAt != null ? new Date(data.updatedAt) : data.updatedAt,
+					lastActiveDate:
+						data.lastActiveDate != null
+							? new Date(data.lastActiveDate)
+							: data.lastActiveDate,
 				}),
 			},
 		);
@@ -230,21 +285,37 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		this.updateNoteQueue = new CollapsedQueue(
 			this.internalEventService,
 			this.timeService,
-			'updateNote',
+			"updateNote",
 			oneMinuteInterval,
 			(oldJob, newJob) => ({
-				repliesCountDelta: (oldJob.repliesCountDelta ?? 0) + (newJob.repliesCountDelta ?? 0),
-				renoteCountDelta: (oldJob.renoteCountDelta ?? 0) + (newJob.renoteCountDelta ?? 0),
-				clippedCountDelta: (oldJob.clippedCountDelta ?? 0) + (newJob.clippedCountDelta ?? 0),
+				repliesCountDelta:
+					(oldJob.repliesCountDelta ?? 0) + (newJob.repliesCountDelta ?? 0),
+				renoteCountDelta:
+					(oldJob.renoteCountDelta ?? 0) + (newJob.renoteCountDelta ?? 0),
+				clippedCountDelta:
+					(oldJob.clippedCountDelta ?? 0) + (newJob.clippedCountDelta ?? 0),
 			}),
 			async (id, job) => {
 				// Have to check this because all properties are optional
-				if (job.repliesCountDelta || job.renoteCountDelta || job.clippedCountDelta) {
-					await this.notesRepository.update({ id }, {
-						repliesCount: job.repliesCountDelta ? () => `"repliesCount" + ${job.repliesCountDelta}` : undefined,
-						renoteCount: job.renoteCountDelta ? () => `"renoteCount" + ${job.renoteCountDelta}` : undefined,
-						clippedCount: job.clippedCountDelta ? () => `"clippedCount" + ${job.clippedCountDelta}` : undefined,
-					});
+				if (
+					job.repliesCountDelta ||
+					job.renoteCountDelta ||
+					job.clippedCountDelta
+				) {
+					await this.notesRepository.update(
+						{ id },
+						{
+							repliesCount: job.repliesCountDelta
+								? () => `"repliesCount" + ${job.repliesCountDelta}`
+								: undefined,
+							renoteCount: job.renoteCountDelta
+								? () => `"renoteCount" + ${job.renoteCountDelta}`
+								: undefined,
+							clippedCount: job.clippedCountDelta
+								? () => `"clippedCount" + ${job.clippedCountDelta}`
+								: undefined,
+						},
+					);
 				}
 			},
 			{
@@ -256,18 +327,22 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		this.updateAccessTokenQueue = new CollapsedQueue(
 			this.internalEventService,
 			this.timeService,
-			'updateAccessToken',
+			"updateAccessToken",
 			fiveMinuteInterval,
 			(oldJob, newJob) => ({
 				lastUsedAt: maxDate(oldJob.lastUsedAt, newJob.lastUsedAt),
 			}),
-			async (id, job) => await this.accessTokensRepository.update({ id }, {
-				lastUsedAt: job.lastUsedAt,
-			}),
+			async (id, job) =>
+				await this.accessTokensRepository.update(
+					{ id },
+					{
+						lastUsedAt: job.lastUsedAt,
+					},
+				),
 			{
 				onError: this.onQueueError,
 				concurrency: 2,
-				redisParser: data => ({
+				redisParser: (data) => ({
 					...data,
 					lastUsedAt: new Date(data.lastUsedAt),
 				}),
@@ -277,31 +352,33 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		this.updateAntennaQueue = new CollapsedQueue(
 			this.internalEventService,
 			this.timeService,
-			'updateAntenna',
+			"updateAntenna",
 			fiveMinuteInterval,
 			(oldJob, newJob) => ({
 				isActive: oldJob.isActive || newJob.isActive,
 				lastUsedAt: maxDate(oldJob.lastUsedAt, newJob.lastUsedAt),
 			}),
-			async (id, job) => await this.antennaService.updateAntenna(id, {
-				isActive: job.isActive,
-				lastUsedAt: job.lastUsedAt,
-			}),
+			async (id, job) =>
+				await this.antennaService.updateAntenna(id, {
+					isActive: job.isActive,
+					lastUsedAt: job.lastUsedAt,
+				}),
 			{
 				onError: this.onQueueError,
 				concurrency: 4,
-				redisParser: data => ({
+				redisParser: (data) => ({
 					...data,
-					lastUsedAt: data.lastUsedAt != null
-						? new Date(data.lastUsedAt)
-						: data.lastUsedAt,
+					lastUsedAt:
+						data.lastUsedAt != null
+							? new Date(data.lastUsedAt)
+							: data.lastUsedAt,
 				}),
 			},
 		);
 
-		this.internalEventService.on('userChangeDeletedState', this.onUserDeleted);
-		this.internalEventService.on('antennaDeleted', this.onAntennaDeleted);
-		this.internalEventService.on('antennaUpdated', this.onAntennaDeleted);
+		this.internalEventService.on("userChangeDeletedState", this.onUserDeleted);
+		this.internalEventService.on("antennaDeleted", this.onAntennaDeleted);
+		this.internalEventService.on("antennaUpdated", this.onAntennaDeleted);
 	}
 
 	@bindThis
@@ -309,24 +386,33 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		try {
 			const results = await queue.performAllNow();
 
-			const [succeeded, failed] = results.reduce((counts, result) => {
-				counts[result ? 0 : 1]++;
-				return counts;
-			}, [0, 0]);
+			const [succeeded, failed] = results.reduce(
+				(counts, result) => {
+					counts[result ? 0 : 1]++;
+					return counts;
+				},
+				[0, 0],
+			);
 
-			this.logger.debug(`Persistence completed for ${queue.name}: ${succeeded} succeeded and ${failed} failed`);
+			this.logger.debug(
+				`Persistence completed for ${queue.name}: ${succeeded} succeeded and ${failed} failed`,
+			);
 		} catch (err) {
-			this.logger.error(`Persistence failed for ${queue.name}: ${renderInlineError(err)}`);
+			this.logger.error(
+				`Persistence failed for ${queue.name}: ${renderInlineError(err)}`,
+			);
 		}
 	}
 
 	@bindThis
 	private onQueueError<V>(queue: CollapsedQueue<V>, error: unknown): void {
-		this.logger.error(`Error persisting ${queue.name}: ${renderInlineError(error)}`);
+		this.logger.error(
+			`Error persisting ${queue.name}: ${renderInlineError(error)}`,
+		);
 	}
 
 	@bindThis
-	private async onUserDeleted(data: { id: string, isDeleted: boolean }) {
+	private async onUserDeleted(data: { id: string; isDeleted: boolean }) {
 		if (data.isDeleted) {
 			await this.updateUserQueue.delete(data.id);
 		}
@@ -339,11 +425,11 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 
 	@bindThis
 	async dispose() {
-		this.internalEventService.off('userChangeDeletedState', this.onUserDeleted);
-		this.internalEventService.off('antennaDeleted', this.onAntennaDeleted);
-		this.internalEventService.off('antennaUpdated', this.onAntennaDeleted);
+		this.internalEventService.off("userChangeDeletedState", this.onUserDeleted);
+		this.internalEventService.off("antennaDeleted", this.onAntennaDeleted);
+		this.internalEventService.off("antennaUpdated", this.onAntennaDeleted);
 
-		this.logger.info('Persisting all collapsed queues...');
+		this.logger.info("Persisting all collapsed queues...");
 
 		await this.performQueue(this.updateInstanceQueue);
 		await this.performQueue(this.updateUserQueue);
@@ -351,7 +437,7 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 		await this.performQueue(this.updateAccessTokenQueue);
 		await this.performQueue(this.updateAntennaQueue);
 
-		this.logger.info('Persistence complete.');
+		this.logger.info("Persistence complete.");
 	}
 
 	async onApplicationShutdown() {
@@ -361,10 +447,19 @@ export class CollapsedQueueService implements OnApplicationShutdown {
 
 function maxDate(first: Date | undefined, second: Date): Date;
 function maxDate(first: Date, second: Date | undefined): Date;
-function maxDate(first: Date | undefined, second: Date | undefined): Date | undefined;
-function maxDate(first: Date | null | undefined, second: Date | null | undefined): Date | null | undefined;
+function maxDate(
+	first: Date | undefined,
+	second: Date | undefined,
+): Date | undefined;
+function maxDate(
+	first: Date | null | undefined,
+	second: Date | null | undefined,
+): Date | null | undefined;
 
-function maxDate(first: Date | null | undefined, second: Date | null | undefined): Date | null | undefined {
+function maxDate(
+	first: Date | null | undefined,
+	second: Date | null | undefined,
+): Date | null | undefined {
 	if (first !== undefined && second !== undefined) {
 		if (first != null && second != null) {
 			if (first.getTime() > second.getTime()) {

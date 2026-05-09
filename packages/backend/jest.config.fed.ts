@@ -3,11 +3,9 @@
  * https://jestjs.io/docs/en/configuration.html
  */
 
-import base from './jest.config.common.ts';
+import base from "./jest.config.common.ts";
 
 module.exports = {
 	...base,
-	testMatch: [
-		'<rootDir>/test-federation/test/**/*.test.ts',
-	],
+	testMatch: ["<rootDir>/test-federation/test/**/*.test.ts"],
 };

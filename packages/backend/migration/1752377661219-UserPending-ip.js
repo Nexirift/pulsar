@@ -5,10 +5,14 @@
 
 export class UserPendingIp1752377661219 {
 	async up(queryRunner) {
-		await queryRunner.query(`ALTER TABLE "user_pending" ADD "requestOriginIp" varchar(128)`);
+		await queryRunner.query(
+			`ALTER TABLE "user_pending" ADD "requestOriginIp" varchar(128)`,
+		);
 	}
 
 	async down(queryRunner) {
-		await queryRunner.query(`ALTER TABLE "user_pending" DROP COLUMN "requestOriginIp"`);
+		await queryRunner.query(
+			`ALTER TABLE "user_pending" DROP COLUMN "requestOriginIp"`,
+		);
 	}
 }

@@ -4,9 +4,9 @@
  */
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import type { StoryObj } from '@storybook/vue3';
-import { userDetailed } from '../../../.storybook/fakes.js';
-import MkAvatar from './MkAvatar.vue';
+import type { StoryObj } from "@storybook/vue3";
+import { userDetailed } from "../../../.storybook/fakes.js";
+import MkAvatar from "./MkAvatar.vue";
 const common = {
 	render(args) {
 		return {
@@ -38,7 +38,7 @@ const common = {
 		}),
 	],
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkAvatar>;
 export const ProfilePage = {

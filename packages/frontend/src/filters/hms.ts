@@ -3,15 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { i18n } from '@/i18n.js';
+import { i18n } from "@/i18n.js";
 
-export function hms(ms: number, options?: {
-	textFormat?: 'colon' | 'locale';
-	enableSeconds?: boolean;
-	enableMs?: boolean;
-}) {
+export function hms(
+	ms: number,
+	options?: {
+		textFormat?: "colon" | "locale";
+		enableSeconds?: boolean;
+		enableMs?: boolean;
+	},
+) {
 	const _options = {
-		textFormat: 'colon',
+		textFormat: "colon",
 		enableSeconds: true,
 		enableMs: false,
 		...options,
@@ -48,18 +51,27 @@ export function hms(ms: number, options?: {
 	res.ms = format(Math.floor(mili / 10));
 
 	// 結果を返す
-	if (_options.textFormat === 'locale') {
+	if (_options.textFormat === "locale") {
 		res.h += i18n.ts._time.hour;
 		res.m += i18n.ts._time.minute;
 		res.s += i18n.ts._time.second;
 	}
-	return [
-		res.h.startsWith('00') ? undefined : res.h,
-		res.m,
-		(_options.enableSeconds ? res.s : undefined),
-	].filter(v => v !== undefined).join(_options.textFormat === 'colon' ? ':' : ' ') + (_options.enableMs ? _options.textFormat === 'colon' ? `.${res.ms}` : ` ${res.ms}` : '');
+	return (
+		[
+			res.h.startsWith("00") ? undefined : res.h,
+			res.m,
+			_options.enableSeconds ? res.s : undefined,
+		]
+			.filter((v) => v !== undefined)
+			.join(_options.textFormat === "colon" ? ":" : " ") +
+		(_options.enableMs
+			? _options.textFormat === "colon"
+				? `.${res.ms}`
+				: ` ${res.ms}`
+			: "")
+	);
 }
 
 function format(n: number) {
-	return n.toString().padStart(2, '0');
+	return n.toString().padStart(2, "0");
 }

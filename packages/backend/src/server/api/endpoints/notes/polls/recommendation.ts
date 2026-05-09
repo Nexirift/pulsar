@@ -3,65 +3,73 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Brackets, In } from 'typeorm';
-import { Inject, Injectable } from '@nestjs/common';
-import type { NotesRepository, MutingsRepository, PollsRepository, PollVotesRepository } from '@/models/_.js';
-import { Endpoint } from '@/server/api/endpoint-base.js';
-import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
-import { DI } from '@/di-symbols.js';
-import { QueryService } from '@/core/QueryService.js';
-import { RoleService } from '@/core/RoleService.js';
-import { ApiError } from '@/server/api/error.js';
-import { TimeService } from '@/global/TimeService.js';
+import { Brackets, In } from "typeorm";
+import { Inject, Injectable } from "@nestjs/common";
+import type {
+	NotesRepository,
+	MutingsRepository,
+	PollsRepository,
+	PollVotesRepository,
+} from "@/models/_.js";
+import { Endpoint } from "@/server/api/endpoint-base.js";
+import { NoteEntityService } from "@/core/entities/NoteEntityService.js";
+import { DI } from "@/di-symbols.js";
+import { QueryService } from "@/core/QueryService.js";
+import { RoleService } from "@/core/RoleService.js";
+import { ApiError } from "@/server/api/error.js";
+import { TimeService } from "@/global/TimeService.js";
 
 export const meta = {
-	tags: ['notes'],
+	tags: ["notes"],
 
 	res: {
-		type: 'array',
-		optional: false, nullable: false,
+		type: "array",
+		optional: false,
+		nullable: false,
 		items: {
-			type: 'object',
-			optional: false, nullable: false,
-			ref: 'Note',
+			type: "object",
+			optional: false,
+			nullable: false,
+			ref: "Note",
 		},
 	},
 
 	errors: {
 		ltlDisabled: {
-			message: 'Local timeline has been disabled.',
-			code: 'LTL_DISABLED',
-			id: '45a6eb02-7695-4393-b023-dd3be9aaaefd',
+			message: "Local timeline has been disabled.",
+			code: "LTL_DISABLED",
+			id: "45a6eb02-7695-4393-b023-dd3be9aaaefd",
 		},
 		gtlDisabled: {
-			message: 'Global timeline has been disabled.',
-			code: 'GTL_DISABLED',
-			id: '0332fc13-6ab2-4427-ae80-a9fadffd1a6b',
+			message: "Global timeline has been disabled.",
+			code: "GTL_DISABLED",
+			id: "0332fc13-6ab2-4427-ae80-a9fadffd1a6b",
 		},
 	},
 
 	// Up to 10 calls, then 2 per second
 	limit: {
-		type: 'bucket',
+		type: "bucket",
 		size: 10,
 		dripRate: 500,
 	},
 } as const;
 
 export const paramDef = {
-	type: 'object',
+	type: "object",
 	properties: {
-		limit: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
-		offset: { type: 'integer', default: 0 },
-		excludeChannels: { type: 'boolean', default: false },
-		local: { type: 'boolean', nullable: true, default: null },
-		expired: { type: 'boolean', default: false },
+		limit: { type: "integer", minimum: 1, maximum: 100, default: 10 },
+		offset: { type: "integer", default: 0 },
+		excludeChannels: { type: "boolean", default: false },
+		local: { type: "boolean", nullable: true, default: null },
+		expired: { type: "boolean", default: false },
 	},
 	required: [],
 } as const;
 
 @Injectable()
-export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
+export default class extends Endpoint<typeof meta, typeof paramDef> {
+	// eslint-disable-line import/no-default-export
 	constructor(
 		@Inject(DI.notesRepository)
 		private notesRepository: NotesRepository,
@@ -81,44 +89,48 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private readonly timeService: TimeService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
-			const query = this.pollsRepository.createQueryBuilder('poll')
-				.innerJoinAndSelect('poll.note', 'note')
-				.innerJoinAndSelect('note.user', 'user')
-				.leftJoinAndSelect('note.renote', 'renote')
-				.leftJoinAndSelect('note.reply', 'reply')
-				.leftJoinAndSelect('renote.user', 'renoteUser')
-				.leftJoinAndSelect('reply.user', 'replyUser')
-				.andWhere('user.isExplorable = TRUE')
-			;
-
+			const query = this.pollsRepository
+				.createQueryBuilder("poll")
+				.innerJoinAndSelect("poll.note", "note")
+				.innerJoinAndSelect("note.user", "user")
+				.leftJoinAndSelect("note.renote", "renote")
+				.leftJoinAndSelect("note.reply", "reply")
+				.leftJoinAndSelect("renote.user", "renoteUser")
+				.leftJoinAndSelect("reply.user", "replyUser")
+				.andWhere("user.isExplorable = TRUE");
 			if (me) {
-				query.andWhere('poll.userId != :meId', { meId: me.id });
+				query.andWhere("poll.userId != :meId", { meId: me.id });
 			}
 
 			if (ps.expired) {
-				query.andWhere('poll.expiresAt IS NOT NULL');
-				query.andWhere('poll.expiresAt <= :expiresMax', {
+				query.andWhere("poll.expiresAt IS NOT NULL");
+				query.andWhere("poll.expiresAt <= :expiresMax", {
 					expiresMax: this.timeService.date,
 				});
-				query.andWhere('poll.expiresAt >= :expiresMin', {
-					expiresMin: new Date(this.timeService.now - (1000 * 60 * 60 * 24 * 7)),
+				query.andWhere("poll.expiresAt >= :expiresMin", {
+					expiresMin: new Date(this.timeService.now - 1000 * 60 * 60 * 24 * 7),
 				});
 			} else {
-				query.andWhere(new Brackets(qb => {
-					qb
-						.where('poll.expiresAt IS NULL')
-						.orWhere('poll.expiresAt > :now', { now: this.timeService.date });
-				}));
+				query.andWhere(
+					new Brackets((qb) => {
+						qb.where("poll.expiresAt IS NULL").orWhere(
+							"poll.expiresAt > :now",
+							{ now: this.timeService.date },
+						);
+					}),
+				);
 			}
 
 			const policies = await this.roleService.getUserPolicies(me?.id ?? null);
 			if (ps.local != null) {
 				if (ps.local) {
-					if (!policies.ltlAvailable) throw new ApiError(meta.errors.ltlDisabled);
-					query.andWhere('poll.userHost IS NULL');
+					if (!policies.ltlAvailable)
+						throw new ApiError(meta.errors.ltlDisabled);
+					query.andWhere("poll.userHost IS NULL");
 				} else {
-					if (!policies.gtlAvailable) throw new ApiError(meta.errors.gtlDisabled);
-					query.andWhere('poll.userHost IS NOT NULL');
+					if (!policies.gtlAvailable)
+						throw new ApiError(meta.errors.gtlDisabled);
+					query.andWhere("poll.userHost IS NOT NULL");
 				}
 			} else {
 				if (!policies.gtlAvailable) throw new ApiError(meta.errors.gtlDisabled);
@@ -151,12 +163,12 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			//#region exclude channels
 			if (ps.excludeChannels) {
-				query.andWhere('poll.channelId IS NULL');
+				query.andWhere("poll.channelId IS NULL");
 			}
 			//#endregion
 
 			const polls = await query
-				.orderBy('poll.noteId', 'DESC')
+				.orderBy("poll.noteId", "DESC")
 				.limit(ps.limit)
 				.offset(ps.offset)
 				.getMany();
@@ -175,7 +187,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 			*/
 
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const notes = polls.map(poll => poll.note!);
+			const notes = polls.map((poll) => poll.note!);
 
 			return await this.noteEntityService.packMany(notes, me, {
 				detail: true,

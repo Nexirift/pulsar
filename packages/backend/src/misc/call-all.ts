@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { promiseTry } from '@/misc/promise-try.js';
+import { promiseTry } from "@/misc/promise-try.js";
 
 /**
  * Calls a group of synchronous functions with the given parameters.
@@ -12,7 +12,10 @@ import { promiseTry } from '@/misc/promise-try.js';
  * @param funcs Callback functions to execute
  * @param args Arguments to pass to each callback
  */
-export function callAll<T extends unknown[]>(funcs: Iterable<(...args: T) => void>, ...args: T): void {
+export function callAll<T extends unknown[]>(
+	funcs: Iterable<(...args: T) => void>,
+	...args: T
+): void {
 	const errors: unknown[] = [];
 
 	for (const func of funcs) {
@@ -36,19 +39,23 @@ export function callAll<T extends unknown[]>(funcs: Iterable<(...args: T) => voi
  * @param funcs Callback functions to execute
  * @param args Arguments to pass to each callback
  */
-export async function callAllAsync<T extends unknown[]>(funcs: Iterable<(...args: T) => Promise<void> | void>, ...args: T): Promise<void> {
+export async function callAllAsync<T extends unknown[]>(
+	funcs: Iterable<(...args: T) => Promise<void> | void>,
+	...args: T
+): Promise<void> {
 	// Start all the tasks
-	const promises = Array.from(funcs)
-		.map(func => {
-			// Handle errors thrown synchronously
-			return promiseTry(() => func(...args));
-		});
+	const promises = Array.from(funcs).map((func) => {
+		// Handle errors thrown synchronously
+		return promiseTry(() => func(...args));
+	});
 
 	// Wait for all to finish
 	const results = await Promise.allSettled(promises);
 
 	// Check for errors
-	const errors = results.filter(r => r.status === 'rejected').map(r => r.reason as unknown);
+	const errors = results
+		.filter((r) => r.status === "rejected")
+		.map((r) => r.reason as unknown);
 	if (errors.length > 0) {
 		throw new AggregateError(errors);
 	}
@@ -62,7 +69,11 @@ export async function callAllAsync<T extends unknown[]>(funcs: Iterable<(...args
  * @param method Name (property key) of the method to execute
  * @param args Arguments to pass
  */
-export function callAllOn<TObject, TMethod extends MethodKeys<TObject>>(objects: Iterable<TObject>, method: TMethod, ...args: MethodParams<TObject, TMethod>): void {
+export function callAllOn<TObject, TMethod extends MethodKeys<TObject>>(
+	objects: Iterable<TObject>,
+	method: TMethod,
+	...args: MethodParams<TObject, TMethod>
+): void {
 	const errors: unknown[] = [];
 
 	for (const object of objects) {
@@ -88,22 +99,30 @@ export function callAllOn<TObject, TMethod extends MethodKeys<TObject>>(objects:
  * @param method Name (property key) of the method to execute
  * @param args Arguments to pass
  */
-export async function callAllOnAsync<TObject, TMethod extends MethodKeys<TObject>>(objects: Iterable<TObject>, method: TMethod, ...args: MethodParams<TObject, TMethod>): Promise<void> {
+export async function callAllOnAsync<
+	TObject,
+	TMethod extends MethodKeys<TObject>,
+>(
+	objects: Iterable<TObject>,
+	method: TMethod,
+	...args: MethodParams<TObject, TMethod>
+): Promise<void> {
 	// Start all the tasks
-	const promises = Array.from(objects)
-		.map(object => {
-			// Handle errors thrown synchronously
-			return promiseTry(() => {
-				// @ts-expect-error Our generic constraints ensure this is safe, but TS can't infer that much context.
-				return object[method](...args);
-			});
+	const promises = Array.from(objects).map((object) => {
+		// Handle errors thrown synchronously
+		return promiseTry(() => {
+			// @ts-expect-error Our generic constraints ensure this is safe, but TS can't infer that much context.
+			return object[method](...args);
 		});
+	});
 
 	// Wait for all to finish
 	const results = await Promise.allSettled(promises);
 
 	// Check for errors
-	const errors = results.filter(r => r.status === 'rejected').map(r => r.reason as unknown);
+	const errors = results
+		.filter((r) => r.status === "rejected")
+		.map((r) => r.reason as unknown);
 	if (errors.length > 0) {
 		throw new AggregateError(errors);
 	}
@@ -114,4 +133,7 @@ type Methods<TObject> = {
 	[Key in keyof TObject]: TObject[Key] extends AnyFunc ? TObject[Key] : never;
 };
 type MethodKeys<TObject> = keyof Methods<TObject>;
-type MethodParams<TObject, TMethod extends MethodKeys<TObject>> = TObject[TMethod] extends AnyFunc ? Parameters<TObject[TMethod]> : never;
+type MethodParams<
+	TObject,
+	TMethod extends MethodKeys<TObject>,
+> = TObject[TMethod] extends AnyFunc ? Parameters<TObject[TMethod]> : never;

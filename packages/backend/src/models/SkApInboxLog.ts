@@ -3,30 +3,37 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
-import { SkApContext } from '@/models/SkApContext.js';
-import { MiUser } from '@/models/_.js';
-import { id } from './util/id.js';
+import {
+	Column,
+	Entity,
+	Index,
+	JoinColumn,
+	ManyToOne,
+	PrimaryColumn,
+} from "typeorm";
+import { SkApContext } from "@/models/SkApContext.js";
+import { MiUser } from "@/models/_.js";
+import { id } from "./util/id.js";
 
 /**
  * Records activities received in the inbox
  */
-@Entity('ap_inbox_log')
+@Entity("ap_inbox_log")
 export class SkApInboxLog {
 	@PrimaryColumn({
 		...id(),
-		primaryKeyConstraintName: 'PK_ap_inbox_log',
+		primaryKeyConstraintName: "PK_ap_inbox_log",
 	})
 	public id: string;
 
-	@Index('IDX_ap_inbox_log_at')
-	@Column('timestamptz')
+	@Index("IDX_ap_inbox_log_at")
+	@Column("timestamptz")
 	public at: Date;
 
 	/**
 	 * Processing duration in milliseconds
 	 */
-	@Column('double precision', { nullable: true })
+	@Column("double precision", { nullable: true })
 	public duration: number | null = null;
 
 	/**
@@ -34,8 +41,8 @@ export class SkApInboxLog {
 	 * Untrusted unless verified is true.
 	 */
 	@Column({
-		type: 'text',
-		name: 'key_id',
+		type: "text",
+		name: "key_id",
 	})
 	public keyId: string;
 
@@ -43,38 +50,38 @@ export class SkApInboxLog {
 	 * Instance that the activity was sent from.
 	 * Untrusted unless verified is true.
 	 */
-	@Index('IDX_ap_inbox_log_host')
-	@Column('text')
+	@Index("IDX_ap_inbox_log_host")
+	@Column("text")
 	public host: string;
 
-	@Column('boolean')
+	@Column("boolean")
 	public verified: boolean;
 
-	@Column('boolean')
+	@Column("boolean")
 	public accepted: boolean;
 
-	@Column('text', { nullable: true })
+	@Column("text", { nullable: true })
 	public result: string | null = null;
 
-	@Column('jsonb')
+	@Column("jsonb")
 	// https://github.com/typeorm/typeorm/issues/8559
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	public activity: any;
 
 	@Column({
-		type: 'text',
-		name: 'context_hash',
+		type: "text",
+		name: "context_hash",
 		nullable: true,
 	})
 	public contextHash: string | null;
 
 	@ManyToOne(() => SkApContext, {
-		onDelete: 'CASCADE',
+		onDelete: "CASCADE",
 		nullable: true,
 	})
 	@JoinColumn({
-		name: 'context_hash',
-		foreignKeyConstraintName: 'FK_ap_inbox_log_context_hash',
+		name: "context_hash",
+		foreignKeyConstraintName: "FK_ap_inbox_log_context_hash",
 	})
 	public context: SkApContext | null;
 
@@ -83,7 +90,7 @@ export class SkApInboxLog {
 	 */
 	@Column({
 		...id(),
-		name: 'auth_user_id',
+		name: "auth_user_id",
 		nullable: true,
 	})
 	public authUserId: string | null;
@@ -92,12 +99,12 @@ export class SkApInboxLog {
 	 * User who signed this request.
 	 */
 	@ManyToOne(() => MiUser, {
-		onDelete: 'CASCADE',
+		onDelete: "CASCADE",
 		nullable: true,
 	})
 	@JoinColumn({
-		name: 'auth_user_id',
-		foreignKeyConstraintName: 'FK_ap_inbox_log_auth_user_id',
+		name: "auth_user_id",
+		foreignKeyConstraintName: "FK_ap_inbox_log_auth_user_id",
 	})
 	public authUser: MiUser | null;
 

@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { IPost } from '@/core/activitypub/type.js';
-import { toArray } from '@/misc/prelude/array.js';
+import type { IPost } from "@/core/activitypub/type.js";
+import { toArray } from "@/misc/prelude/array.js";
 
 /**
  * Gets content of a specified media type from a provided object.
@@ -25,25 +25,35 @@ import { toArray } from '@/misc/prelude/array.js';
  * @param mimeType MIME type to look for.
  * @param permissive Enables permissive mode, as described above. Defaults to false (disabled).
  */
-export function getContentByType(object: IPost | Record<string, unknown>, mimeType: string, permissive = false): string | null {
+export function getContentByType(
+	object: IPost | Record<string, unknown>,
+	mimeType: string,
+	permissive = false,
+): string | null {
 	// Case 1: Extended "source" property
-	if (object.source && typeof(object.source) === 'object') {
+	if (object.source && typeof object.source === "object") {
 		// "source" is permitted to be an array, though no implementations are known to do this yet.
 		const sources = toArray(object.source) as Record<string, unknown>[];
 		for (const source of sources) {
-			if (typeof (source.content) === 'string' && checkMediaType(source.mediaType)) {
+			if (
+				typeof source.content === "string" &&
+				checkMediaType(source.mediaType)
+			) {
 				return source.content;
 			}
 		}
 	}
 
 	// Case 2: Special case for MFM
-	if (typeof(object._misskey_content) === 'string' && mimeType === 'text/x.misskeymarkdown') {
+	if (
+		typeof object._misskey_content === "string" &&
+		mimeType === "text/x.misskeymarkdown"
+	) {
 		return object._misskey_content;
 	}
 
 	// Case 3: AP native "content" property
-	if (typeof(object.content) === 'string' && checkMediaType(object.mediaType)) {
+	if (typeof object.content === "string" && checkMediaType(object.mediaType)) {
 		return object.content;
 	}
 
@@ -51,14 +61,17 @@ export function getContentByType(object: IPost | Record<string, unknown>, mimeTy
 
 	// Checks if the provided media type matches the input parameters.
 	function checkMediaType(mediaType: unknown): boolean {
-		if (typeof(mediaType) === 'string') {
+		if (typeof mediaType === "string") {
 			// Strict match
 			if (mediaType === mimeType) {
 				return true;
 			}
 
 			// Permissive match
-			if (permissive && mediaType.toLowerCase().includes(mimeType.toLowerCase())) {
+			if (
+				permissive &&
+				mediaType.toLowerCase().includes(mimeType.toLowerCase())
+			) {
 				return true;
 			}
 		}

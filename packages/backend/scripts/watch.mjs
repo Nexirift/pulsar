@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { execa } from 'execa';
+import { execa } from "execa";
 
 (async () => {
 	// なぜかchokidarが動かない影響で、watchされない
@@ -15,13 +15,13 @@ import { execa } from 'execa';
 	*/
 
 	setInterval(() => {
-		execa('tsc-alias', ['-p', 'tsconfig.backend.json'], {
+		execa("tsc-alias", ["-p", "tsconfig.backend.json"], {
 			stdout: process.stdout,
 			stderr: process.stderr,
 		});
 	}, 3000);
 
-	execa('tsc', ['-w', '-p', 'tsconfig.backend.json'], {
+	execa("tsc", ["-w", "-p", "tsconfig.backend.json"], {
 		stdout: process.stdout,
 		stderr: process.stderr,
 	});

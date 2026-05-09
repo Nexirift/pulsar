@@ -12,7 +12,7 @@ export abstract class DisposeError extends Error {
 
 	public readonly source: string | undefined;
 
-	protected constructor(opts?: { source?: string, message?: string }) {
+	protected constructor(opts?: { source?: string; message?: string }) {
 		super(opts?.message);
 		this.source = opts?.source;
 	}
@@ -25,10 +25,10 @@ export class DisposedError extends DisposeError {
 	// Fix the error name in stack traces - https://stackoverflow.com/a/71573071
 	override name = this.constructor.name;
 
-	constructor(opts?: { source?: string, message?: string }) {
+	constructor(opts?: { source?: string; message?: string }) {
 		super({
 			source: opts?.source,
-			message: opts?.message ?? `${opts?.source ?? 'Object'} has been disposed`,
+			message: opts?.message ?? `${opts?.source ?? "Object"} has been disposed`,
 		});
 	}
 }
@@ -40,10 +40,10 @@ export class DisposingError extends DisposeError {
 	// Fix the error name in stack traces - https://stackoverflow.com/a/71573071
 	override name = this.constructor.name;
 
-	constructor(opts?: { source?: string, message?: string }) {
+	constructor(opts?: { source?: string; message?: string }) {
 		super({
 			source: opts?.source,
-			message: opts?.message ?? `${opts?.source ?? 'Object'} is being disposed`,
+			message: opts?.message ?? `${opts?.source ?? "Object"} is being disposed`,
 		});
 	}
 }

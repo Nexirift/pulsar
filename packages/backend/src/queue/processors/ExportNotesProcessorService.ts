@@ -3,28 +3,32 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { ReadableStream, TextEncoderStream } from 'node:stream/web';
-import { Inject, Injectable } from '@nestjs/common';
-import { MoreThan } from 'typeorm';
-import { format as dateFormat } from 'date-fns';
-import { DI } from '@/di-symbols.js';
-import type { NotesRepository, PollsRepository, UsersRepository } from '@/models/_.js';
-import type Logger from '@/logger.js';
-import { DriveService } from '@/core/DriveService.js';
-import { createTemp } from '@/misc/create-temp.js';
-import type { MiPoll } from '@/models/Poll.js';
-import type { MiNote } from '@/models/Note.js';
-import { bindThis } from '@/decorators.js';
-import { DriveFileEntityService } from '@/core/entities/DriveFileEntityService.js';
-import { Packed } from '@/misc/json-schema.js';
-import { IdService } from '@/core/IdService.js';
-import { NotificationService } from '@/core/NotificationService.js';
-import { JsonArrayStream } from '@/misc/JsonArrayStream.js';
-import { FileWriterStream } from '@/misc/FileWriterStream.js';
-import { TimeService } from '@/global/TimeService.js';
-import { QueueLoggerService } from '../QueueLoggerService.js';
-import type * as Bull from 'bullmq';
-import type { DbJobDataWithUser } from '../types.js';
+import { ReadableStream, TextEncoderStream } from "node:stream/web";
+import { Inject, Injectable } from "@nestjs/common";
+import { MoreThan } from "typeorm";
+import { format as dateFormat } from "date-fns";
+import { DI } from "@/di-symbols.js";
+import type {
+	NotesRepository,
+	PollsRepository,
+	UsersRepository,
+} from "@/models/_.js";
+import type Logger from "@/logger.js";
+import { DriveService } from "@/core/DriveService.js";
+import { createTemp } from "@/misc/create-temp.js";
+import type { MiPoll } from "@/models/Poll.js";
+import type { MiNote } from "@/models/Note.js";
+import { bindThis } from "@/decorators.js";
+import { DriveFileEntityService } from "@/core/entities/DriveFileEntityService.js";
+import { Packed } from "@/misc/json-schema.js";
+import { IdService } from "@/core/IdService.js";
+import { NotificationService } from "@/core/NotificationService.js";
+import { JsonArrayStream } from "@/misc/JsonArrayStream.js";
+import { FileWriterStream } from "@/misc/FileWriterStream.js";
+import { TimeService } from "@/global/TimeService.js";
+import { QueueLoggerService } from "../QueueLoggerService.js";
+import type * as Bull from "bullmq";
+import type { DbJobDataWithUser } from "../types.js";
 
 class NoteStream extends ReadableStream<Record<string, unknown>> {
 	constructor(
@@ -36,12 +40,12 @@ class NoteStream extends ReadableStream<Record<string, unknown>> {
 		userId: string,
 	) {
 		let exportedNotesCount = 0;
-		let cursor: MiNote['id'] | null = null;
+		let cursor: MiNote["id"] | null = null;
 
 		const serialize = (
 			note: MiNote,
 			poll: MiPoll | null,
-			files: Packed<'DriveFile'>[],
+			files: Packed<"DriveFile">[],
 		): Record<string, unknown> => {
 			return {
 				id: note.id,
@@ -82,7 +86,9 @@ class NoteStream extends ReadableStream<Record<string, unknown>> {
 					const poll = note.hasPoll
 						? await pollsRepository.findOneByOrFail({ noteId: note.id }) // N+1
 						: null;
-					const files = await driveFileEntityService.packManyByIds(note.fileIds); // N+1
+					const files = await driveFileEntityService.packManyByIds(
+						note.fileIds,
+					); // N+1
 					const content = serialize(note, poll, files);
 
 					controller.enqueue(content);
@@ -117,7 +123,8 @@ export class ExportNotesProcessorService {
 		private notificationService: NotificationService,
 		private readonly timeService: TimeService,
 	) {
-		this.logger = this.queueLoggerService.logger.createSubLogger('export-notes');
+		this.logger =
+			this.queueLoggerService.logger.createSubLogger("export-notes");
 	}
 
 	@bindThis
@@ -151,13 +158,22 @@ export class ExportNotesProcessorService {
 
 			this.logger.debug(`Exported to: ${path}`);
 
-			const fileName = 'notes-' + dateFormat(this.timeService.date, 'yyyy-MM-dd-HH-mm-ss') + '.json';
-			const driveFile = await this.driveService.addFile({ user, path, name: fileName, force: true, ext: 'json' });
+			const fileName =
+				"notes-" +
+				dateFormat(this.timeService.date, "yyyy-MM-dd-HH-mm-ss") +
+				".json";
+			const driveFile = await this.driveService.addFile({
+				user,
+				path,
+				name: fileName,
+				force: true,
+				ext: "json",
+			});
 
 			this.logger.debug(`Exported to: ${driveFile.id}`);
 
-			this.notificationService.createNotification(user.id, 'exportCompleted', {
-				exportedEntity: 'note',
+			this.notificationService.createNotification(user.id, "exportCompleted", {
+				exportedEntity: "note",
 				fileId: driveFile.id,
 			});
 		} finally {

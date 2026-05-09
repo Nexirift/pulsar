@@ -4,25 +4,28 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { setTimeout } from 'node:timers/promises';
-import { afterEach, beforeEach, describe, expect, jest } from '@jest/globals';
-import { Test, TestingModule } from '@nestjs/testing';
-import { randomString } from '../utils.js';
-import { MiUser } from '@/models/User.js';
-import { MiSystemWebhook, SystemWebhookEventType } from '@/models/SystemWebhook.js';
-import { SystemWebhooksRepository, UsersRepository } from '@/models/_.js';
-import { IdService } from '@/core/IdService.js';
-import { GlobalModule } from '@/GlobalModule.js';
-import { ModerationLogService } from '@/core/ModerationLogService.js';
-import { GlobalEventService } from '@/core/GlobalEventService.js';
-import { DI } from '@/di-symbols.js';
-import { QueueService } from '@/core/QueueService.js';
-import { LoggerService } from '@/core/LoggerService.js';
-import { SystemWebhookService } from '@/core/SystemWebhookService.js';
-import { CacheManagementService } from '@/global/CacheManagementService.js';
-import { CoreModule } from '@/core/CoreModule.js';
+import { setTimeout } from "node:timers/promises";
+import { afterEach, beforeEach, describe, expect, jest } from "@jest/globals";
+import { Test, TestingModule } from "@nestjs/testing";
+import { randomString } from "../utils.js";
+import { MiUser } from "@/models/User.js";
+import {
+	MiSystemWebhook,
+	SystemWebhookEventType,
+} from "@/models/SystemWebhook.js";
+import { SystemWebhooksRepository, UsersRepository } from "@/models/_.js";
+import { IdService } from "@/core/IdService.js";
+import { GlobalModule } from "@/GlobalModule.js";
+import { ModerationLogService } from "@/core/ModerationLogService.js";
+import { GlobalEventService } from "@/core/GlobalEventService.js";
+import { DI } from "@/di-symbols.js";
+import { QueueService } from "@/core/QueueService.js";
+import { LoggerService } from "@/core/LoggerService.js";
+import { SystemWebhookService } from "@/core/SystemWebhookService.js";
+import { CacheManagementService } from "@/global/CacheManagementService.js";
+import { CoreModule } from "@/core/CoreModule.js";
 
-describe('SystemWebhookService', () => {
+describe("SystemWebhookService", () => {
 	let app: TestingModule;
 	let service: SystemWebhookService;
 
@@ -46,7 +49,7 @@ describe('SystemWebhookService', () => {
 				id: idService.gen(),
 				...data,
 			})
-			.then(x => usersRepository.findOneByOrFail(x.identifiers[0]));
+			.then((x) => usersRepository.findOneByOrFail(x.identifiers[0]));
 	}
 
 	async function createWebhook(data: Partial<MiSystemWebhook> = {}) {
@@ -54,26 +57,24 @@ describe('SystemWebhookService', () => {
 			.insert({
 				id: idService.gen(),
 				name: randomString(),
-				on: ['abuseReport'],
-				url: 'https://example.com',
+				on: ["abuseReport"],
+				url: "https://example.com",
 				secret: randomString(),
 				...data,
 			})
-			.then(x => systemWebhooksRepository.findOneByOrFail(x.identifiers[0]));
+			.then((x) => systemWebhooksRepository.findOneByOrFail(x.identifiers[0]));
 	}
 
 	// --------------------------------------------------------------------------------------
 
 	beforeAll(async () => {
-		app = await Test
-			.createTestingModule({
-				imports: [
-					GlobalModule,
-					CoreModule,
-				],
-			})
-			.overrideProvider(QueueService).useValue({ systemWebhookDeliver: jest.fn() })
-			.overrideProvider(ModerationLogService).useValue({ log: () => Promise.resolve() })
+		app = await Test.createTestingModule({
+			imports: [GlobalModule, CoreModule],
+		})
+			.overrideProvider(QueueService)
+			.useValue({ systemWebhookDeliver: jest.fn() })
+			.overrideProvider(ModerationLogService)
+			.useValue({ log: () => Promise.resolve() })
 			.compile();
 
 		await app.init();
@@ -93,7 +94,7 @@ describe('SystemWebhookService', () => {
 	});
 
 	beforeEach(async () => {
-		root = await createUser({ username: 'root', usernameLower: 'root' });
+		root = await createUser({ username: "root", usernameLower: "root" });
 	});
 
 	afterEach(async () => {
@@ -105,20 +106,20 @@ describe('SystemWebhookService', () => {
 
 	// --------------------------------------------------------------------------------------
 
-	describe('アプリを毎回作り直す必要のないグループ', () => {
-		describe('fetchSystemWebhooks', () => {
-			test('フィルタなし', async () => {
+	describe("アプリを毎回作り直す必要のないグループ", () => {
+		describe("fetchSystemWebhooks", () => {
+			test("フィルタなし", async () => {
 				const webhook1 = await createWebhook({
 					isActive: true,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook2 = await createWebhook({
 					isActive: false,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook3 = await createWebhook({
 					isActive: true,
-					on: ['abuseReportResolved'],
+					on: ["abuseReportResolved"],
 				});
 				const webhook4 = await createWebhook({
 					isActive: false,
@@ -126,127 +127,144 @@ describe('SystemWebhookService', () => {
 				});
 
 				const fetchedWebhooks = await service.fetchSystemWebhooks();
-				expect(fetchedWebhooks).toEqual([webhook1, webhook2, webhook3, webhook4]);
+				expect(fetchedWebhooks).toEqual([
+					webhook1,
+					webhook2,
+					webhook3,
+					webhook4,
+				]);
 			});
 
-			test('activeのみ', async () => {
+			test("activeのみ", async () => {
 				const webhook1 = await createWebhook({
 					isActive: true,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook2 = await createWebhook({
 					isActive: false,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook3 = await createWebhook({
 					isActive: true,
-					on: ['abuseReportResolved'],
+					on: ["abuseReportResolved"],
 				});
 				const webhook4 = await createWebhook({
 					isActive: false,
 					on: [],
 				});
 
-				const fetchedWebhooks = await service.fetchSystemWebhooks({ isActive: true });
+				const fetchedWebhooks = await service.fetchSystemWebhooks({
+					isActive: true,
+				});
 				expect(fetchedWebhooks).toEqual([webhook1, webhook3]);
 			});
 
-			test('特定のイベントのみ', async () => {
+			test("特定のイベントのみ", async () => {
 				const webhook1 = await createWebhook({
 					isActive: true,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook2 = await createWebhook({
 					isActive: false,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook3 = await createWebhook({
 					isActive: true,
-					on: ['abuseReportResolved'],
+					on: ["abuseReportResolved"],
 				});
 				const webhook4 = await createWebhook({
 					isActive: false,
 					on: [],
 				});
 
-				const fetchedWebhooks = await service.fetchSystemWebhooks({ on: ['abuseReport'] });
+				const fetchedWebhooks = await service.fetchSystemWebhooks({
+					on: ["abuseReport"],
+				});
 				expect(fetchedWebhooks).toEqual([webhook1, webhook2]);
 			});
 
-			test('activeな特定のイベントのみ', async () => {
+			test("activeな特定のイベントのみ", async () => {
 				const webhook1 = await createWebhook({
 					isActive: true,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook2 = await createWebhook({
 					isActive: false,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook3 = await createWebhook({
 					isActive: true,
-					on: ['abuseReportResolved'],
+					on: ["abuseReportResolved"],
 				});
 				const webhook4 = await createWebhook({
 					isActive: false,
 					on: [],
 				});
 
-				const fetchedWebhooks = await service.fetchSystemWebhooks({ on: ['abuseReport'], isActive: true });
+				const fetchedWebhooks = await service.fetchSystemWebhooks({
+					on: ["abuseReport"],
+					isActive: true,
+				});
 				expect(fetchedWebhooks).toEqual([webhook1]);
 			});
 
-			test('ID指定', async () => {
+			test("ID指定", async () => {
 				const webhook1 = await createWebhook({
 					isActive: true,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook2 = await createWebhook({
 					isActive: false,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook3 = await createWebhook({
 					isActive: true,
-					on: ['abuseReportResolved'],
+					on: ["abuseReportResolved"],
 				});
 				const webhook4 = await createWebhook({
 					isActive: false,
 					on: [],
 				});
 
-				const fetchedWebhooks = await service.fetchSystemWebhooks({ ids: [webhook1.id, webhook4.id] });
+				const fetchedWebhooks = await service.fetchSystemWebhooks({
+					ids: [webhook1.id, webhook4.id],
+				});
 				expect(fetchedWebhooks).toEqual([webhook1, webhook4]);
 			});
 
-			test('ID指定(他条件とANDになるか見たい)', async () => {
+			test("ID指定(他条件とANDになるか見たい)", async () => {
 				const webhook1 = await createWebhook({
 					isActive: true,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook2 = await createWebhook({
 					isActive: false,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook3 = await createWebhook({
 					isActive: true,
-					on: ['abuseReportResolved'],
+					on: ["abuseReportResolved"],
 				});
 				const webhook4 = await createWebhook({
 					isActive: false,
 					on: [],
 				});
 
-				const fetchedWebhooks = await service.fetchSystemWebhooks({ ids: [webhook1.id, webhook4.id], isActive: false });
+				const fetchedWebhooks = await service.fetchSystemWebhooks({
+					ids: [webhook1.id, webhook4.id],
+					isActive: false,
+				});
 				expect(fetchedWebhooks).toEqual([webhook4]);
 			});
 		});
 
-		describe('createSystemWebhook', () => {
-			test('作成成功	', async () => {
+		describe("createSystemWebhook", () => {
+			test("作成成功	", async () => {
 				const params = {
 					isActive: true,
 					name: randomString(),
-					on: ['abuseReport'] as SystemWebhookEventType[],
-					url: 'https://example.com',
+					on: ["abuseReport"] as SystemWebhookEventType[],
+					url: "https://example.com",
 					secret: randomString(),
 				};
 
@@ -255,18 +273,18 @@ describe('SystemWebhookService', () => {
 			});
 		});
 
-		describe('updateSystemWebhook', () => {
-			test('更新成功', async () => {
+		describe("updateSystemWebhook", () => {
+			test("更新成功", async () => {
 				const webhook = await createWebhook({
 					isActive: true,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 
 				const params = {
 					id: webhook.id,
 					isActive: false,
 					name: randomString(),
-					on: ['abuseReport'] as SystemWebhookEventType[],
+					on: ["abuseReport"] as SystemWebhookEventType[],
 					url: randomString(),
 					secret: randomString(),
 				};
@@ -276,106 +294,126 @@ describe('SystemWebhookService', () => {
 			});
 		});
 
-		describe('deleteSystemWebhook', () => {
-			test('削除成功', async () => {
+		describe("deleteSystemWebhook", () => {
+			test("削除成功", async () => {
 				const webhook = await createWebhook({
 					isActive: true,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 
 				await service.deleteSystemWebhook(webhook.id, root);
 
-				await expect(systemWebhooksRepository.findOneBy({ id: webhook.id })).resolves.toBeNull();
+				await expect(
+					systemWebhooksRepository.findOneBy({ id: webhook.id }),
+				).resolves.toBeNull();
 			});
 		});
 	});
 
-	describe('アプリを毎回作り直す必要があるグループ', () => {
-		describe('enqueueSystemWebhook', () => {
-			test('キューに追加成功', async () => {
+	describe("アプリを毎回作り直す必要があるグループ", () => {
+		describe("enqueueSystemWebhook", () => {
+			test("キューに追加成功", async () => {
 				const webhook = await createWebhook({
 					isActive: true,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
-				await service.enqueueSystemWebhook('abuseReport', { foo: 'bar' } as any);
+				await service.enqueueSystemWebhook("abuseReport", {
+					foo: "bar",
+				} as any);
 
 				expect(queueService.systemWebhookDeliver).toHaveBeenCalledTimes(1);
-				expect(queueService.systemWebhookDeliver.mock.calls[0][0] as MiSystemWebhook).toEqual(webhook);
+				expect(
+					queueService.systemWebhookDeliver.mock.calls[0][0] as MiSystemWebhook,
+				).toEqual(webhook);
 			});
 
-			test('非アクティブなWebhookはキューに追加されない', async () => {
+			test("非アクティブなWebhookはキューに追加されない", async () => {
 				const webhook = await createWebhook({
 					isActive: false,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
-				await service.enqueueSystemWebhook('abuseReport', { foo: 'bar' } as any);
+				await service.enqueueSystemWebhook("abuseReport", {
+					foo: "bar",
+				} as any);
 
 				expect(queueService.systemWebhookDeliver).not.toHaveBeenCalled();
 			});
 
-			test('未許可のイベント種別が渡された場合はWebhookはキューに追加されない', async () => {
+			test("未許可のイベント種別が渡された場合はWebhookはキューに追加されない", async () => {
 				const webhook1 = await createWebhook({
 					isActive: true,
 					on: [],
 				});
 				const webhook2 = await createWebhook({
 					isActive: true,
-					on: ['abuseReportResolved'],
+					on: ["abuseReportResolved"],
 				});
-				await service.enqueueSystemWebhook('abuseReport', { foo: 'bar' } as any);
+				await service.enqueueSystemWebhook("abuseReport", {
+					foo: "bar",
+				} as any);
 
 				expect(queueService.systemWebhookDeliver).not.toHaveBeenCalled();
 			});
 
-			test('混在した時、有効かつ許可されたイベント種別のみ', async () => {
+			test("混在した時、有効かつ許可されたイベント種別のみ", async () => {
 				const webhook1 = await createWebhook({
 					isActive: true,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook2 = await createWebhook({
 					isActive: true,
-					on: ['abuseReportResolved'],
+					on: ["abuseReportResolved"],
 				});
 				const webhook3 = await createWebhook({
 					isActive: false,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook4 = await createWebhook({
 					isActive: false,
-					on: ['abuseReportResolved'],
+					on: ["abuseReportResolved"],
 				});
-				await service.enqueueSystemWebhook('abuseReport', { foo: 'bar' } as any);
+				await service.enqueueSystemWebhook("abuseReport", {
+					foo: "bar",
+				} as any);
 
 				expect(queueService.systemWebhookDeliver).toHaveBeenCalledTimes(1);
-				expect(queueService.systemWebhookDeliver.mock.calls[0][0] as MiSystemWebhook).toEqual(webhook1);
+				expect(
+					queueService.systemWebhookDeliver.mock.calls[0][0] as MiSystemWebhook,
+				).toEqual(webhook1);
 			});
 
-			test('除外指定した場合は送信されない', async () => {
+			test("除外指定した場合は送信されない", async () => {
 				const webhook1 = await createWebhook({
 					isActive: true,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 				const webhook2 = await createWebhook({
 					isActive: true,
-					on: ['abuseReport'],
+					on: ["abuseReport"],
 				});
 
-				await service.enqueueSystemWebhook('abuseReport', { foo: 'bar' } as any, { excludes: [webhook2.id] });
+				await service.enqueueSystemWebhook(
+					"abuseReport",
+					{ foo: "bar" } as any,
+					{ excludes: [webhook2.id] },
+				);
 
 				expect(queueService.systemWebhookDeliver).toHaveBeenCalledTimes(1);
-				expect(queueService.systemWebhookDeliver.mock.calls[0][0] as MiSystemWebhook).toEqual(webhook1);
+				expect(
+					queueService.systemWebhookDeliver.mock.calls[0][0] as MiSystemWebhook,
+				).toEqual(webhook1);
 			});
 		});
 
-		describe('fetchActiveSystemWebhooks', () => {
-			describe('systemWebhookCreated', () => {
-				test('ActiveなWebhookが追加された時、キャッシュに追加されている', async () => {
+		describe("fetchActiveSystemWebhooks", () => {
+			describe("systemWebhookCreated", () => {
+				test("ActiveなWebhookが追加された時、キャッシュに追加されている", async () => {
 					const webhook = await service.createSystemWebhook(
 						{
 							isActive: true,
 							name: randomString(),
-							on: ['abuseReport'],
-							url: 'https://example.com',
+							on: ["abuseReport"],
+							url: "https://example.com",
 							secret: randomString(),
 						},
 						root,
@@ -388,13 +426,13 @@ describe('SystemWebhookService', () => {
 					expect(fetchedWebhooks).toEqual([webhook]);
 				});
 
-				test('NotActiveなWebhookが追加された時、キャッシュに追加されていない', async () => {
+				test("NotActiveなWebhookが追加された時、キャッシュに追加されていない", async () => {
 					const webhook = await service.createSystemWebhook(
 						{
 							isActive: false,
 							name: randomString(),
-							on: ['abuseReport'],
-							url: 'https://example.com',
+							on: ["abuseReport"],
+							url: "https://example.com",
 							secret: randomString(),
 						},
 						root,
@@ -408,8 +446,8 @@ describe('SystemWebhookService', () => {
 				});
 			});
 
-			describe('systemWebhookUpdated', () => {
-				test('ActiveなWebhookが編集された時、キャッシュに反映されている', async () => {
+			describe("systemWebhookUpdated", () => {
+				test("ActiveなWebhookが編集された時、キャッシュに反映されている", async () => {
 					const id = idService.gen();
 					await createWebhook({ id });
 					// キャッシュ作成
@@ -423,8 +461,8 @@ describe('SystemWebhookService', () => {
 							id,
 							isActive: true,
 							name: randomString(),
-							on: ['abuseReport'],
-							url: 'https://example.com',
+							on: ["abuseReport"],
+							url: "https://example.com",
 							secret: randomString(),
 						},
 						root,
@@ -437,7 +475,7 @@ describe('SystemWebhookService', () => {
 					expect(fetchedWebhooks).toEqual([webhook2]);
 				});
 
-				test('NotActiveなWebhookが編集された時、キャッシュに追加されない', async () => {
+				test("NotActiveなWebhookが編集された時、キャッシュに追加されない", async () => {
 					const id = idService.gen();
 					await createWebhook({ id, isActive: false });
 					// キャッシュ作成
@@ -450,8 +488,8 @@ describe('SystemWebhookService', () => {
 							id,
 							isActive: false,
 							name: randomString(),
-							on: ['abuseReport'],
-							url: 'https://example.com',
+							on: ["abuseReport"],
+							url: "https://example.com",
 							secret: randomString(),
 						},
 						root,
@@ -464,7 +502,7 @@ describe('SystemWebhookService', () => {
 					expect(fetchedWebhooks.length).toEqual(0);
 				});
 
-				test('NotActiveなWebhookがActiveにされた時、キャッシュに追加されている', async () => {
+				test("NotActiveなWebhookがActiveにされた時、キャッシュに追加されている", async () => {
 					const id = idService.gen();
 					const baseWebhook = await createWebhook({ id, isActive: false });
 					// キャッシュ作成
@@ -487,7 +525,7 @@ describe('SystemWebhookService', () => {
 					expect(fetchedWebhooks).toEqual([webhook2]);
 				});
 
-				test('ActiveなWebhookがNotActiveにされた時、キャッシュから削除されている', async () => {
+				test("ActiveなWebhookがNotActiveにされた時、キャッシュから削除されている", async () => {
 					const id = idService.gen();
 					const baseWebhook = await createWebhook({ id, isActive: true });
 					// キャッシュ作成
@@ -512,8 +550,8 @@ describe('SystemWebhookService', () => {
 				});
 			});
 
-			describe('systemWebhookDeleted', () => {
-				test('キャッシュから削除されている', async () => {
+			describe("systemWebhookDeleted", () => {
+				test("キャッシュから削除されている", async () => {
 					const id = idService.gen();
 					const baseWebhook = await createWebhook({ id, isActive: true });
 					// キャッシュ作成
@@ -522,10 +560,7 @@ describe('SystemWebhookService', () => {
 					expect(webhook1.length).toEqual(1);
 					expect(webhook1[0].id).toEqual(id);
 
-					const webhook2 = await service.deleteSystemWebhook(
-						id,
-						root,
-					);
+					const webhook2 = await service.deleteSystemWebhook(id, root);
 
 					// redisでの配信経由で更新されるのでちょっと待つ
 					await setTimeout(500);

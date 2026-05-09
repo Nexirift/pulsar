@@ -4,30 +4,44 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<MkModal ref="modal" :zPriority="'middle'" @click="modal?.close()" @closed="$emit('closed')">
-	<div :class="$style.root">
-		<div :class="$style.title"><MkSparkle>{{ i18n.ts.misskeyUpdated }}</MkSparkle></div>
-		<div :class="$style.version">✨{{ version }}🚀</div>
-		<MkButton full @click="whatIsNew" :disabled="version.includes('ptb')">{{ i18n.ts.whatIsNew }}</MkButton>
-		<MkButton :class="$style.gotIt" primary full @click="modal?.close()">{{ i18n.ts.gotIt }}</MkButton>
-	</div>
-</MkModal>
+	<MkModal
+		ref="modal"
+		:zPriority="'middle'"
+		@click="modal?.close()"
+		@closed="$emit('closed')"
+	>
+		<div :class="$style.root">
+			<div :class="$style.title">
+				<MkSparkle>{{ i18n.ts.misskeyUpdated }}</MkSparkle>
+			</div>
+			<div :class="$style.version">✨{{ version }}🚀</div>
+			<MkButton full @click="whatIsNew" :disabled="version.includes('ptb')">{{
+				i18n.ts.whatIsNew
+			}}</MkButton>
+			<MkButton :class="$style.gotIt" primary full @click="modal?.close()">{{
+				i18n.ts.gotIt
+			}}</MkButton>
+		</div>
+	</MkModal>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, useTemplateRef } from 'vue';
-import { version } from '@@/js/config.js';
-import MkModal from '@/components/MkModal.vue';
-import MkButton from '@/components/MkButton.vue';
-import MkSparkle from '@/components/MkSparkle.vue';
-import { i18n } from '@/i18n.js';
-import { confetti } from '@/utility/confetti.js';
+import { onMounted, useTemplateRef } from "vue";
+import { version } from "@@/js/config.js";
+import MkModal from "@/components/MkModal.vue";
+import MkButton from "@/components/MkButton.vue";
+import MkSparkle from "@/components/MkSparkle.vue";
+import { i18n } from "@/i18n.js";
+import { confetti } from "@/utility/confetti.js";
 
-const modal = useTemplateRef('modal');
+const modal = useTemplateRef("modal");
 
 const whatIsNew = () => {
 	modal.value?.close();
-	window.open(`https://code.nexirift.com/Nexirift/pulsarreleases/${version}`, '_blank');
+	window.open(
+		`https://git.codeguilds.org/Nexirift/pulsarreleases/${version}`,
+		"_blank",
+	);
 };
 
 onMounted(() => {

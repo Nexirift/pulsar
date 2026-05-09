@@ -23,7 +23,7 @@ export interface TimelineArgs {
 // Values taken from https://docs.joinmastodon.org/client/intro/#boolean
 export function toBoolean(value: string | undefined): boolean | undefined {
 	if (!value) return undefined;
-	return !['0', 'f', 'F', 'false', 'FALSE', 'off', 'OFF'].includes(value);
+	return !["0", "f", "F", "false", "FALSE", "off", "OFF"].includes(value);
 }
 
 export function toInt(value: string | undefined): number | undefined {
@@ -36,12 +36,19 @@ export function parseTimelineArgs(q: TimelineArgs) {
 		max_id: q.max_id,
 		min_id: q.min_id,
 		since_id: q.since_id,
-		limit: typeof(q.limit) === 'string' ? parseInt(q.limit, 10) : undefined,
-		offset: typeof(q.offset) === 'string' ? parseInt(q.offset, 10) : undefined,
-		local: typeof(q.local) === 'string' ? toBoolean(q.local) : undefined,
-		pinned: typeof(q.pinned) === 'string' ? toBoolean(q.pinned) : undefined,
-		exclude_reblogs: typeof(q.exclude_reblogs) === 'string' ? toBoolean(q.exclude_reblogs) : undefined,
-		exclude_replies: typeof(q.exclude_replies) === 'string' ? toBoolean(q.exclude_replies) : undefined,
-		only_media: typeof(q.only_media) === 'string' ? toBoolean(q.only_media) : undefined,
+		limit: typeof q.limit === "string" ? parseInt(q.limit, 10) : undefined,
+		offset: typeof q.offset === "string" ? parseInt(q.offset, 10) : undefined,
+		local: typeof q.local === "string" ? toBoolean(q.local) : undefined,
+		pinned: typeof q.pinned === "string" ? toBoolean(q.pinned) : undefined,
+		exclude_reblogs:
+			typeof q.exclude_reblogs === "string"
+				? toBoolean(q.exclude_reblogs)
+				: undefined,
+		exclude_replies:
+			typeof q.exclude_replies === "string"
+				? toBoolean(q.exclude_replies)
+				: undefined,
+		only_media:
+			typeof q.only_media === "string" ? toBoolean(q.only_media) : undefined,
 	};
 }

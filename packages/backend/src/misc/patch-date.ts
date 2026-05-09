@@ -70,11 +70,11 @@ export function fromPatch(patch: DatePatch): Date {
 }
 
 export interface DatePatch {
-	year?: number,
-	month?: number,
-	day?: number,
-	hours?: number,
-	minutes?: number,
-	seconds?: number,
-	milliseconds?: number,
+	year?: number;
+	month?: number;
+	day?: number;
+	hours?: number;
+	minutes?: number;
+	seconds?: number;
+	milliseconds?: number;
 }

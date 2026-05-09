@@ -3,13 +3,18 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { StoryObj } from '@storybook/vue3';
-import { HttpResponse, http } from 'msw';
-import search_ from './search.vue';
-import { userDetailed } from '@/../.storybook/fakes.js';
-import { commonHandlers } from '@/../.storybook/mocks.js';
+import type { StoryObj } from "@storybook/vue3";
+import { HttpResponse, http } from "msw";
+import search_ from "./search.vue";
+import { userDetailed } from "@/../.storybook/fakes.js";
+import { commonHandlers } from "@/../.storybook/mocks.js";
 
-const localUser = userDetailed('someuserid', 'miskist', null, 'Local Misskey User');
+const localUser = userDetailed(
+	"someuserid",
+	"miskist",
+	null,
+	"Local Misskey User",
+);
 
 export const Default = {
 	render(args) {
@@ -36,14 +41,14 @@ export const Default = {
 		ignoreNotesSearchAvailable: true,
 	},
 	parameters: {
-		layout: 'fullscreen',
+		layout: "fullscreen",
 		msw: {
 			handlers: [
 				...commonHandlers,
-				http.post('/api/users/show', () => {
+				http.post("/api/users/show", () => {
 					return HttpResponse.json(userDetailed());
 				}),
-				http.post('/api/users/search', () => {
+				http.post("/api/users/search", () => {
 					return HttpResponse.json([userDetailed(), localUser]);
 				}),
 			],
@@ -65,14 +70,14 @@ export const WithUsernameLocal = {
 		host: localUser.host,
 	},
 	parameters: {
-		layout: 'fullscreen',
+		layout: "fullscreen",
 		msw: {
 			handlers: [
 				...commonHandlers,
-				http.post('/api/users/show', () => {
+				http.post("/api/users/show", () => {
 					return HttpResponse.json(localUser);
 				}),
-				http.post('/api/users/search', () => {
+				http.post("/api/users/search", () => {
 					return HttpResponse.json([userDetailed(), localUser]);
 				}),
 			],
@@ -83,6 +88,6 @@ export const WithUsernameLocal = {
 export const WithUserType = {
 	...Default,
 	args: {
-		type: 'user',
+		type: "user",
 	},
 } satisfies StoryObj<typeof search_>;

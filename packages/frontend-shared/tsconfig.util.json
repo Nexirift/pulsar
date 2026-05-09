@@ -6,12 +6,6 @@
 		"outDir": "js-built/util",
 		"rootDir": "util"
 	},
-	"include": [
-		"util/**/*.js",
-		"util/**/*.ts"
-	],
-	"exclude": [
-		"node_modules",
-		"js-built"
-	]
+	"include": ["util/**/*.js", "util/**/*.ts"],
+	"exclude": ["node_modules", "js-built"]
 }

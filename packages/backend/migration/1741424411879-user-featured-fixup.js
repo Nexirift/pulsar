@@ -4,10 +4,10 @@
  */
 
 export class UserFeaturedFixup1741424411879 {
-    name = 'UserFeaturedFixup1741424411879'
+	name = "UserFeaturedFixup1741424411879";
 
-    async up(queryRunner) {
-        await queryRunner.query(`CREATE OR REPLACE FUNCTION pg_temp.extract_ap_id(text) RETURNS text AS $$
+	async up(queryRunner) {
+		await queryRunner.query(`CREATE OR REPLACE FUNCTION pg_temp.extract_ap_id(text) RETURNS text AS $$
             SELECT
                 CASE
                     WHEN $1 ~ '^https?://' THEN $1
@@ -16,11 +16,13 @@ export class UserFeaturedFixup1741424411879 {
                 END;
         $$ LANGUAGE sql IMMUTABLE;`);
 
-        // "host" is NOT NULL is not needed but just in case add it to prevent overwriting irreplaceable data
-        await queryRunner.query(`UPDATE "user" SET "featured" = pg_temp.extract_ap_id("featured") WHERE "host" IS NOT NULL`);
-    }
+		// "host" is NOT NULL is not needed but just in case add it to prevent overwriting irreplaceable data
+		await queryRunner.query(
+			`UPDATE "user" SET "featured" = pg_temp.extract_ap_id("featured") WHERE "host" IS NOT NULL`,
+		);
+	}
 
-    async down(queryRunner) {
-        // fixup migration, no down migration
-    }
+	async down(queryRunner) {
+		// fixup migration, no down migration
+	}
 }

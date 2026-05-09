@@ -3,32 +3,39 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import cluster from 'node:cluster';
-import { fileURLToPath } from 'node:url';
-import { dirname } from 'node:path';
-import * as fs from 'node:fs';
-import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
-import { loadConfig } from '@/config.js';
-import type { LoggerService } from '@/core/LoggerService.js';
-import type { EnvService } from '@/global/EnvService.js';
-import { jobQueue, server } from './common.js';
+import cluster from "node:cluster";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+import * as fs from "node:fs";
+import * as Sentry from "@sentry/node";
+import { nodeProfilingIntegration } from "@sentry/profiling-node";
+import { loadConfig } from "@/config.js";
+import type { LoggerService } from "@/core/LoggerService.js";
+import type { EnvService } from "@/global/EnvService.js";
+import { jobQueue, server } from "./common.js";
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
-const meta = JSON.parse(fs.readFileSync(`${_dirname}/../../../../built/meta.json`, 'utf-8'));
+const meta = JSON.parse(
+	fs.readFileSync(`${_dirname}/../../../../built/meta.json`, "utf-8"),
+);
 
 /**
  * Init worker process
  */
-export async function workerMain(loggerService: LoggerService, envService: EnvService) {
+export async function workerMain(
+	loggerService: LoggerService,
+	envService: EnvService,
+) {
 	const config = loadConfig(loggerService);
 	const envOption = envService.options;
 
 	if (config.sentryForBackend) {
 		Sentry.init({
 			integrations: [
-				...(config.sentryForBackend.enableNodeProfiling ? [nodeProfilingIntegration()] : []),
+				...(config.sentryForBackend.enableNodeProfiling
+					? [nodeProfilingIntegration()]
+					: []),
 			],
 
 			// Performance Monitoring
@@ -40,7 +47,7 @@ export async function workerMain(loggerService: LoggerService, envService: EnvSe
 			maxBreadcrumbs: 0,
 
 			// Set release version
-			release: 'Pulsar@' + (meta.gitVersion ?? meta.version),
+			release: "Pulsar@" + (meta.gitVersion ?? meta.version),
 
 			...config.sentryForBackend.options,
 		});
@@ -56,6 +63,6 @@ export async function workerMain(loggerService: LoggerService, envService: EnvSe
 
 	if (cluster.isWorker) {
 		// Send a 'ready' message to parent process
-		process.send!('ready');
+		process.send!("ready");
 	}
 }

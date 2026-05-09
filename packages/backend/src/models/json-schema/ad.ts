@@ -4,59 +4,59 @@
  */
 
 export const packedAdSchema = {
-	type: 'object',
+	type: "object",
 	properties: {
 		id: {
-			type: 'string',
+			type: "string",
 			optional: false,
 			nullable: false,
-			format: 'id',
-			example: 'xxxxxxxxxx',
+			format: "id",
+			example: "xxxxxxxxxx",
 		},
 		expiresAt: {
-			type: 'string',
+			type: "string",
 			optional: false,
 			nullable: false,
-			format: 'date-time',
+			format: "date-time",
 		},
 		startsAt: {
-			type: 'string',
+			type: "string",
 			optional: false,
 			nullable: false,
-			format: 'date-time',
+			format: "date-time",
 		},
 		place: {
-			type: 'string',
+			type: "string",
 			optional: false,
 			nullable: false,
 		},
 		priority: {
-			type: 'string',
+			type: "string",
 			optional: false,
 			nullable: false,
 		},
 		ratio: {
-			type: 'number',
+			type: "number",
 			optional: false,
 			nullable: false,
 		},
 		url: {
-			type: 'string',
+			type: "string",
 			optional: false,
 			nullable: false,
 		},
 		imageUrl: {
-			type: 'string',
+			type: "string",
 			optional: false,
 			nullable: false,
 		},
 		memo: {
-			type: 'string',
+			type: "string",
 			optional: false,
 			nullable: false,
 		},
 		dayOfWeek: {
-			type: 'integer',
+			type: "integer",
 			optional: false,
 			nullable: false,
 		},

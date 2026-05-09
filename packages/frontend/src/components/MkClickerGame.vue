@@ -4,28 +4,31 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div>
-	<div v-if="game.ready" :class="$style.game">
-		<div :class="$style.cps" class="">{{ number(cps) }}cps</div>
-		<div :class="$style.count" class="" data-testid="count"><i class="ti ti-cookie" style="font-size: 70%;"></i> {{ number(cookies) }}</div>
-		<button v-click-anime class="_button" @click="onClick">
-			<img src="/client-assets/cookie.png" :class="$style.img">
-		</button>
+	<div>
+		<div v-if="game.ready" :class="$style.game">
+			<div :class="$style.cps" class="">{{ number(cps) }}cps</div>
+			<div :class="$style.count" class="" data-testid="count">
+				<i class="ti ti-cookie" style="font-size: 70%"></i>
+				{{ number(cookies) }}
+			</div>
+			<button v-click-anime class="_button" @click="onClick">
+				<img src="/client-assets/cookie.png" :class="$style.img" />
+			</button>
+		</div>
+		<div v-else>
+			<MkLoading />
+		</div>
 	</div>
-	<div v-else>
-		<MkLoading/>
-	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue';
-import MkPlusOneEffect from '@/components/MkPlusOneEffect.vue';
-import * as os from '@/os.js';
-import { useInterval } from '@@/js/use-interval.js';
-import * as game from '@/utility/clicker-game.js';
-import number from '@/filters/number.js';
-import { claimAchievement } from '@/utility/achievements.js';
+import { computed, onMounted, onUnmounted, ref } from "vue";
+import MkPlusOneEffect from "@/components/MkPlusOneEffect.vue";
+import * as os from "@/os.js";
+import { useInterval } from "@@/js/use-interval.js";
+import * as game from "@/utility/clicker-game.js";
+import number from "@/filters/number.js";
+import { claimAchievement } from "@/utility/achievements.js";
 
 const saveData = game.saveData;
 const cookies = computed(() => saveData.value?.cookies);
@@ -35,9 +38,13 @@ const prevCookies = ref(0);
 function onClick(ev: MouseEvent) {
 	const x = ev.clientX;
 	const y = ev.clientY;
-	const { dispose } = os.popup(MkPlusOneEffect, { x, y }, {
-		end: () => dispose(),
-	});
+	const { dispose } = os.popup(
+		MkPlusOneEffect,
+		{ x, y },
+		{
+			end: () => dispose(),
+		},
+	);
 
 	saveData.value!.cookies++;
 	saveData.value!.totalCookies++;
@@ -45,18 +52,22 @@ function onClick(ev: MouseEvent) {
 	saveData.value!.clicked++;
 
 	if (cookies.value === 1) {
-		claimAchievement('cookieClicked');
+		claimAchievement("cookieClicked");
 	}
 }
 
-useInterval(() => {
-	const diff = saveData.value!.cookies - prevCookies.value;
-	cps.value = diff;
-	prevCookies.value = saveData.value!.cookies;
-}, 1000, {
-	immediate: false,
-	afterMounted: true,
-});
+useInterval(
+	() => {
+		const diff = saveData.value!.cookies - prevCookies.value;
+		cps.value = diff;
+		prevCookies.value = saveData.value!.cookies;
+	},
+	1000,
+	{
+		immediate: false,
+		afterMounted: true,
+	},
+);
 
 useInterval(game.save, 1000 * 5, {
 	immediate: false,

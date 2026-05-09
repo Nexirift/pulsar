@@ -4,8 +4,8 @@
  */
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import type { StoryObj } from '@storybook/vue3';
-import MkEmoji from './MkEmoji.vue';
+import type { StoryObj } from "@storybook/vue3";
+import MkEmoji from "./MkEmoji.vue";
 export const Default = {
 	render(args) {
 		return {
@@ -28,9 +28,9 @@ export const Default = {
 		};
 	},
 	args: {
-		emoji: '❤',
+		emoji: "❤",
 	},
 	parameters: {
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkEmoji>;

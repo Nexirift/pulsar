@@ -3,22 +3,26 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { vi } from 'vitest';
-import createFetchMock from 'vitest-fetch-mock';
+import { vi } from "vitest";
+import createFetchMock from "vitest-fetch-mock";
 
 const fetchMocker = createFetchMock(vi);
 fetchMocker.enableMocks();
 
 // Set i18n
-import locales from '../../../locales/index.js';
-import { updateI18n } from '@/i18n.js';
-updateI18n(locales['en-US']);
+import locales from "../../../locales/index.js";
+import { updateI18n } from "@/i18n.js";
+updateI18n(locales["en-US"]);
 
 // XXX: misskey-js panics if WebSocket is not defined
-vi.stubGlobal('WebSocket', class WebSocket extends EventTarget { static CLOSING = 2; });
+vi.stubGlobal(
+	"WebSocket",
+	class WebSocket extends EventTarget {
+		static CLOSING = 2;
+	},
+);
 
 export const preferState: Record<string, unknown> = {
-
 	// なんかtestがうまいこと動かないのでここに書く
 	dataSaver: {
 		media: false,
@@ -26,11 +30,10 @@ export const preferState: Record<string, unknown> = {
 		urlPreview: false,
 		code: false,
 	},
-
 };
 
 // XXX: store somehow becomes undefined in vitest?
-vi.mock('@/preferences.js', () => {
+vi.mock("@/preferences.js", () => {
 	return {
 		prefer: {
 			s: preferState,
@@ -54,4 +57,4 @@ const AudioContextMock = vi.fn(() => ({
 	decodeAudioData: vi.fn(),
 }));
 
-vi.stubGlobal('AudioContext', AudioContextMock);
+vi.stubGlobal("AudioContext", AudioContextMock);

@@ -3,30 +3,30 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Inject, Injectable } from '@nestjs/common';
-import si from 'systeminformation';
-import Xev from 'xev';
-import * as osUtils from 'os-utils';
-import { bindThis } from '@/decorators.js';
-import type { OnApplicationShutdown } from '@nestjs/common';
-import { MiMeta } from '@/models/_.js';
-import { DI } from '@/di-symbols.js';
-import { TimeService, type TimerHandle } from '@/global/TimeService.js';
+import { Inject, Injectable } from "@nestjs/common";
+import si from "systeminformation";
+import Xev from "xev";
+import * as osUtils from "os-utils";
+import { bindThis } from "@/decorators.js";
+import type { OnApplicationShutdown } from "@nestjs/common";
+import { MiMeta } from "@/models/_.js";
+import { DI } from "@/di-symbols.js";
+import { TimeService, type TimerHandle } from "@/global/TimeService.js";
 
 export interface Stats {
-	cpu: number,
+	cpu: number;
 	mem: {
-		used: number,
-		active: number,
-	},
+		used: number;
+		active: number;
+	};
 	net: {
-		rx: number,
-		tx: number,
-	},
+		rx: number;
+		tx: number;
+	};
 	fs: {
-		r: number,
-		w: number,
-	},
+		r: number;
+		w: number;
+	};
 }
 
 const ev = new Xev();
@@ -46,11 +46,10 @@ export class ServerStatsService implements OnApplicationShutdown {
 		@Inject(DI.meta)
 		private meta: MiMeta,
 		private readonly timeService: TimeService,
-	) {
-	}
+	) {}
 
 	@bindThis
-	private async onRequestStatsLog(x: { id: string, length: number }) {
+	private async onRequestStatsLog(x: { id: string; length: number }) {
 		ev.emit(`serverStatsLog:${x.id}`, this.log.slice(0, x.length));
 	}
 
@@ -62,7 +61,7 @@ export class ServerStatsService implements OnApplicationShutdown {
 		if (!this.meta.enableServerMachineStats) return;
 
 		this.log = [];
-		ev.on('requestServerStatsLog', this.onRequestStatsLog);
+		ev.on("requestServerStatsLog", this.onRequestStatsLog);
 
 		const tick = async () => {
 			const cpu = await cpuUsage();
@@ -85,14 +84,16 @@ export class ServerStatsService implements OnApplicationShutdown {
 					w: round(Math.max(0, fsStats.wIO_sec ?? 0)),
 				},
 			};
-			ev.emit('serverStats', stats);
+			ev.emit("serverStats", stats);
 			this.log.unshift(stats);
 			if (this.log.length > 200) this.log.pop();
 		};
 
 		tick();
 
-		this.intervalId = this.timeService.startTimer(tick, interval, { repeated: true });
+		this.intervalId = this.timeService.startTimer(tick, interval, {
+			repeated: true,
+		});
 	}
 
 	@bindThis
@@ -102,7 +103,7 @@ export class ServerStatsService implements OnApplicationShutdown {
 		}
 
 		this.log = [];
-		ev.off('requestServerStatsLog', this.onRequestStatsLog);
+		ev.off("requestServerStatsLog", this.onRequestStatsLog);
 
 		ev.dispose();
 	}

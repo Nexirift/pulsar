@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import type { StoryObj } from '@storybook/vue3';
-import MkDriveFileThumbnail from './MkDriveFileThumbnail.vue';
-import { file } from '../../.storybook/fakes.js';
+import type { StoryObj } from "@storybook/vue3";
+import MkDriveFileThumbnail from "./MkDriveFileThumbnail.vue";
+import { file } from "../../.storybook/fakes.js";
 export const Default = {
 	render(args) {
 		return {
@@ -29,13 +29,13 @@ export const Default = {
 	},
 	args: {
 		file: file(),
-		fit: 'contain',
+		fit: "contain",
 	},
 	parameters: {
 		chromatic: {
 			// NOTE: ロードが終わるまで待つ
 			delay: 3000,
 		},
-		layout: 'centered',
+		layout: "centered",
 	},
 } satisfies StoryObj<typeof MkDriveFileThumbnail>;

@@ -6,76 +6,112 @@ Displays a Flash Player window via Ruffle.
 -->
 
 <template>
-<div :class="$style.flash_player_container">
-	<canvas :class="$style.ratio" height="300" width="300"></canvas>
+	<div :class="$style.flash_player_container">
+		<canvas :class="$style.ratio" height="300" width="300"></canvas>
 
-	<div v-if="hide" :class="$style.flash_player_disabled" @click="toggleVisible()">
-		<div>
-			<b><i class="ph-eye ph-bold ph-lg"></i> {{ i18n.ts.sensitive }}</b>
-			<span>{{ i18n.ts.clickToShow }}</span>
-		</div>
-	</div>
-
-	<div v-else :class="$style.flash_player_enabled">
-		<div :class="$style.flash_display">
-			<div v-if="playerHide" :class="$style.player_hide" @click="dismissWarning()">
-				<b><i class="ph-eye ph-bold ph-lg"></i> {{ i18n.ts._flash.contentHidden }}</b>
-				<span>{{ i18n.ts._flash.poweredByRuffle }}</span>
-				<span>{{ i18n.ts._flash.arbitraryCodeExecutionWarning }}</span>
+		<div
+			v-if="hide"
+			:class="$style.flash_player_disabled"
+			@click="toggleVisible()"
+		>
+			<div>
+				<b><i class="ph-eye ph-bold ph-lg"></i> {{ i18n.ts.sensitive }}</b>
 				<span>{{ i18n.ts.clickToShow }}</span>
 			</div>
-			<div v-if="ruffleError" :class="$style.player_hide">
-				<b><i class="ph-warning ph-bold ph-lg"></i> {{ i18n.ts._flash.failedToLoad }}</b>
-				<code>{{ ruffleError }}</code>
-			</div>
-			<div v-else-if="loadingStatus" :class="$style.player_hide">
-				<b>{{ i18n.ts._flash.isLoading }}<MkEllipsis/></b>
-				<MkLoading/>
-				<p>{{ loadingStatus }}</p>
-			</div>
-			<div ref="ruffleContainer" :class="$style.container"></div>
 		</div>
-		<div :class="$style.controls">
-			<button :key="playPauseButtonKey" @click="playPause()">
-				<i v-if="player?.isPlaying" class="ph-pause ph-bold ph-lg"></i>
-				<i v-else class="ph-play ph-bold ph-lg"></i>
-			</button>
-			<button :disabled="playerHide" @click="stop()">
-				<i class="ph-stop ph-bold ph-lg"></i>
-			</button>
-			<input v-if="player && !playerHide" v-model="player.volume" type="range" min="0" max="1" step="0.1"/>
-			<input v-else type="range" min="0" max="1" value="1" disabled/>
-			<a :title="i18n.ts.download" :href="flashFile.url" :download="flashFile.name" target="_blank">
-				<i class="ph-download ph-bold ph-lg"></i>
-			</a>
-			<button :class="$style.fullscreen" :disabled="playerHide" @click="fullscreen()">
-				<i class="ph-arrows-out ph-bold ph-lg"></i>
-			</button>
+
+		<div v-else :class="$style.flash_player_enabled">
+			<div :class="$style.flash_display">
+				<div
+					v-if="playerHide"
+					:class="$style.player_hide"
+					@click="dismissWarning()"
+				>
+					<b
+						><i class="ph-eye ph-bold ph-lg"></i>
+						{{ i18n.ts._flash.contentHidden }}</b
+					>
+					<span>{{ i18n.ts._flash.poweredByRuffle }}</span>
+					<span>{{ i18n.ts._flash.arbitraryCodeExecutionWarning }}</span>
+					<span>{{ i18n.ts.clickToShow }}</span>
+				</div>
+				<div v-if="ruffleError" :class="$style.player_hide">
+					<b
+						><i class="ph-warning ph-bold ph-lg"></i>
+						{{ i18n.ts._flash.failedToLoad }}</b
+					>
+					<code>{{ ruffleError }}</code>
+				</div>
+				<div v-else-if="loadingStatus" :class="$style.player_hide">
+					<b>{{ i18n.ts._flash.isLoading }}<MkEllipsis /></b>
+					<MkLoading />
+					<p>{{ loadingStatus }}</p>
+				</div>
+				<div ref="ruffleContainer" :class="$style.container"></div>
+			</div>
+			<div :class="$style.controls">
+				<button :key="playPauseButtonKey" @click="playPause()">
+					<i v-if="player?.isPlaying" class="ph-pause ph-bold ph-lg"></i>
+					<i v-else class="ph-play ph-bold ph-lg"></i>
+				</button>
+				<button :disabled="playerHide" @click="stop()">
+					<i class="ph-stop ph-bold ph-lg"></i>
+				</button>
+				<input
+					v-if="player && !playerHide"
+					v-model="player.volume"
+					type="range"
+					min="0"
+					max="1"
+					step="0.1"
+				/>
+				<input v-else type="range" min="0" max="1" value="1" disabled />
+				<a
+					:title="i18n.ts.download"
+					:href="flashFile.url"
+					:download="flashFile.name"
+					target="_blank"
+				>
+					<i class="ph-download ph-bold ph-lg"></i>
+				</a>
+				<button
+					:class="$style.fullscreen"
+					:disabled="playerHide"
+					@click="fullscreen()"
+				>
+					<i class="ph-arrows-out ph-bold ph-lg"></i>
+				</button>
+			</div>
+			<div v-if="comment" :class="$style.alt" :title="comment">ALT</div>
+			<i
+				:class="$style.hide"
+				class="ph-eye-slash ph-bold ph-lg"
+				@click="toggleVisible()"
+			></i>
 		</div>
-		<div v-if="comment" :class="$style.alt" :title="comment">ALT</div>
-		<i :class="$style.hide" class="ph-eye-slash ph-bold ph-lg" @click="toggleVisible()"></i>
 	</div>
-</div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onDeactivated } from 'vue';
-import * as Misskey from 'misskey-js';
-import type { PublicAPI, PublicAPILike } from '@/types/ruffle/setup';
-import type { PlayerElement } from '@/types/ruffle/player';
-import MkEllipsis from '@/components/global/MkEllipsis.vue';
-import MkLoading from '@/components/global/MkLoading.vue';
-import { i18n } from '@/i18n.js';
-import { prefer } from '@/preferences.js';
+import { ref, onDeactivated } from "vue";
+import * as Misskey from "misskey-js";
+import type { PublicAPI, PublicAPILike } from "@/types/ruffle/setup";
+import type { PlayerElement } from "@/types/ruffle/player";
+import MkEllipsis from "@/components/global/MkEllipsis.vue";
+import MkLoading from "@/components/global/MkLoading.vue";
+import { i18n } from "@/i18n.js";
+import { prefer } from "@/preferences.js";
 
 const props = defineProps<{
-	flashFile: Misskey.entities.DriveFile
+	flashFile: Misskey.entities.DriveFile;
 }>();
 
 const isSensitive = props.flashFile.isSensitive;
 const url = props.flashFile.url;
-const comment = props.flashFile.comment ?? '';
-let hide = ref((prefer.s.nsfw === 'force') || isSensitive && (prefer.s.nsfw !== 'ignore'));
+const comment = props.flashFile.comment ?? "";
+let hide = ref(
+	prefer.s.nsfw === "force" || (isSensitive && prefer.s.nsfw !== "ignore"),
+);
 let playerHide = ref(true);
 let ruffleContainer = ref<HTMLDivElement>();
 let playPauseButtonKey = ref<number>(0);
@@ -105,47 +141,53 @@ function handleError(error: unknown) {
 async function loadRuffle() {
 	if (window.RufflePlayer !== undefined) return;
 	loadingStatus.value = i18n.ts._flash.loadingRufflePlayer;
-	await import('@ruffle-rs/ruffle'); // Assumption: this will throw if esm.sh has a hiccup or something. If not, the next undefined check will catch it.
-	window.RufflePlayer = window.RufflePlayer as PublicAPILike | PublicAPI | undefined; // Assert unknown type due to side effects
-	if (window.RufflePlayer === undefined) throw Error('esm.sh has shit itself, but not in an expected way (has esm.sh permanently shut down? how close is the heat death of the universe?)');
+	await import("@ruffle-rs/ruffle"); // Assumption: this will throw if esm.sh has a hiccup or something. If not, the next undefined check will catch it.
+	window.RufflePlayer = window.RufflePlayer as
+		| PublicAPILike
+		| PublicAPI
+		| undefined; // Assert unknown type due to side effects
+	if (window.RufflePlayer === undefined)
+		throw Error(
+			"esm.sh has shit itself, but not in an expected way (has esm.sh permanently shut down? how close is the heat death of the universe?)",
+		);
 
 	window.RufflePlayer.config = {
 		// Options affecting the whole page
-		'publicPath': `https://raw.esm.sh/@ruffle-rs/ruffle@${_RUFFLE_VERSION_}/`,
-		'polyfills': false,
+		publicPath: `https://raw.esm.sh/@ruffle-rs/ruffle@${_RUFFLE_VERSION_}/`,
+		polyfills: false,
 
 		// Options affecting files only
-		'allowScriptAccess': false,
-		'autoplay': true,
-		'unmuteOverlay': 'visible',
-		'backgroundColor': null,
-		'wmode': 'window',
-		'letterbox': 'on',
-		'warnOnUnsupportedContent': true,
-		'contextMenu': 'off', // Prevent two overlapping context menus. Most of the stuff in this context menu is available in the controls below the player.
-		'showSwfDownload': false, // Handled by custom download button
-		'upgradeToHttps': window.location.protocol === 'https:',
-		'maxExecutionDuration': 15,
-		'logLevel': 'error',
-		'base': null,
-		'popupMenu': true,
-		'salign': '',
-		'forceAlign': false,
-		'scale': 'showAll',
-		'forceScale': false,
-		'frameRate': null,
-		'quality': 'high',
-		'splashScreen': false,
-		'preferredRenderer': null,
-		'openUrlMode': 'deny',
-		'allowNetworking': 'none',
-		'favorFlash': false,
-		'socketProxy': [],
-		'fontSources': [],
-		'defaultFonts': {},
-		'credentialAllowList': [],
-		'playerRuntime': 'flashPlayer',
-		'allowFullscreen': false, // Handled by custom fullscreen button
+		allowScriptAccess: false,
+		autoplay: true,
+		unmuteOverlay: "visible",
+		backgroundColor: null,
+		wmode: "window",
+		letterbox: "on",
+		warnOnUnsupportedContent: true,
+		contextMenu: "off", // Prevent two overlapping context menus. Most of the stuff in this context menu is available in the controls below the player.
+		showSwfDownload: false, // Handled by custom download button
+		upgradeToHttps: window.location.protocol === "https:",
+		maxExecutionDuration: 15,
+		logLevel: "error",
+		base: null,
+		popupMenu: true,
+		salign: "",
+		forceAlign: false,
+		scale: "showAll",
+		forceScale: false,
+		frameRate: null,
+		quality: "high",
+		splashScreen: false,
+		preferredRenderer: null,
+		openUrlMode: "deny",
+		allowNetworking: "none",
+		favorFlash: false,
+		socketProxy: [],
+		fontSources: [],
+		defaultFonts: {},
+		credentialAllowList: [],
+		playerRuntime: "flashPlayer",
+		allowFullscreen: false, // Handled by custom fullscreen button
 	};
 }
 
@@ -158,20 +200,22 @@ function createPlayer() {
 		const ruffleAPI = (window.RufflePlayer as PublicAPI).newest();
 		if (ruffleAPI === null) {
 			// This error exists because non-null assertions are forbidden, apparently.
-			throw Error('Ruffle could not get the latest Ruffle source. Since we\'re loading from esm.sh this is genuinely impossible and you must\'ve done something incredibly cursed.');
+			throw Error(
+				"Ruffle could not get the latest Ruffle source. Since we're loading from esm.sh this is genuinely impossible and you must've done something incredibly cursed.",
+			);
 		}
 		return ruffleAPI;
 	})();
 	player.value = ruffle.createPlayer();
-	player.value.style.width = '100%';
-	player.value.style.height = '100%';
+	player.value.style.width = "100%";
+	player.value.style.height = "100%";
 }
 
 /**
  * @throws If `player.value` is uninitialized.
  */
 async function loadContent() {
-	if (player.value === undefined) throw Error('Player is uninitialized.');
+	if (player.value === undefined) throw Error("Player is uninitialized.");
 	ruffleContainer.value?.appendChild(player.value);
 	loadingStatus.value = i18n.ts._flash.loadingFlashFile;
 	try {
@@ -179,8 +223,8 @@ async function loadContent() {
 		loadingStatus.value = undefined;
 	} catch (error) {
 		try {
-			await window.fetch('https://raw.esm.sh/', {
-				mode: 'cors',
+			await window.fetch("https://raw.esm.sh/", {
+				mode: "cors",
 			});
 			handleError(error); // Unexpected error
 		} catch {
@@ -231,11 +275,9 @@ function toggleVisible() {
 onDeactivated(() => {
 	stop();
 });
-
 </script>
 
 <style lang="scss" module>
-
 .flash_player_container {
 	position: relative;
 	min-height: 0;
@@ -266,7 +308,7 @@ onDeactivated(() => {
 		background-color: var(--MI_THEME-fg);
 		color: var(--MI_THEME-accentLighten);
 		font-size: 14px;
-		opacity: .5;
+		opacity: 0.5;
 		padding: 3px 6px;
 		text-align: center;
 		cursor: pointer;
@@ -283,7 +325,7 @@ onDeactivated(() => {
 		color: var(--MI_THEME-accentLighten);
 		font-size: 0.8em;
 		font-weight: bold;
-		opacity: .5;
+		opacity: 0.5;
 		padding: 2px 5px;
 		cursor: help;
 		user-select: none;
@@ -343,7 +385,8 @@ onDeactivated(() => {
 			padding: 4px 8px;
 		}
 
-		> button, a {
+		> button,
+		a {
 			border: none;
 			background-color: transparent;
 			color: var(--MI_THEME-accent);
@@ -369,7 +412,7 @@ onDeactivated(() => {
 			}
 		}
 
-		> input[type=range] {
+		> input[type="range"] {
 			height: 21px;
 			-webkit-appearance: none;
 			width: 90px;
@@ -390,7 +433,8 @@ onDeactivated(() => {
 					background: var(--MI_THEME-bg);
 				}
 
-				&::-ms-fill-lower, &::-ms-fill-upper {
+				&::-ms-fill-lower,
+				&::-ms-fill-upper {
 					background: var(--MI_THEME-bg);
 				}
 			}
@@ -413,7 +457,16 @@ onDeactivated(() => {
 				background: var(--MI_THEME-accentLighten);
 				-webkit-appearance: none;
 				box-shadow: calc(-100vw - 14px) 0 0 100vw var(--MI_THEME-accent);
-				clip-path: polygon(1px 0, 100% 0, 100% 100%, 1px 100%, 1px calc(50% + 10.5px), -100vw calc(50% + 10.5px), -100vw calc(50% - 10.5px), 0 calc(50% - 10.5px));
+				clip-path: polygon(
+					1px 0,
+					100% 0,
+					100% 100%,
+					1px 100%,
+					1px calc(50% + 10.5px),
+					-100vw calc(50% + 10.5px),
+					-100vw calc(50% - 10.5px),
+					0 calc(50% - 10.5px)
+				);
 				z-index: 1;
 			}
 
