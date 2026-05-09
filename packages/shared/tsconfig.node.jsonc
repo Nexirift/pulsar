@@ -9,7 +9,6 @@
 		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
 		"lib": ["ESNext"],
-		"types": ["node"],
 
 		// Checking
 		"allowSyntheticDefaultImports": true,

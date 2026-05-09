@@ -6,7 +6,7 @@
 import { Global, Inject, Module } from "@nestjs/common";
 import * as Redis from "ioredis";
 import { DataSource } from "typeorm";
-import { Meilisearch } from "meilisearch";
+import { MeiliSearch } from "meilisearch";
 import { MiMeta } from "@/models/Meta.js";
 import { bindThis } from "@/decorators.js";
 import { renderInlineError } from "@/misc/render-inline-error.js";
@@ -50,7 +50,7 @@ const $meilisearch: Provider = {
 				);
 			}
 
-			return new Meilisearch({
+			return new MeiliSearch({
 				host: `${config.meilisearch.ssl ? "https" : "http"}://${config.meilisearch.host}:${config.meilisearch.port}`,
 				apiKey: config.meilisearch.apiKey,
 			});

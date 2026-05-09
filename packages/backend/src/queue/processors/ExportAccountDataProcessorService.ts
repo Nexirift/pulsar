@@ -8,7 +8,7 @@ import { Inject, Injectable } from "@nestjs/common";
 import { In, IsNull, MoreThan, Not } from "typeorm";
 import { format as dateFormat } from "date-fns";
 import mime from "mime-types";
-import { ZipArchive } from "archiver";
+import archiver from "archiver";
 import { DI } from "@/di-symbols.js";
 import type {
 	AntennasRepository,
@@ -860,7 +860,7 @@ export class ExportAccountDataProcessorService {
 		await new Promise<void>(async (resolve) => {
 			const [archivePath, archiveCleanup] = await createTemp();
 			const archiveStream = fs.createWriteStream(archivePath);
-			const archive = new ZipArchive({
+			const archive = archiver("zip", {
 				zlib: { level: 0 },
 			});
 			archiveStream.on("close", async () => {

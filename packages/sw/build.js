@@ -32,7 +32,6 @@ const buildOptions = {
 	},
 	entryPoints: [`${__dirname}/src/sw.ts`],
 	format: "esm",
-	conditions: ["import", "default"],
 	loader: {
 		".ts": "ts",
 	},

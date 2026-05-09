@@ -69,9 +69,7 @@ async function generateBaseTypes(
 	const redocly = await createConfig({
 		extends: [],
 		rules: {},
-		apis: {},
 	});
-
 	// redocly.getRulesForSpecVersion ??= () => [];
 
 	const generatedTypes = await openapiTS(openApi, {

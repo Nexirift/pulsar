@@ -76,7 +76,6 @@ COPY --chown=pulsar:pulsar packages/misskey-js/package.json ./packages/misskey-j
 COPY --chown=pulsar:pulsar packages/misskey-reversi/package.json ./packages/misskey-reversi/package.json
 COPY --chown=pulsar:pulsar packages/misskey-bubble-game/package.json ./packages/misskey-bubble-game/package.json
 
-ENV CI=true
 ENV LD_PRELOAD=/usr/lib/libjemalloc.so.2
 ENV NODE_ENV=production
 ENTRYPOINT ["/sbin/tini", "--"]
