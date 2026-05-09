@@ -99,15 +99,15 @@ async function initHighlighter() {
 	]);
 
 	const jsLangInfo = bundledLanguagesInfo.find((t) => t.id === "javascript");
+	const aiscriptLang = await loadAiScriptLanguage();
 	const highlighter = await createHighlighterCore({
 		engine: createOnigurumaEngine(() => import("shiki/onig.wasm?init")),
 		themes,
 		langs: [
 			...(jsLangInfo ? [async () => await jsLangInfo.import()] : []),
-			async () =>
-				(
-					await import("aiscript-vscode/aiscript/syntaxes/aiscript.tmLanguage.json")
-				).default as unknown as LanguageRegistration,
+			...(aiscriptLang
+				? [async () => aiscriptLang as LanguageRegistration]
+				: []),
 		],
 	});
 
@@ -128,4 +128,15 @@ async function initHighlighter() {
 	_highlighter = highlighter;
 
 	return highlighter;
+}
+
+async function loadAiScriptLanguage(): Promise<LanguageRegistration | null> {
+	try {
+		const module = await import(
+			/* @vite-ignore */ "aiscript-vscode/aiscript/syntaxes/aiscript.tmLanguage.json"
+		);
+		return module.default as LanguageRegistration;
+	} catch {
+		return null;
+	}
 }

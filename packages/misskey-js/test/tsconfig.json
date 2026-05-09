@@ -4,6 +4,7 @@
 	"compilerOptions": {
 		// Checking
 		"rootDir": ".",
+		"types": ["jest", "jest-fetch-mock", "node"],
 
 		// Output
 		"outDir": "../temp/built/test/"

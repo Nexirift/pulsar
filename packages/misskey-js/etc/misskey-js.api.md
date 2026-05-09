@@ -7,7 +7,7 @@
 import type { AuthenticationResponseJSON } from '@simplewebauthn/types';
 import { EventEmitter } from 'eventemitter3';
 import type { Options } from 'reconnecting-websocket';
-import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/types';
+import type { PublicKeyCredentialRequestOptionsJSON as PublicKeyCredentialRequestOptionsJSON_2 } from '@simplewebauthn/types';
 
 // Warning: (ae-forgotten-export) The symbol "components" needs to be exported by the entry point index.d.ts
 //
@@ -23,7 +23,7 @@ export type Acct = {
 declare namespace acct {
     export {
         parse,
-        toString,
+        toString_2 as toString,
         Acct
     }
 }
@@ -708,7 +708,7 @@ export type Channels = {
     main: {
         params: null;
         events: {
-            notification: (payload: Notification) => void;
+            notification: (payload: Notification_2) => void;
             mention: (payload: Note) => void;
             reply: (payload: Note) => void;
             renote: (payload: Note) => void;
@@ -722,7 +722,7 @@ export type Channels = {
                 file: DriveFile;
             }) => void;
             readAllNotifications: () => void;
-            unreadNotification: (payload: Notification) => void;
+            unreadNotification: (payload: Notification_2) => void;
             notificationFlushed: () => void;
             unreadAntenna: (payload: Antenna) => void;
             newChatMessage: (payload: ChatMessage) => void;
@@ -2252,7 +2252,7 @@ declare namespace entities {
         Note,
         NoteReaction,
         NoteFavorite,
-        Notification,
+        Notification_2 as Notification,
         DriveFile,
         DriveFolder,
         Following,
@@ -3434,7 +3434,7 @@ type NotesVersionsResponse = operations['notes___versions']['responses']['200'][
 export const noteVisibilities: readonly ["public", "home", "followers", "specified"];
 
 // @public (undocumented)
-type Notification = components['schemas']['Notification'];
+type Notification_2 = components['schemas']['Notification'];
 
 // @public (undocumented)
 type NotificationsCreateRequest = operations['notifications___create']['requestBody']['content']['application/json'];
@@ -3723,12 +3723,12 @@ type SigninFlowResponse = {
 } | {
     finished: false;
     next: "passkey";
-    authRequest: PublicKeyCredentialRequestOptionsJSON;
+    authRequest: PublicKeyCredentialRequestOptionsJSON_2;
 };
 
 // @public (undocumented)
 type SigninWithPasskeyInitResponse = {
-    option: PublicKeyCredentialRequestOptionsJSON;
+    option: PublicKeyCredentialRequestOptionsJSON_2;
     context: string;
 };
 
@@ -3871,7 +3871,7 @@ type TestRequest = operations['test']['requestBody']['content']['application/jso
 type TestResponse = operations['test']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
-function toString(acct: Acct): string;
+function toString_2(acct: Acct): string;
 
 // @public (undocumented)
 type User = components['schemas']['User'];

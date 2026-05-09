@@ -2,6 +2,8 @@
 	"$schema": "https://json.schemastore.org/tsconfig",
 	"extends": "../../shared/tsconfig.lib.jsonc",
 	"compilerOptions": {
+		// Include DOM libs for fetch/Blob/FormData usage in the SDK.
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
 		// Checking
 		"exactOptionalPropertyTypes": true,
 

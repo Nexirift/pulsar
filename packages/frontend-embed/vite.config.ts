@@ -149,8 +149,12 @@ export function getConfig(): UserConfig {
 				},
 				external: externalPackages.map((p) => p.match),
 				output: {
-					manualChunks: {
-						vue: ["vue"],
+					manualChunks(id) {
+						if (id.includes("node_modules")) {
+							if (id.includes("/vue/")) {
+								return "vue";
+							}
+						}
 					},
 					chunkFileNames:
 						process.env.NODE_ENV === "production"

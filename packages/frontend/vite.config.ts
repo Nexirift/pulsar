@@ -212,13 +212,15 @@ export function getConfig(): UserConfig {
 				},
 				external: externalPackages.map((p) => p.match),
 				output: {
-					manualChunks: {
-						vue: ["vue"],
-						photoswipe: [
-							"photoswipe",
-							"photoswipe/lightbox",
-							"photoswipe/style.css",
-						],
+					manualChunks(id) {
+						if (id.includes("node_modules")) {
+							if (id.includes("/vue/")) {
+								return "vue";
+							}
+							if (id.includes("/photoswipe/")) {
+								return "photoswipe";
+							}
+						}
 					},
 					chunkFileNames:
 						process.env.NODE_ENV === "production"

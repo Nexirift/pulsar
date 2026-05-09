@@ -10,6 +10,25 @@ packages:
   - packages/misskey-reversi
   - packages/misskey-bubble-game
 
+allowBuilds:
+  '@nestjs/core': true
+  '@parcel/watcher': true
+  '@sentry-internal/node-cpu-profiler': true
+  '@swc/core': true
+  argon2: true
+  bufferutil: true
+  canvas: true
+  cypress: true
+  esbuild: true
+  msgpackr-extract: true
+  msw: true
+  re2: true
+  sharp: true
+  unrs-resolver: true
+  utf-8-validate: true
+  v-code-diff: true
+  vue-demi: true
+
 ignorePatchFailures: false
 
 onlyBuiltDependencies:

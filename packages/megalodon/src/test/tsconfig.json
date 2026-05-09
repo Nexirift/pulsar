@@ -3,7 +3,8 @@
 	"extends": "../../../shared/tsconfig.node.jsonc",
 	"compilerOptions": {
 		"outDir": "../../built/test",
-		"rootDir": "./"
+		"rootDir": "./",
+		"types": ["jest", "node"]
 	},
 	"include": ["**/*.ts"],
 	"references": [{ "path": "../lib/tsconfig.json" }]

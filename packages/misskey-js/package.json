@@ -9,6 +9,7 @@
 	"scripts": {
 		"clean": "node scripts/clean.mjs",
 		"build": "tsc -p src/tsconfig.json && node scripts/post-build.mjs",
+		"watch": "node scripts/watch.mjs",
 		"rebuild": "pnpm run clean && pnpm run build",
 		"tsd": "tsd --types \"./temp/built/src/index.d.ts\" --files \"./temp/built/test-d/**/*.ts\"",
 		"api": "pnpm api-extractor run --local --verbose",
@@ -33,22 +34,22 @@
 		"directory": "packages/misskey-js"
 	},
 	"devDependencies": {
-		"@microsoft/api-extractor": "7.57.7",
+		"@microsoft/api-extractor": "7.58.7",
 		"@misskey-dev/eslint-plugin": "2.2.0",
 		"@simplewebauthn/types": "12.0.0",
 		"@types/jest": "30.0.0",
-		"@types/node": "25.5.0",
-		"@typescript-eslint/eslint-plugin": "8.57.0",
-		"@typescript-eslint/parser": "8.57.0",
-		"jest": "30.3.0",
+		"@types/node": "25.6.2",
+		"@typescript-eslint/eslint-plugin": "8.59.2",
+		"@typescript-eslint/parser": "8.59.2",
+		"jest": "30.4.2",
 		"jest-fetch-mock": "3.0.3",
 		"jest-websocket-mock": "2.5.0",
 		"mock-socket": "9.3.1",
 		"ncp": "2.0.0",
-		"ts-jest": "29.4.6",
+		"ts-jest": "29.4.9",
 		"ts-node": "10.9.2",
 		"tsd": "0.33.0",
-		"typescript": "5.9.3"
+		"typescript": "6.0.3"
 	},
 	"files": [
 		"built"
