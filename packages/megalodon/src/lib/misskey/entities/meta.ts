@@ -45,4 +45,5 @@ export interface Meta {
 		serviceWorker: boolean
 		miauth: boolean
 	}
+	serverRules: Array<string>
 }
